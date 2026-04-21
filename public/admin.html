@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>管理画面 — ワインオークション</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
+    body { font-family: 'Noto Sans JP', sans-serif; }
+    .wine-badge { background: linear-gradient(135deg, #7B2D8B, #C0392B); }
+    .tab-active { background: #7C3AED; color: white; }
+    .tab-inactive { background: #F3F4F6; color: #6B7280; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
+    .fade-in { animation: fadeIn 0.2s ease; }
+  </style>
+</head>
+<body class="bg-gray-100">
+
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="flex items-center h-14 gap-3">
+        <div class="wine-badge text-white px-3 py-1 rounded-full text-sm font-bold">🍷 WINE</div>
+        <span class="font-bold text-gray-800">管理画面</span>
+        <div class="ml-auto flex gap-3 items-center">
+          <a href="/admin/import" class="text-sm bg-green-100 text-green-700 hover:bg-green-200 px-3 py-1.5 rounded-lg font-medium transition">📥 一括インポート</a>
+          <a href="/admin/photos" class="text-sm bg-purple-100 text-purple-700 hover:bg-purple-200 px-3 py-1.5 rounded-lg font-medium transition">📷 写真一括登録</a>
+          <a href="/" class="text-sm text-gray-500 hover:text-gray-700">← サイトに戻る</a>
+          <button onclick="logout()" class="text-sm text-red-500 hover:text-red-700">ログアウト</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div id="authCheck" class="text-center py-20 text-gray-400">認証確認中...</div>
+
+  <div id="adminContent" class="hidden max-w-7xl mx-auto px-4 py-6">
+
+    <!-- 統計カード -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6" id="statsGrid"></div>
+
+    <!-- タブ -->
+    <div class="flex gap-2 mb-5">
+      <button onclick="switchTab('users')" id="btn-users" class="tab-active px-4 py-2 rounded-lg text-sm font-medium transition">ユーザー</button>
+      <button onclick="switchTab('auctions')" id="btn-auctions" class="tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition">オークション</button>
+      <button onclick="switchTab('orders')" id="btn-orders" class="tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition">注文</button>
+    </div>
+
+    <!-- ユーザータブ -->
+    <div id="tab-users" class="fade-in">
+      <div class="flex gap-2 mb-4">
+        <input type="text" id="userSearch" placeholder="ユーザー名・メール検索..." onkeyup="debounce(loadUsers, 400)()"
+          class="border border-gray-300 rounded-lg px-3 py-2 text-sm flex-1 focus:outline-none focus:border-purple-500">
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 border-b border-gray-200">
+            <tr>
+              <th class="text-left px-4 py-3 text-gray-500 font-medium">ユーザー</th>
+              <th class="text-left px-4 py-3 text-gray-500 font-medium hidden sm:table-cell">メール</th>
+              <th class="text-center px-4 py-3 text-gray-500 font-medium">取引</th>
+              <th class="text-center px-4 py-3 text-gray-500 font-medium">ステータス</th>
+              <th class="text-center px-4 py-3 text-gray-500 font-medium">操作</th>
+            </tr>
+          </thead>
+          <tbody id="usersTable"></tbody>
+        </table>
+        <div id="usersPager" class="flex justify-center gap-2 p-4 border-t border-gray-100"></div>
+      </div>
+    </div>
+
+    <!-- オークションタブ -->
+    <div id="tab-auctions" class="hidden fade-in">
+      <div class="flex gap-2 mb-4">
+        <select id="auctionStatus" onchange="loadAuctions(1)"
+          class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500">
+          <option value="">すべて</option>
+          <option value="active">開催中</option>
+          <option value="ended">終了済み</option>
+        </select>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 border-b border-gray-200">
+            <tr>
+              <th class="text-left px-4 py-3 text-gray-500 font-medium">商品</th>
+              <th class="text-left px-4 py-3 text-gray-500 font-medium hidden sm:table-cell">出品者</th>
+              <th class="text-right px-4 py-3 text-gray-500 font-medium">現在価格</th>
+              <th class="text-center px-4 py-3 text-gray-500 font-medium">ステータス</th>
+              <th class="text-center px-4 py-3 text-gray-500 font-medium">操作</th>
+            </tr>
+          </thead>
+          <tbody id="auctionsTable"></tbody>
+        </table>
+        <div id="auctionsPager" class="flex justify-center gap-2 p-4 border-t border-gray-100"></div>
+      </div>
+    </div>
+
+    <!-- 注文タブ -->
+    <div id="tab-orders" class="hidden fade-in">
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 border-b border-gray-200">
+            <tr>
+              <th class="text-left px-4 py-3 text-gray-500 font-medium">商品</th>
+              <th class="text-left px-4 py-3 text-gray-500 font-medium hidden sm:table-cell">落札者</th>
+              <th class="text-right px-4 py-3 text-gray-500 font-medium">金額</th>
+              <th class="text-center px-4 py-3 text-gray-500 font-medium">状態</th>
+              <th class="text-left px-4 py-3 text-gray-500 font-medium hidden md:table-cell">配送先</th>
+            </tr>
+          </thead>
+          <tbody id="ordersTable"></tbody>
+        </table>
+        <div id="ordersPager" class="flex justify-center gap-2 p-4 border-t border-gray-100"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) location.href = '/login';
+
+    async function checkAdmin() {
+      const res = await fetch('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) { location.href = '/login'; return; }
+      const user = await res.json();
+      if (!user.is_admin) {
+        document.getElementById('authCheck').innerHTML = '<p class="text-red-500 py-20 text-center">管理者権限がありません</p>';
+        return;
+      }
+      document.getElementById('authCheck').classList.add('hidden');
+      document.getElementById('adminContent').classList.remove('hidden');
+      loadStats();
+      loadUsers();
+    }
+
+    async function loadStats() {
+      const res = await fetch('/api/admin/stats', { headers: { Authorization: `Bearer ${token}` } });
+      const s = await res.json();
+      document.getElementById('statsGrid').innerHTML = [
+        { label: 'ユーザー', value: s.users.toLocaleString(), color: 'purple' },
+        { label: 'オークション', value: s.auctions.toLocaleString() + ' (' + s.active + ' 開催中)', color: 'blue' },
+        { label: '入札数', value: s.bids.toLocaleString(), color: 'amber' },
+        { label: '売上', value: '¥' + (s.revenue||0).toLocaleString() + ' (' + s.paid + '件)', color: 'green' },
+      ].map(c => `
+        <div class="bg-white rounded-xl border border-gray-200 p-4">
+          <p class="text-xs text-gray-400 mb-1">${c.label}</p>
+          <p class="text-xl font-bold text-gray-900">${c.value}</p>
+        </div>`).join('');
+    }
+
+    async function loadUsers(page = 1) {
+      const q = document.getElementById('userSearch').value;
+      const res = await fetch(`/api/admin/users?q=${encodeURIComponent(q)}&page=${page}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const { users, total, pages } = await res.json();
+
+      document.getElementById('usersTable').innerHTML = users.map(u => `
+        <tr class="border-b border-gray-100 hover:bg-gray-50">
+          <td class="px-4 py-3">
+            <div class="font-medium text-gray-900">${u.display_name || u.username}</div>
+            <div class="text-xs text-gray-400">@${u.username}</div>
+            <div class="flex gap-1 mt-1">
+              ${u.is_admin ? '<span class="text-xs bg-purple-100 text-purple-700 px-1.5 rounded">管理者</span>' : ''}
+              ${u.is_verified_seller ? '<span class="text-xs bg-blue-100 text-blue-700 px-1.5 rounded">認定セラー</span>' : ''}
+              ${u.email_verified ? '<span class="text-xs bg-green-100 text-green-700 px-1.5 rounded">メール確認済</span>' : '<span class="text-xs bg-yellow-100 text-yellow-700 px-1.5 rounded">未確認</span>'}
+            </div>
+          </td>
+          <td class="px-4 py-3 text-gray-500 hidden sm:table-cell">${u.email}</td>
+          <td class="px-4 py-3 text-center text-gray-600">${u.trade_count}</td>
+          <td class="px-4 py-3 text-center">
+            ${u.is_blocked
+              ? '<span class="bg-red-100 text-red-700 text-xs px-2 py-0.5 rounded-full">停止</span>'
+              : '<span class="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full">正常</span>'}
+          </td>
+          <td class="px-4 py-3 text-center">
+            <div class="flex gap-1 justify-center flex-wrap">
+              <button onclick="toggleBlock(${u.id}, ${u.is_blocked})"
+                class="${u.is_blocked ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-red-100 text-red-700 hover:bg-red-200'} text-xs px-2 py-1 rounded transition">
+                ${u.is_blocked ? '停止解除' : '停止'}
+              </button>
+              ${!u.is_admin ? `<button onclick="toggleAdmin(${u.id}, false)"
+                class="bg-purple-100 text-purple-700 hover:bg-purple-200 text-xs px-2 py-1 rounded transition">管理者に</button>` : ''}
+              ${!u.is_verified_seller ? `<button onclick="verifySeller(${u.id})"
+                class="bg-blue-100 text-blue-700 hover:bg-blue-200 text-xs px-2 py-1 rounded transition">認定</button>` : ''}
+            </div>
+          </td>
+        </tr>
+      `).join('') || '<tr><td colspan="5" class="text-center py-8 text-gray-400">ユーザーがいません</td></tr>';
+
+      renderPager('usersPager', page, pages, loadUsers);
+    }
+
+    async function toggleBlock(userId, current) {
+      await fetch(`/api/admin/users/${userId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ is_blocked: !current })
+      });
+      loadUsers();
+    }
+
+    async function toggleAdmin(userId) {
+      if (!confirm('このユーザーを管理者にしますか？')) return;
+      await fetch(`/api/admin/users/${userId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ is_admin: true })
+      });
+      loadUsers();
+    }
+
+    async function verifySeller(userId) {
+      await fetch(`/api/admin/users/${userId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ is_verified_seller: true })
+      });
+      loadUsers();
+    }
+
+    async function loadAuctions(page = 1) {
+      const status = document.getElementById('auctionStatus').value;
+      const res = await fetch(`/api/admin/auctions?status=${status}&page=${page}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const { auctions, pages } = await res.json();
+
+      document.getElementById('auctionsTable').innerHTML = auctions.map(a => `
+        <tr class="border-b border-gray-100 hover:bg-gray-50">
+          <td class="px-4 py-3">
+            <div class="font-medium text-gray-900 text-sm">${a.title}</div>
+            <div class="text-xs text-gray-400">${a.producer} / 入札${a.bid_count}件</div>
+          </td>
+          <td class="px-4 py-3 text-gray-500 hidden sm:table-cell">${a.seller}</td>
+          <td class="px-4 py-3 text-right font-medium text-gray-900">¥${a.current_price.toLocaleString()}</td>
+          <td class="px-4 py-3 text-center">
+            ${a.status === 'active'
+              ? '<span class="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full">開催中</span>'
+              : '<span class="bg-gray-100 text-gray-500 text-xs px-2 py-0.5 rounded-full">終了済み</span>'}
+          </td>
+          <td class="px-4 py-3 text-center">
+            ${a.status === 'active' ? `
+              <button onclick="forceEndAuction(${a.id})"
+                class="bg-red-100 text-red-700 hover:bg-red-200 text-xs px-2 py-1 rounded transition">強制終了</button>` : ''}
+            <a href="/detail?id=${a.id}" target="_blank" class="bg-gray-100 text-gray-600 hover:bg-gray-200 text-xs px-2 py-1 rounded transition ml-1">詳細</a>
+          </td>
+        </tr>
+      `).join('') || '<tr><td colspan="5" class="text-center py-8 text-gray-400">オークションがありません</td></tr>';
+
+      renderPager('auctionsPager', page, pages, loadAuctions);
+    }
+
+    async function forceEndAuction(id) {
+      if (!confirm('このオークションを強制終了しますか？')) return;
+      await fetch(`/api/admin/auctions/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ status: 'ended' })
+      });
+      loadAuctions();
+    }
+
+    async function loadOrders(page = 1) {
+      const res = await fetch(`/api/admin/orders?page=${page}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const { orders, pages } = await res.json();
+
+      document.getElementById('ordersTable').innerHTML = orders.map(o => `
+        <tr class="border-b border-gray-100 hover:bg-gray-50">
+          <td class="px-4 py-3">
+            <div class="font-medium text-gray-900 text-sm truncate max-w-48">${o.title}</div>
+            <div class="text-xs text-gray-400">${new Date(o.created_at).toLocaleDateString('ja-JP')}</div>
+          </td>
+          <td class="px-4 py-3 text-gray-500 hidden sm:table-cell">${o.buyer}</td>
+          <td class="px-4 py-3 text-right font-medium text-gray-900">¥${o.amount.toLocaleString()}</td>
+          <td class="px-4 py-3 text-center">
+            ${o.status === 'paid'
+              ? '<span class="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full">支払済</span>'
+              : '<span class="bg-yellow-100 text-yellow-700 text-xs px-2 py-0.5 rounded-full">未払い</span>'}
+          </td>
+          <td class="px-4 py-3 text-gray-500 text-xs hidden md:table-cell">${o.shipping_address || '—'}</td>
+        </tr>
+      `).join('') || '<tr><td colspan="5" class="text-center py-8 text-gray-400">注文がありません</td></tr>';
+
+      renderPager('ordersPager', page, pages, loadOrders);
+    }
+
+    function renderPager(containerId, page, pages, loadFn) {
+      if (pages <= 1) { document.getElementById(containerId).innerHTML = ''; return; }
+      const btns = [];
+      for (let i = 1; i <= pages; i++) {
+        btns.push(`<button onclick="${loadFn.name}(${i})"
+          class="${i === page ? 'bg-purple-700 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'} px-3 py-1 rounded text-sm">${i}</button>`);
+      }
+      document.getElementById(containerId).innerHTML = btns.join('');
+    }
+
+    function switchTab(name) {
+      ['users', 'auctions', 'orders'].forEach(t => {
+        document.getElementById(`btn-${t}`).className = t === name ? 'tab-active px-4 py-2 rounded-lg text-sm font-medium transition' : 'tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition';
+        document.getElementById(`tab-${t}`).classList.toggle('hidden', t !== name);
+      });
+      if (name === 'auctions') loadAuctions();
+      if (name === 'orders') loadOrders();
+    }
+
+    function logout() {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      location.href = '/';
+    }
+
+    let debounceTimer;
+    function debounce(fn, ms) {
+      return (...args) => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => fn(...args), ms);
+      };
+    }
+
+    checkAdmin();
+  </script>
+</body>
+</html>

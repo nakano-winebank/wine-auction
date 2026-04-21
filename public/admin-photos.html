@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>写真一括登録 — ワインオークション</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
+    body { font-family: 'Noto Sans JP', sans-serif; }
+    .wine-badge { background: linear-gradient(135deg, #7B2D8B, #C0392B); }
+    .slot { border: 2px dashed #E5E7EB; border-radius: 8px; aspect-ratio:1; display:flex; align-items:center; justify-content:center; cursor:pointer; transition: all 0.15s; overflow:hidden; position:relative; }
+    .slot:hover { border-color: #7C3AED; background:#F5F3FF; }
+    .slot.has-photo { border-style: solid; border-color: #10B981; }
+    .slot.uploading { border-color: #F59E0B; background:#FFFBEB; }
+    .photo-count-0 { background: #FEF2F2; }
+    .photo-count-done { background: #F0FDF4; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+    .fade-in { animation: fadeIn 0.2s ease; }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="flex items-center h-14 gap-3">
+        <a href="/admin/import" class="text-gray-400 hover:text-gray-600 p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        </a>
+        <div class="wine-badge text-white px-3 py-1 rounded-full text-sm font-bold">🍷 WINE</div>
+        <span class="font-bold text-gray-800">写真一括登録</span>
+        <div class="ml-auto flex items-center gap-3">
+          <span class="text-xs text-gray-400" id="progressLabel">0 / 0 件に写真あり</span>
+          <a href="/admin/import" class="text-sm bg-green-100 text-green-700 px-3 py-1.5 rounded-lg hover:bg-green-200 transition">📥 インポートに戻る</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ZIP一括アップロード -->
+  <div class="max-w-7xl mx-auto px-4 pt-5">
+    <div class="bg-white rounded-2xl border border-gray-200 p-5 mb-5">
+      <div class="flex items-start justify-between gap-4 flex-wrap">
+        <div class="flex-1">
+          <h2 class="font-bold text-gray-800 mb-1">📦 ZIP一括アップロード <span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full ml-1">おすすめ</span></h2>
+          <p class="text-sm text-gray-500 mb-2">写真をまとめてZIPにして一度にアップロードできます。</p>
+          <div class="bg-gray-50 rounded-lg p-3 text-xs text-gray-600 font-mono space-y-0.5">
+            <p class="font-bold text-gray-700 mb-1">ファイル命名規則：</p>
+            <p>📁 <span class="text-purple-700">{オークションID}</span>_正面.jpg　→ 正面写真</p>
+            <p>📁 <span class="text-purple-700">{オークションID}</span>_背面.jpg　→ 裏ラベル</p>
+            <p>📁 <span class="text-purple-700">{オークションID}</span>_キャップ.jpg → キャップシール</p>
+            <p class="text-gray-400 mt-1">例: 42_正面.jpg、42_背面.jpg、42_キャップ.jpg</p>
+          </div>
+        </div>
+        <div class="flex-shrink-0">
+          <div id="zipDropArea"
+            class="w-48 border-2 border-dashed border-gray-300 rounded-xl p-4 text-center cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition"
+            onclick="document.getElementById('zipInput').click()"
+            ondragover="event.preventDefault(); this.classList.add('border-purple-500','bg-purple-50')"
+            ondragleave="this.classList.remove('border-purple-500','bg-purple-50')"
+            ondrop="handleZipDrop(event)">
+            <div id="zipPlaceholder">
+              <div class="text-3xl mb-1">🗜️</div>
+              <p class="text-xs text-gray-500">ZIPをドロップ</p>
+              <p class="text-xs text-gray-400">または クリック</p>
+            </div>
+            <div id="zipSelected" class="hidden">
+              <div class="text-2xl mb-1">✅</div>
+              <p class="text-xs font-medium text-gray-700" id="zipFileName"></p>
+            </div>
+          </div>
+          <input type="file" id="zipInput" accept=".zip" class="hidden" onchange="handleZipSelect(event)">
+          <button id="zipUploadBtn" onclick="uploadZip()" disabled
+            class="mt-2 w-48 bg-purple-700 text-white py-2 rounded-xl text-sm font-medium hover:bg-purple-800 transition disabled:opacity-40 disabled:cursor-not-allowed">
+            アップロード
+          </button>
+          <div id="zipResult" class="mt-2 text-xs text-center hidden"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 個別写真登録グリッド -->
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="font-bold text-gray-800">商品別写真登録</h2>
+      <div class="flex gap-2 items-center">
+        <select id="filterSelect" onchange="filterAuctions()" class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none">
+          <option value="all">すべて</option>
+          <option value="no_photo">写真なし</option>
+          <option value="has_photo">写真あり</option>
+        </select>
+        <input type="text" id="searchInput" placeholder="タイトルで検索..." oninput="filterAuctions()"
+          class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-purple-500 w-48">
+      </div>
+    </div>
+
+    <div id="auctionGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pb-8"></div>
+    <div id="emptyState" class="hidden text-center py-12 text-gray-400">
+      <div class="text-4xl mb-2">📭</div>
+      <p>出品中のオークションがありません</p>
+    </div>
+  </div>
+
+  <!-- 写真拡大モーダル -->
+  <div id="photoModal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" onclick="closeModal()">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-5" onclick="e=>e.stopPropagation()">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-bold text-gray-800" id="modalTitle"></h3>
+        <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">✕</button>
+      </div>
+      <div class="grid grid-cols-3 gap-3" id="modalSlots"></div>
+    </div>
+  </div>
+
+  <input type="file" id="globalFileInput" accept="image/*" class="hidden">
+
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) location.href = '/login';
+
+    let allAuctions = [];
+    let currentModalAuction = null;
+    let currentSlotIndex = null;
+
+    async function loadAuctions() {
+      const res = await fetch('/api/import/recent-auctions?limit=200', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      allAuctions = data.auctions || [];
+      renderGrid(allAuctions);
+      updateProgress();
+    }
+
+    function updateProgress() {
+      const withPhoto = allAuctions.filter(a => a.photo_count > 0).length;
+      document.getElementById('progressLabel').textContent = `${withPhoto} / ${allAuctions.length} 件に写真あり`;
+    }
+
+    function renderGrid(auctions) {
+      const grid = document.getElementById('auctionGrid');
+      if (auctions.length === 0) {
+        grid.innerHTML = '';
+        document.getElementById('emptyState').classList.remove('hidden');
+        return;
+      }
+      document.getElementById('emptyState').classList.add('hidden');
+      grid.innerHTML = auctions.map(a => `
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden fade-in ${a.photo_count === 0 ? 'photo-count-0' : 'photo-count-done'}"
+          id="card-${a.id}">
+          <div class="flex items-center gap-3 p-3 border-b border-gray-100">
+            <div class="bg-gradient-to-br ${a.image_color} w-10 h-10 rounded-lg flex items-center justify-center text-xl flex-shrink-0">
+              ${a.image_emoji}
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-gray-900 truncate">${a.title}</p>
+              <p class="text-xs text-gray-400">${a.producer}${a.vintage ? ' ' + a.vintage : ''} · ID:${a.id}</p>
+            </div>
+            <span class="flex-shrink-0 text-xs ${a.photo_count > 0 ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'} px-2 py-0.5 rounded-full">
+              ${a.photo_count}枚
+            </span>
+          </div>
+          <div class="p-3">
+            <div class="grid grid-cols-3 gap-2" id="slots-${a.id}">
+              ${['正面','背面','キャップ'].map((label, i) => `
+                <div onclick="openSlotUpload(${a.id}, ${i}, '${label}')"
+                  class="slot" id="slot-${a.id}-${i}" title="${label}写真をアップロード">
+                  <div class="text-center">
+                    <div class="text-lg">📷</div>
+                    <div class="text-xs text-gray-400 mt-0.5">${label}</div>
+                  </div>
+                </div>`).join('')}
+            </div>
+            <button onclick="openModal(${a.id})"
+              class="mt-2 w-full text-xs text-purple-600 hover:text-purple-800 border border-purple-200 rounded-lg py-1.5 hover:bg-purple-50 transition">
+              すべての写真を管理
+            </button>
+          </div>
+        </div>
+      `).join('');
+
+      // 既存の写真を読み込む
+      auctions.forEach(a => { if (a.photo_count > 0) loadExistingPhotos(a.id); });
+    }
+
+    async function loadExistingPhotos(auctionId) {
+      const res = await fetch(`/api/auctions/${auctionId}`, { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      if (!data.images) return;
+      const labelToSlot = { '正面': 0, '背面（裏ラベル）': 1, 'キャップシール': 2, '背面': 1, 'キャップ': 2 };
+      data.images.forEach(img => {
+        const slotIdx = labelToSlot[img.label] ?? null;
+        if (slotIdx !== null) showPhotoInSlot(auctionId, slotIdx, img.url);
+      });
+    }
+
+    function showPhotoInSlot(auctionId, slotIdx, url) {
+      const slot = document.getElementById(`slot-${auctionId}-${slotIdx}`);
+      if (!slot) return;
+      slot.classList.add('has-photo');
+      slot.innerHTML = `
+        <img src="${url}" class="w-full h-full object-cover absolute inset-0">
+        <button onclick="deleteSlotPhoto(event, ${auctionId}, ${slotIdx})"
+          class="absolute top-0.5 right-0.5 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs hover:bg-red-600 z-10">✕</button>`;
+    }
+
+    function openSlotUpload(auctionId, slotIdx, label) {
+      const input = document.getElementById('globalFileInput');
+      input.value = '';
+      input.onchange = async (e) => {
+        if (!e.target.files[0]) return;
+        await uploadPhotoToSlot(auctionId, slotIdx, label, e.target.files[0]);
+      };
+      input.click();
+    }
+
+    async function uploadPhotoToSlot(auctionId, slotIdx, label, file) {
+      const slot = document.getElementById(`slot-${auctionId}-${slotIdx}`);
+      slot.classList.add('uploading');
+      slot.innerHTML = '<div class="text-xl animate-pulse">⏳</div>';
+
+      const formData = new FormData();
+      formData.append('image', file);
+      const uploadRes = await fetch('/api/upload/image', {
+        method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: formData
+      });
+      const uploadData = await uploadRes.json();
+      if (!uploadData.url) { slot.classList.remove('uploading'); alert('アップロード失敗'); return; }
+
+      // auction_imagesに保存
+      const labelMap = { 0: '正面', 1: '背面（裏ラベル）', 2: 'キャップシール' };
+      await fetch(`/api/upload/auction-images/${auctionId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ images: [{ url: uploadData.url, label: labelMap[slotIdx], sort_order: slotIdx }] })
+      });
+
+      slot.classList.remove('uploading');
+      showPhotoInSlot(auctionId, slotIdx, uploadData.url);
+
+      // 枚数カウント更新
+      const card = document.getElementById(`card-${auctionId}`);
+      const auc = allAuctions.find(a => a.id === auctionId);
+      if (auc) { auc.photo_count = (auc.photo_count || 0) + 1; }
+      if (card) { card.classList.remove('photo-count-0'); card.classList.add('photo-count-done'); }
+      updateProgress();
+    }
+
+    async function deleteSlotPhoto(e, auctionId, slotIdx) {
+      e.stopPropagation();
+      if (!confirm('この写真を削除しますか？')) return;
+      const labelMap = { 0: '正面', 1: '背面（裏ラベル）', 2: 'キャップシール' };
+      // auction_imagesから削除（全更新）
+      const res = await fetch(`/api/auctions/${auctionId}`, { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      const remaining = (data.images || []).filter(img => img.label !== labelMap[slotIdx]);
+      await fetch(`/api/upload/auction-images/${auctionId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ images: remaining.map((img, idx) => ({ ...img, sort_order: idx })) })
+      });
+      const slot = document.getElementById(`slot-${auctionId}-${slotIdx}`);
+      const labels = ['正面', '背面', 'キャップ'];
+      slot.classList.remove('has-photo');
+      slot.innerHTML = `<div class="text-center"><div class="text-lg">📷</div><div class="text-xs text-gray-400 mt-0.5">${labels[slotIdx]}</div></div>`;
+      const auc = allAuctions.find(a => a.id === auctionId);
+      if (auc && auc.photo_count > 0) auc.photo_count--;
+      updateProgress();
+    }
+
+    // モーダル（全写真管理）
+    function openModal(auctionId) {
+      const auc = allAuctions.find(a => a.id === auctionId);
+      currentModalAuction = auctionId;
+      document.getElementById('modalTitle').textContent = auc?.title || '';
+      document.getElementById('photoModal').classList.remove('hidden');
+      document.getElementById('modalSlots').innerHTML = ['正面','背面（裏ラベル）','キャップシール'].map((label, i) => {
+        const slotEl = document.getElementById(`slot-${auctionId}-${i}`);
+        const hasPhoto = slotEl?.classList.contains('has-photo');
+        return `<div class="text-center">
+          <p class="text-xs text-gray-500 mb-1">${label}</p>
+          ${hasPhoto
+            ? `<div class="relative rounded-lg overflow-hidden h-24">${slotEl.querySelector('img').outerHTML}</div>`
+            : `<div onclick="openSlotUpload(${auctionId},${i},'${label}');closeModal()" class="slot h-24 rounded-lg"><div class="text-2xl">📷</div></div>`}
+        </div>`;
+      }).join('');
+    }
+    function closeModal() { document.getElementById('photoModal').classList.add('hidden'); }
+
+    // フィルター
+    function filterAuctions() {
+      const filter = document.getElementById('filterSelect').value;
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const filtered = allAuctions.filter(a => {
+        const matchFilter = filter === 'all' || (filter === 'no_photo' && a.photo_count === 0) || (filter === 'has_photo' && a.photo_count > 0);
+        const matchSearch = !search || a.title.toLowerCase().includes(search) || a.producer.toLowerCase().includes(search);
+        return matchFilter && matchSearch;
+      });
+      renderGrid(filtered);
+    }
+
+    // ZIP アップロード
+    let selectedZip = null;
+    function handleZipDrop(e) {
+      e.preventDefault();
+      document.getElementById('zipDropArea').classList.remove('border-purple-500','bg-purple-50');
+      setZipFile(e.dataTransfer.files[0]);
+    }
+    function handleZipSelect(e) { setZipFile(e.target.files[0]); }
+    function setZipFile(file) {
+      if (!file || !file.name.endsWith('.zip')) { alert('.zipファイルを選択してください'); return; }
+      selectedZip = file;
+      document.getElementById('zipPlaceholder').classList.add('hidden');
+      document.getElementById('zipSelected').classList.remove('hidden');
+      document.getElementById('zipFileName').textContent = file.name;
+      document.getElementById('zipUploadBtn').disabled = false;
+    }
+    async function uploadZip() {
+      if (!selectedZip) return;
+      document.getElementById('zipUploadBtn').disabled = true;
+      document.getElementById('zipUploadBtn').textContent = '処理中...';
+      const fd = new FormData();
+      fd.append('zip', selectedZip);
+      const res = await fetch('/api/import/photos-zip', {
+        method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd
+      });
+      const data = await res.json();
+      const resultEl = document.getElementById('zipResult');
+      resultEl.classList.remove('hidden');
+      if (data.success) {
+        resultEl.className = 'mt-2 text-xs text-center text-green-700';
+        resultEl.textContent = `✅ ${data.saved}枚保存 / ${data.skipped}枚スキップ`;
+        loadAuctions(); // グリッド更新
+      } else {
+        resultEl.className = 'mt-2 text-xs text-center text-red-600';
+        resultEl.textContent = '❌ ' + (data.error || 'エラー');
+      }
+      document.getElementById('zipUploadBtn').textContent = 'アップロード';
+      document.getElementById('zipUploadBtn').disabled = false;
+    }
+
+    loadAuctions();
+  </script>
+</body>
+</html>

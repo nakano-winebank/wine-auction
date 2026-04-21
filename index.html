@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ワインオークション</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
+    body { font-family: 'Noto Sans JP', sans-serif; }
+    .wine-badge { background: linear-gradient(135deg, #7B2D8B, #C0392B); }
+    .bid-btn { background: linear-gradient(135deg, #C0392B, #922B21); }
+    .bid-btn:hover { background: linear-gradient(135deg, #922B21, #7B241C); }
+    .filter-chip.active { background: #7B2D8B; color: white; }
+    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.12); }
+    .card-hover { transition: all 0.2s ease; }
+    .timer-urgent { color: #C0392B; animation: pulse 1s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+    .tag-vintage { background: #F3E8FF; color: #6B21A8; }
+    .tag-region { background: #FEF3C7; color: #92400E; }
+    .tag-grape { background: #DCFCE7; color: #166534; }
+    .ending-badge { background: #FEF2F2; color: #DC2626; border: 1px solid #FECACA; }
+  </style>
+</head>
+<body class="bg-gray-50">
+
+  <!-- ヘッダー -->
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto px-4">
+      <div class="flex items-center justify-between h-14">
+        <div class="flex items-center gap-3">
+          <div class="wine-badge text-white px-3 py-1 rounded-full text-sm font-bold tracking-wide">🍷 WINE</div>
+          <span class="text-gray-800 font-bold text-lg">オークション</span>
+        </div>
+        <div class="flex-1 max-w-md mx-6">
+          <div class="relative">
+            <input type="text" placeholder="ワインを検索（生産者、産地、ヴィンテージ...）"
+              class="w-full border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-purple-500 pr-10">
+            <button class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <button class="text-sm text-gray-600 hover:text-gray-900">出品する</button>
+          <button class="bg-purple-700 text-white text-sm px-4 py-1.5 rounded-full hover:bg-purple-800">ログイン</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="max-w-6xl mx-auto px-4 py-6">
+
+    <!-- フィルターバー -->
+    <div class="bg-white rounded-xl border border-gray-200 p-4 mb-6">
+      <div class="flex flex-wrap gap-3 items-center">
+        <span class="text-sm font-medium text-gray-600 mr-1">産地</span>
+        <button class="filter-chip active text-sm px-3 py-1 rounded-full border border-purple-700 transition" onclick="toggleFilter(this)">すべて</button>
+        <button class="filter-chip text-sm px-3 py-1 rounded-full border border-gray-300 hover:border-purple-400 transition" onclick="toggleFilter(this)">🇫🇷 ボルドー</button>
+        <button class="filter-chip text-sm px-3 py-1 rounded-full border border-gray-300 hover:border-purple-400 transition" onclick="toggleFilter(this)">🇫🇷 ブルゴーニュ</button>
+        <button class="filter-chip text-sm px-3 py-1 rounded-full border border-gray-300 hover:border-purple-400 transition" onclick="toggleFilter(this)">🇮🇹 イタリア</button>
+        <button class="filter-chip text-sm px-3 py-1 rounded-full border border-gray-300 hover:border-purple-400 transition" onclick="toggleFilter(this)">🇪🇸 スペイン</button>
+        <button class="filter-chip text-sm px-3 py-1 rounded-full border border-gray-300 hover:border-purple-400 transition" onclick="toggleFilter(this)">🇺🇸 カリフォルニア</button>
+        <button class="filter-chip text-sm px-3 py-1 rounded-full border border-gray-300 hover:border-purple-400 transition" onclick="toggleFilter(this)">🇯🇵 日本</button>
+
+        <div class="h-5 w-px bg-gray-300 mx-1"></div>
+
+        <span class="text-sm font-medium text-gray-600">ヴィンテージ</span>
+        <select class="text-sm border border-gray-300 rounded-full px-3 py-1 focus:outline-none focus:border-purple-500">
+          <option>年を選択</option>
+          <option>2020〜現在</option>
+          <option>2010〜2019</option>
+          <option>2000〜2009</option>
+          <option>1990〜1999</option>
+          <option>1990年以前</option>
+        </select>
+
+        <select class="text-sm border border-gray-300 rounded-full px-3 py-1 focus:outline-none focus:border-purple-500">
+          <option>価格帯</option>
+          <option>〜¥10,000</option>
+          <option>¥10,000〜¥50,000</option>
+          <option>¥50,000〜¥100,000</option>
+          <option>¥100,000以上</option>
+        </select>
+
+        <div class="ml-auto flex gap-2">
+          <select class="text-sm border border-gray-300 rounded-lg px-3 py-1 focus:outline-none focus:border-purple-500">
+            <option>終了が近い順</option>
+            <option>入札数が多い順</option>
+            <option>価格が高い順</option>
+            <option>価格が低い順</option>
+            <option>新着順</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- 集計バー -->
+    <div class="flex items-center justify-between mb-4">
+      <p class="text-sm text-gray-600"><span class="font-bold text-gray-900">248件</span> 出品中</p>
+      <div class="flex gap-2 text-sm text-gray-500">
+        <span class="flex items-center gap-1">
+          <span class="w-2 h-2 bg-red-500 rounded-full inline-block animate-pulse"></span>
+          終了間近 12件
+        </span>
+      </div>
+    </div>
+
+    <!-- 商品グリッド -->
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+
+      <!-- カード1 -->
+      <a href="detail.html" class="card-hover bg-white rounded-xl border border-gray-200 overflow-hidden block">
+        <div class="relative">
+          <div class="bg-gradient-to-br from-red-900 via-red-700 to-red-900 h-44 flex items-center justify-center">
+            <div class="text-center">
+              <div class="text-5xl mb-1">🍷</div>
+              <div class="text-white text-xs opacity-70">Château Margaux</div>
+            </div>
+          </div>
+          <div class="ending-badge absolute top-2 left-2 text-xs px-2 py-0.5 rounded-full font-medium">
+            残り 2:14:33
+          </div>
+        </div>
+        <div class="p-3">
+          <p class="text-xs text-gray-500 mb-1">Château Margaux</p>
+          <p class="font-medium text-gray-900 text-sm leading-snug mb-2">シャトー・マルゴー 2015 750ml</p>
+          <div class="flex flex-wrap gap-1 mb-2">
+            <span class="tag-vintage text-xs px-2 py-0.5 rounded-full">2015</span>
+            <span class="tag-region text-xs px-2 py-0.5 rounded-full">ボルドー</span>
+          </div>
+          <div class="flex items-end justify-between">
+            <div>
+              <p class="text-xs text-gray-400">現在の価格</p>
+              <p class="text-lg font-bold text-gray-900">¥85,000</p>
+            </div>
+            <p class="text-xs text-gray-400">入札 23件</p>
+          </div>
+        </div>
+      </a>
+
+      <!-- カード2 -->
+      <a href="detail.html" class="card-hover bg-white rounded-xl border border-gray-200 overflow-hidden block">
+        <div class="relative">
+          <div class="bg-gradient-to-br from-yellow-800 via-yellow-600 to-yellow-800 h-44 flex items-center justify-center">
+            <div class="text-center">
+              <div class="text-5xl mb-1">🥂</div>
+              <div class="text-white text-xs opacity-70">Dom Pérignon</div>
+            </div>
+          </div>
+        </div>
+        <div class="p-3">
+          <p class="text-xs text-gray-500 mb-1">Dom Pérignon</p>
+          <p class="font-medium text-gray-900 text-sm leading-snug mb-2">ドン・ペリニョン 2012 シャンパーニュ</p>
+          <div class="flex flex-wrap gap-1 mb-2">
+            <span class="tag-vintage text-xs px-2 py-0.5 rounded-full">2012</span>
+            <span class="tag-region text-xs px-2 py-0.5 rounded-full">シャンパーニュ</span>
+          </div>
+          <div class="flex items-end justify-between">
+            <div>
+              <p class="text-xs text-gray-400">現在の価格</p>
+              <p class="text-lg font-bold text-gray-900">¥28,500</p>
+            </div>
+            <p class="text-xs text-gray-400">入札 8件</p>
+          </div>
+        </div>
+      </a>
+
+      <!-- カード3 -->
+      <a href="detail.html" class="card-hover bg-white rounded-xl border border-gray-200 overflow-hidden block">
+        <div class="relative">
+          <div class="bg-gradient-to-br from-purple-900 via-purple-700 to-purple-900 h-44 flex items-center justify-center">
+            <div class="text-center">
+              <div class="text-5xl mb-1">🍾</div>
+              <div class="text-white text-xs opacity-70">Romanée-Conti</div>
+            </div>
+          </div>
+          <div class="absolute top-2 right-2 bg-yellow-400 text-yellow-900 text-xs px-2 py-0.5 rounded-full font-bold">注目</div>
+        </div>
+        <div class="p-3">
+          <p class="text-xs text-gray-500 mb-1">Domaine de la Romanée-Conti</p>
+          <p class="font-medium text-gray-900 text-sm leading-snug mb-2">ロマネ・コンティ 2018 750ml</p>
+          <div class="flex flex-wrap gap-1 mb-2">
+            <span class="tag-vintage text-xs px-2 py-0.5 rounded-full">2018</span>
+            <span class="tag-region text-xs px-2 py-0.5 rounded-full">ブルゴーニュ</span>
+          </div>
+          <div class="flex items-end justify-between">
+            <div>
+              <p class="text-xs text-gray-400">現在の価格</p>
+              <p class="text-lg font-bold text-gray-900">¥1,850,000</p>
+            </div>
+            <p class="text-xs text-gray-400">入札 41件</p>
+          </div>
+        </div>
+      </a>
+
+      <!-- カード4 -->
+      <a href="detail.html" class="card-hover bg-white rounded-xl border border-gray-200 overflow-hidden block">
+        <div class="relative">
+          <div class="bg-gradient-to-br from-red-800 via-red-600 to-red-800 h-44 flex items-center justify-center">
+            <div class="text-center">
+              <div class="text-5xl mb-1">🍷</div>
+              <div class="text-white text-xs opacity-70">Sassicaia</div>
+            </div>
+          </div>
+        </div>
+        <div class="p-3">
+          <p class="text-xs text-gray-500 mb-1">Tenuta San Guido</p>
+          <p class="font-medium text-gray-900 text-sm leading-snug mb-2">サッシカイア 2017 イタリア 750ml</p>
+          <div class="flex flex-wrap gap-1 mb-2">
+            <span class="tag-vintage text-xs px-2 py-0.5 rounded-full">2017</span>
+            <span class="tag-region text-xs px-2 py-0.5 rounded-full">トスカーナ</span>
+            <span class="tag-grape text-xs px-2 py-0.5 rounded-full">Cab.S</span>
+          </div>
+          <div class="flex items-end justify-between">
+            <div>
+              <p class="text-xs text-gray-400">現在の価格</p>
+              <p class="text-lg font-bold text-gray-900">¥32,000</p>
+            </div>
+            <p class="text-xs text-gray-400">入札 15件</p>
+          </div>
+        </div>
+      </a>
+
+      <!-- カード5 -->
+      <a href="detail.html" class="card-hover bg-white rounded-xl border border-gray-200 overflow-hidden block">
+        <div class="relative">
+          <div class="bg-gradient-to-br from-amber-900 via-amber-700 to-amber-900 h-44 flex items-center justify-center">
+            <div class="text-center">
+              <div class="text-5xl mb-1">🥃</div>
+              <div class="text-white text-xs opacity-70">Pétrus</div>
+            </div>
+          </div>
+          <div class="ending-badge absolute top-2 left-2 text-xs px-2 py-0.5 rounded-full font-medium">
+            残り 0:45:12
+          </div>
+        </div>
+        <div class="p-3">
+          <p class="text-xs text-gray-500 mb-1">Château Pétrus</p>
+          <p class="font-medium text-gray-900 text-sm leading-snug mb-2">ペトリュス 2010 ポムロール</p>
+          <div class="flex flex-wrap gap-1 mb-2">
+            <span class="tag-vintage text-xs px-2 py-0.5 rounded-full">2010</span>
+            <span class="tag-region text-xs px-2 py-0.5 rounded-full">ポムロール</span>
+          </div>
+          <div class="flex items-end justify-between">
+            <div>
+              <p class="text-xs text-gray-400">現在の価格</p>
+              <p class="text-lg font-bold text-gray-900">¥420,000</p>
+            </div>
+            <p class="text-xs text-gray-400">入札 37件</p>
+          </div>
+        </div>
+      </a>
+
+      <!-- カード6 -->
+      <a href="detail.html" class="card-hover bg-white rounded-xl border border-gray-200 overflow-hidden block">
+        <div class="relative">
+          <div class="bg-gradient-to-br from-pink-800 via-pink-500 to-pink-800 h-44 flex items-center justify-center">
+            <div class="text-center">
+              <div class="text-5xl mb-1">🌸</div>
+              <div class="text-white text-xs opacity-70">Whispering Angel</div>
+            </div>
+          </div>
+        </div>
+        <div class="p-3">
+          <p class="text-xs text-gray-500 mb-1">Château d'Esclans</p>
+          <p class="font-medium text-gray-900 text-sm leading-snug mb-2">ウィスパリング・エンジェル ロゼ 2022</p>
+          <div class="flex flex-wrap gap-1 mb-2">
+            <span class="tag-vintage text-xs px-2 py-0.5 rounded-full">2022</span>
+            <span class="tag-region text-xs px-2 py-0.5 rounded-full">プロヴァンス</span>
+          </div>
+          <div class="flex items-end justify-between">
+            <div>
+              <p class="text-xs text-gray-400">現在の価格</p>
+              <p class="text-lg font-bold text-gray-900">¥4,800</p>
+            </div>
+            <p class="text-xs text-gray-400">入札 5件</p>
+          </div>
+        </div>
+      </a>
+
+      <!-- カード7 -->
+      <a href="detail.html" class="card-hover bg-white rounded-xl border border-gray-200 overflow-hidden block">
+        <div class="relative">
+          <div class="bg-gradient-to-br from-green-900 via-green-700 to-green-900 h-44 flex items-center justify-center">
+            <div class="text-center">
+              <div class="text-5xl mb-1">🍾</div>
+              <div class="text-white text-xs opacity-70">Opus One</div>
+            </div>
+          </div>
+          <div class="absolute top-2 right-2 bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full font-bold">マグナム</div>
+        </div>
+        <div class="p-3">
+          <p class="text-xs text-gray-500 mb-1">Opus One Winery</p>
+          <p class="font-medium text-gray-900 text-sm leading-snug mb-2">オーパス・ワン 2019 1500ml マグナム</p>
+          <div class="flex flex-wrap gap-1 mb-2">
+            <span class="tag-vintage text-xs px-2 py-0.5 rounded-full">2019</span>
+            <span class="tag-region text-xs px-2 py-0.5 rounded-full">ナパヴァレー</span>
+          </div>
+          <div class="flex items-end justify-between">
+            <div>
+              <p class="text-xs text-gray-400">現在の価格</p>
+              <p class="text-lg font-bold text-gray-900">¥165,000</p>
+            </div>
+            <p class="text-xs text-gray-400">入札 19件</p>
+          </div>
+        </div>
+      </a>
+
+      <!-- カード8 -->
+      <a href="detail.html" class="card-hover bg-white rounded-xl border border-gray-200 overflow-hidden block">
+        <div class="relative">
+          <div class="bg-gradient-to-br from-slate-800 via-slate-600 to-slate-800 h-44 flex items-center justify-center">
+            <div class="text-center">
+              <div class="text-5xl mb-1">🍷</div>
+              <div class="text-white text-xs opacity-70">Harlan Estate</div>
+            </div>
+          </div>
+        </div>
+        <div class="p-3">
+          <p class="text-xs text-gray-500 mb-1">Harlan Estate</p>
+          <p class="font-medium text-gray-900 text-sm leading-snug mb-2">ハーラン・エステート 2016 ナパヴァレー</p>
+          <div class="flex flex-wrap gap-1 mb-2">
+            <span class="tag-vintage text-xs px-2 py-0.5 rounded-full">2016</span>
+            <span class="tag-region text-xs px-2 py-0.5 rounded-full">ナパヴァレー</span>
+            <span class="tag-grape text-xs px-2 py-0.5 rounded-full">Cab.S</span>
+          </div>
+          <div class="flex items-end justify-between">
+            <div>
+              <p class="text-xs text-gray-400">現在の価格</p>
+              <p class="text-lg font-bold text-gray-900">¥95,000</p>
+            </div>
+            <p class="text-xs text-gray-400">入札 12件</p>
+          </div>
+        </div>
+      </a>
+
+    </div>
+
+    <!-- ページネーション -->
+    <div class="flex justify-center mt-8 gap-2">
+      <button class="w-9 h-9 rounded-full bg-purple-700 text-white font-bold text-sm">1</button>
+      <button class="w-9 h-9 rounded-full border border-gray-300 text-gray-700 text-sm hover:border-purple-400">2</button>
+      <button class="w-9 h-9 rounded-full border border-gray-300 text-gray-700 text-sm hover:border-purple-400">3</button>
+      <span class="w-9 h-9 flex items-center justify-center text-gray-400">...</span>
+      <button class="w-9 h-9 rounded-full border border-gray-300 text-gray-700 text-sm hover:border-purple-400">13</button>
+    </div>
+
+  </div>
+
+  <script>
+    function toggleFilter(el) {
+      document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
+    }
+
+    // タイマー更新（デモ用）
+    function updateTimers() {
+      document.querySelectorAll('.ending-badge').forEach(badge => {
+        const text = badge.textContent.trim();
+        const match = text.match(/残り (\d+):(\d+):(\d+)/);
+        if (match) {
+          let h = parseInt(match[1]), m = parseInt(match[2]), s = parseInt(match[3]);
+          s--;
+          if (s < 0) { s = 59; m--; }
+          if (m < 0) { m = 59; h--; }
+          if (h < 0) { badge.textContent = '終了'; return; }
+          badge.textContent = `残り ${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+          if (h === 0 && m < 10) badge.classList.add('timer-urgent');
+        }
+      });
+    }
+    setInterval(updateTimers, 1000);
+  </script>
+</body>
+</html>

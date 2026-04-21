@@ -1,0 +1,7 @@
+node_modules/
+.env
+wine_auction.db
+*.db-shm
+*.db-wal
+public/uploads/*
+!public/uploads/.gitkeep

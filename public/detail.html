@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ワインオークション — 商品詳細</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
+    body { font-family: 'Noto Sans JP', sans-serif; }
+    .wine-badge { background: linear-gradient(135deg, #7B2D8B, #C0392B); }
+    .bid-btn { background: linear-gradient(135deg, #C0392B, #922B21); transition: all 0.2s; }
+    .bid-btn:hover { background: linear-gradient(135deg, #922B21, #7B241C); transform: translateY(-1px); }
+    .bid-btn:disabled { background: #9ca3af; transform: none; cursor: not-allowed; }
+    .timer-block { background: linear-gradient(135deg, #1a1a2e, #16213e); }
+    .timer-digit { font-size: 2.2rem; font-weight: 800; letter-spacing: 0.05em; }
+    .tag-vintage { background: #F3E8FF; color: #6B21A8; }
+    .tag-region { background: #FEF3C7; color: #92400E; }
+    .tag-grape { background: #DCFCE7; color: #166534; }
+    .winning { background: #F0FDF4; border-color: #22C55E; }
+    .losing { background: #FEF2F2; border-color: #EF4444; }
+    .modal-overlay { backdrop-filter: blur(4px); }
+    .bid-row:first-child td { background: #FFF7ED; }
+    .bid-row:nth-child(even) td { background: #F9FAFB; }
+    .score-badge { background: linear-gradient(135deg, #92400E, #D97706); }
+    .winemark { background: linear-gradient(135deg, #6B1A1A 0%, #9B2335 50%, #C0392B 100%); box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
+    .progress-bar { background: linear-gradient(90deg, #7B2D8B, #C0392B); }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-in { animation: fadeIn 0.3s ease; }
+    @keyframes priceUp { 0% { transform: scale(1.15); color: #16a34a; } 100% { transform: scale(1); color: inherit; } }
+    .price-update { animation: priceUp 0.6s ease; }
+    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.6; } }
+    .pulse { animation: pulse 1s infinite; }
+  </style>
+</head>
+<body class="bg-gray-50">
+
+  <!-- ヘッダー -->
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto px-4">
+      <div class="flex items-center h-14 gap-2">
+        <a href="/" class="text-gray-400 hover:text-gray-600 flex-shrink-0 p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        </a>
+        <a href="/" class="flex items-center gap-2 flex-shrink-0">
+          <div class="wine-badge text-white px-3 py-1 rounded-full text-sm font-bold">🍷 WINE</div>
+          <span class="text-gray-800 font-bold hidden sm:block">オークション</span>
+        </a>
+        <div class="ml-auto flex items-center gap-3">
+          <button id="watchBtn" onclick="toggleWatch()" class="text-gray-400 hover:text-red-500 transition p-1">
+            <svg class="w-6 h-6" id="watchIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+          </button>
+          <a href="/mypage" class="text-sm text-gray-600 hover:text-gray-900 hidden" id="mypageLinkHeader">マイページ</a>
+          <span class="text-sm text-gray-700 font-medium hidden max-w-24 truncate" id="headerUser"></span>
+          <a href="/login" class="bg-purple-700 text-white text-sm px-4 py-1.5 rounded-full hover:bg-purple-800 flex-shrink-0" id="headerLoginBtn">ログイン</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="max-w-6xl mx-auto px-4 py-6" id="mainContent">
+    <!-- ローディング -->
+    <div class="text-center py-20" id="loadingState">
+      <div class="text-4xl mb-4 pulse">🍷</div>
+      <p class="text-gray-500">読み込み中...</p>
+    </div>
+  </div>
+
+  <!-- 入札履歴モーダル -->
+  <div id="historyModal" class="fixed inset-0 z-50 hidden">
+    <div class="modal-overlay absolute inset-0 bg-black bg-opacity-50" onclick="closeHistory()"></div>
+    <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl flex flex-col fade-in">
+      <div class="flex items-center justify-between p-4 border-b border-gray-200">
+        <div>
+          <h2 class="font-bold text-gray-900">入札履歴</h2>
+          <p class="text-xs text-gray-500 mt-0.5" id="historySubtitle">読み込み中...</p>
+        </div>
+        <button onclick="closeHistory()" class="text-gray-400 hover:text-gray-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="p-4 bg-gray-50 border-b border-gray-200 grid grid-cols-3 gap-3 text-center text-sm" id="historyStats"></div>
+      <div class="flex-1 overflow-y-auto" id="historyList"></div>
+    </div>
+  </div>
+
+  <!-- 入札確認モーダル -->
+  <div id="bidModal" class="fixed inset-0 z-50 hidden items-center justify-center">
+    <div class="absolute inset-0 bg-black bg-opacity-50" onclick="closeBidModal()"></div>
+    <div class="relative bg-white rounded-2xl shadow-2xl p-6 mx-4 w-full max-w-sm fade-in">
+      <h2 class="font-bold text-gray-900 text-lg mb-1">入札の確認</h2>
+      <p class="text-gray-500 text-sm mb-4">以下の内容で入札します</p>
+      <div class="bg-gray-50 rounded-xl p-4 mb-4">
+        <div class="flex justify-between text-sm mb-2">
+          <span class="text-gray-500">商品</span>
+          <span class="font-medium text-gray-900 text-right text-xs max-w-32 truncate" id="confirmTitle"></span>
+        </div>
+        <div class="flex justify-between text-sm mb-2">
+          <span class="text-gray-500">現在の価格</span>
+          <span class="text-gray-700" id="confirmCurrentPrice"></span>
+        </div>
+        <div class="flex justify-between pt-2 border-t border-gray-200">
+          <span class="font-bold text-gray-900">入札金額</span>
+          <span class="font-bold text-2xl text-red-600" id="confirmBidPrice"></span>
+        </div>
+      </div>
+      <div class="bg-blue-50 rounded-lg p-3 mb-4 text-xs text-blue-700">
+        ⚠️ 落札した場合、購入義務が生じます。キャンセルはできません。
+      </div>
+      <div class="flex gap-3">
+        <button onclick="closeBidModal()" class="flex-1 border border-gray-300 rounded-xl py-3 text-gray-700 font-medium hover:bg-gray-50">キャンセル</button>
+        <button onclick="confirmBid()" id="confirmBidBtn" class="flex-1 bid-btn text-white rounded-xl py-3 font-bold">入札する</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- トースト -->
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-full text-sm font-medium shadow-lg z-50 hidden transition-all max-w-sm text-center"></div>
+
+  <script>
+    const token = localStorage.getItem('token');
+    const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
+    const auctionId = new URLSearchParams(location.search).get('id');
+    let auction = null;
+    let pendingBidAmount = 0;
+    let timerInterval = null;
+
+    // ヘッダー認証表示
+    if (currentUser) {
+      document.getElementById('headerLoginBtn').classList.add('hidden');
+      document.getElementById('headerUser').textContent = currentUser.display_name || currentUser.username;
+      document.getElementById('headerUser').classList.remove('hidden');
+      document.getElementById('mypageLinkHeader').classList.remove('hidden');
+    }
+
+    if (!auctionId) {
+      location.href = '/';
+    }
+
+    // Socket.io
+    let socket;
+    try {
+      socket = io();
+      socket.emit('join:auction', parseInt(auctionId));
+
+      socket.on('bid:new', (data) => {
+        if (data.auction_id !== parseInt(auctionId)) return;
+
+        const wasTopBidder = auction && auction.is_top_bidder;
+        updatePriceDisplay(data.new_price, data.bid_count, data.bidder_count);
+
+        if (data.extended) {
+          updateEndTime(data.end_time);
+        }
+
+        // 自分が最高入札者だったのに抜かれた場合
+        if (wasTopBidder && currentUser && data.bidder_id !== currentUser.id) {
+          showOutbidNotification(data.new_price);
+          // ステータスを更新
+          const statusBox = document.getElementById('bidStatusBox');
+          if (statusBox) {
+            statusBox.className = 'losing border rounded-lg p-3 flex items-center gap-2 mb-3';
+            statusBox.innerHTML = `
+              <svg class="w-4 h-4 text-red-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
+              <p class="text-sm text-red-700 font-medium" id="bidStatusText">入札を上回られました（¥${data.new_price.toLocaleString()}）</p>`;
+          }
+          if (auction) auction.is_top_bidder = false;
+        }
+      });
+
+      socket.on('auction:ended', (data) => {
+        if (data.auction_id !== parseInt(auctionId)) return;
+        showToast('🔔 このオークションは終了しました');
+        loadAuction();
+      });
+    } catch(e) {}
+
+    // オークション詳細取得
+    async function loadAuction() {
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      try {
+        const res = await fetch(`/api/auctions/${auctionId}`, { headers });
+        if (!res.ok) throw new Error('not found');
+        auction = await res.json();
+        renderPage(auction);
+      } catch(e) {
+        document.getElementById('loadingState').innerHTML = '<p class="text-gray-400 py-20 text-center">商品が見つかりませんでした</p>';
+      }
+    }
+
+    function renderPage(a) {
+      const isEnded = a.status !== 'active' || new Date(a.end_time) <= new Date();
+      const isSeller = currentUser && currentUser.id === a.seller_id;
+      const isTopBidder = a.is_top_bidder;
+      const minBid = a.current_price + 1000;
+      const progressPct = Math.min(100, ((a.current_price - a.starting_price) / Math.max(1, a.starting_price * 2)) * 100);
+
+      // ウォッチアイコン
+      if (a.is_watched) {
+        document.getElementById('watchIcon').setAttribute('fill', '#EF4444');
+        document.getElementById('watchIcon').setAttribute('stroke', '#EF4444');
+      }
+
+      // ステータス表示
+      let statusHtml = '';
+      if (isEnded) {
+        if (isTopBidder) {
+          statusHtml = `<div class="bg-green-50 border border-green-300 rounded-lg p-4 mb-3">
+            <p class="text-green-800 font-bold text-sm mb-1">🎉 おめでとうございます！落札しました</p>
+            <p class="text-green-700 text-xs mb-3">落札金額: ¥${a.current_price.toLocaleString()}</p>
+            <a href="/checkout?id=${a.id}" class="block w-full text-center bg-red-700 text-white py-2.5 rounded-lg font-bold text-sm hover:bg-red-800 transition">
+              💳 購入手続きへ →
+            </a>
+          </div>`;
+        } else {
+          statusHtml = `<div class="bg-gray-100 border border-gray-300 rounded-lg p-3 flex items-center gap-2 mb-3">
+            <span class="text-gray-500 text-sm">このオークションは終了しました</span>
+          </div>`;
+        }
+      } else if (!currentUser) {
+        statusHtml = `<div class="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center gap-2 mb-3">
+          <span class="text-blue-700 text-sm">入札するには <a href="/login" class="font-bold underline">ログイン</a> が必要です</span>
+        </div>`;
+      } else if (isSeller) {
+        statusHtml = `<div class="bg-yellow-50 border border-yellow-300 rounded-lg p-3 mb-3">
+          <span class="text-yellow-700 text-sm font-medium">📦 あなたの出品です</span>
+        </div>`;
+      } else if (isTopBidder) {
+        statusHtml = `<div class="winning border rounded-lg p-3 flex items-center gap-2 mb-3" id="bidStatusBox">
+          <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+          <p class="text-sm text-green-700 font-medium" id="bidStatusText">現在の最高入札者です（¥${a.current_price.toLocaleString()}）</p>
+        </div>`;
+      } else {
+        statusHtml = `<div class="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-3" id="bidStatusBox">
+          <p class="text-sm text-gray-600" id="bidStatusText">入札してみましょう</p>
+        </div>`;
+      }
+
+      // 入札フォーム
+      const bidFormHtml = (!isEnded && !isSeller) ? `
+        <div>
+          <div class="flex gap-2 mb-2">
+            <div class="relative flex-1">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">¥</span>
+              <input type="number" id="bidInput" placeholder="${minBid.toLocaleString()}以上" min="${minBid}" step="1000"
+                class="w-full border-2 border-gray-200 rounded-xl pl-7 pr-3 py-3 text-lg font-bold focus:outline-none focus:border-purple-500 transition"
+                ${!currentUser ? 'disabled onclick="location.href=\'/login\'"' : ''}>
+            </div>
+            <button onclick="${currentUser ? 'placeBid()' : 'location.href=\"/login\"'}" class="bid-btn text-white font-bold px-6 rounded-xl text-sm" id="bidSubmitBtn">
+              ${currentUser ? '入札する' : 'ログイン'}
+            </button>
+          </div>
+          <div class="flex gap-2 mb-2">
+            ${[minBid, a.current_price + 5000, a.current_price + 10000, a.current_price + 25000].map(amt => `
+              <button onclick="${currentUser ? `quickBid(${amt})` : 'location.href=\"/login\"'}" class="flex-1 text-xs border border-gray-200 rounded-lg py-2 hover:border-purple-400 hover:bg-purple-50 transition text-gray-600">
+                +¥${(amt - a.current_price).toLocaleString()}<br><span class="text-gray-400">¥${amt.toLocaleString()}</span>
+              </button>`).join('')}
+          </div>
+          <p class="text-xs text-gray-400 text-center">次の入札は ¥${minBid.toLocaleString()}以上</p>
+        </div>` : '';
+
+      document.getElementById('loadingState').classList.add('hidden');
+      document.getElementById('mainContent').innerHTML = `
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <!-- 左：画像 -->
+          <div>
+            <!-- メイン画像 -->
+            <div class="bg-gradient-to-br ${a.image_color} rounded-2xl h-80 flex items-center justify-center mb-2 relative overflow-hidden" id="mainImageBox">
+              ${(a.images && a.images.length > 0)
+                ? `<img src="${a.images[0].url}" alt="${a.title}" class="w-full h-full object-cover" id="mainImg">`
+                : a.image_url
+                  ? `<img src="${a.image_url}" alt="${a.title}" class="w-full h-full object-cover" id="mainImg">`
+                  : `<div class="text-center"><div class="text-8xl mb-3">${a.image_emoji}</div><p class="text-white text-sm opacity-80">${a.producer}</p></div>`}
+              <div class="winemark absolute top-3 right-3 text-white rounded-lg px-2 py-1 text-center" style="min-width:58px;">
+                <div style="font-size:10px;font-weight:900;letter-spacing:0.5px;line-height:1.5;">WineBank</div>
+                <div style="font-size:9px;line-height:1.3;">✓ 真贋済み</div>
+              </div>
+              ${a.score_rp ? `<div class="absolute top-3 left-3 score-badge text-white text-xs px-3 py-1 rounded-full font-bold">RP ${a.score_rp}点</div>` : ''}
+              <div class="absolute bottom-3 left-3 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">${a.volume_ml}ml${a.condition_note ? ' / ' + a.condition_note : ''}</div>
+            </div>
+
+            <!-- サムネイル一覧 -->
+            ${(a.images && a.images.length > 1) ? `
+            <div class="flex gap-2 mb-3 overflow-x-auto pb-1">
+              ${a.images.map((img, i) => `
+                <button onclick="switchImage('${img.url}', this)"
+                  class="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 ${i === 0 ? 'border-purple-500' : 'border-gray-200'} hover:border-purple-400 transition">
+                  <img src="${img.url}" alt="${img.label || ''}" class="w-full h-full object-cover">
+                </button>
+              `).join('')}
+            </div>
+            ` : ''}
+
+            <!-- 画像ラベル表示 -->
+            ${(a.images && a.images.length > 0) ? `
+            <div class="flex gap-1 mb-3 flex-wrap" id="imageLabels">
+              ${a.images.map((img, i) => img.label ? `
+                <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">${img.label}</span>
+              ` : '').join('')}
+            </div>` : ''}
+
+            <!-- ワイン詳細テーブル -->
+            <div class="bg-white rounded-xl border border-gray-200 p-4">
+              <h3 class="font-bold text-gray-800 mb-3 text-sm">ワイン詳細</h3>
+              <div class="grid grid-cols-2 gap-y-2 text-sm">
+                <div class="text-gray-500">生産者</div><div class="font-medium text-gray-900">${a.producer}</div>
+                ${a.vintage ? `<div class="text-gray-500">ヴィンテージ</div><div class="font-medium text-gray-900">${a.vintage}年</div>` : ''}
+                ${a.region ? `<div class="text-gray-500">産地</div><div class="font-medium text-gray-900">${a.region}</div>` : ''}
+                ${a.appellation ? `<div class="text-gray-500">アペラシオン</div><div class="font-medium text-gray-900">${a.appellation}</div>` : ''}
+                ${a.grape ? `<div class="text-gray-500">品種</div><div class="font-medium text-gray-900">${a.grape}</div>` : ''}
+                <div class="text-gray-500">容量</div><div class="font-medium text-gray-900">${a.volume_ml}ml</div>
+                ${a.condition_note ? `<div class="text-gray-500">保管状態</div><div class="font-medium text-gray-900">${a.condition_note}</div>` : ''}
+                ${(a.score_rp || a.score_ws) ? `<div class="text-gray-500">スコア</div><div class="font-medium text-gray-900">
+                  ${a.score_rp ? `<span class="score-badge text-white text-xs px-2 py-0.5 rounded">RP ${a.score_rp}</span>` : ''}
+                  ${a.score_ws ? `<span class="score-badge text-white text-xs px-2 py-0.5 rounded ml-1">WS ${a.score_ws}</span>` : ''}
+                </div>` : ''}
+              </div>
+            </div>
+          </div>
+
+          <!-- 右：入札 -->
+          <div>
+            <div class="flex flex-wrap gap-2 mb-2">
+              ${a.vintage ? `<span class="tag-vintage text-xs px-2 py-0.5 rounded-full">${a.vintage}</span>` : ''}
+              ${a.region ? `<span class="tag-region text-xs px-2 py-0.5 rounded-full">${a.region}</span>` : ''}
+              ${a.grape ? `<span class="tag-grape text-xs px-2 py-0.5 rounded-full">${a.grape.split('/')[0].trim()}</span>` : ''}
+            </div>
+            <h1 class="text-xl font-bold text-gray-900 mb-1">${a.title}</h1>
+            <p class="text-sm text-gray-500 mb-4">${a.producer}${a.appellation ? ' / ' + a.appellation : ''}</p>
+
+            <!-- タイマー -->
+            <div class="timer-block rounded-xl p-4 mb-4">
+              <div class="flex items-center justify-between mb-3">
+                <p class="text-gray-400 text-xs">${isEnded ? 'オークション終了' : 'オークション終了まで'}</p>
+                <p class="text-gray-400 text-xs" id="endDateLabel">${formatEndDate(a.end_time)}</p>
+              </div>
+              ${isEnded ? `<p class="text-center text-gray-400 py-2">終了しました</p>` : `
+              <div class="flex items-center gap-1 justify-center">
+                <div class="text-center"><div class="timer-digit text-white" id="timer-h">00</div><div class="text-gray-500 text-xs mt-1">時間</div></div>
+                <div class="timer-digit text-red-500 mb-4">:</div>
+                <div class="text-center"><div class="timer-digit text-white" id="timer-m">00</div><div class="text-gray-500 text-xs mt-1">分</div></div>
+                <div class="timer-digit text-red-500 mb-4">:</div>
+                <div class="text-center"><div class="timer-digit text-white" id="timer-s">00</div><div class="text-gray-500 text-xs mt-1">秒</div></div>
+              </div>
+              <p class="text-center text-gray-500 text-xs mt-2">※ 終了5分以内の入札で自動延長されます</p>`}
+            </div>
+
+            <!-- 価格 -->
+            <div class="bg-white rounded-xl border border-gray-200 p-4 mb-4">
+              <div class="flex items-center justify-between mb-3">
+                <div>
+                  <p class="text-xs text-gray-400 mb-0.5">現在の価格</p>
+                  <p class="text-3xl font-bold text-gray-900" id="currentPrice">¥${a.current_price.toLocaleString()}</p>
+                  <p class="text-xs text-gray-400 mt-0.5">開始価格 ¥${a.starting_price.toLocaleString()}</p>
+                </div>
+                <button onclick="openHistory()" class="text-sm text-purple-600 hover:text-purple-800 border border-purple-200 rounded-full px-3 py-1.5 hover:bg-purple-50 transition">
+                  入札履歴 <span id="bidCountBadge">${a.bid_count}</span>件 →
+                </button>
+              </div>
+              <div class="mb-3">
+                <div class="flex justify-between text-xs text-gray-400 mb-1">
+                  <span>¥${a.starting_price.toLocaleString()}</span>
+                  <span id="bidderCountLabel">入札者 ${a.bidder_count}人</span>
+                  <span id="maxPriceLabel">¥${(a.starting_price * 3).toLocaleString()}+</span>
+                </div>
+                <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                  <div class="progress-bar h-full rounded-full" id="progressBar" style="width: ${Math.max(5, progressPct)}%"></div>
+                </div>
+              </div>
+
+              ${statusHtml}
+              ${bidFormHtml}
+            </div>
+
+            <!-- 出品者 -->
+            <div class="bg-white rounded-xl border border-gray-200 p-4 mb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 font-bold text-lg">
+                  ${(a.seller_name || a.seller_username || '?')[0].toUpperCase()}
+                </div>
+                <div class="flex-1">
+                  <p class="font-medium text-gray-900 text-sm">${a.seller_name || a.seller_username}</p>
+                  <div class="flex items-center gap-2 text-xs text-gray-500">
+                    <span>⭐ ${(a.seller_rating || 5.0).toFixed(1)}</span>
+                    <span>・取引 ${a.seller_trade_count || 0}件</span>
+                    ${a.is_verified_seller ? '<span class="bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">認定セラー</span>' : ''}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 説明 -->
+            <div class="bg-white rounded-xl border border-gray-200 p-4">
+              <h3 class="font-bold text-gray-800 mb-2 text-sm">商品説明</h3>
+              <p class="text-sm text-gray-700 leading-relaxed whitespace-pre-line">${a.description || '説明なし'}</p>
+            </div>
+          </div>
+        </div>`;
+
+      // タイマー起動
+      if (!isEnded) startTimer(new Date(a.end_time));
+    }
+
+    function startTimer(endTime) {
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        const diff = endTime - new Date();
+        if (diff <= 0) {
+          clearInterval(timerInterval);
+          ['timer-h','timer-m','timer-s'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = '00';
+          });
+          showToast('🔔 オークションが終了しました');
+          return;
+        }
+        const h = Math.floor(diff / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        const s = Math.floor((diff % 60000) / 1000);
+        const hEl = document.getElementById('timer-h');
+        const mEl = document.getElementById('timer-m');
+        const sEl = document.getElementById('timer-s');
+        if (hEl) hEl.textContent = String(h).padStart(2,'0');
+        if (mEl) mEl.textContent = String(m).padStart(2,'0');
+        if (sEl) sEl.textContent = String(s).padStart(2,'0');
+      }, 1000);
+    }
+
+    function updateEndTime(newEndTime) {
+      auction.end_time = newEndTime;
+      const el = document.getElementById('endDateLabel');
+      if (el) el.textContent = formatEndDate(newEndTime);
+      startTimer(new Date(newEndTime));
+    }
+
+    function updatePriceDisplay(newPrice, bidCount, bidderCount) {
+      auction.current_price = newPrice;
+      const priceEl = document.getElementById('currentPrice');
+      if (priceEl) {
+        priceEl.textContent = '¥' + newPrice.toLocaleString();
+        priceEl.classList.remove('price-update');
+        void priceEl.offsetWidth;
+        priceEl.classList.add('price-update');
+      }
+      const badgeEl = document.getElementById('bidCountBadge');
+      if (badgeEl) badgeEl.textContent = bidCount;
+      const countEl = document.getElementById('bidderCountLabel');
+      if (countEl) countEl.textContent = `入札者 ${bidderCount}人`;
+    }
+
+    // 入札
+    let pendingBid = 0;
+
+    function quickBid(amount) {
+      document.getElementById('bidInput').value = amount;
+      placeBid();
+    }
+
+    function placeBid() {
+      if (!currentUser) { location.href = '/login'; return; }
+      const input = document.getElementById('bidInput');
+      const val = parseInt(input.value) || 0;
+      const minBid = auction.current_price + 1000;
+      if (val < minBid) {
+        input.classList.add('border-red-400');
+        showToast(`⚠️ ¥${minBid.toLocaleString()}以上を入力してください`, true);
+        return;
+      }
+      input.classList.remove('border-red-400');
+      pendingBid = val;
+      document.getElementById('confirmTitle').textContent = auction.title;
+      document.getElementById('confirmCurrentPrice').textContent = '¥' + auction.current_price.toLocaleString();
+      document.getElementById('confirmBidPrice').textContent = '¥' + val.toLocaleString();
+      document.getElementById('bidModal').classList.remove('hidden');
+      document.getElementById('bidModal').classList.add('flex');
+    }
+
+    function closeBidModal() {
+      document.getElementById('bidModal').classList.add('hidden');
+      document.getElementById('bidModal').classList.remove('flex');
+    }
+
+    async function confirmBid() {
+      const btn = document.getElementById('confirmBidBtn');
+      btn.textContent = '処理中...';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch(`/api/auctions/${auctionId}/bids`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ amount: pendingBid })
+        });
+        const data = await res.json();
+        closeBidModal();
+
+        if (!res.ok) {
+          showToast('❌ ' + data.error, true);
+          return;
+        }
+
+        updatePriceDisplay(data.new_price, data.bid_count, data.bidder_count);
+        if (data.extended) updateEndTime(data.end_time);
+
+        // ステータス更新
+        const statusBox = document.getElementById('bidStatusBox');
+        if (statusBox) {
+          statusBox.className = 'winning border rounded-lg p-3 flex items-center gap-2 mb-3';
+          statusBox.innerHTML = `
+            <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+            <p class="text-sm text-green-700 font-medium" id="bidStatusText">現在の最高入札者です（¥${data.new_price.toLocaleString()}）</p>`;
+        }
+
+        document.getElementById('bidInput').value = '';
+        showToast('✅ ' + data.message);
+      } catch(e) {
+        showToast('❌ 通信エラーが発生しました', true);
+      } finally {
+        btn.textContent = '入札する';
+        btn.disabled = false;
+      }
+    }
+
+    // 入札履歴
+    async function openHistory() {
+      document.getElementById('historyModal').classList.remove('hidden');
+      document.getElementById('historySubtitle').textContent = '読み込み中...';
+      document.getElementById('historyStats').innerHTML = '';
+      document.getElementById('historyList').innerHTML = '<p class="text-center text-gray-400 py-8">読み込み中...</p>';
+
+      try {
+        const res = await fetch(`/api/auctions/${auctionId}/bids`);
+        const data = await res.json();
+        const bids = data.bids || [];
+        const a = data.auction;
+
+        document.getElementById('historySubtitle').textContent = `${bids.length}件の入札`;
+        document.getElementById('historyStats').innerHTML = `
+          <div><p class="text-gray-500 text-xs mb-1">開始価格</p><p class="font-bold text-gray-900">¥${a.starting_price.toLocaleString()}</p></div>
+          <div><p class="text-gray-500 text-xs mb-1">現在の価格</p><p class="font-bold text-red-600 text-lg">¥${a.current_price.toLocaleString()}</p></div>
+          <div><p class="text-gray-500 text-xs mb-1">上昇率</p><p class="font-bold text-green-600">+${Math.round((a.current_price - a.starting_price) / a.starting_price * 100)}%</p></div>`;
+
+        if (!bids.length) {
+          document.getElementById('historyList').innerHTML = '<p class="text-center text-gray-400 py-8">まだ入札はありません</p>';
+          return;
+        }
+
+        document.getElementById('historyList').innerHTML = `
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 sticky top-0"><tr class="text-xs text-gray-500">
+              <th class="text-left px-4 py-2 font-medium">入札者</th>
+              <th class="text-right px-4 py-2 font-medium">金額</th>
+              <th class="text-right px-4 py-2 font-medium">日時</th>
+            </tr></thead>
+            <tbody>
+              ${bids.map((bid, i) => `
+                <tr class="bid-row border-b border-gray-100">
+                  <td class="px-4 py-3">
+                    <div class="flex items-center gap-2">
+                      <div class="w-7 h-7 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 text-xs font-bold">
+                        ${bid.display_name[0].toUpperCase()}
+                      </div>
+                      <div>
+                        <span class="text-gray-700">${bid.display_name}</span>
+                        ${bid.is_highest ? '<span class="ml-1 text-xs bg-amber-100 text-amber-700 px-1.5 rounded">最高入札</span>' : ''}
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-4 py-3 text-right ${bid.is_highest ? 'font-bold text-gray-900' : 'text-gray-700'}">¥${bid.amount.toLocaleString()}</td>
+                  <td class="px-4 py-3 text-right text-gray-400 text-xs">${formatRelativeTime(bid.created_at)}</td>
+                </tr>`).join('')}
+            </tbody>
+          </table>`;
+      } catch(e) {
+        document.getElementById('historyList').innerHTML = '<p class="text-center text-red-400 py-8">読み込みに失敗しました</p>';
+      }
+    }
+
+    function closeHistory() {
+      document.getElementById('historyModal').classList.add('hidden');
+    }
+
+    // ウォッチリスト
+    async function toggleWatch() {
+      if (!currentUser) { location.href = '/login'; return; }
+      try {
+        const res = await fetch(`/api/auctions/${auctionId}/watch`, {
+          method: 'POST', headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        const icon = document.getElementById('watchIcon');
+        if (data.watched) {
+          icon.setAttribute('fill', '#EF4444');
+          icon.setAttribute('stroke', '#EF4444');
+          showToast('❤️ ウォッチリストに追加しました');
+        } else {
+          icon.setAttribute('fill', 'none');
+          icon.setAttribute('stroke', 'currentColor');
+          showToast('ウォッチリストから削除しました');
+        }
+      } catch(e) {}
+    }
+
+    // 抜かれ通知（目立つバナー）
+    function showOutbidNotification(newPrice) {
+      const banner = document.createElement('div');
+      banner.className = 'fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-red-600 text-white px-6 py-4 rounded-xl shadow-2xl text-sm font-medium max-w-sm w-full mx-4 fade-in';
+      banner.innerHTML = `
+        <div class="flex items-start gap-3">
+          <span class="text-xl flex-shrink-0">⚠️</span>
+          <div>
+            <p class="font-bold mb-1">入札を上回られました！</p>
+            <p class="text-red-100">現在の最高入札額: ¥${newPrice.toLocaleString()}</p>
+            <p class="text-red-200 text-xs mt-1">入札を続けますか？</p>
+          </div>
+          <button onclick="this.parentElement.parentElement.remove()" class="ml-auto text-red-200 hover:text-white flex-shrink-0">✕</button>
+        </div>`;
+      document.body.appendChild(banner);
+      setTimeout(() => banner.remove(), 8000);
+    }
+
+    // 画像サムネイル切り替え
+    function switchImage(url, btn) {
+      const mainImg = document.getElementById('mainImg');
+      if (mainImg) mainImg.src = url;
+      document.querySelectorAll('#mainImageBox ~ div button').forEach(b => b.classList.replace('border-purple-500','border-gray-200'));
+      if (btn) btn.classList.replace('border-gray-200','border-purple-500');
+    }
+
+    // トースト
+    function showToast(msg, isError = false) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.className = `fixed bottom-6 left-1/2 -translate-x-1/2 ${isError ? 'bg-red-700' : 'bg-gray-900'} text-white px-6 py-3 rounded-full text-sm font-medium shadow-lg z-50 transition-all max-w-sm text-center`;
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 3500);
+    }
+
+    // ユーティリティ
+    function formatEndDate(dateStr) {
+      const d = new Date(dateStr);
+      return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')} 終了予定`;
+    }
+
+    function formatRelativeTime(dateStr) {
+      const diff = Date.now() - new Date(dateStr).getTime();
+      const m = Math.floor(diff / 60000);
+      const h = Math.floor(m / 60);
+      const day = Math.floor(h / 24);
+      if (day > 0) return `${day}日前`;
+      if (h > 0) return `${h}時間前`;
+      if (m > 0) return `${m}分前`;
+      return 'たった今';
+    }
+
+    // 初期ロード
+    loadAuction();
+  </script>
+</body>
+</html>

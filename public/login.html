@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ログイン / 新規登録 — ワインオークション</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
+    body { font-family: 'Noto Sans JP', sans-serif; }
+    .wine-bg { background: linear-gradient(135deg, #1a0a0a 0%, #3d0c0c 40%, #1a0a0a 100%); }
+    .card { backdrop-filter: blur(12px); }
+    .btn-primary { background: linear-gradient(135deg, #C0392B, #922B21); }
+    .btn-primary:hover { background: linear-gradient(135deg, #922B21, #7B241C); }
+    .input-field:focus { border-color: #C0392B; box-shadow: 0 0 0 3px rgba(192,57,43,0.15); }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-in { animation: fadeIn 0.5s ease; }
+  </style>
+</head>
+<body class="wine-bg min-h-screen flex items-center justify-center p-4">
+
+  <div class="w-full max-w-md fade-in">
+    <!-- ロゴ -->
+    <div class="text-center mb-8">
+      <a href="/" class="inline-flex items-center gap-3">
+        <div class="text-5xl">🍷</div>
+        <div class="text-left">
+          <div class="text-white font-bold text-2xl tracking-wide">WINE</div>
+          <div class="text-red-300 text-sm tracking-widest">AUCTION</div>
+        </div>
+      </a>
+    </div>
+
+    <!-- カード -->
+    <div class="bg-white bg-opacity-95 rounded-2xl shadow-2xl overflow-hidden">
+      <!-- タブ -->
+      <div class="flex">
+        <button id="tabLogin" onclick="switchTab('login')"
+          class="flex-1 py-4 text-center font-bold text-sm transition border-b-2 border-red-600 text-red-600">
+          ログイン
+        </button>
+        <button id="tabRegister" onclick="switchTab('register')"
+          class="flex-1 py-4 text-center font-bold text-sm transition border-b-2 border-transparent text-gray-400 hover:text-gray-600">
+          新規登録
+        </button>
+      </div>
+
+      <div class="p-6">
+        <!-- エラー表示 -->
+        <div id="errorBox" class="hidden bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3 mb-4"></div>
+        <div id="successBox" class="hidden bg-green-50 border border-green-200 text-green-700 text-sm rounded-lg px-4 py-3 mb-4"></div>
+
+        <!-- ログインフォーム -->
+        <form id="loginForm" onsubmit="handleLogin(event)">
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">メールアドレス</label>
+            <input type="email" id="loginEmail" required placeholder="wine@example.com"
+              class="input-field w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none transition">
+          </div>
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-1">パスワード</label>
+            <div class="relative">
+              <input type="password" id="loginPassword" required placeholder="パスワード"
+                class="input-field w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none transition pr-10">
+              <button type="button" onclick="togglePass('loginPassword')" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">表示</button>
+            </div>
+          </div>
+
+          <!-- テストアカウント -->
+          <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4 text-xs text-amber-700">
+            <p class="font-bold mb-1">🧪 テストアカウント</p>
+            <p>メール: <span class="font-mono cursor-pointer underline" onclick="fillTest()">lover@example.com</span></p>
+            <p>パスワード: <span class="font-mono">password123</span></p>
+            <button type="button" onclick="fillTest()" class="mt-1 text-amber-800 font-bold underline">→ 自動入力</button>
+          </div>
+
+          <button type="submit" id="loginBtn"
+            class="btn-primary w-full text-white font-bold py-3 rounded-xl transition">
+            ログイン
+          </button>
+        </form>
+
+        <!-- 登録フォーム -->
+        <form id="registerForm" class="hidden" onsubmit="handleRegister(event)">
+          <!-- 氏名 -->
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">氏名 <span class="text-red-500">*</span></label>
+            <div class="grid grid-cols-2 gap-2">
+              <input type="text" id="regLastName" required placeholder="山田"
+                class="input-field w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none transition">
+              <input type="text" id="regFirstName" required placeholder="太郎"
+                class="input-field w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none transition">
+            </div>
+            <p class="text-xs text-gray-400 mt-1">姓 ／ 名</p>
+          </div>
+          <!-- 携帯電話 -->
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">携帯電話番号 <span class="text-red-500">*</span></label>
+            <input type="tel" id="regPhone" required placeholder="090-1234-5678"
+              class="input-field w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none transition">
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">ユーザー名 <span class="text-red-500">*</span></label>
+            <input type="text" id="regUsername" required placeholder="half_alpha_only"
+              pattern="[a-zA-Z0-9_]+" title="半角英数字とアンダーバーのみ"
+              class="input-field w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none transition">
+            <p class="text-xs text-gray-400 mt-1">半角英数字とアンダーバーのみ（公開されます）</p>
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">メールアドレス <span class="text-red-500">*</span></label>
+            <input type="email" id="regEmail" required placeholder="wine@example.com"
+              class="input-field w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none transition">
+          </div>
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-1">パスワード <span class="text-red-500">*</span></label>
+            <div class="relative">
+              <input type="password" id="regPassword" required placeholder="6文字以上" minlength="6"
+                class="input-field w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none transition pr-10">
+              <button type="button" onclick="togglePass('regPassword')" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">表示</button>
+            </div>
+          </div>
+
+          <button type="submit" id="regBtn"
+            class="btn-primary w-full text-white font-bold py-3 rounded-xl transition">
+            新規登録
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <p class="text-center text-red-300 text-xs mt-4">
+      <a href="/" class="hover:text-white">← オークション一覧に戻る</a>
+    </p>
+  </div>
+
+  <script>
+    // ログイン済みなら一覧へ
+    if (localStorage.getItem('token')) {
+      location.href = '/';
+    }
+
+    function switchTab(tab) {
+      const isLogin = tab === 'login';
+      document.getElementById('loginForm').classList.toggle('hidden', !isLogin);
+      document.getElementById('registerForm').classList.toggle('hidden', isLogin);
+      document.getElementById('tabLogin').classList.toggle('border-red-600', isLogin);
+      document.getElementById('tabLogin').classList.toggle('text-red-600', isLogin);
+      document.getElementById('tabLogin').classList.toggle('border-transparent', !isLogin);
+      document.getElementById('tabLogin').classList.toggle('text-gray-400', !isLogin);
+      document.getElementById('tabRegister').classList.toggle('border-red-600', !isLogin);
+      document.getElementById('tabRegister').classList.toggle('text-red-600', !isLogin);
+      document.getElementById('tabRegister').classList.toggle('border-transparent', isLogin);
+      document.getElementById('tabRegister').classList.toggle('text-gray-400', isLogin);
+      hideMessages();
+    }
+
+    function fillTest() {
+      document.getElementById('loginEmail').value = 'lover@example.com';
+      document.getElementById('loginPassword').value = 'password123';
+    }
+
+    function togglePass(id) {
+      const el = document.getElementById(id);
+      el.type = el.type === 'password' ? 'text' : 'password';
+    }
+
+    function showError(msg) {
+      const box = document.getElementById('errorBox');
+      box.textContent = msg;
+      box.classList.remove('hidden');
+      document.getElementById('successBox').classList.add('hidden');
+    }
+
+    function showSuccess(msg) {
+      const box = document.getElementById('successBox');
+      box.textContent = msg;
+      box.classList.remove('hidden');
+      document.getElementById('errorBox').classList.add('hidden');
+    }
+
+    function hideMessages() {
+      document.getElementById('errorBox').classList.add('hidden');
+      document.getElementById('successBox').classList.add('hidden');
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const btn = document.getElementById('loginBtn');
+      btn.textContent = '処理中...';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: document.getElementById('loginEmail').value,
+            password: document.getElementById('loginPassword').value
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        showSuccess('ログインしました。リダイレクト中...');
+        setTimeout(() => { location.href = '/'; }, 800);
+      } catch (err) {
+        showError(err.message);
+        btn.textContent = 'ログイン';
+        btn.disabled = false;
+      }
+    }
+
+    async function handleRegister(e) {
+      e.preventDefault();
+      const btn = document.getElementById('regBtn');
+      btn.textContent = '処理中...';
+      btn.disabled = true;
+
+      try {
+        const lastName = document.getElementById('regLastName').value.trim();
+        const firstName = document.getElementById('regFirstName').value.trim();
+        const full_name = lastName + ' ' + firstName;
+        const phone = document.getElementById('regPhone').value.trim();
+
+        const res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: document.getElementById('regUsername').value,
+            email: document.getElementById('regEmail').value,
+            password: document.getElementById('regPassword').value,
+            display_name: document.getElementById('regUsername').value,
+            full_name,
+            phone
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        showSuccess('登録完了！リダイレクト中...');
+        setTimeout(() => { location.href = '/'; }, 800);
+      } catch (err) {
+        showError(err.message);
+        btn.textContent = '新規登録';
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>

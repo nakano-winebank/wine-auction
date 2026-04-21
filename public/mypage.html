@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>マイページ — ワインオークション</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
+    body { font-family: 'Noto Sans JP', sans-serif; }
+    .wine-badge { background: linear-gradient(135deg, #7B2D8B, #C0392B); }
+    .tab-active { border-bottom: 2px solid #C0392B; color: #C0392B; font-weight: 700; }
+    .tab-inactive { border-bottom: 2px solid transparent; color: #6B7280; }
+    .winning-row { background: #F0FDF4; }
+    .losing-row { background: #FEF2F2; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-in { animation: fadeIn 0.3s ease; }
+    .score-badge { background: linear-gradient(135deg, #92400E, #D97706); }
+    .skeleton { background: linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.2s infinite; }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+  </style>
+</head>
+<body class="bg-gray-50">
+
+  <!-- ヘッダー -->
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-40">
+    <div class="max-w-4xl mx-auto px-4">
+      <div class="flex items-center h-14 gap-3">
+        <a href="/" class="text-gray-400 hover:text-gray-600 p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        </a>
+        <a href="/" class="flex items-center gap-2">
+          <div class="wine-badge text-white px-3 py-1 rounded-full text-sm font-bold">🍷 WINE</div>
+          <span class="font-bold text-gray-800 hidden sm:block">オークション</span>
+        </a>
+        <span class="font-bold text-gray-700 ml-1">マイページ</span>
+        <div class="ml-auto flex items-center gap-3">
+          <a href="/sell" class="bg-red-700 text-white text-sm px-4 py-1.5 rounded-full hover:bg-red-800">出品する</a>
+          <button onclick="logout()" class="text-sm text-gray-500 hover:text-gray-700">ログアウト</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="max-w-4xl mx-auto px-4 py-6" id="mainContent">
+    <!-- ローディング -->
+    <div class="text-center py-16" id="loadingState">
+      <div class="text-4xl mb-3 animate-pulse">🍷</div>
+      <p class="text-gray-500">読み込み中...</p>
+    </div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('token');
+    const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
+    if (!token) { location.href = '/login'; }
+
+    function logout() {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      location.href = '/';
+    }
+
+    async function loadMyPage() {
+      try {
+        const res = await fetch('/api/mypage', { headers: { Authorization: `Bearer ${token}` } });
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        renderPage(data);
+      } catch(e) {
+        document.getElementById('loadingState').innerHTML = '<p class="text-gray-400 py-20 text-center">データの取得に失敗しました</p>';
+      }
+    }
+
+    function renderPage({ user, bidding, selling, watchlist }) {
+      document.getElementById('loadingState').classList.add('hidden');
+
+      const activeWin = bidding.filter(a => a.status === 'active' && a.is_top_bidder).length;
+      const activeLose = bidding.filter(a => a.status === 'active' && !a.is_top_bidder).length;
+
+      document.getElementById('mainContent').innerHTML = `
+        <!-- プロフィールカード -->
+        <div class="bg-white rounded-2xl border border-gray-200 p-5 mb-6 fade-in">
+          <div class="flex items-center gap-4">
+            <div class="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-red-500 flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">
+              ${(user.display_name || user.username)[0].toUpperCase()}
+            </div>
+            <div class="flex-1">
+              <div class="flex items-center gap-2 flex-wrap">
+                <h1 class="font-bold text-gray-900 text-lg">${user.display_name || user.username}</h1>
+                ${user.is_verified_seller ? '<span class="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded">認定セラー</span>' : ''}
+              </div>
+              <p class="text-sm text-gray-500">@${user.username}</p>
+              <div class="flex gap-4 mt-2 text-sm">
+                <span class="text-gray-600">⭐ ${user.rating.toFixed(1)}</span>
+                <span class="text-gray-600">取引 ${user.trade_count}件</span>
+                <span class="text-gray-600">登録 ${new Date(user.created_at).toLocaleDateString('ja-JP')}</span>
+              </div>
+            </div>
+            <div class="grid grid-cols-3 gap-3 text-center flex-shrink-0 hidden sm:grid">
+              <div class="bg-green-50 rounded-xl p-3">
+                <p class="text-2xl font-bold text-green-700">${activeWin}</p>
+                <p class="text-xs text-green-600 mt-1">最高入札中</p>
+              </div>
+              <div class="bg-red-50 rounded-xl p-3">
+                <p class="text-2xl font-bold text-red-600">${activeLose}</p>
+                <p class="text-xs text-red-500 mt-1">抜かれ中</p>
+              </div>
+              <div class="bg-purple-50 rounded-xl p-3">
+                <p class="text-2xl font-bold text-purple-700">${watchlist.length}</p>
+                <p class="text-xs text-purple-600 mt-1">ウォッチ中</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- タブ -->
+        <div class="flex border-b border-gray-200 mb-4 overflow-x-auto">
+          <button onclick="switchTab('bidding')" id="tab-bidding"
+            class="tab-active px-4 py-3 text-sm transition whitespace-nowrap">
+            入札中 <span class="ml-1 bg-red-100 text-red-700 text-xs px-1.5 py-0.5 rounded-full">${bidding.filter(a=>a.status==='active').length}</span>
+          </button>
+          <button onclick="switchTab('selling')" id="tab-selling"
+            class="tab-inactive px-4 py-3 text-sm transition whitespace-nowrap">
+            出品中 <span class="ml-1 bg-gray-100 text-gray-600 text-xs px-1.5 py-0.5 rounded-full">${selling.filter(a=>a.status==='active').length}</span>
+          </button>
+          <button onclick="switchTab('watchlist')" id="tab-watchlist"
+            class="tab-inactive px-4 py-3 text-sm transition whitespace-nowrap">
+            ウォッチ <span class="ml-1 bg-purple-100 text-purple-700 text-xs px-1.5 py-0.5 rounded-full">${watchlist.length}</span>
+          </button>
+          <button onclick="switchTab('ended')" id="tab-ended"
+            class="tab-inactive px-4 py-3 text-sm transition whitespace-nowrap">終了済み</button>
+          <button onclick="switchTab('profile')" id="tab-profile"
+            class="tab-inactive px-4 py-3 text-sm transition whitespace-nowrap">プロフィール</button>
+        </div>
+
+        <!-- コンテンツ -->
+        <div id="tab-content-bidding" class="tab-content fade-in">
+          ${renderAuctionList(bidding.filter(a=>a.status==='active'), 'bidding')}
+        </div>
+        <div id="tab-content-selling" class="tab-content hidden">
+          ${renderAuctionList(selling.filter(a=>a.status==='active'), 'selling')}
+        </div>
+        <div id="tab-content-watchlist" class="tab-content hidden">
+          ${renderAuctionList(watchlist.filter(a=>a.status==='active'), 'watchlist')}
+        </div>
+        <div id="tab-content-ended" class="tab-content hidden">
+          ${renderAuctionList([...bidding, ...selling].filter(a=>a.status!=='active'), 'ended')}
+        </div>
+        <div id="tab-content-profile" class="tab-content hidden fade-in">
+          ${renderProfileTab(user)}
+        </div>
+      `;
+    }
+
+    function renderAuctionList(auctions, type) {
+      if (!auctions.length) {
+        const msgs = {
+          bidding: '入札中のオークションはありません',
+          selling: '出品中のアイテムはありません',
+          watchlist: 'ウォッチ中のオークションはありません',
+          ended: '終了済みのオークションはありません'
+        };
+        return `<div class="text-center py-12 text-gray-400">
+          <div class="text-4xl mb-3">🍷</div>
+          <p class="text-sm">${msgs[type]}</p>
+          ${type === 'selling' ? '<a href="/sell" class="mt-3 inline-block text-sm text-red-600 font-medium underline">出品してみる →</a>' : ''}
+          ${type === 'watchlist' ? '<a href="/" class="mt-3 inline-block text-sm text-purple-600 font-medium underline">オークションを見る →</a>' : ''}
+        </div>`;
+      }
+
+      return auctions.map(a => {
+        const isActive = a.status === 'active';
+        const diffMs = new Date(a.end_time) - new Date();
+        const isWinning = type === 'bidding' && a.is_top_bidder;
+        const isLosing = type === 'bidding' && !a.is_top_bidder;
+
+        let statusBadge = '';
+        if (type === 'bidding') {
+          statusBadge = isWinning
+            ? '<span class="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full font-medium">✓ 最高入札中</span>'
+            : '<span class="bg-red-100 text-red-600 text-xs px-2 py-0.5 rounded-full font-medium">⚠ 抜かれています</span>';
+        } else if (type === 'selling') {
+          statusBadge = `<span class="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full">入札 ${a.bid_count}件</span>`;
+        } else if (!isActive) {
+          statusBadge = '<span class="bg-gray-100 text-gray-500 text-xs px-2 py-0.5 rounded-full">終了</span>';
+        }
+
+        const rowClass = isWinning ? 'winning-row' : isLosing ? 'losing-row' : '';
+
+        return `
+          <a href="/detail?id=${a.id}" class="flex items-center gap-4 p-4 bg-white rounded-xl border border-gray-200 hover:border-purple-300 transition mb-3 ${rowClass}">
+            <div class="bg-gradient-to-br ${a.image_color} w-16 h-16 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
+              ${a.image_emoji}
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 flex-wrap mb-1">
+                ${statusBadge}
+                ${isActive && diffMs < 3600000 ? `<span class="text-red-500 text-xs font-medium">残り ${formatTime(diffMs)}</span>` : ''}
+              </div>
+              <p class="font-medium text-gray-900 text-sm truncate">${a.title}</p>
+              <p class="text-xs text-gray-500 mt-0.5">${a.producer}${a.vintage ? ' ' + a.vintage : ''}</p>
+            </div>
+            <div class="text-right flex-shrink-0">
+              <p class="font-bold text-gray-900">¥${a.current_price.toLocaleString()}</p>
+              ${type === 'bidding' ? `<p class="text-xs text-gray-400 mt-0.5">自分: ¥${(a.my_highest_bid||0).toLocaleString()}</p>` : ''}
+              ${type === 'selling' ? `<p class="text-xs text-gray-400 mt-0.5">入札者 ${a.bidder_count}人</p>` : ''}
+              <p class="text-xs text-gray-400">${isActive ? formatEndDate(a.end_time) : '終了済み'}</p>
+            </div>
+          </a>`;
+      }).join('');
+    }
+
+    function switchTab(name) {
+      ['bidding', 'selling', 'watchlist', 'ended', 'profile'].forEach(t => {
+        document.getElementById(`tab-${t}`).className = t === name
+          ? 'tab-active px-4 py-3 text-sm transition whitespace-nowrap'
+          : 'tab-inactive px-4 py-3 text-sm transition whitespace-nowrap';
+        const content = document.getElementById(`tab-content-${t}`);
+        if (content) content.classList.toggle('hidden', t !== name);
+      });
+    }
+
+    function renderProfileTab(user) {
+      const licenseStatus = user.license_verified
+        ? '<span class="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full font-medium">✓ 確認済み</span>'
+        : user.license_image_url
+          ? '<span class="bg-yellow-100 text-yellow-700 text-xs px-2 py-0.5 rounded-full font-medium">⏳ 審査中</span>'
+          : '<span class="bg-gray-100 text-gray-500 text-xs px-2 py-0.5 rounded-full">未提出</span>';
+
+      return `
+        <!-- プロフィール編集 -->
+        <div class="bg-white rounded-2xl border border-gray-200 p-5 mb-4">
+          <h3 class="font-bold text-gray-800 mb-4">👤 基本情報</h3>
+          <div class="space-y-3">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">姓</label>
+                <input type="text" id="profileLastName" placeholder="山田"
+                  value="${user.full_name ? user.full_name.split(' ')[0] : ''}"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500">
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">名</label>
+                <input type="text" id="profileFirstName" placeholder="太郎"
+                  value="${user.full_name ? user.full_name.split(' ').slice(1).join(' ') : ''}"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500">
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1">携帯電話番号</label>
+              <input type="tel" id="profilePhone" placeholder="090-1234-5678"
+                value="${user.phone || ''}"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1">表示名</label>
+              <input type="text" id="profileDisplayName" placeholder="WineCollector_Tokyo"
+                value="${user.display_name || ''}"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500">
+            </div>
+          </div>
+          <button onclick="saveProfile()" id="saveProfileBtn"
+            class="mt-4 bg-purple-700 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-purple-800 transition">
+            保存する
+          </button>
+          <p id="profileMsg" class="text-sm mt-2 hidden"></p>
+        </div>
+
+        <!-- 本人確認 -->
+        <div class="bg-white rounded-2xl border border-gray-200 p-5 mb-4">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-bold text-gray-800">🪪 本人確認書類</h3>
+            ${licenseStatus}
+          </div>
+          <p class="text-sm text-gray-500 mb-4">運転免許証・マイナンバーカード・パスポートのいずれかをアップロードしてください。</p>
+          ${user.license_image_url
+            ? `<div class="mb-3"><img src="${user.license_image_url}" class="w-48 h-32 object-cover rounded-lg border border-gray-200" alt="本人確認書類"></div>`
+            : ''}
+          <label class="flex items-center gap-3 border-2 border-dashed border-gray-300 rounded-xl p-4 cursor-pointer hover:border-purple-400 transition">
+            <input type="file" id="licenseFile" accept="image/*" class="hidden" onchange="uploadLicense(this)">
+            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <div>
+              <p class="text-sm font-medium text-gray-700">書類の写真をアップロード</p>
+              <p class="text-xs text-gray-400 mt-0.5">JPG / PNG / WebP（5MBまで）</p>
+            </div>
+          </label>
+          <p id="licenseMsg" class="text-sm mt-2 hidden"></p>
+        </div>
+
+        <!-- 支払い方法 -->
+        <div class="bg-white rounded-2xl border border-gray-200 p-5 mb-4">
+          <h3 class="font-bold text-gray-800 mb-3">💳 支払い方法</h3>
+          <div class="bg-gray-50 rounded-xl p-4 text-center">
+            <p class="text-sm text-gray-500 mb-1">クレジットカードの事前登録</p>
+            <p class="text-xs text-gray-400">Stripe決済を本番設定後、落札時にワンタップで支払えるようになります。</p>
+            <div class="mt-3 inline-flex items-center gap-2 text-xs text-gray-400 border border-gray-200 rounded-lg px-3 py-1.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+              Stripeによる安全な保管
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    async function saveProfile() {
+      const btn = document.getElementById('saveProfileBtn');
+      const msg = document.getElementById('profileMsg');
+      btn.disabled = true;
+      btn.textContent = '保存中...';
+
+      const lastName = document.getElementById('profileLastName').value.trim();
+      const firstName = document.getElementById('profileFirstName').value.trim();
+      const full_name = (lastName + ' ' + firstName).trim();
+
+      try {
+        const res = await fetch('/api/mypage/profile', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+          body: JSON.stringify({
+            full_name: full_name || null,
+            phone: document.getElementById('profilePhone').value.trim() || null,
+            display_name: document.getElementById('profileDisplayName').value.trim() || null
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+
+        msg.textContent = '✓ 保存しました';
+        msg.className = 'text-sm mt-2 text-green-600';
+        msg.classList.remove('hidden');
+        setTimeout(() => msg.classList.add('hidden'), 3000);
+      } catch(e) {
+        msg.textContent = e.message;
+        msg.className = 'text-sm mt-2 text-red-500';
+        msg.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '保存する';
+      }
+    }
+
+    async function uploadLicense(input) {
+      const file = input.files[0];
+      if (!file) return;
+      const msg = document.getElementById('licenseMsg');
+
+      const formData = new FormData();
+      formData.append('image', file);
+
+      try {
+        msg.textContent = 'アップロード中...';
+        msg.className = 'text-sm mt-2 text-gray-500';
+        msg.classList.remove('hidden');
+
+        const res = await fetch('/api/upload/image', {
+          method: 'POST',
+          headers: { Authorization: 'Bearer ' + token },
+          body: formData
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+
+        const res2 = await fetch('/api/mypage/license', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+          body: JSON.stringify({ url: data.url })
+        });
+        const data2 = await res2.json();
+        if (!res2.ok) throw new Error(data2.error);
+
+        msg.textContent = '✓ ' + data2.message;
+        msg.className = 'text-sm mt-2 text-green-600';
+        setTimeout(() => location.reload(), 1500);
+      } catch(e) {
+        msg.textContent = e.message;
+        msg.className = 'text-sm mt-2 text-red-500';
+      }
+    }
+
+    function formatTime(ms) {
+      const h = Math.floor(ms / 3600000);
+      const m = Math.floor((ms % 3600000) / 60000);
+      if (h > 0) return `${h}時間${m}分`;
+      return `${m}分`;
+    }
+
+    function formatEndDate(dateStr) {
+      const d = new Date(dateStr);
+      const diff = d - new Date();
+      if (diff < 24 * 3600000) return `残り ${formatTime(diff)}`;
+      return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}終了`;
+    }
+
+    loadMyPage();
+  </script>
+</body>
+</html>

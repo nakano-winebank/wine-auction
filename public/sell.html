@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ワインを出品 — ワインオークション</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
+    body { font-family: 'Noto Sans JP', sans-serif; }
+    .wine-badge { background: linear-gradient(135deg, #7B2D8B, #C0392B); }
+    .btn-primary { background: linear-gradient(135deg, #C0392B, #922B21); transition: all 0.2s; }
+    .btn-primary:hover { background: linear-gradient(135deg, #922B21, #7B241C); }
+    .input-field:focus { border-color: #7B2D8B; box-shadow: 0 0 0 3px rgba(123,45,139,0.12); }
+    .preview-card { background: linear-gradient(135deg, #1a1a2e, #16213e); }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-in { animation: fadeIn 0.3s ease; }
+  </style>
+</head>
+<body class="bg-gray-50">
+
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-40">
+    <div class="max-w-4xl mx-auto px-4">
+      <div class="flex items-center gap-3 h-14">
+        <a href="/" class="text-gray-400 hover:text-gray-600">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+        </a>
+        <div class="wine-badge text-white px-3 py-1 rounded-full text-sm font-bold">🍷 WINE</div>
+        <span class="text-gray-800 font-bold">ワインを出品する</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="max-w-4xl mx-auto px-4 py-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+      <!-- フォーム（左2列） -->
+      <div class="lg:col-span-2">
+        <div id="errorBox" class="hidden bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3 mb-4"></div>
+
+        <form onsubmit="handleSubmit(event)" class="space-y-5">
+
+          <!-- ワイン基本情報 -->
+          <div class="bg-white rounded-xl border border-gray-200 p-5">
+            <h2 class="font-bold text-gray-900 mb-4">🍷 ワイン情報</h2>
+
+            <!-- 複数画像アップロード -->
+            <div class="mb-5">
+              <label class="block text-sm font-medium text-gray-700 mb-1">ワイン写真 <span class="text-xs text-gray-400">（最大6枚）</span></label>
+              <p class="text-xs text-gray-400 mb-3">正面・背面（裏ラベル）・キャップシールの3枚以上を推奨。最初の1枚がメイン画像になります。</p>
+
+              <!-- スロット一覧 -->
+              <div class="grid grid-cols-3 gap-3" id="imageSlots">
+                <!-- 正面 -->
+                <div class="image-slot" data-slot="0" data-label="正面">
+                  <div class="slot-area border-2 border-dashed border-gray-300 rounded-xl aspect-square flex flex-col items-center justify-center cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition relative overflow-hidden"
+                    onclick="triggerSlot(0)">
+                    <div class="slot-placeholder text-center p-2">
+                      <div class="text-2xl mb-1">📷</div>
+                      <p class="text-xs text-gray-500 font-medium">正面</p>
+                      <p class="text-xs text-gray-400">メイン</p>
+                    </div>
+                    <div class="slot-preview hidden w-full h-full absolute inset-0">
+                      <img src="" alt="" class="slot-img w-full h-full object-cover">
+                      <button type="button" onclick="removeSlot(event,0)" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600">✕</button>
+                    </div>
+                    <div class="slot-loading hidden absolute inset-0 bg-white/80 flex items-center justify-center">
+                      <div class="text-xl animate-pulse">⏳</div>
+                    </div>
+                  </div>
+                </div>
+                <!-- 背面 -->
+                <div class="image-slot" data-slot="1" data-label="背面（裏ラベル）">
+                  <div class="slot-area border-2 border-dashed border-gray-300 rounded-xl aspect-square flex flex-col items-center justify-center cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition relative overflow-hidden"
+                    onclick="triggerSlot(1)">
+                    <div class="slot-placeholder text-center p-2">
+                      <div class="text-2xl mb-1">🏷️</div>
+                      <p class="text-xs text-gray-500 font-medium">背面</p>
+                      <p class="text-xs text-gray-400">裏ラベル</p>
+                    </div>
+                    <div class="slot-preview hidden w-full h-full absolute inset-0">
+                      <img src="" alt="" class="slot-img w-full h-full object-cover">
+                      <button type="button" onclick="removeSlot(event,1)" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600">✕</button>
+                    </div>
+                    <div class="slot-loading hidden absolute inset-0 bg-white/80 flex items-center justify-center">
+                      <div class="text-xl animate-pulse">⏳</div>
+                    </div>
+                  </div>
+                </div>
+                <!-- キャップシール -->
+                <div class="image-slot" data-slot="2" data-label="キャップシール">
+                  <div class="slot-area border-2 border-dashed border-gray-300 rounded-xl aspect-square flex flex-col items-center justify-center cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition relative overflow-hidden"
+                    onclick="triggerSlot(2)">
+                    <div class="slot-placeholder text-center p-2">
+                      <div class="text-2xl mb-1">🔒</div>
+                      <p class="text-xs text-gray-500 font-medium">キャップ</p>
+                      <p class="text-xs text-gray-400">シール</p>
+                    </div>
+                    <div class="slot-preview hidden w-full h-full absolute inset-0">
+                      <img src="" alt="" class="slot-img w-full h-full object-cover">
+                      <button type="button" onclick="removeSlot(event,2)" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600">✕</button>
+                    </div>
+                    <div class="slot-loading hidden absolute inset-0 bg-white/80 flex items-center justify-center">
+                      <div class="text-xl animate-pulse">⏳</div>
+                    </div>
+                  </div>
+                </div>
+                <!-- 追加スロット 3-5 -->
+                <div class="image-slot" data-slot="3" data-label="追加写真1">
+                  <div class="slot-area border-2 border-dashed border-gray-200 rounded-xl aspect-square flex flex-col items-center justify-center cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition relative overflow-hidden"
+                    onclick="triggerSlot(3)">
+                    <div class="slot-placeholder text-center p-2">
+                      <div class="text-xl mb-1 text-gray-300">＋</div>
+                      <p class="text-xs text-gray-400">追加</p>
+                    </div>
+                    <div class="slot-preview hidden w-full h-full absolute inset-0">
+                      <img src="" alt="" class="slot-img w-full h-full object-cover">
+                      <button type="button" onclick="removeSlot(event,3)" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600">✕</button>
+                    </div>
+                    <div class="slot-loading hidden absolute inset-0 bg-white/80 flex items-center justify-center">
+                      <div class="text-xl animate-pulse">⏳</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="image-slot" data-slot="4" data-label="追加写真2">
+                  <div class="slot-area border-2 border-dashed border-gray-200 rounded-xl aspect-square flex flex-col items-center justify-center cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition relative overflow-hidden"
+                    onclick="triggerSlot(4)">
+                    <div class="slot-placeholder text-center p-2">
+                      <div class="text-xl mb-1 text-gray-300">＋</div>
+                      <p class="text-xs text-gray-400">追加</p>
+                    </div>
+                    <div class="slot-preview hidden w-full h-full absolute inset-0">
+                      <img src="" alt="" class="slot-img w-full h-full object-cover">
+                      <button type="button" onclick="removeSlot(event,4)" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600">✕</button>
+                    </div>
+                    <div class="slot-loading hidden absolute inset-0 bg-white/80 flex items-center justify-center">
+                      <div class="text-xl animate-pulse">⏳</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="image-slot" data-slot="5" data-label="追加写真3">
+                  <div class="slot-area border-2 border-dashed border-gray-200 rounded-xl aspect-square flex flex-col items-center justify-center cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition relative overflow-hidden"
+                    onclick="triggerSlot(5)">
+                    <div class="slot-placeholder text-center p-2">
+                      <div class="text-xl mb-1 text-gray-300">＋</div>
+                      <p class="text-xs text-gray-400">追加</p>
+                    </div>
+                    <div class="slot-preview hidden w-full h-full absolute inset-0">
+                      <img src="" alt="" class="slot-img w-full h-full object-cover">
+                      <button type="button" onclick="removeSlot(event,5)" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600">✕</button>
+                    </div>
+                    <div class="slot-loading hidden absolute inset-0 bg-white/80 flex items-center justify-center">
+                      <div class="text-xl animate-pulse">⏳</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <input type="file" id="slotFileInput" accept="image/*" class="hidden">
+            </div>
+
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-1">商品タイトル <span class="text-red-500">*</span></label>
+              <input type="text" id="title" required placeholder="例: シャトー・マルゴー 2015 750ml"
+                class="input-field w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none transition" oninput="updatePreview()">
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">生産者 <span class="text-red-500">*</span></label>
+                <input type="text" id="producer" required placeholder="Château Margaux"
+                  class="input-field w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none transition" oninput="updatePreview()">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">ヴィンテージ</label>
+                <input type="number" id="vintage" placeholder="2015" min="1800" max="2030"
+                  class="input-field w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none transition" oninput="updatePreview()">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">産地</label>
+                <input type="text" id="region" placeholder="フランス / ボルドー"
+                  class="input-field w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none transition">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">アペラシオン</label>
+                <input type="text" id="appellation" placeholder="Margaux AOC 1er Grand Cru"
+                  class="input-field w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none transition">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">ブドウ品種</label>
+                <input type="text" id="grape" placeholder="Cab.S 87% / Merlot 8%"
+                  class="input-field w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none transition">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">容量</label>
+                <select id="volume_ml" class="input-field w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none transition">
+                  <option value="375">375ml（ハーフ）</option>
+                  <option value="750" selected>750ml（標準）</option>
+                  <option value="1500">1500ml（マグナム）</option>
+                  <option value="3000">3000ml（ジェロボアム）</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-1">ワインタイプ</label>
+              <div class="flex gap-2">
+                <label class="flex-1"><input type="radio" name="wine_type" value="red" checked class="mr-1">赤ワイン</label>
+                <label class="flex-1"><input type="radio" name="wine_type" value="white" class="mr-1">白ワイン</label>
+                <label class="flex-1"><input type="radio" name="wine_type" value="sparkling" class="mr-1">スパークリング</label>
+                <label class="flex-1"><input type="radio" name="wine_type" value="rose" class="mr-1">ロゼ</label>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">RPスコア</label>
+                <input type="number" id="score_rp" placeholder="98" min="50" max="100"
+                  class="input-field w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none transition">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">WSスコア</label>
+                <input type="number" id="score_ws" placeholder="97" min="50" max="100"
+                  class="input-field w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none transition">
+              </div>
+            </div>
+          </div>
+
+          <!-- 保管・状態 -->
+          <div class="bg-white rounded-xl border border-gray-200 p-5">
+            <h2 class="font-bold text-gray-900 mb-4">📦 保管・状態</h2>
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-1">保管状態</label>
+              <input type="text" id="condition_note" placeholder="未開封 / 温度管理済みセラー保管"
+                class="input-field w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none transition">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">商品説明</label>
+              <textarea id="description" rows="4" placeholder="商品の詳細、保管履歴、購入経緯など"
+                class="input-field w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none transition resize-none"></textarea>
+            </div>
+          </div>
+
+          <!-- オークション設定 -->
+          <div class="bg-white rounded-xl border border-gray-200 p-5">
+            <h2 class="font-bold text-gray-900 mb-4">⚙️ オークション設定</h2>
+
+            <div class="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">開始価格 <span class="text-red-500">*</span></label>
+                <div class="relative">
+                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">¥</span>
+                  <input type="number" id="starting_price" required placeholder="50000" min="1" step="1"
+                    class="input-field w-full border-2 border-gray-200 rounded-xl pl-7 pr-3 py-2.5 text-sm focus:outline-none transition" oninput="updatePreview()">
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">出品期間 <span class="text-red-500">*</span></label>
+                <select id="end_hours" required class="input-field w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none transition">
+                  <option value="24">24時間</option>
+                  <option value="48">48時間</option>
+                  <option value="72" selected>72時間（3日）</option>
+                  <option value="120">5日間</option>
+                  <option value="168">7日間</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-700">
+              ⚠️ 終了5分以内に入札があると自動的に5分延長されます（スナイプ防止）
+            </div>
+          </div>
+
+          <button type="submit" id="submitBtn"
+            class="btn-primary w-full text-white font-bold py-4 rounded-xl text-base">
+            🍷 オークションを開始する
+          </button>
+        </form>
+      </div>
+
+      <!-- プレビュー（右1列） -->
+      <div class="lg:col-span-1">
+        <div class="sticky top-20">
+          <h3 class="text-sm font-medium text-gray-500 mb-3">プレビュー</h3>
+          <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div id="previewImage" class="bg-gradient-to-br from-red-900 via-red-700 to-red-900 h-44 flex items-center justify-center">
+              <div class="text-center">
+                <div class="text-5xl mb-1">🍷</div>
+                <div class="text-white text-xs opacity-70" id="previewProducer">生産者名</div>
+              </div>
+            </div>
+            <div class="p-3">
+              <p class="text-xs text-gray-500 mb-1" id="previewProducerSmall">生産者</p>
+              <p class="font-medium text-gray-900 text-sm leading-snug mb-2" id="previewTitle">タイトル</p>
+              <div class="flex flex-wrap gap-1 mb-2" id="previewTags"></div>
+              <div class="flex items-end justify-between">
+                <div>
+                  <p class="text-xs text-gray-400">開始価格</p>
+                  <p class="text-lg font-bold text-gray-900" id="previewPrice">¥—</p>
+                </div>
+                <p class="text-xs text-gray-400">入札 0件</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) { location.href = '/login'; }
+
+    const wineEmojis = { red: '🍷', white: '🥂', sparkling: '🍾', rose: '🌸' };
+    const wineColors = {
+      red: 'from-red-900 via-red-700 to-red-900',
+      white: 'from-yellow-800 via-yellow-600 to-yellow-800',
+      sparkling: 'from-yellow-900 via-amber-600 to-yellow-900',
+      rose: 'from-pink-800 via-pink-500 to-pink-800'
+    };
+
+    function updatePreview() {
+      const title = document.getElementById('title').value || 'タイトル';
+      const producer = document.getElementById('producer').value || '生産者';
+      const vintage = document.getElementById('vintage').value;
+      const price = parseInt(document.getElementById('starting_price').value);
+      const wineType = document.querySelector('input[name="wine_type"]:checked').value;
+
+      document.getElementById('previewTitle').textContent = title;
+      document.getElementById('previewProducer').textContent = producer;
+      document.getElementById('previewProducerSmall').textContent = producer;
+      document.getElementById('previewPrice').textContent = price ? '¥' + price.toLocaleString() : '¥—';
+      document.getElementById('previewImage').className = `bg-gradient-to-br ${wineColors[wineType]} h-44 flex items-center justify-center`;
+      document.getElementById('previewImage').querySelector('.text-5xl').textContent = wineEmojis[wineType];
+
+      const tags = [];
+      if (vintage) tags.push(`<span class="bg-purple-100 text-purple-700 text-xs px-2 py-0.5 rounded-full">${vintage}</span>`);
+      document.getElementById('previewTags').innerHTML = tags.join('');
+    }
+
+    document.querySelectorAll('input[name="wine_type"]').forEach(r => r.addEventListener('change', updatePreview));
+
+    // ---- 複数画像アップロード処理 ----
+    const slotImages = {}; // { slotIndex: { url, label } }
+    let currentSlot = null;
+
+    function triggerSlot(index) {
+      currentSlot = index;
+      const input = document.getElementById('slotFileInput');
+      input.value = '';
+      input.onchange = (e) => {
+        if (e.target.files[0]) uploadToSlot(index, e.target.files[0]);
+      };
+      input.click();
+    }
+
+    async function uploadToSlot(index, file) {
+      const slotEl = document.querySelector(`.image-slot[data-slot="${index}"]`);
+      const label = slotEl.dataset.label;
+      slotEl.querySelector('.slot-placeholder').classList.add('hidden');
+      slotEl.querySelector('.slot-preview').classList.add('hidden');
+      slotEl.querySelector('.slot-loading').classList.remove('hidden');
+
+      const formData = new FormData();
+      formData.append('image', file);
+
+      try {
+        const res = await fetch('/api/upload/image', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+
+        slotImages[index] = { url: data.url, label };
+        slotEl.querySelector('.slot-img').src = data.url;
+        slotEl.querySelector('.slot-loading').classList.add('hidden');
+        slotEl.querySelector('.slot-preview').classList.remove('hidden');
+
+        // スロット0（正面）がメイン画像になる
+        if (index === 0) {
+          document.getElementById('previewImage').innerHTML =
+            `<img src="${data.url}" alt="" class="w-full h-44 object-cover">`;
+        }
+      } catch (err) {
+        slotEl.querySelector('.slot-loading').classList.add('hidden');
+        slotEl.querySelector('.slot-placeholder').classList.remove('hidden');
+        alert('アップロードエラー: ' + err.message);
+      }
+    }
+
+    function removeSlot(e, index) {
+      e.stopPropagation();
+      delete slotImages[index];
+      const slotEl = document.querySelector(`.image-slot[data-slot="${index}"]`);
+      slotEl.querySelector('.slot-preview').classList.add('hidden');
+      slotEl.querySelector('.slot-placeholder').classList.remove('hidden');
+      if (index === 0) updatePreview();
+    }
+
+    // ---- フォーム送信 ----
+    async function handleSubmit(e) {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn');
+      btn.textContent = '出品中...';
+      btn.disabled = true;
+
+      const wineType = document.querySelector('input[name="wine_type"]:checked').value;
+      const imageList = Object.entries(slotImages)
+        .sort(([a],[b]) => a - b)
+        .map(([idx, img]) => ({ url: img.url, label: img.label, sort_order: parseInt(idx) }));
+
+      const payload = {
+        title:          document.getElementById('title').value,
+        producer:       document.getElementById('producer').value,
+        vintage:        document.getElementById('vintage').value || null,
+        region:         document.getElementById('region').value || null,
+        appellation:    document.getElementById('appellation').value || null,
+        grape:          document.getElementById('grape').value || null,
+        volume_ml:      document.getElementById('volume_ml').value,
+        condition_note: document.getElementById('condition_note').value || null,
+        description:    document.getElementById('description').value || null,
+        score_rp:       document.getElementById('score_rp').value || null,
+        score_ws:       document.getElementById('score_ws').value || null,
+        starting_price: document.getElementById('starting_price').value,
+        end_hours:      document.getElementById('end_hours').value,
+        wine_type:      wineType,
+        image_emoji:    wineEmojis[wineType],
+        image_color:    wineColors[wineType],
+        image_url:      imageList.length > 0 ? imageList[0].url : null
+      };
+
+      try {
+        const res = await fetch('/api/auctions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'サーバーエラーが発生しました');
+
+        // 複数画像を保存
+        if (imageList.length > 0) {
+          await fetch(`/api/upload/auction-images/${data.id}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ images: imageList })
+          });
+        }
+        location.href = `/detail?id=${data.id}`;
+      } catch (err) {
+        const box = document.getElementById('errorBox');
+        box.textContent = '❌ ' + err.message;
+        box.classList.remove('hidden');
+        btn.textContent = '🍷 オークションを開始する';
+        btn.disabled = false;
+        window.scrollTo(0, 0);
+      }
+    }
+  </script>
+</body>
+</html>
