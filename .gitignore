@@ -5,3 +5,4 @@ wine_auction.db
 *.db-wal
 public/uploads/*
 !public/uploads/.gitkeep
+.claude/

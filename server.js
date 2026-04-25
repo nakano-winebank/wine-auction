@@ -6,6 +6,46 @@ const cors = require('cors');
 const path = require('path');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const nodemailer = require('nodemailer');
+
+// メール送信設定
+const mailTransporter = (process.env.EMAIL_USER && process.env.EMAIL_PASS)
+  ? nodemailer.createTransport({
+      service: 'gmail',
+      auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }
+    })
+  : null;
+
+async function sendOutbidEmail(toEmail, toName, auctionTitle, newAmount, auctionId) {
+  if (!mailTransporter) return;
+  try {
+    await mailTransporter.sendMail({
+      from: `"WineBank オークション" <${process.env.EMAIL_USER}>`,
+      to: toEmail,
+      subject: `【WineBank】入札を更新されました：${auctionTitle}`,
+      html: `
+        <div style="font-family:sans-serif;max-width:500px;margin:0 auto;">
+          <h2 style="color:#6B1A1A;">WineBank オークション</h2>
+          <p>${toName} 様</p>
+          <p>ご入札中のオークションで、より高い入札がありました。</p>
+          <table style="border-collapse:collapse;width:100%;">
+            <tr><td style="padding:8px;background:#f5f5f5;"><b>商品</b></td><td style="padding:8px;">${auctionTitle}</td></tr>
+            <tr><td style="padding:8px;background:#f5f5f5;"><b>現在の最高額</b></td><td style="padding:8px;color:#c0392b;"><b>¥${newAmount.toLocaleString()}</b></td></tr>
+          </table>
+          <p style="margin-top:20px;">
+            <a href="${process.env.BASE_URL || 'https://wine-auction-production.up.railway.app'}/detail?id=${auctionId}"
+               style="background:#6B1A1A;color:white;padding:10px 20px;text-decoration:none;border-radius:5px;">
+              入札ページへ
+            </a>
+          </p>
+          <p style="color:#999;font-size:12px;">このメールはWineBankオークションから自動送信されています。</p>
+        </div>
+      `
+    });
+  } catch(e) {
+    console.error('メール送信エラー:', e.message);
+  }
+}
 
 const app = express();
 const server = http.createServer(app);
@@ -99,7 +139,18 @@ app.post('/api/auctions/:id/bids', bidLimiter, authenticateToken, (req, res) => 
       const existingBid = db.prepare('SELECT id FROM bids WHERE auction_id = ? AND bidder_id = ?').get(auctionId, req.user.id);
       const isNewBidder = !existingBid;
 
+      // 前の最高入札者を記録（メール通知用）
+      const prevTopBid = db.prepare(`
+        SELECT b.amount, u.email, u.display_name, u.username
+        FROM bids b JOIN users u ON b.bidder_id = u.id
+        WHERE b.auction_id = ? AND b.bidder_id != ?
+        ORDER BY b.amount DESC LIMIT 1
+      `).get(auctionId, req.user.id);
+
       db.prepare('INSERT INTO bids (auction_id, bidder_id, amount) VALUES (?, ?, ?)').run(auctionId, req.user.id, bidAmount);
+
+      // ウォッチリストに自動追加（既にある場合は無視）
+      db.prepare('INSERT OR IGNORE INTO watchlist (user_id, auction_id) VALUES (?, ?)').run(req.user.id, auctionId);
 
       // 終了5分前なら5分延長
       let newEndTime = auction.end_time;
@@ -114,8 +165,18 @@ app.post('/api/auctions/:id/bids', bidLimiter, authenticateToken, (req, res) => 
         bidder_count = bidder_count + ?, end_time = ? WHERE id = ?
       `).run(bidAmount, isNewBidder ? 1 : 0, newEndTime, auctionId);
 
-      return { auction: db.prepare('SELECT * FROM auctions WHERE id = ?').get(auctionId), extended };
+      return {
+        auction: db.prepare('SELECT * FROM auctions WHERE id = ?').get(auctionId),
+        extended,
+        prevTopBid
+      };
     });
+
+    // 前の最高入札者にメール通知（非同期・ノンブロッキング）
+    if (result.prevTopBid && result.prevTopBid.email) {
+      const name = result.prevTopBid.display_name || result.prevTopBid.username;
+      sendOutbidEmail(result.prevTopBid.email, name, result.auction.title, bidAmount, auctionId);
+    }
 
     // リアルタイム通知（全接続ユーザーに配信）
     io.to(`auction:${auctionId}`).emit('bid:new', {

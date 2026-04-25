@@ -265,4 +265,38 @@ if (userCount.c === 0) {
   console.log('✅ データベース初期化完了');
 }
 
+// ワイン画像URL設定（Wikimedia Commons）
+const wineImageMap = {
+  'Château Margaux':               'https://upload.wikimedia.org/wikipedia/commons/3/34/Chateau-Margaux_1947.JPG',
+  'Dom Pérignon':                  'https://upload.wikimedia.org/wikipedia/commons/7/76/Dom_Perignon_1999.jpg',
+  'Domaine de la Romanée-Conti':   'https://upload.wikimedia.org/wikipedia/commons/b/ba/Bouteille_de_Roman%C3%A9e_Conti.JPG',
+  'Château Pétrus':                'https://upload.wikimedia.org/wikipedia/commons/1/11/Ch%C3%A2teau_P%C3%A9trus.jpg',
+  'Tenuta San Guido':              'https://upload.wikimedia.org/wikipedia/commons/2/2f/Sassicaia.jpg',
+  "Château d'Esclans":             'https://upload.wikimedia.org/wikipedia/commons/1/12/18-07-2017_Portuguese_ros%C3%A9_wine%2C_Mateus.JPG',
+  'Opus One Winery':               'https://upload.wikimedia.org/wikipedia/commons/4/45/Opus_One_1997.jpg',
+  'Harlan Estate':                 'https://upload.wikimedia.org/wikipedia/commons/4/4f/1997_Bryant_Family_Vineyard.jpeg',
+};
+Object.entries(wineImageMap).forEach(([producer, url]) => {
+  db.prepare("UPDATE auctions SET image_url = ? WHERE producer = ? AND (image_url IS NULL OR image_url = '')").run(url, producer);
+});
+
+// 管理者アカウント自動作成（環境変数から）
+const adminEmail = process.env.ADMIN_EMAIL;
+const adminPassword = process.env.ADMIN_PASSWORD;
+if (adminEmail && adminPassword) {
+  const bcrypt = require('bcryptjs');
+  const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(adminEmail);
+  if (!existing) {
+    const hash = bcrypt.hashSync(adminPassword, 10);
+    db.prepare(`
+      INSERT INTO users (username, email, password_hash, display_name, is_admin, email_verified)
+      VALUES (?, ?, ?, ?, 1, 1)
+    `).run('admin_nakano', adminEmail, hash, '管理者');
+    console.log('✅ 管理者アカウント作成:', adminEmail);
+  } else {
+    db.prepare('UPDATE users SET is_admin = 1, email_verified = 1 WHERE email = ?').run(adminEmail);
+    console.log('✅ 管理者権限付与:', adminEmail);
+  }
+}
+
 module.exports = db;
