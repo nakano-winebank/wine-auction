@@ -6,45 +6,32 @@ const cors = require('cors');
 const path = require('path');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const nodemailer = require('nodemailer');
-
-// メール送信設定
-const mailTransporter = (process.env.EMAIL_USER && process.env.EMAIL_PASS)
-  ? nodemailer.createTransport({
-      service: 'gmail',
-      auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }
-    })
-  : null;
+const { sendWatchlistBidNotification } = require('./utils/mailer');
 
 async function sendOutbidEmail(toEmail, toName, auctionTitle, newAmount, auctionId) {
-  if (!mailTransporter) return;
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) return;
+  const baseUrl = process.env.BASE_URL || 'https://wine-auction-production.up.railway.app';
   try {
-    await mailTransporter.sendMail({
+    const nodemailer = require('nodemailer');
+    const t = nodemailer.createTransport({ service: 'gmail', auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS } });
+    await t.sendMail({
       from: `"WineBank オークション" <${process.env.EMAIL_USER}>`,
       to: toEmail,
       subject: `【WineBank】入札を更新されました：${auctionTitle}`,
-      html: `
-        <div style="font-family:sans-serif;max-width:500px;margin:0 auto;">
-          <h2 style="color:#6B1A1A;">WineBank オークション</h2>
-          <p>${toName} 様</p>
-          <p>ご入札中のオークションで、より高い入札がありました。</p>
-          <table style="border-collapse:collapse;width:100%;">
-            <tr><td style="padding:8px;background:#f5f5f5;"><b>商品</b></td><td style="padding:8px;">${auctionTitle}</td></tr>
-            <tr><td style="padding:8px;background:#f5f5f5;"><b>現在の最高額</b></td><td style="padding:8px;color:#c0392b;"><b>¥${newAmount.toLocaleString()}</b></td></tr>
-          </table>
-          <p style="margin-top:20px;">
-            <a href="${process.env.BASE_URL || 'https://wine-auction-production.up.railway.app'}/detail?id=${auctionId}"
-               style="background:#6B1A1A;color:white;padding:10px 20px;text-decoration:none;border-radius:5px;">
-              入札ページへ
-            </a>
-          </p>
-          <p style="color:#999;font-size:12px;">このメールはWineBankオークションから自動送信されています。</p>
-        </div>
-      `
+      html: `<div style="font-family:sans-serif;max-width:500px;margin:0 auto;">
+        <h2 style="color:#6B1A1A;">WineBank オークション</h2>
+        <p>${toName} 様</p>
+        <p>ご入札中のオークションで、より高い入札がありました。</p>
+        <table style="border-collapse:collapse;width:100%;">
+          <tr><td style="padding:8px;background:#f5f5f5;"><b>商品</b></td><td style="padding:8px;">${auctionTitle}</td></tr>
+          <tr><td style="padding:8px;background:#f5f5f5;"><b>現在の最高額</b></td><td style="padding:8px;color:#c0392b;"><b>¥${newAmount.toLocaleString()}</b></td></tr>
+        </table>
+        <p style="margin-top:20px;">
+          <a href="${baseUrl}/detail?id=${auctionId}" style="background:#6B1A1A;color:white;padding:10px 20px;text-decoration:none;border-radius:5px;">入札ページへ</a>
+        </p>
+      </div>`
     });
-  } catch(e) {
-    console.error('メール送信エラー:', e.message);
-  }
+  } catch(e) { console.error('メール送信エラー:', e.message); }
 }
 
 const app = express();
@@ -176,6 +163,22 @@ app.post('/api/auctions/:id/bids', bidLimiter, authenticateToken, (req, res) => 
     if (result.prevTopBid && result.prevTopBid.email) {
       const name = result.prevTopBid.display_name || result.prevTopBid.username;
       sendOutbidEmail(result.prevTopBid.email, name, result.auction.title, bidAmount, auctionId);
+    }
+
+    // ウォッチリスト登録者に入札通知（入札者・出品者は除く）
+    {
+      const db = require('./database');
+      const watchers = db.prepare(`
+        SELECT u.email, u.display_name, u.username
+        FROM watchlist w JOIN users u ON w.user_id = u.id
+        WHERE w.auction_id = ? AND w.user_id != ? AND w.user_id != ?
+      `).all(auctionId, req.user.id, result.auction.seller_id);
+      watchers.forEach(w => {
+        sendWatchlistBidNotification(
+          w.email, w.display_name || w.username,
+          result.auction.title, bidAmount, auctionId
+        ).catch(() => {});
+      });
     }
 
     // リアルタイム通知（全接続ユーザーに配信）

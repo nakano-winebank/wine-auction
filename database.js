@@ -128,6 +128,27 @@ const orderCols = db.prepare("PRAGMA table_info(orders)").all().map(c => c.name)
 if (!orderCols.includes('shipping_method')) db.exec("ALTER TABLE orders ADD COLUMN shipping_method TEXT DEFAULT 'normal'");
 if (!orderCols.includes('shipping_fee')) db.exec("ALTER TABLE orders ADD COLUMN shipping_fee INTEGER DEFAULT 0");
 
+// ユーザー住所・銀行口座カラム
+const addrCols = ['address_zip','address_pref','address_city','address_street','bank_name','bank_branch','bank_account_type','bank_account_number','bank_account_holder'];
+addrCols.forEach(col => { if (!userCols.includes(col)) db.exec(`ALTER TABLE users ADD COLUMN ${col} TEXT`); });
+
+// オークション承認ステータス
+const auctionCols2 = db.prepare("PRAGMA table_info(auctions)").all().map(c => c.name);
+if (!auctionCols2.includes('approval_status')) db.exec("ALTER TABLE auctions ADD COLUMN approval_status TEXT DEFAULT 'approved'");
+
+// メッセージテーブル（落札後の出品者↔落札者やりとり）
+db.exec(`
+  CREATE TABLE IF NOT EXISTS messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    order_id INTEGER REFERENCES orders(id),
+    sender_id INTEGER NOT NULL REFERENCES users(id),
+    receiver_id INTEGER NOT NULL REFERENCES users(id),
+    content TEXT NOT NULL,
+    is_read INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT (datetime('now', 'localtime'))
+  );
+`);
+
 // ヘルパー: トランザクション
 function transaction(fn) {
   db.exec('BEGIN');
