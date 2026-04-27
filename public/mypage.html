@@ -130,6 +130,8 @@
           </button>
           <button onclick="switchTab('ended')" id="tab-ended"
             class="tab-inactive px-4 py-3 text-sm transition whitespace-nowrap">終了済み</button>
+          <button onclick="switchTab('messages')" id="tab-messages"
+            class="tab-inactive px-4 py-3 text-sm transition whitespace-nowrap" id="tab-messages">メッセージ</button>
           <button onclick="switchTab('profile')" id="tab-profile"
             class="tab-inactive px-4 py-3 text-sm transition whitespace-nowrap">プロフィール</button>
         </div>
@@ -146,6 +148,9 @@
         </div>
         <div id="tab-content-ended" class="tab-content hidden">
           ${renderAuctionList([...bidding, ...selling].filter(a=>a.status!=='active'), 'ended')}
+        </div>
+        <div id="tab-content-messages" class="tab-content hidden fade-in">
+          <div id="messagesContent"><div class="text-center py-12 text-gray-400">読み込み中...</div></div>
         </div>
         <div id="tab-content-profile" class="tab-content hidden fade-in">
           ${renderProfileTab(user)}
@@ -212,13 +217,15 @@
     }
 
     function switchTab(name) {
-      ['bidding', 'selling', 'watchlist', 'ended', 'profile'].forEach(t => {
-        document.getElementById(`tab-${t}`).className = t === name
+      ['bidding', 'selling', 'watchlist', 'ended', 'messages', 'profile'].forEach(t => {
+        const tabBtn = document.getElementById(`tab-${t}`);
+        if (tabBtn) tabBtn.className = t === name
           ? 'tab-active px-4 py-3 text-sm transition whitespace-nowrap'
           : 'tab-inactive px-4 py-3 text-sm transition whitespace-nowrap';
         const content = document.getElementById(`tab-content-${t}`);
         if (content) content.classList.toggle('hidden', t !== name);
       });
+      if (name === 'messages') loadMessages();
     }
 
     function renderProfileTab(user) {
@@ -229,10 +236,31 @@
           : '<span class="bg-gray-100 text-gray-500 text-xs px-2 py-0.5 rounded-full">未提出</span>';
 
       return `
-        <!-- プロフィール編集 -->
+        <!-- メール認証バナー -->
+        ${!user.email_verified ? `
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4 flex items-start gap-3">
+          <div class="text-amber-500 text-xl flex-shrink-0">⚠️</div>
+          <div>
+            <p class="text-sm font-medium text-amber-800">メールアドレスが未確認です</p>
+            <p class="text-xs text-amber-600 mt-0.5">${user.email} 宛に確認メールを送信済みです。メールボックスをご確認ください。</p>
+            <button onclick="resendVerification()" class="mt-2 text-xs text-amber-700 underline hover:text-amber-900">確認メールを再送する</button>
+          </div>
+        </div>` : ''}
+
+        <!-- 基本情報 -->
         <div class="bg-white rounded-2xl border border-gray-200 p-5 mb-4">
           <h3 class="font-bold text-gray-800 mb-4">👤 基本情報</h3>
           <div class="space-y-3">
+            <div>
+              <label class="block text-xs font-medium text-gray-500 mb-1">メールアドレス</label>
+              <div class="flex items-center gap-2">
+                <input type="text" value="${user.email}" readonly
+                  class="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 text-gray-500 cursor-not-allowed">
+                ${user.email_verified
+                  ? '<span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded whitespace-nowrap">✓ 確認済</span>'
+                  : '<span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded whitespace-nowrap">未確認</span>'}
+              </div>
+            </div>
             <div class="grid grid-cols-2 gap-3">
               <div>
                 <label class="block text-xs font-medium text-gray-600 mb-1">姓</label>
@@ -267,6 +295,85 @@
           <p id="profileMsg" class="text-sm mt-2 hidden"></p>
         </div>
 
+        <!-- 住所 -->
+        <div class="bg-white rounded-2xl border border-gray-200 p-5 mb-4">
+          <h3 class="font-bold text-gray-800 mb-4">📦 配送先住所</h3>
+          <div class="space-y-3">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">郵便番号</label>
+                <input type="text" id="addrZip" placeholder="123-4567" value="${user.address_zip || ''}"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500">
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">都道府県</label>
+                <input type="text" id="addrPref" placeholder="東京都" value="${user.address_pref || ''}"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500">
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1">市区町村</label>
+              <input type="text" id="addrCity" placeholder="渋谷区" value="${user.address_city || ''}"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1">番地・建物名</label>
+              <input type="text" id="addrStreet" placeholder="1-2-3 ワインマンション101" value="${user.address_street || ''}"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500">
+            </div>
+          </div>
+          <button onclick="saveAddress()" id="saveAddrBtn"
+            class="mt-4 bg-purple-700 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-purple-800 transition">
+            住所を保存
+          </button>
+          <p id="addrMsg" class="text-sm mt-2 hidden"></p>
+        </div>
+
+        <!-- 振込先口座 -->
+        <div class="bg-white rounded-2xl border border-gray-200 p-5 mb-4">
+          <h3 class="font-bold text-gray-800 mb-1">🏦 売上金振込先口座</h3>
+          <p class="text-xs text-gray-400 mb-4">落札された際の売上金の振込先として使用されます。</p>
+          <div class="space-y-3">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">銀行名</label>
+                <input type="text" id="bankName" placeholder="三菱UFJ銀行" value="${user.bank_name || ''}"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500">
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">支店名</label>
+                <input type="text" id="bankBranch" placeholder="渋谷支店" value="${user.bank_branch || ''}"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500">
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">口座種別</label>
+                <select id="bankAccountType"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500">
+                  <option value="普通" ${user.bank_account_type === '普通' ? 'selected' : ''}>普通</option>
+                  <option value="当座" ${user.bank_account_type === '当座' ? 'selected' : ''}>当座</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">口座番号</label>
+                <input type="text" id="bankAccountNumber" placeholder="1234567" value="${user.bank_account_number || ''}"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500">
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1">口座名義（カタカナ）</label>
+              <input type="text" id="bankAccountHolder" placeholder="ナカノ クニヒト" value="${user.bank_account_holder || ''}"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500">
+            </div>
+          </div>
+          <button onclick="saveBankAccount()" id="saveBankBtn"
+            class="mt-4 bg-purple-700 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-purple-800 transition">
+            口座情報を保存
+          </button>
+          <p id="bankMsg" class="text-sm mt-2 hidden"></p>
+        </div>
+
         <!-- 本人確認 -->
         <div class="bg-white rounded-2xl border border-gray-200 p-5 mb-4">
           <div class="flex items-center justify-between mb-4">
@@ -293,14 +400,202 @@
           <h3 class="font-bold text-gray-800 mb-3">💳 支払い方法</h3>
           <div class="bg-gray-50 rounded-xl p-4 text-center">
             <p class="text-sm text-gray-500 mb-1">クレジットカードの事前登録</p>
-            <p class="text-xs text-gray-400">Stripe決済を本番設定後、落札時にワンタップで支払えるようになります。</p>
+            <p class="text-xs text-gray-400">Stripe / PAY.JP決済設定後、落札時にワンタップで支払えるようになります。</p>
             <div class="mt-3 inline-flex items-center gap-2 text-xs text-gray-400 border border-gray-200 rounded-lg px-3 py-1.5">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-              Stripeによる安全な保管
+              安全な決済保管
             </div>
           </div>
         </div>
       `;
+    }
+
+    async function resendVerification() {
+      try {
+        const res = await fetch('/api/auth/resend-verification', {
+          method: 'POST',
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        const data = await res.json();
+        alert(data.message || '確認メールを再送しました');
+      } catch(e) {
+        alert('送信に失敗しました');
+      }
+    }
+
+    async function saveAddress() {
+      const btn = document.getElementById('saveAddrBtn');
+      const msg = document.getElementById('addrMsg');
+      btn.disabled = true;
+      btn.textContent = '保存中...';
+      try {
+        const res = await fetch('/api/mypage/profile', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+          body: JSON.stringify({
+            address_zip: document.getElementById('addrZip').value.trim() || null,
+            address_pref: document.getElementById('addrPref').value.trim() || null,
+            address_city: document.getElementById('addrCity').value.trim() || null,
+            address_street: document.getElementById('addrStreet').value.trim() || null
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        msg.textContent = '✓ 住所を保存しました';
+        msg.className = 'text-sm mt-2 text-green-600';
+        msg.classList.remove('hidden');
+        setTimeout(() => msg.classList.add('hidden'), 3000);
+      } catch(e) {
+        msg.textContent = e.message;
+        msg.className = 'text-sm mt-2 text-red-500';
+        msg.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '住所を保存';
+      }
+    }
+
+    async function saveBankAccount() {
+      const btn = document.getElementById('saveBankBtn');
+      const msg = document.getElementById('bankMsg');
+      btn.disabled = true;
+      btn.textContent = '保存中...';
+      try {
+        const res = await fetch('/api/mypage/profile', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+          body: JSON.stringify({
+            bank_name: document.getElementById('bankName').value.trim() || null,
+            bank_branch: document.getElementById('bankBranch').value.trim() || null,
+            bank_account_type: document.getElementById('bankAccountType').value || null,
+            bank_account_number: document.getElementById('bankAccountNumber').value.trim() || null,
+            bank_account_holder: document.getElementById('bankAccountHolder').value.trim() || null
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        msg.textContent = '✓ 口座情報を保存しました';
+        msg.className = 'text-sm mt-2 text-green-600';
+        msg.classList.remove('hidden');
+        setTimeout(() => msg.classList.add('hidden'), 3000);
+      } catch(e) {
+        msg.textContent = e.message;
+        msg.className = 'text-sm mt-2 text-red-500';
+        msg.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '口座情報を保存';
+      }
+    }
+
+    let currentOrderId = null;
+
+    async function loadMessages() {
+      const container = document.getElementById('messagesContent');
+      try {
+        const res = await fetch('/api/mypage/orders', { headers: { Authorization: 'Bearer ' + token } });
+        const { orders } = await res.json();
+        if (!orders.length) {
+          container.innerHTML = '<div class="text-center py-12 text-gray-400"><div class="text-4xl mb-3">💬</div><p class="text-sm">取引メッセージはありません</p></div>';
+          return;
+        }
+        container.innerHTML = `
+          <div class="space-y-3" id="orderList">
+            ${orders.map(o => `
+              <div class="bg-white rounded-xl border border-gray-200 p-4 cursor-pointer hover:border-purple-300 transition"
+                   onclick="toggleOrderMessages(${o.id}, this)">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="font-medium text-gray-900 text-sm">${o.title}</p>
+                    <p class="text-xs text-gray-400 mt-0.5">出品者: ${o.seller_name || '—'} ／ ¥${o.amount.toLocaleString()}</p>
+                    <span class="text-xs ${o.status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'} px-2 py-0.5 rounded-full mt-1 inline-block">
+                      ${o.status === 'paid' ? '支払済' : '未払い'}
+                    </span>
+                  </div>
+                  <svg class="w-5 h-5 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                  </svg>
+                </div>
+                <div class="msg-panel hidden mt-4 pt-4 border-t border-gray-100" id="msg-panel-${o.id}">
+                  <div class="space-y-2 mb-4 max-h-64 overflow-y-auto" id="msg-list-${o.id}">
+                    <div class="text-center py-4 text-gray-400 text-sm">読み込み中...</div>
+                  </div>
+                  <div class="flex gap-2">
+                    <input type="text" id="msg-input-${o.id}" placeholder="メッセージを入力..."
+                      class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500"
+                      onkeydown="if(event.key==='Enter')sendMessage(${o.id})">
+                    <button onclick="sendMessage(${o.id})"
+                      class="bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-purple-800 transition">送信</button>
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>`;
+      } catch(e) {
+        container.innerHTML = '<div class="text-center py-12 text-gray-400">読み込みに失敗しました</div>';
+      }
+    }
+
+    async function toggleOrderMessages(orderId, card) {
+      const panel = document.getElementById(`msg-panel-${orderId}`);
+      const arrow = card.querySelector('svg');
+      const isOpen = !panel.classList.contains('hidden');
+      if (isOpen) {
+        panel.classList.add('hidden');
+        arrow.style.transform = '';
+        return;
+      }
+      panel.classList.remove('hidden');
+      arrow.style.transform = 'rotate(180deg)';
+      await fetchMessages(orderId);
+    }
+
+    async function fetchMessages(orderId) {
+      const list = document.getElementById(`msg-list-${orderId}`);
+      try {
+        const res = await fetch(`/api/mypage/messages/${orderId}`, {
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        const { messages } = await res.json();
+        if (!messages.length) {
+          list.innerHTML = '<div class="text-center py-4 text-gray-400 text-sm">メッセージはありません</div>';
+          return;
+        }
+        list.innerHTML = messages.map(m => {
+          const isMine = m.sender_id === (currentUser && currentUser.id);
+          return `
+            <div class="flex ${isMine ? 'justify-end' : 'justify-start'}">
+              <div class="max-w-xs">
+                <p class="text-xs text-gray-400 mb-0.5 ${isMine ? 'text-right' : ''}">${m.sender_name || m.sender_username}</p>
+                <div class="rounded-xl px-3 py-2 text-sm ${isMine ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-800'}">
+                  ${m.content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}
+                </div>
+                <p class="text-xs text-gray-300 mt-0.5 ${isMine ? 'text-right' : ''}">${new Date(m.created_at).toLocaleString('ja-JP', {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})}</p>
+              </div>
+            </div>`;
+        }).join('');
+        list.scrollTop = list.scrollHeight;
+      } catch(e) {
+        list.innerHTML = '<div class="text-center py-4 text-gray-400 text-sm">読み込みに失敗しました</div>';
+      }
+    }
+
+    async function sendMessage(orderId) {
+      const input = document.getElementById(`msg-input-${orderId}`);
+      const content = input.value.trim();
+      if (!content) return;
+      try {
+        const res = await fetch(`/api/mypage/messages/${orderId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+          body: JSON.stringify({ content })
+        });
+        if (!res.ok) throw new Error();
+        input.value = '';
+        await fetchMessages(orderId);
+      } catch(e) {
+        alert('送信に失敗しました');
+      }
     }
 
     async function saveProfile() {

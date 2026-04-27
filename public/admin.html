@@ -40,8 +40,9 @@
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6" id="statsGrid"></div>
 
     <!-- タブ -->
-    <div class="flex gap-2 mb-5">
+    <div class="flex gap-2 mb-5 flex-wrap">
       <button onclick="switchTab('users')" id="btn-users" class="tab-active px-4 py-2 rounded-lg text-sm font-medium transition">ユーザー</button>
+      <button onclick="switchTab('pending')" id="btn-pending" class="tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition">承認待ち <span id="pendingBadge" class="ml-1 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full hidden"></span></button>
       <button onclick="switchTab('auctions')" id="btn-auctions" class="tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition">オークション</button>
       <button onclick="switchTab('orders')" id="btn-orders" class="tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition">注文</button>
     </div>
@@ -66,6 +67,13 @@
           <tbody id="usersTable"></tbody>
         </table>
         <div id="usersPager" class="flex justify-center gap-2 p-4 border-t border-gray-100"></div>
+      </div>
+    </div>
+
+    <!-- 承認待ちタブ -->
+    <div id="tab-pending" class="hidden fade-in">
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden" id="pendingContainer">
+        <div class="text-center py-8 text-gray-400">読み込み中...</div>
       </div>
     </div>
 
@@ -116,6 +124,31 @@
     </div>
   </div>
 
+  <!-- ユーザー詳細モーダル -->
+  <div id="userModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between p-5 border-b border-gray-100">
+        <h2 class="font-bold text-gray-900 text-lg">ユーザー詳細</h2>
+        <button onclick="closeUserModal()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+      </div>
+      <div id="userModalContent" class="p-5">
+        <div class="text-center py-8 text-gray-400">読み込み中...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 承認/否認モーダル -->
+  <div id="approvalModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+      <h2 class="font-bold text-gray-900 text-lg mb-4" id="approvalModalTitle">オークション審査</h2>
+      <div id="approvalModalBody"></div>
+      <div class="flex gap-3 mt-5">
+        <button onclick="closeApprovalModal()" class="flex-1 border border-gray-300 text-gray-600 py-2 rounded-xl text-sm hover:bg-gray-50 transition">キャンセル</button>
+        <button id="approvalModalConfirmBtn" class="flex-1 py-2 rounded-xl text-sm font-bold text-white transition"></button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const token = localStorage.getItem('token');
     if (!token) location.href = '/login';
@@ -132,6 +165,16 @@
       document.getElementById('adminContent').classList.remove('hidden');
       loadStats();
       loadUsers();
+      loadPendingBadge();
+    }
+
+    async function loadPendingBadge() {
+      try {
+        const res = await fetch('/api/admin/auctions/pending', { headers: { Authorization: `Bearer ${token}` } });
+        const { total } = await res.json();
+        const badge = document.getElementById('pendingBadge');
+        if (total > 0) { badge.textContent = total; badge.classList.remove('hidden'); }
+      } catch(e) {}
     }
 
     async function loadStats() {
@@ -159,9 +202,11 @@
       document.getElementById('usersTable').innerHTML = users.map(u => `
         <tr class="border-b border-gray-100 hover:bg-gray-50">
           <td class="px-4 py-3">
-            <div class="font-medium text-gray-900">${u.display_name || u.username}</div>
-            <div class="text-xs text-gray-400">@${u.username}</div>
-            <div class="flex gap-1 mt-1">
+            <button onclick="openUserModal(${u.id})" class="text-left">
+              <div class="font-medium text-gray-900 hover:text-purple-700">${u.display_name || u.username}</div>
+              <div class="text-xs text-gray-400">@${u.username}</div>
+            </button>
+            <div class="flex gap-1 mt-1 flex-wrap">
               ${u.is_admin ? '<span class="text-xs bg-purple-100 text-purple-700 px-1.5 rounded">管理者</span>' : ''}
               ${u.is_verified_seller ? '<span class="text-xs bg-blue-100 text-blue-700 px-1.5 rounded">認定セラー</span>' : ''}
               ${u.email_verified ? '<span class="text-xs bg-green-100 text-green-700 px-1.5 rounded">メール確認済</span>' : '<span class="text-xs bg-yellow-100 text-yellow-700 px-1.5 rounded">未確認</span>'}
@@ -182,14 +227,211 @@
               </button>
               ${!u.is_admin ? `<button onclick="toggleAdmin(${u.id}, false)"
                 class="bg-purple-100 text-purple-700 hover:bg-purple-200 text-xs px-2 py-1 rounded transition">管理者に</button>` : ''}
-              ${!u.is_verified_seller ? `<button onclick="verifySeller(${u.id})"
-                class="bg-blue-100 text-blue-700 hover:bg-blue-200 text-xs px-2 py-1 rounded transition">認定</button>` : ''}
+              <button onclick="openUserModal(${u.id})"
+                class="bg-gray-100 text-gray-600 hover:bg-gray-200 text-xs px-2 py-1 rounded transition">詳細</button>
             </div>
           </td>
         </tr>
       `).join('') || '<tr><td colspan="5" class="text-center py-8 text-gray-400">ユーザーがいません</td></tr>';
 
       renderPager('usersPager', page, pages, loadUsers);
+    }
+
+    async function openUserModal(userId) {
+      document.getElementById('userModal').classList.remove('hidden');
+      document.getElementById('userModalContent').innerHTML = '<div class="text-center py-8 text-gray-400">読み込み中...</div>';
+      try {
+        const res = await fetch(`/api/admin/users/${userId}`, { headers: { Authorization: `Bearer ${token}` } });
+        const u = await res.json();
+
+        const licenseStatus = u.license_verified
+          ? '<span class="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full">✓ 確認済み</span>'
+          : u.license_image_url
+            ? '<span class="bg-yellow-100 text-yellow-700 text-xs px-2 py-0.5 rounded-full">⏳ 審査中</span>'
+            : '<span class="bg-gray-100 text-gray-500 text-xs px-2 py-0.5 rounded-full">未提出</span>';
+
+        document.getElementById('userModalContent').innerHTML = `
+          <div class="space-y-4">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-red-500 flex items-center justify-center text-white font-bold text-lg">
+                ${(u.display_name || u.username)[0].toUpperCase()}
+              </div>
+              <div>
+                <p class="font-bold text-gray-900">${u.display_name || u.username}</p>
+                <p class="text-xs text-gray-400">@${u.username}</p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 text-sm">
+              <div class="bg-gray-50 rounded-lg p-3">
+                <p class="text-xs text-gray-400 mb-1">メール</p>
+                <p class="text-gray-800">${u.email}</p>
+                ${u.email_verified ? '<span class="text-xs text-green-600">✓ 確認済</span>' : '<span class="text-xs text-yellow-600">未確認</span>'}
+              </div>
+              <div class="bg-gray-50 rounded-lg p-3">
+                <p class="text-xs text-gray-400 mb-1">氏名 / 電話</p>
+                <p class="text-gray-800">${u.full_name || '—'}</p>
+                <p class="text-gray-500 text-xs">${u.phone || '—'}</p>
+              </div>
+              <div class="bg-gray-50 rounded-lg p-3">
+                <p class="text-xs text-gray-400 mb-1">取引 / 評価</p>
+                <p class="text-gray-800">${u.trade_count}件 / ⭐${(u.rating || 5.0).toFixed(1)}</p>
+              </div>
+              <div class="bg-gray-50 rounded-lg p-3">
+                <p class="text-xs text-gray-400 mb-1">登録日</p>
+                <p class="text-gray-800">${new Date(u.created_at).toLocaleDateString('ja-JP')}</p>
+              </div>
+            </div>
+
+            ${u.address_pref || u.address_city ? `
+            <div class="bg-gray-50 rounded-lg p-3 text-sm">
+              <p class="text-xs text-gray-400 mb-1">住所</p>
+              <p class="text-gray-800">${[u.address_zip, u.address_pref, u.address_city, u.address_street].filter(Boolean).join(' ')}</p>
+            </div>` : ''}
+
+            ${u.bank_name ? `
+            <div class="bg-gray-50 rounded-lg p-3 text-sm">
+              <p class="text-xs text-gray-400 mb-1">振込先口座</p>
+              <p class="text-gray-800">${u.bank_name} ${u.bank_branch} ${u.bank_account_type}  ${u.bank_account_number}</p>
+              <p class="text-gray-500 text-xs">${u.bank_account_holder || ''}</p>
+            </div>` : ''}
+
+            <div class="border border-gray-200 rounded-xl p-4">
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="font-medium text-gray-800 text-sm">🪪 本人確認書類</h3>
+                ${licenseStatus}
+              </div>
+              ${u.license_image_url
+                ? `<img src="${u.license_image_url}" class="w-full max-h-48 object-contain rounded-lg border border-gray-200 mb-3" alt="本人確認書類">`
+                : '<p class="text-sm text-gray-400 mb-3">書類が提出されていません</p>'}
+              ${u.license_image_url && !u.license_verified ? `
+              <div class="flex gap-2">
+                <button onclick="reviewLicense(${u.id}, true)" class="flex-1 bg-green-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition">✓ 承認する</button>
+                <button onclick="reviewLicense(${u.id}, false)" class="flex-1 bg-red-100 text-red-700 py-2 rounded-lg text-sm font-medium hover:bg-red-200 transition">✗ 否認する</button>
+              </div>` : ''}
+              ${u.license_verified ? `
+              <button onclick="reviewLicense(${u.id}, false)" class="w-full border border-gray-300 text-gray-500 py-2 rounded-lg text-sm hover:bg-gray-50 transition">確認済みを取り消す</button>` : ''}
+            </div>
+          </div>`;
+      } catch(e) {
+        document.getElementById('userModalContent').innerHTML = '<div class="text-center py-8 text-red-400">読み込みに失敗しました</div>';
+      }
+    }
+
+    function closeUserModal() {
+      document.getElementById('userModal').classList.add('hidden');
+    }
+
+    async function reviewLicense(userId, approved) {
+      const confirmMsg = approved ? 'この書類を承認しますか？（認定セラーになります）' : '書類の承認を取り消しますか？';
+      if (!confirm(confirmMsg)) return;
+      await fetch(`/api/admin/users/${userId}/license`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ approved })
+      });
+      closeUserModal();
+      loadUsers();
+    }
+
+    async function loadPending() {
+      const container = document.getElementById('pendingContainer');
+      try {
+        const res = await fetch('/api/admin/auctions/pending', { headers: { Authorization: `Bearer ${token}` } });
+        const { auctions, total } = await res.json();
+
+        // バッジ更新
+        const badge = document.getElementById('pendingBadge');
+        if (total > 0) { badge.textContent = total; badge.classList.remove('hidden'); }
+        else badge.classList.add('hidden');
+
+        if (!auctions.length) {
+          container.innerHTML = '<div class="text-center py-12 text-gray-400"><div class="text-4xl mb-3">✅</div><p class="text-sm">承認待ちのオークションはありません</p></div>';
+          return;
+        }
+
+        container.innerHTML = `
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 border-b border-gray-200">
+              <tr>
+                <th class="text-left px-4 py-3 text-gray-500 font-medium">商品</th>
+                <th class="text-left px-4 py-3 text-gray-500 font-medium hidden sm:table-cell">出品者</th>
+                <th class="text-right px-4 py-3 text-gray-500 font-medium">開始価格</th>
+                <th class="text-center px-4 py-3 text-gray-500 font-medium">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${auctions.map(a => `
+                <tr class="border-b border-gray-100 hover:bg-amber-50">
+                  <td class="px-4 py-3">
+                    <div class="font-medium text-gray-900">${a.title}</div>
+                    <div class="text-xs text-gray-400">${a.producer} / 出品: ${new Date(a.created_at).toLocaleDateString('ja-JP')}</div>
+                  </td>
+                  <td class="px-4 py-3 text-gray-500 hidden sm:table-cell">
+                    ${a.seller_name || a.seller}<br>
+                    <span class="text-xs text-gray-400">${a.seller_email}</span>
+                  </td>
+                  <td class="px-4 py-3 text-right font-medium text-gray-900">¥${a.starting_price.toLocaleString()}</td>
+                  <td class="px-4 py-3 text-center">
+                    <div class="flex gap-2 justify-center">
+                      <button onclick="approveAuction(${a.id})"
+                        class="bg-green-600 text-white hover:bg-green-700 text-xs px-3 py-1.5 rounded-lg transition font-medium">承認</button>
+                      <button onclick="openRejectModal(${a.id}, '${(a.title).replace(/'/g, "\\'")}')"
+                        class="bg-red-100 text-red-700 hover:bg-red-200 text-xs px-3 py-1.5 rounded-lg transition font-medium">否認</button>
+                      <a href="/detail?id=${a.id}" target="_blank"
+                        class="bg-gray-100 text-gray-600 hover:bg-gray-200 text-xs px-3 py-1.5 rounded-lg transition">確認</a>
+                    </div>
+                  </td>
+                </tr>`).join('')}
+            </tbody>
+          </table>`;
+      } catch(e) {
+        container.innerHTML = '<div class="text-center py-12 text-gray-400">読み込みに失敗しました</div>';
+      }
+    }
+
+    async function approveAuction(id) {
+      if (!confirm('このオークションを承認して公開しますか？')) return;
+      const res = await fetch(`/api/admin/auctions/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ status: 'active' })
+      });
+      if (res.ok) { loadPending(); loadStats(); }
+    }
+
+    let rejectAuctionId = null;
+    function openRejectModal(id, title) {
+      rejectAuctionId = id;
+      document.getElementById('approvalModalTitle').textContent = '出品を否認する';
+      document.getElementById('approvalModalBody').innerHTML = `
+        <p class="text-sm text-gray-600 mb-3">「${title}」の出品を否認します。出品者にメールで通知されます。</p>
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1">否認理由（任意）</label>
+          <textarea id="rejectReason" rows="3" placeholder="例: 出品規約に反する内容が含まれています"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-red-500 resize-none"></textarea>
+        </div>`;
+      const btn = document.getElementById('approvalModalConfirmBtn');
+      btn.textContent = '否認する';
+      btn.className = 'flex-1 py-2 rounded-xl text-sm font-bold text-white bg-red-600 hover:bg-red-700 transition';
+      btn.onclick = confirmReject;
+      document.getElementById('approvalModal').classList.remove('hidden');
+    }
+
+    async function confirmReject() {
+      const reason = document.getElementById('rejectReason').value.trim();
+      const res = await fetch(`/api/admin/auctions/${rejectAuctionId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ status: 'rejected', reason })
+      });
+      closeApprovalModal();
+      if (res.ok) { loadPending(); loadStats(); }
+    }
+
+    function closeApprovalModal() {
+      document.getElementById('approvalModal').classList.add('hidden');
+      rejectAuctionId = null;
     }
 
     async function toggleBlock(userId, current) {
@@ -299,10 +541,11 @@
     }
 
     function switchTab(name) {
-      ['users', 'auctions', 'orders'].forEach(t => {
+      ['users', 'pending', 'auctions', 'orders'].forEach(t => {
         document.getElementById(`btn-${t}`).className = t === name ? 'tab-active px-4 py-2 rounded-lg text-sm font-medium transition' : 'tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition';
         document.getElementById(`tab-${t}`).classList.toggle('hidden', t !== name);
       });
+      if (name === 'pending') loadPending();
       if (name === 'auctions') loadAuctions();
       if (name === 'orders') loadOrders();
     }
