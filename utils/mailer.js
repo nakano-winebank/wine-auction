@@ -3,10 +3,13 @@ const nodemailer = require('nodemailer');
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 
 function getTransporter() {
-  // Gmail (EMAIL_USER / EMAIL_PASS)
+  // Gmail (EMAIL_USER / EMAIL_PASS) - IPv4強制 + port587でRailway対応
   if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
     return nodemailer.createTransport({
-      service: 'gmail',
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false,
+      family: 4,
       auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
     });
   }

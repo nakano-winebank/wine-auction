@@ -13,7 +13,7 @@ async function sendOutbidEmail(toEmail, toName, auctionTitle, newAmount, auction
   const baseUrl = process.env.BASE_URL || 'https://wine-auction-production.up.railway.app';
   try {
     const nodemailer = require('nodemailer');
-    const t = nodemailer.createTransport({ service: 'gmail', auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS } });
+    const t = nodemailer.createTransport({ host: 'smtp.gmail.com', port: 587, secure: false, family: 4, auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS } });
     await t.sendMail({
       from: `"WineBank オークション" <${process.env.EMAIL_USER}>`,
       to: toEmail,
@@ -219,7 +219,7 @@ app.get('/api/email-test', authenticateToken, async (req, res) => {
     return res.json({ ok: false, error: 'EMAIL_USER または EMAIL_PASS が未設定です', v: 'v3' });
   }
   try {
-    const t = nodemailer.createTransport({ service: 'gmail', auth: { user: EMAIL_USER, pass: EMAIL_PASS } });
+    const t = nodemailer.createTransport({ host: 'smtp.gmail.com', port: 587, secure: false, family: 4, auth: { user: EMAIL_USER, pass: EMAIL_PASS } });
     await t.verify();
     // 接続OK → テストメール送信
     await t.sendMail({
