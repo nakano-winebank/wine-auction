@@ -207,6 +207,31 @@ app.post('/api/auctions/:id/bids', bidLimiter, authenticateToken, (req, res) => 
   }
 });
 
+// メール設定テストエンドポイント（管理者専用）
+app.get('/api/admin/test-email', authenticateToken, async (req, res) => {
+  if (!req.user.is_admin) return res.status(403).json({ error: '管理者のみ' });
+  const nodemailer = require('nodemailer');
+  const EMAIL_USER = process.env.EMAIL_USER;
+  const EMAIL_PASS = process.env.EMAIL_PASS;
+  if (!EMAIL_USER || !EMAIL_PASS) {
+    return res.json({ ok: false, error: 'EMAIL_USER または EMAIL_PASS が未設定です' });
+  }
+  try {
+    const t = nodemailer.createTransport({ service: 'gmail', auth: { user: EMAIL_USER, pass: EMAIL_PASS } });
+    await t.verify();
+    // 接続OK → テストメール送信
+    await t.sendMail({
+      from: `"WineBank テスト" <${EMAIL_USER}>`,
+      to: EMAIL_USER,
+      subject: '【WineBank】メール送信テスト',
+      html: '<p>このメールが届いていればメール設定は正常です。</p>'
+    });
+    res.json({ ok: true, message: `${EMAIL_USER} にテストメールを送信しました` });
+  } catch (e) {
+    res.json({ ok: false, error: e.message, code: e.code });
+  }
+});
+
 // HTMLフォールバック
 app.get('/detail', (req, res) => res.sendFile(path.join(__dirname, 'public', 'detail.html')));
 app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public', 'login.html')));
