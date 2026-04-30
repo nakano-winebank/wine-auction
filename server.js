@@ -209,7 +209,9 @@ app.post('/api/auctions/:id/bids', bidLimiter, authenticateToken, (req, res) => 
 
 // メール設定テストエンドポイント（管理者専用）
 app.get('/api/admin/test-email', authenticateToken, async (req, res) => {
-  if (!req.user.is_admin) return res.status(403).json({ error: '管理者のみ' });
+  const db = require('./database');
+  const u = db.prepare('SELECT is_admin FROM users WHERE id = ?').get(req.user.id);
+  if (!u || !u.is_admin) return res.status(403).json({ error: '管理者のみ' });
   const nodemailer = require('nodemailer');
   const EMAIL_USER = process.env.EMAIL_USER;
   const EMAIL_PASS = process.env.EMAIL_PASS;
