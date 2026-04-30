@@ -216,7 +216,7 @@ app.get('/api/admin/test-email', authenticateToken, async (req, res) => {
   const EMAIL_USER = process.env.EMAIL_USER;
   const EMAIL_PASS = process.env.EMAIL_PASS;
   if (!EMAIL_USER || !EMAIL_PASS) {
-    return res.json({ ok: false, error: 'EMAIL_USER または EMAIL_PASS が未設定です' });
+    return res.json({ ok: false, error: 'EMAIL_USER または EMAIL_PASS が未設定です', v: 'v3' });
   }
   try {
     const t = nodemailer.createTransport({ service: 'gmail', auth: { user: EMAIL_USER, pass: EMAIL_PASS } });
