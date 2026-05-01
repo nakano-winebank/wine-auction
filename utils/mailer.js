@@ -1,37 +1,10 @@
-const nodemailer = require('nodemailer');
-
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
-
-function getTransporter() {
-  // Gmail (EMAIL_USER / EMAIL_PASS) - IPv4強制 + port587でRailway対応
-  if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-    return nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 587,
-      secure: false,
-      family: 4,
-      auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
-    });
-  }
-  // カスタムSMTP
-  if (process.env.SMTP_HOST) {
-    return nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: process.env.SMTP_SECURE === 'true',
-      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-    });
-  }
-  return null;
-}
-
-const FROM = process.env.EMAIL_USER
-  ? `"WineBank オークション" <${process.env.EMAIL_USER}>`
-  : process.env.SMTP_FROM || '"ワインオークション" <noreply@wine-auction.jp>';
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const FROM = process.env.EMAIL_FROM || 'WineBank オークション <noreply@wine-bank.co.jp>';
 
 async function sendMail({ to, subject, html }) {
-  const transporter = getTransporter();
-  if (!transporter) {
+  if (!RESEND_API_KEY) {
+    // Dev fallback: log to console
     console.log('\n📧 ===== [DEV MAIL] =====');
     console.log(`To: ${to}`);
     console.log(`Subject: ${subject}`);
@@ -39,7 +12,18 @@ async function sendMail({ to, subject, html }) {
     console.log('========================\n');
     return;
   }
-  await transporter.sendMail({ from: FROM, to, subject, html });
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${RESEND_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ from: FROM, to, subject, html }),
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Resend API error ${res.status}: ${err}`);
+  }
 }
 
 // メール認証

@@ -9,28 +9,32 @@ const rateLimit = require('express-rate-limit');
 const { sendWatchlistBidNotification } = require('./utils/mailer');
 
 async function sendOutbidEmail(toEmail, toName, auctionTitle, newAmount, auctionId) {
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) return;
+  if (!process.env.RESEND_API_KEY) return;
   const baseUrl = process.env.BASE_URL || 'https://wine-auction-production.up.railway.app';
+  const from = process.env.EMAIL_FROM || 'WineBank オークション <noreply@wine-bank.co.jp>';
   try {
-    const nodemailer = require('nodemailer');
-    const t = nodemailer.createTransport({ host: 'smtp.gmail.com', port: 587, secure: false, family: 4, auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS } });
-    await t.sendMail({
-      from: `"WineBank オークション" <${process.env.EMAIL_USER}>`,
-      to: toEmail,
-      subject: `【WineBank】入札を更新されました：${auctionTitle}`,
-      html: `<div style="font-family:sans-serif;max-width:500px;margin:0 auto;">
-        <h2 style="color:#6B1A1A;">WineBank オークション</h2>
-        <p>${toName} 様</p>
-        <p>ご入札中のオークションで、より高い入札がありました。</p>
-        <table style="border-collapse:collapse;width:100%;">
-          <tr><td style="padding:8px;background:#f5f5f5;"><b>商品</b></td><td style="padding:8px;">${auctionTitle}</td></tr>
-          <tr><td style="padding:8px;background:#f5f5f5;"><b>現在の最高額</b></td><td style="padding:8px;color:#c0392b;"><b>¥${newAmount.toLocaleString()}</b></td></tr>
-        </table>
-        <p style="margin-top:20px;">
-          <a href="${baseUrl}/detail?id=${auctionId}" style="background:#6B1A1A;color:white;padding:10px 20px;text-decoration:none;border-radius:5px;">入札ページへ</a>
-        </p>
-      </div>`
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from,
+        to: toEmail,
+        subject: `【WineBank】入札を更新されました：${auctionTitle}`,
+        html: `<div style="font-family:sans-serif;max-width:500px;margin:0 auto;">
+          <h2 style="color:#6B1A1A;">WineBank オークション</h2>
+          <p>${toName} 様</p>
+          <p>ご入札中のオークションで、より高い入札がありました。</p>
+          <table style="border-collapse:collapse;width:100%;">
+            <tr><td style="padding:8px;background:#f5f5f5;"><b>商品</b></td><td style="padding:8px;">${auctionTitle}</td></tr>
+            <tr><td style="padding:8px;background:#f5f5f5;"><b>現在の最高額</b></td><td style="padding:8px;color:#c0392b;"><b>¥${newAmount.toLocaleString()}</b></td></tr>
+          </table>
+          <p style="margin-top:20px;">
+            <a href="${baseUrl}/detail?id=${auctionId}" style="background:#6B1A1A;color:white;padding:10px 20px;text-decoration:none;border-radius:5px;">入札ページへ</a>
+          </p>
+        </div>`
+      }),
     });
+    if (!res.ok) { const e = await res.text(); console.error('Resend エラー:', e); }
   } catch(e) { console.error('メール送信エラー:', e.message); }
 }
 
@@ -210,27 +214,29 @@ app.post('/api/auctions/:id/bids', bidLimiter, authenticateToken, (req, res) => 
 // メール設定テストエンドポイント（管理者専用）
 app.get('/api/email-test', authenticateToken, async (req, res) => {
   const db = require('./database');
-  const u = db.prepare('SELECT is_admin FROM users WHERE id = ?').get(req.user.id);
+  const u = db.prepare('SELECT is_admin, email FROM users WHERE id = ?').get(req.user.id);
   if (!u || !u.is_admin) return res.status(403).json({ error: '管理者のみ' });
-  const nodemailer = require('nodemailer');
-  const EMAIL_USER = process.env.EMAIL_USER;
-  const EMAIL_PASS = process.env.EMAIL_PASS;
-  if (!EMAIL_USER || !EMAIL_PASS) {
-    return res.json({ ok: false, error: 'EMAIL_USER または EMAIL_PASS が未設定です', v: 'v3' });
+  const RESEND_API_KEY = process.env.RESEND_API_KEY;
+  if (!RESEND_API_KEY) {
+    return res.json({ ok: false, error: 'RESEND_API_KEY が未設定です' });
   }
   try {
-    const t = nodemailer.createTransport({ host: 'smtp.gmail.com', port: 587, secure: false, family: 4, auth: { user: EMAIL_USER, pass: EMAIL_PASS } });
-    await t.verify();
-    // 接続OK → テストメール送信
-    await t.sendMail({
-      from: `"WineBank テスト" <${EMAIL_USER}>`,
-      to: EMAIL_USER,
-      subject: '【WineBank】メール送信テスト',
-      html: '<p>このメールが届いていればメール設定は正常です。</p>'
+    const from = process.env.EMAIL_FROM || 'WineBank テスト <noreply@wine-bank.co.jp>';
+    const result = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from,
+        to: u.email,
+        subject: '【WineBank】メール送信テスト',
+        html: '<p>このメールが届いていればResendのメール設定は正常です。</p>'
+      }),
     });
-    res.json({ ok: true, message: `${EMAIL_USER} にテストメールを送信しました` });
+    const data = await result.json();
+    if (!result.ok) return res.json({ ok: false, error: data });
+    res.json({ ok: true, message: `${u.email} にテストメールを送信しました`, id: data.id });
   } catch (e) {
-    res.json({ ok: false, error: e.message, code: e.code });
+    res.json({ ok: false, error: e.message });
   }
 });
 
