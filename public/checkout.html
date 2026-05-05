@@ -5,14 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>落札決済 — ワインオークション</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://js.stripe.com/v3/"></script>
+  <script src="https://js.pay.jp/v2/pay.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
     body { font-family: 'Noto Sans JP', sans-serif; }
     .wine-badge { background: linear-gradient(135deg, #7B2D8B, #C0392B); }
-    #card-element { padding: 12px; border: 1px solid #D1D5DB; border-radius: 8px; background: white; }
-    #card-element.StripeElement--focus { border-color: #7C3AED; box-shadow: 0 0 0 2px rgba(124,58,237,0.2); }
-    #card-element.StripeElement--invalid { border-color: #EF4444; }
+    #payjp-number-form,#payjp-expiry-form,#payjp-cvc-form { padding: 10px 12px; border: 1px solid #D1D5DB; border-radius: 8px; background: white; height: 42px; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
     .fade-in { animation: fadeIn 0.3s ease; }
     .step-active { background: #7C3AED; color: white; }
@@ -151,18 +149,37 @@
         </div>
 
         <!-- テストモード通知 -->
-        <div id="testModeNotice" class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4 text-sm text-amber-700">
-          <strong>🧪 テストモード:</strong> カード番号 <code class="bg-amber-100 px-1 rounded">4242 4242 4242 4242</code>、有効期限・CVCは任意の数字でテスト可能です。
+        <div id="testModeNotice" class="hidden bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4 text-sm text-amber-700">
+          <strong>🧪 テストモード:</strong> カード番号 <code class="bg-amber-100 px-1 rounded">4242424242424242</code>、有効期限 <code class="bg-amber-100 px-1 rounded">12/25</code>、CVC <code class="bg-amber-100 px-1 rounded">123</code> でテスト可能です。
         </div>
 
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-2">クレジットカード</label>
-          <div id="card-element" class="transition"></div>
+        <!-- Pay.jp カード入力フォーム -->
+        <div id="payjpCardForm">
+          <div class="mb-3">
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">カード番号</label>
+            <div id="payjp-number-form"></div>
+          </div>
+          <div class="grid grid-cols-2 gap-3 mb-3">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1.5">有効期限</label>
+              <div id="payjp-expiry-form"></div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1.5">セキュリティコード</label>
+              <div id="payjp-cvc-form"></div>
+            </div>
+          </div>
           <p id="card-error" class="text-red-500 text-xs mt-1.5 hidden"></p>
         </div>
 
+        <!-- Pay.jp 未設定のデモ表示 -->
+        <div id="demoCardForm" class="hidden text-center py-4 text-sm text-gray-500 border border-dashed border-gray-300 rounded-lg">
+          <p class="mb-1">⚙️ <strong>Pay.jp未設定</strong></p>
+          <p class="text-xs">PAYJP_SECRET_KEY / PAYJP_PUBLIC_KEY を設定するとカード入力が表示されます</p>
+        </div>
+
         <!-- 支払い詳細 -->
-        <div class="bg-gray-50 rounded-xl p-4 mb-5 text-sm">
+        <div class="bg-gray-50 rounded-xl p-4 mb-5 mt-4 text-sm">
           <div class="flex justify-between text-gray-600 mb-1.5">
             <span>落札金額</span>
             <span id="summaryPrice"></span>
@@ -171,7 +188,7 @@
             <span>配送方法</span>
             <span id="summaryMethod"></span>
           </div>
-          <div class="flex justify-between text-gray-600 mb-1.5" id="summaryFeeRow">
+          <div class="flex justify-between text-gray-600 mb-1.5">
             <span>送料</span>
             <span id="summaryFee"></span>
           </div>
@@ -190,7 +207,7 @@
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
           <span id="payBtnText">¥<span id="payBtnAmount"></span> を支払う</span>
         </button>
-        <p class="text-center text-xs text-gray-400 mt-2">Stripeによる安全な決済</p>
+        <p class="text-center text-xs text-gray-400 mt-2">PAY.JP による安全な決済</p>
       </div>
 
       <!-- 完了 -->
@@ -218,10 +235,14 @@
     const auctionId = params.get('id');
     if (!auctionId) location.href = '/';
 
-    let stripe, cardElement, orderData;
+    let payjp, numberElement, expiryElement, cvcElement, orderData;
     let shippingData = {};
+    let payjpReady = false;
 
     const SHIPPING_FEES = { normal: 800, cool: 1500 };
+
+    // Pay.jp 公開キー（サーバーから取得 or 直接埋め込み）
+    const PAYJP_PK = window.PAYJP_PUBLIC_KEY || '';
 
     function updateShippingMethod() {
       const method = document.querySelector('input[name="shippingMethod"]:checked').value;
@@ -233,12 +254,9 @@
         : 'flex items-start gap-3 border-2 border-gray-200 rounded-xl p-3 cursor-pointer hover:border-blue-400 transition';
     }
 
-    // Stripe公開キー（環境変数から、またはテストキー）
-    const STRIPE_PK = 'pk_test_YOUR_PUBLISHABLE_KEY_HERE';
-
     async function init() {
       try {
-        const res = await fetch(`/api/stripe/order/${auctionId}`, {
+        const res = await fetch(`/api/payjp/order/${auctionId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -260,11 +278,6 @@
         document.getElementById('loadingState').classList.add('hidden');
         document.getElementById('mainContent').classList.remove('hidden');
 
-        // Stripe初期化（テストキー設定済みの場合のみ）
-        if (STRIPE_PK !== 'pk_test_YOUR_PUBLISHABLE_KEY_HERE') {
-          stripe = Stripe(STRIPE_PK);
-        }
-
       } catch (e) {
         showError('データの取得に失敗しました');
       }
@@ -277,6 +290,36 @@
       document.getElementById('auctionProducer').textContent = auction.producer + (auction.vintage ? ' ' + auction.vintage : '');
       document.getElementById('auctionSeller').textContent = '出品: ' + (auction.seller_name || auction.seller_username);
       document.getElementById('auctionPrice').textContent = '¥' + auction.current_price.toLocaleString();
+    }
+
+    function initPayjp() {
+      // Pay.jp 公開キーをサーバーから取得して初期化
+      fetch('/api/payjp/public-key', { headers: { Authorization: `Bearer ${token}` } })
+        .then(r => r.json())
+        .then(d => {
+          if (!d.public_key) {
+            document.getElementById('payjpCardForm').classList.add('hidden');
+            document.getElementById('demoCardForm').classList.remove('hidden');
+            return;
+          }
+          if (d.test_mode) {
+            document.getElementById('testModeNotice').classList.remove('hidden');
+          }
+          payjp = Payjp(d.public_key);
+          const elements = payjp.elements();
+          const style = { base: { fontSize: '14px', fontFamily: 'Noto Sans JP, sans-serif' } };
+          numberElement = elements.create('cardNumber', { style });
+          expiryElement = elements.create('cardExpiry', { style });
+          cvcElement    = elements.create('cardCvc', { style });
+          numberElement.mount('#payjp-number-form');
+          expiryElement.mount('#payjp-expiry-form');
+          cvcElement.mount('#payjp-cvc-form');
+          payjpReady = true;
+        })
+        .catch(() => {
+          document.getElementById('payjpCardForm').classList.add('hidden');
+          document.getElementById('demoCardForm').classList.remove('hidden');
+        });
     }
 
     function proceedToPayment() {
@@ -294,7 +337,6 @@
 
       shippingData = { name, zip, address, phone, method, fee };
 
-      // ステップUI更新
       document.getElementById('step2-badge').className = 'w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold step-done';
       document.getElementById('step2-badge').textContent = '✓';
       document.getElementById('step3-badge').className = 'w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold step-active';
@@ -303,7 +345,6 @@
       document.getElementById('shippingStep').classList.add('hidden');
       document.getElementById('paymentStep').classList.remove('hidden');
 
-      // 金額セット
       const price = orderData.auction.current_price;
       const total = price + fee;
       document.getElementById('summaryPrice').textContent = '¥' + price.toLocaleString();
@@ -313,30 +354,8 @@
       document.getElementById('summaryTotal').textContent = '¥' + total.toLocaleString();
       document.getElementById('payBtnAmount').textContent = total.toLocaleString();
 
-      // Stripeカード要素マウント
-      if (stripe) {
-        document.getElementById('testModeNotice').classList.remove('hidden');
-        const elements = stripe.elements();
-        cardElement = elements.create('card', {
-          style: {
-            base: { fontSize: '14px', fontFamily: 'Noto Sans JP, sans-serif', color: '#1F2937' }
-          }
-        });
-        cardElement.mount('#card-element');
-        cardElement.on('change', e => {
-          const errEl = document.getElementById('card-error');
-          if (e.error) { errEl.textContent = e.error.message; errEl.classList.remove('hidden'); }
-          else { errEl.classList.add('hidden'); }
-        });
-      } else {
-        // Stripe未設定 — デモモード表示
-        document.getElementById('card-element').innerHTML = `
-          <div class="text-center py-4 text-sm text-gray-500">
-            <p class="mb-1">⚙️ <strong>Stripe未設定</strong></p>
-            <p class="text-xs">STRIPE_SECRET_KEY / STRIPE_PK を設定するとカード入力が表示されます</p>
-          </div>`;
-        document.getElementById('testModeNotice').classList.add('hidden');
-      }
+      // Pay.jp 初期化（まだなら）
+      if (!payjpReady) initPayjp();
     }
 
     function backToShipping() {
@@ -354,68 +373,49 @@
       document.getElementById('payBtnText').innerHTML = '<span class="animate-pulse">処理中...</span>';
 
       try {
-        if (stripe && cardElement) {
-          // Stripe実決済
-          const { data: intentData } = await fetch('/api/stripe/create-payment-intent', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-            body: JSON.stringify({ auction_id: auctionId })
-          }).then(r => r.json().then(d => ({ data: d })));
+        let payjpToken = null;
 
-          if (!intentData.client_secret) throw new Error(intentData.error || '決済準備エラー');
-
-          const { error, paymentIntent } = await stripe.confirmCardPayment(intentData.client_secret, {
-            payment_method: { card: cardElement }
-          });
-
-          if (error) throw new Error(error.message);
-
-          await confirmOrder(paymentIntent.id);
-        } else {
-          // デモモード（Stripe未設定）
-          await fetch('/api/stripe/create-payment-intent', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-            body: JSON.stringify({ auction_id: auctionId })
-          });
-
-          await confirmOrder('demo_' + Date.now());
+        if (payjpReady && numberElement) {
+          // Pay.jp でトークン生成
+          const result = await payjp.createToken(numberElement);
+          if (result.error) throw new Error(result.error.message);
+          payjpToken = result.id;
         }
+
+        const res = await fetch('/api/payjp/charge', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            auction_id: auctionId,
+            payjp_token: payjpToken,
+            shipping_name: shippingData.name,
+            shipping_zip: shippingData.zip,
+            shipping_address: shippingData.address,
+            shipping_phone: shippingData.phone,
+            shipping_method: shippingData.method,
+            shipping_fee: shippingData.fee
+          })
+        });
+
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || '注文確定エラー');
+
+        // 完了表示
+        const total = orderData.auction.current_price + (shippingData.fee || 0);
+        document.getElementById('paymentStep').classList.add('hidden');
+        document.getElementById('step3-badge').className = 'w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold step-done';
+        document.getElementById('step3-badge').textContent = '✓';
+        document.getElementById('completeStep').classList.remove('hidden');
+        document.getElementById('completeTitle').textContent = orderData.auction.title;
+        document.getElementById('completeAmount').textContent = `お支払い合計: ¥${total.toLocaleString()}（${shippingData.method === 'cool' ? '🧊 クール便' : '通常宅配便'}）`;
+        document.getElementById('completeAddress').textContent = '配送先: ' + shippingData.address;
+
       } catch (e) {
         alert('エラー: ' + e.message);
         btn.disabled = false;
-        document.getElementById('payBtnText').innerHTML = '¥<span id="payBtnAmount">' + orderData.auction.current_price.toLocaleString() + '</span> を支払う';
+        const total = orderData.auction.current_price + (shippingData.fee || 0);
+        document.getElementById('payBtnText').innerHTML = `¥<span id="payBtnAmount">${total.toLocaleString()}</span> を支払う`;
       }
-    }
-
-    async function confirmOrder(paymentIntentId) {
-      const res = await fetch('/api/stripe/confirm-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          auction_id: auctionId,
-          payment_intent_id: paymentIntentId,
-          shipping_name: shippingData.name,
-          shipping_zip: shippingData.zip,
-          shipping_address: shippingData.address,
-          shipping_phone: shippingData.phone,
-          shipping_method: shippingData.method,
-          shipping_fee: shippingData.fee
-        })
-      });
-
-      const data = await res.json();
-      if (!data.success) throw new Error(data.error || '注文確定エラー');
-
-      // 完了表示
-      const total = orderData.auction.current_price + (shippingData.fee || 0);
-      document.getElementById('paymentStep').classList.add('hidden');
-      document.getElementById('step3-badge').className = 'w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold step-done';
-      document.getElementById('step3-badge').textContent = '✓';
-      document.getElementById('completeStep').classList.remove('hidden');
-      document.getElementById('completeTitle').textContent = orderData.auction.title;
-      document.getElementById('completeAmount').textContent = `お支払い合計: ¥${total.toLocaleString()}（${shippingData.method === 'cool' ? '🧊 クール便' : '通常宅配便'}）`;
-      document.getElementById('completeAddress').textContent = '配送先: ' + shippingData.address;
     }
 
     function showError(msg) {
@@ -433,7 +433,6 @@
       document.getElementById('completeTitle').textContent = data.auction.title;
       document.getElementById('completeAmount').textContent = '落札金額: ¥' + data.auction.current_price.toLocaleString();
       document.getElementById('completeAddress').textContent = '配送先: ' + (data.order.shipping_address || '');
-      // ステップ全完了
       ['step2-badge', 'step3-badge'].forEach(id => {
         document.getElementById(id).className = 'w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold step-done';
         document.getElementById(id).textContent = '✓';

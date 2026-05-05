@@ -70,8 +70,11 @@ app.use('/api/auctions', require('./routes/auctions'));
 // マイページ
 app.use('/api/mypage', require('./routes/mypage'));
 
-// Stripe決済
+// Stripe決済（旧）
 app.use('/api/stripe', require('./routes/stripe'));
+
+// Pay.jp決済
+app.use('/api/payjp', require('./routes/payjp'));
 
 // 画像アップロード
 app.use('/api/upload', require('./routes/upload'));
