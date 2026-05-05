@@ -124,7 +124,8 @@ router.post('/charge', authenticateToken, async (req, res) => {
     }
 
     // DBに注文を保存
-    db.transaction(() => {
+    db.exec('BEGIN');
+    try {
       if (existingOrder) {
         db.prepare(`
           UPDATE orders SET
@@ -147,7 +148,11 @@ router.post('/charge', authenticateToken, async (req, res) => {
       // 取引数更新
       db.prepare('UPDATE users SET trade_count = trade_count + 1 WHERE id = ?').run(auction.seller_id);
       db.prepare('UPDATE users SET trade_count = trade_count + 1 WHERE id = ?').run(userId);
-    })();
+      db.exec('COMMIT');
+    } catch (txErr) {
+      db.exec('ROLLBACK');
+      throw txErr;
+    }
 
     res.json({ success: true, charge_id: chargeId, message: '注文が確定しました' });
   } catch (err) {
