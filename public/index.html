@@ -3,165 +3,186 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ワインオークション</title>
+  <title>WineBank Auction</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            gold: { DEFAULT: '#C9A96E', hover: '#B8860B', dim: 'rgba(201,169,110,0.15)' },
+            dark: { 900: '#0A0A0A', 800: '#141414', 700: '#1C1C1C', 600: '#252525', 500: '#2F2F2F' }
+          },
+          fontFamily: {
+            serif: ['"Cormorant Garamond"', '"Noto Serif JP"', 'serif'],
+            sans: ['Inter', '"Noto Sans JP"', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
   <script src="/socket.io/socket.io.js"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
-    body { font-family: 'Noto Sans JP', sans-serif; }
-    .wine-badge { background: linear-gradient(135deg, #7B2D8B, #C0392B); }
-    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.12); }
-    .card-hover { transition: all 0.2s ease; }
-    .filter-chip.active { background: #7B2D8B; color: white; border-color: #7B2D8B; }
-    .tag-vintage { background: #F3E8FF; color: #6B21A8; }
-    .tag-region { background: #FEF3C7; color: #92400E; }
-    .tag-grape { background: #DCFCE7; color: #166534; }
-    .ending-badge { background: #FEF2F2; color: #DC2626; border: 1px solid #FECACA; }
-    .timer-urgent { color: #C0392B; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-    .card-fade { animation: fadeIn 0.3s ease; }
-    .skeleton { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.2s infinite; }
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@400;500;700&display=swap');
+    body { font-family: 'Inter', 'Noto Sans JP', sans-serif; }
+    h1, h2, h3, .heading, .font-serif { font-family: 'Cormorant Garamond', 'Noto Serif JP', serif; }
+
+    .card-hover { transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1); }
+    .card-hover:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.5); border-color: rgba(201,169,110,0.25); }
+
+    .filter-chip { transition: all 0.2s ease; }
+    .filter-chip.active { background: rgba(201,169,110,0.12); color: #C9A96E; border-color: #C9A96E !important; }
+
+    .ending-badge { background: rgba(201,169,110,0.12); color: #C9A96E; border: 1px solid rgba(201,169,110,0.3); backdrop-filter: blur(8px); }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .card-fade { animation: fadeIn 0.4s ease; }
+
+    .skeleton { background: linear-gradient(90deg, #1C1C1C 25%, #252525 50%, #1C1C1C 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
     @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-    .winemark { background: linear-gradient(135deg, #6B1A1A 0%, #9B2335 50%, #C0392B 100%); box-shadow: 0 2px 6px rgba(0,0,0,0.35); }
+
+    .image-overlay { background: linear-gradient(to top, rgba(10,10,10,0.85) 0%, rgba(10,10,10,0.2) 40%, transparent 60%); }
+
+    /* スクロールバー */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0A0A0A; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #C9A96E; }
+
+    select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23C9A96E' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; -webkit-appearance: none; appearance: none; padding-right: 28px; }
   </style>
 </head>
-<body class="bg-gray-50">
+<body class="bg-dark-900 min-h-screen text-white/90">
 
   <!-- ヘッダー -->
-  <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+  <header class="bg-dark-800/95 backdrop-blur-md border-b border-white/5 sticky top-0 z-50">
     <div class="max-w-6xl mx-auto px-4">
-      <div class="flex items-center h-14 gap-2">
+      <div class="flex items-center h-16 gap-3">
         <!-- ロゴ -->
-        <a href="/" class="flex items-center gap-2 flex-shrink-0">
-          <div class="wine-badge text-white px-3 py-1 rounded-full text-sm font-bold">🍷 WINE</div>
-          <span class="text-gray-800 font-bold hidden sm:block">オークション</span>
+        <a href="/" class="flex items-center gap-3 flex-shrink-0">
+          <span class="font-serif text-2xl text-gold tracking-wide font-semibold">WINE BANK</span>
+          <span class="text-white/20 text-[10px] tracking-[0.25em] uppercase font-light hidden sm:block">Auction</span>
         </a>
         <!-- PC検索 -->
-        <div class="hidden md:flex flex-1 max-w-md mx-4">
+        <div class="hidden md:flex flex-1 max-w-md mx-6">
           <div class="relative w-full">
-            <input type="text" id="searchInput" placeholder="ワインを検索（生産者、産地、ヴィンテージ...）"
-              class="w-full border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-purple-500 pr-10">
-            <button onclick="applyFilters()" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input type="text" id="searchInput" placeholder="生産者、産地、ヴィンテージで検索..."
+              class="w-full bg-dark-700 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white/90 placeholder-white/25 focus:outline-none focus:border-gold/50 pr-10 transition">
+            <button onclick="applyFilters()" class="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-gold transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
             </button>
           </div>
         </div>
         <!-- 右側アクション -->
-        <div class="ml-auto flex items-center gap-2">
-          <!-- モバイル検索アイコン -->
-          <button class="md:hidden text-gray-500 p-2" onclick="toggleMobileSearch()">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <div class="ml-auto flex items-center gap-4">
+          <button class="md:hidden text-white/40 p-2 hover:text-gold transition" onclick="toggleMobileSearch()">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
           </button>
-          <a href="/sell" class="text-sm text-gray-600 hover:text-gray-900 hidden" id="sellBtn">出品する</a>
-          <a href="/mypage" class="text-sm text-gray-600 hover:text-gray-900 hidden" id="mypageBtn">マイページ</a>
-          <button onclick="logout()" class="text-sm text-gray-500 hover:text-gray-700 hidden" id="logoutBtn">ログアウト</button>
-          <a href="/login" class="bg-purple-700 text-white text-sm px-4 py-1.5 rounded-full hover:bg-purple-800 flex-shrink-0" id="loginBtn">ログイン</a>
+          <a href="/sell" class="text-sm text-white/50 hover:text-gold transition hidden" id="sellBtn">出品する</a>
+          <a href="/mypage" class="text-sm text-white/50 hover:text-gold transition hidden" id="mypageBtn">マイページ</a>
+          <button onclick="logout()" class="text-sm text-white/30 hover:text-white/60 transition hidden" id="logoutBtn">ログアウト</button>
+          <a href="/login" class="border border-gold/60 text-gold text-sm px-5 py-1.5 rounded hover:bg-gold hover:text-dark-900 transition flex-shrink-0" id="loginBtn">ログイン</a>
         </div>
       </div>
-      <!-- モバイル検索バー（トグル） -->
-      <div id="mobileSearchBar" class="hidden pb-2 md:hidden">
+      <!-- モバイル検索バー -->
+      <div id="mobileSearchBar" class="hidden pb-3 md:hidden">
         <div class="relative">
           <input type="text" id="searchInputMobile" placeholder="ワインを検索..."
-            class="w-full border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-purple-500 pr-10">
-          <button onclick="applyFilters(true)" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            class="w-full bg-dark-700 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white/90 placeholder-white/25 focus:outline-none focus:border-gold/50 pr-10">
+          <button onclick="applyFilters(true)" class="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-gold">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
           </button>
         </div>
       </div>
     </div>
   </header>
 
-  <div class="max-w-6xl mx-auto px-4 py-6">
+  <div class="max-w-6xl mx-auto px-4 py-8">
 
     <!-- フィルターバー -->
-    <div class="bg-white rounded-xl border border-gray-200 p-4 mb-6">
+    <div class="bg-dark-700/40 rounded-xl border border-white/5 p-5 mb-8">
       <div class="flex flex-wrap gap-3 items-center">
-        <span class="text-sm font-medium text-gray-600 mr-1">産地</span>
-        <button class="filter-chip active text-sm px-3 py-1 rounded-full border border-purple-700 transition" data-region="" onclick="setRegion(this, '')">すべて</button>
-        <button class="filter-chip text-sm px-3 py-1 rounded-full border border-gray-300 hover:border-purple-400 transition" data-region="ボルドー" onclick="setRegion(this, 'ボルドー')">🇫🇷 ボルドー</button>
-        <button class="filter-chip text-sm px-3 py-1 rounded-full border border-gray-300 hover:border-purple-400 transition" data-region="ブルゴーニュ" onclick="setRegion(this, 'ブルゴーニュ')">🇫🇷 ブルゴーニュ</button>
-        <button class="filter-chip text-sm px-3 py-1 rounded-full border border-gray-300 hover:border-purple-400 transition" data-region="イタリア" onclick="setRegion(this, 'イタリア')">🇮🇹 イタリア</button>
-        <button class="filter-chip text-sm px-3 py-1 rounded-full border border-gray-300 hover:border-purple-400 transition" data-region="スペイン" onclick="setRegion(this, 'スペイン')">🇪🇸 スペイン</button>
-        <button class="filter-chip text-sm px-3 py-1 rounded-full border border-gray-300 hover:border-purple-400 transition" data-region="カリフォルニア" onclick="setRegion(this, 'カリフォルニア')">🇺🇸 カリフォルニア</button>
-        <button class="filter-chip text-sm px-3 py-1 rounded-full border border-gray-300 hover:border-purple-400 transition" data-region="シャンパーニュ" onclick="setRegion(this, 'シャンパーニュ')">🇫🇷 シャンパーニュ</button>
+        <span class="text-[10px] font-medium text-white/30 uppercase tracking-[0.2em] mr-2">Region</span>
+        <button class="filter-chip active text-sm px-4 py-1.5 rounded border border-gold transition" data-region="" onclick="setRegion(this, '')">All</button>
+        <button class="filter-chip text-sm px-4 py-1.5 rounded border border-white/10 text-white/50 hover:border-gold/40 hover:text-gold transition" data-region="ボルドー" onclick="setRegion(this, 'ボルドー')">Bordeaux</button>
+        <button class="filter-chip text-sm px-4 py-1.5 rounded border border-white/10 text-white/50 hover:border-gold/40 hover:text-gold transition" data-region="ブルゴーニュ" onclick="setRegion(this, 'ブルゴーニュ')">Bourgogne</button>
+        <button class="filter-chip text-sm px-4 py-1.5 rounded border border-white/10 text-white/50 hover:border-gold/40 hover:text-gold transition" data-region="イタリア" onclick="setRegion(this, 'イタリア')">Italia</button>
+        <button class="filter-chip text-sm px-4 py-1.5 rounded border border-white/10 text-white/50 hover:border-gold/40 hover:text-gold transition" data-region="スペイン" onclick="setRegion(this, 'スペイン')">España</button>
+        <button class="filter-chip text-sm px-4 py-1.5 rounded border border-white/10 text-white/50 hover:border-gold/40 hover:text-gold transition" data-region="カリフォルニア" onclick="setRegion(this, 'カリフォルニア')">California</button>
+        <button class="filter-chip text-sm px-4 py-1.5 rounded border border-white/10 text-white/50 hover:border-gold/40 hover:text-gold transition" data-region="シャンパーニュ" onclick="setRegion(this, 'シャンパーニュ')">Champagne</button>
 
-        <div class="h-5 w-px bg-gray-300 mx-1"></div>
+        <div class="h-5 w-px bg-white/10 mx-2"></div>
 
-        <select id="vintageSelect" onchange="applyFilters()" class="text-sm border border-gray-300 rounded-full px-3 py-1 focus:outline-none focus:border-purple-500">
-          <option value="">ヴィンテージ</option>
-          <option value="2020,2030">2020〜現在</option>
+        <select id="vintageSelect" onchange="applyFilters()" class="text-sm bg-dark-600 border border-white/10 rounded px-3 py-1.5 text-white/60 focus:outline-none focus:border-gold/50">
+          <option value="">Vintage</option>
+          <option value="2020,2030">2020〜</option>
           <option value="2010,2019">2010〜2019</option>
           <option value="2000,2009">2000〜2009</option>
           <option value="1990,1999">1990〜1999</option>
-          <option value="1900,1989">1990年以前</option>
+          <option value="1900,1989">〜1989</option>
         </select>
 
-        <select id="priceSelect" onchange="applyFilters()" class="text-sm border border-gray-300 rounded-full px-3 py-1 focus:outline-none focus:border-purple-500">
-          <option value="">価格帯</option>
-          <option value="0,10000">〜¥10,000</option>
-          <option value="10000,50000">¥10,000〜¥50,000</option>
+        <select id="priceSelect" onchange="applyFilters()" class="text-sm bg-dark-600 border border-white/10 rounded px-3 py-1.5 text-white/60 focus:outline-none focus:border-gold/50">
+          <option value="">Price</option>
+          <option value="0,50000">〜¥50,000</option>
           <option value="50000,100000">¥50,000〜¥100,000</option>
-          <option value="100000,99999999">¥100,000以上</option>
+          <option value="100000,300000">¥100,000〜¥300,000</option>
+          <option value="300000,99999999">¥300,000〜</option>
         </select>
 
         <div class="ml-auto">
-          <select id="sortSelect" onchange="applyFilters()" class="text-sm border border-gray-300 rounded-lg px-3 py-1 focus:outline-none focus:border-purple-500">
-            <option value="end">終了が近い順</option>
-            <option value="bids">入札数が多い順</option>
-            <option value="price_high">価格が高い順</option>
-            <option value="price_low">価格が低い順</option>
-            <option value="new">新着順</option>
+          <select id="sortSelect" onchange="applyFilters()" class="text-sm bg-dark-600 border border-white/10 rounded px-3 py-1.5 text-white/60 focus:outline-none focus:border-gold/50">
+            <option value="end">Ending Soon</option>
+            <option value="bids">Most Bids</option>
+            <option value="price_high">Price: High→Low</option>
+            <option value="price_low">Price: Low→High</option>
+            <option value="new">Newest</option>
           </select>
         </div>
       </div>
     </div>
 
     <!-- 集計バー -->
-    <div class="flex items-center justify-between mb-4">
-      <p class="text-sm text-gray-600" id="totalCount"><span class="font-bold text-gray-900">—</span> 件 出品中</p>
-      <div class="flex gap-2 text-sm text-gray-500" id="endingSoonBadge" style="display:none!important">
-        <span class="flex items-center gap-1">
-          <span class="w-2 h-2 bg-red-500 rounded-full inline-block animate-pulse"></span>
-          終了間近 <span id="endingSoonCount">0</span>件
+    <div class="flex items-center justify-between mb-6">
+      <p class="text-sm text-white/40" id="totalCount"><span class="font-medium text-white/70">—</span> lots available</p>
+      <div class="flex gap-2 text-sm text-white/40" id="endingSoonBadge" style="display:none!important">
+        <span class="flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 bg-gold rounded-full inline-block animate-pulse"></span>
+          <span class="text-gold/80"><span id="endingSoonCount">0</span> ending soon</span>
         </span>
       </div>
     </div>
 
     <!-- 商品グリッド -->
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" id="auctionGrid">
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5" id="auctionGrid">
       <!-- スケルトン -->
-      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div class="skeleton h-44"></div>
-        <div class="p-3"><div class="skeleton h-3 rounded mb-2"></div><div class="skeleton h-4 rounded mb-3"></div><div class="skeleton h-5 w-24 rounded"></div></div>
-      </div>
-      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div class="skeleton h-44"></div>
-        <div class="p-3"><div class="skeleton h-3 rounded mb-2"></div><div class="skeleton h-4 rounded mb-3"></div><div class="skeleton h-5 w-24 rounded"></div></div>
-      </div>
-      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div class="skeleton h-44"></div>
-        <div class="p-3"><div class="skeleton h-3 rounded mb-2"></div><div class="skeleton h-4 rounded mb-3"></div><div class="skeleton h-5 w-24 rounded"></div></div>
-      </div>
-      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div class="skeleton h-44"></div>
-        <div class="p-3"><div class="skeleton h-3 rounded mb-2"></div><div class="skeleton h-4 rounded mb-3"></div><div class="skeleton h-5 w-24 rounded"></div></div>
-      </div>
+      <div class="bg-dark-700 rounded-xl border border-white/5 overflow-hidden"><div class="skeleton h-52"></div><div class="p-4"><div class="skeleton h-3 rounded mb-2 w-20"></div><div class="skeleton h-4 rounded mb-3"></div><div class="skeleton h-5 w-28 rounded"></div></div></div>
+      <div class="bg-dark-700 rounded-xl border border-white/5 overflow-hidden"><div class="skeleton h-52"></div><div class="p-4"><div class="skeleton h-3 rounded mb-2 w-20"></div><div class="skeleton h-4 rounded mb-3"></div><div class="skeleton h-5 w-28 rounded"></div></div></div>
+      <div class="bg-dark-700 rounded-xl border border-white/5 overflow-hidden"><div class="skeleton h-52"></div><div class="p-4"><div class="skeleton h-3 rounded mb-2 w-20"></div><div class="skeleton h-4 rounded mb-3"></div><div class="skeleton h-5 w-28 rounded"></div></div></div>
+      <div class="bg-dark-700 rounded-xl border border-white/5 overflow-hidden"><div class="skeleton h-52"></div><div class="p-4"><div class="skeleton h-3 rounded mb-2 w-20"></div><div class="skeleton h-4 rounded mb-3"></div><div class="skeleton h-5 w-28 rounded"></div></div></div>
     </div>
 
     <!-- 空状態 -->
-    <div id="emptyState" class="hidden text-center py-16">
-      <div class="text-5xl mb-4">🍷</div>
-      <p class="text-gray-500">条件に一致するオークションが見つかりませんでした</p>
+    <div id="emptyState" class="hidden text-center py-20">
+      <p class="text-white/20 text-lg font-serif">No auctions found</p>
+      <p class="text-white/10 text-sm mt-2">条件を変更してお探しください</p>
     </div>
 
   </div>
+
+  <!-- フッター -->
+  <footer class="border-t border-white/5 mt-16 py-8">
+    <div class="max-w-6xl mx-auto px-4 flex items-center justify-between">
+      <span class="font-serif text-gold/40 text-sm tracking-wide">WINE BANK</span>
+      <span class="text-white/15 text-xs">&copy; 2026 Wine Bank Auction</span>
+    </div>
+  </footer>
 
   <script>
     let currentRegion = '';
     let allAuctions = [];
     let timers = {};
 
-    // 認証状態
     const token = localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user') || 'null');
 
@@ -189,27 +210,24 @@
     try {
       socket = io();
       socket.on('bid:new', (data) => {
-        // 一覧の価格をリアルタイム更新
         const card = document.querySelector(`[data-auction-id="${data.auction_id}"]`);
         if (card) {
           const priceEl = card.querySelector('.auction-price');
           const bidCountEl = card.querySelector('.auction-bid-count');
           if (priceEl) priceEl.textContent = '¥' + data.new_price.toLocaleString();
-          if (bidCountEl) bidCountEl.textContent = `入札 ${data.bid_count}件`;
+          if (bidCountEl) bidCountEl.textContent = data.bid_count + ' bids';
         }
       });
     } catch(e) {}
 
-    // フィルター
     function setRegion(btn, region) {
       currentRegion = region;
       document.querySelectorAll('.filter-chip').forEach(b => {
         b.classList.remove('active');
-        b.classList.add('border-gray-300');
-        b.classList.remove('border-purple-700');
+        b.classList.add('border-white/10');
       });
       btn.classList.add('active');
-      btn.classList.remove('border-gray-300');
+      btn.classList.remove('border-white/10');
       applyFilters();
     }
 
@@ -239,7 +257,6 @@
       loadAuctions(params);
     }
 
-    // オークション一覧取得
     async function loadAuctions(params = new URLSearchParams()) {
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
       try {
@@ -248,20 +265,18 @@
         allAuctions = data.auctions || [];
         renderAuctions(allAuctions);
       } catch (e) {
-        document.getElementById('auctionGrid').innerHTML = '<div class="col-span-4 text-center py-12 text-gray-400">サーバーに接続できませんでした</div>';
+        document.getElementById('auctionGrid').innerHTML = '<div class="col-span-4 text-center py-16 text-white/20">接続できませんでした</div>';
       }
     }
 
     function renderAuctions(auctions) {
-      // タイマークリア
       Object.values(timers).forEach(clearInterval);
       timers = {};
 
       const grid = document.getElementById('auctionGrid');
       const empty = document.getElementById('emptyState');
 
-      // 集計更新
-      document.getElementById('totalCount').innerHTML = `<span class="font-bold text-gray-900">${auctions.length}</span> 件 出品中`;
+      document.getElementById('totalCount').innerHTML = `<span class="font-medium text-white/70">${auctions.length}</span> lots available`;
       const endingSoon = auctions.filter(a => {
         const diff = new Date(a.end_time) - new Date();
         return diff > 0 && diff < 3600000;
@@ -283,58 +298,62 @@
         const diffMs = endTime - new Date();
         const isEndingSoon = diffMs > 0 && diffMs < 3600000;
         const timerHtml = isEndingSoon
-          ? `<div class="ending-badge absolute top-2 left-2 text-xs px-2 py-0.5 rounded-full font-medium timer-label" data-end="${a.end_time}">計算中...</div>`
+          ? `<div class="ending-badge absolute top-3 left-3 text-xs px-2.5 py-1 rounded font-medium timer-label" data-end="${a.end_time}"></div>`
           : (diffMs < 24 * 3600000 && diffMs > 0)
-            ? `<div class="ending-badge absolute top-2 left-2 text-xs px-2 py-0.5 rounded-full font-medium">残り ${formatTimeShort(diffMs)}</div>`
+            ? `<div class="ending-badge absolute top-3 left-3 text-xs px-2.5 py-1 rounded font-medium">${formatTimeShort(diffMs)}</div>`
             : '';
 
-        const watchBtn = a.is_watched
-          ? `<button class="absolute top-10 right-2 text-red-400 bg-white rounded-full p-1 shadow" onclick="toggleWatch(event, ${a.id}, this)">❤️</button>`
-          : `<button class="absolute top-10 right-2 text-gray-300 bg-white rounded-full p-1 shadow hover:text-red-400" onclick="toggleWatch(event, ${a.id}, this)">🤍</button>`;
-        const winemarkBadge = `<div class="winemark absolute top-2 right-2 text-white rounded-md px-1.5 py-0.5 text-center" style="min-width:46px;"><div style="font-size:8px;font-weight:900;letter-spacing:0.4px;line-height:1.5;">WineBank</div><div style="font-size:7px;line-height:1.3;">✓ 真贋済み</div></div>`;
+        const watchBtn = user ? (a.is_watched
+          ? `<button class="absolute bottom-3 right-3 text-gold bg-dark-900/60 backdrop-blur-sm rounded-full w-8 h-8 flex items-center justify-center text-sm" onclick="toggleWatch(event, ${a.id}, this)">♥</button>`
+          : `<button class="absolute bottom-3 right-3 text-white/20 bg-dark-900/40 backdrop-blur-sm rounded-full w-8 h-8 flex items-center justify-center text-sm hover:text-gold transition" onclick="toggleWatch(event, ${a.id}, this)">♡</button>`)
+          : '';
+
+        const regionShort = a.region ? a.region.split('/').pop().trim() : '';
+        const metaText = [a.vintage, regionShort].filter(Boolean).join(' · ');
 
         return `
-          <a href="/detail?id=${a.id}" class="card-hover card-fade bg-white rounded-xl border border-gray-200 overflow-hidden block" data-auction-id="${a.id}">
+          <a href="/detail?id=${a.id}" class="card-hover card-fade bg-dark-700 rounded-xl border border-white/5 overflow-hidden block group" data-auction-id="${a.id}">
             <div class="relative">
-              <div class="bg-gradient-to-br ${a.image_color} h-44 flex items-center justify-center overflow-hidden">
+              <div class="h-52 overflow-hidden">
                 ${a.image_url
-                  ? `<img src="${a.image_url}" alt="${a.title}" class="w-full h-full object-cover">`
-                  : `<div class="text-center"><div class="text-5xl mb-1">${a.image_emoji}</div><div class="text-white text-xs opacity-70">${a.producer}</div></div>`}
+                  ? `<img src="${a.image_url}" alt="${a.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">`
+                  : `<div class="bg-gradient-to-br ${a.image_color} w-full h-full flex items-center justify-center"><div class="text-5xl opacity-60">${a.image_emoji}</div></div>`}
               </div>
-              ${winemarkBadge}
+              <div class="image-overlay absolute inset-0 pointer-events-none"></div>
               ${timerHtml}
-              ${user ? watchBtn : ''}
-            </div>
-            <div class="p-3">
-              <p class="text-xs text-gray-500 mb-1">${a.producer}</p>
-              <p class="font-medium text-gray-900 text-sm leading-snug mb-2 line-clamp-2">${a.title}</p>
-              <div class="flex flex-wrap gap-1 mb-2">
-                ${a.vintage ? `<span class="tag-vintage text-xs px-2 py-0.5 rounded-full">${a.vintage}</span>` : ''}
-                ${a.region ? `<span class="tag-region text-xs px-2 py-0.5 rounded-full">${a.region.split('/').pop().trim()}</span>` : ''}
+              ${watchBtn}
+              <!-- Authenticated badge -->
+              <div class="absolute top-3 right-3 flex items-center gap-1 bg-dark-900/50 backdrop-blur-sm rounded px-2 py-0.5">
+                <svg class="w-3 h-3 text-gold" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                <span class="text-[9px] text-gold/80 tracking-wider uppercase">Verified</span>
               </div>
-              <div class="flex items-end justify-between">
+            </div>
+            <div class="p-4">
+              <p class="text-[10px] text-white/30 uppercase tracking-[0.15em] mb-1.5">${a.producer}</p>
+              <p class="font-serif text-white/90 text-[15px] leading-snug mb-2 line-clamp-2 font-medium">${a.title}</p>
+              <p class="text-[11px] text-white/25 mb-3 tracking-wide">${metaText}</p>
+              <div class="flex items-end justify-between pt-2 border-t border-white/5">
                 <div>
-                  <p class="text-xs text-gray-400">現在の価格</p>
-                  <p class="text-lg font-bold text-gray-900 auction-price">¥${a.current_price.toLocaleString()}</p>
+                  <p class="text-[9px] text-gold/50 uppercase tracking-[0.2em] mb-0.5">Current Bid</p>
+                  <p class="text-xl font-serif font-semibold text-gold auction-price">¥${a.current_price.toLocaleString()}</p>
                 </div>
-                <p class="text-xs text-gray-400 auction-bid-count">入札 ${a.bid_count}件</p>
+                <p class="text-[11px] text-white/25 auction-bid-count">${a.bid_count} bids</p>
               </div>
             </div>
           </a>`;
       }).join('');
 
-      // タイマー開始（終了間近のみ）
+      // タイマー
       document.querySelectorAll('.timer-label').forEach(el => {
         const endTime = new Date(el.dataset.end);
         const id = setInterval(() => {
           const diff = endTime - new Date();
-          if (diff <= 0) { el.textContent = '終了'; clearInterval(id); return; }
-          el.textContent = '残り ' + formatCountdown(diff);
+          if (diff <= 0) { el.textContent = 'Ended'; clearInterval(id); return; }
+          el.textContent = formatCountdown(diff);
         }, 1000);
         timers[el.dataset.end] = id;
-        // 即時表示
         const diff = endTime - new Date();
-        if (diff > 0) el.textContent = '残り ' + formatCountdown(diff);
+        if (diff > 0) el.textContent = formatCountdown(diff);
       });
     }
 
@@ -347,10 +366,10 @@
           method: 'POST', headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
-        btn.textContent = data.watched ? '❤️' : '🤍';
+        btn.textContent = data.watched ? '♥' : '♡';
         btn.className = data.watched
-          ? 'absolute top-2 right-2 text-red-400 bg-white rounded-full p-1 shadow'
-          : 'absolute top-2 right-2 text-gray-300 bg-white rounded-full p-1 shadow hover:text-red-400';
+          ? 'absolute bottom-3 right-3 text-gold bg-dark-900/60 backdrop-blur-sm rounded-full w-8 h-8 flex items-center justify-center text-sm'
+          : 'absolute bottom-3 right-3 text-white/20 bg-dark-900/40 backdrop-blur-sm rounded-full w-8 h-8 flex items-center justify-center text-sm hover:text-gold transition';
       } catch(e) {}
     }
 
@@ -365,11 +384,10 @@
     function formatTimeShort(ms) {
       const h = Math.floor(ms / 3600000);
       const m = Math.floor((ms % 3600000) / 60000);
-      if (h > 0) return `${h}時間${m}分`;
-      return `${m}分`;
+      if (h > 0) return `${h}h ${m}m`;
+      return `${m}m`;
     }
 
-    // 検索エンター
     document.getElementById('searchInput').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') applyFilters();
     });
@@ -377,7 +395,6 @@
       if (e.key === 'Enter') applyFilters(true);
     });
 
-    // 初期ロード
     loadAuctions();
   </script>
 </body>
