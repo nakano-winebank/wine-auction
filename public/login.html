@@ -3,79 +3,95 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ログイン / 新規登録 — ワインオークション</title>
+  <title>ログイン / 新規登録 — WINE BANK Auction</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            gold: { DEFAULT: '#C9A96E', hover: '#B8860B', dim: 'rgba(201,169,110,0.15)' },
+            dark: { 900: '#0A0A0A', 800: '#141414', 700: '#1C1C1C', 600: '#252525', 500: '#2F2F2F' }
+          },
+          fontFamily: {
+            serif: ['"Cormorant Garamond"', '"Noto Serif JP"', 'serif'],
+            sans: ['Inter', '"Noto Sans JP"', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
-    body { font-family: 'Noto Sans JP', sans-serif; }
-    .wine-bg { background: linear-gradient(135deg, #1a0a0a 0%, #3d0c0c 40%, #1a0a0a 100%); }
-    .card { backdrop-filter: blur(12px); }
-    .btn-primary { background: linear-gradient(135deg, #C0392B, #922B21); }
-    .btn-primary:hover { background: linear-gradient(135deg, #922B21, #7B241C); }
-    .input-field:focus { border-color: #C0392B; box-shadow: 0 0 0 3px rgba(192,57,43,0.15); }
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=Noto+Sans+JP:wght@300;400;500;700&display=swap');
+    body { font-family: 'Inter', 'Noto Sans JP', sans-serif; }
+    h1, h2, h3, .heading, .font-serif { font-family: 'Cormorant Garamond', 'Noto Serif JP', serif; }
+
+    .input-field:focus { border-color: rgba(201,169,110,0.5); box-shadow: 0 0 0 3px rgba(201,169,110,0.1); }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     .fade-in { animation: fadeIn 0.5s ease; }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0A0A0A; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #C9A96E; }
   </style>
 </head>
-<body class="wine-bg min-h-screen flex items-center justify-center p-4">
+<body class="min-h-screen flex items-center justify-center p-4 bg-dark-900" style="background: linear-gradient(160deg, #0A0A0A 0%, #141414 40%, #0A0A0A 100%);">
 
   <div class="w-full max-w-md fade-in">
     <!-- ロゴ -->
-    <div class="text-center mb-8">
-      <a href="/" class="inline-flex items-center gap-3">
-        <div class="text-5xl">🍷</div>
-        <div class="text-left">
-          <div class="text-white font-bold text-2xl tracking-wide">WINE</div>
-          <div class="text-red-300 text-sm tracking-widest">AUCTION</div>
-        </div>
+    <div class="text-center mb-10">
+      <a href="/" class="inline-block">
+        <div class="font-serif text-gold text-4xl font-semibold tracking-wider">WINE BANK</div>
+        <div class="text-white/20 text-xs tracking-[0.35em] uppercase mt-1">Auction</div>
       </a>
     </div>
 
     <!-- カード -->
-    <div class="bg-white bg-opacity-95 rounded-2xl shadow-2xl overflow-hidden">
+    <div class="bg-dark-700/95 backdrop-blur-xl rounded-2xl border border-white/5 shadow-2xl overflow-hidden">
       <!-- タブ -->
       <div class="flex">
         <button id="tabLogin" onclick="switchTab('login')"
-          class="flex-1 py-4 text-center font-bold text-sm transition border-b-2 border-red-600 text-red-600">
+          class="flex-1 py-4 text-center font-medium text-sm transition border-b-2 border-gold text-gold">
           ログイン
         </button>
         <button id="tabRegister" onclick="switchTab('register')"
-          class="flex-1 py-4 text-center font-bold text-sm transition border-b-2 border-transparent text-gray-400 hover:text-gray-600">
+          class="flex-1 py-4 text-center font-medium text-sm transition border-b-2 border-transparent text-white/40 hover:text-white/60">
           新規登録
         </button>
       </div>
 
       <div class="p-6">
         <!-- エラー表示 -->
-        <div id="errorBox" class="hidden bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3 mb-4"></div>
-        <div id="successBox" class="hidden bg-green-50 border border-green-200 text-green-700 text-sm rounded-lg px-4 py-3 mb-4"></div>
+        <div id="errorBox" class="hidden bg-red-900/30 border border-red-500/30 text-red-300 text-sm rounded-lg px-4 py-3 mb-4"></div>
+        <div id="successBox" class="hidden bg-green-900/30 border border-green-500/30 text-green-300 text-sm rounded-lg px-4 py-3 mb-4"></div>
 
         <!-- ログインフォーム -->
         <form id="loginForm" onsubmit="handleLogin(event)">
           <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">メールアドレス</label>
+            <label class="block text-sm font-medium text-white/60 mb-1">メールアドレス</label>
             <input type="email" id="loginEmail" required placeholder="wine@example.com"
-              class="input-field w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none transition">
+              class="input-field w-full bg-dark-600 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/25 focus:outline-none transition">
           </div>
           <div class="mb-6">
-            <label class="block text-sm font-medium text-gray-700 mb-1">パスワード</label>
+            <label class="block text-sm font-medium text-white/60 mb-1">パスワード</label>
             <div class="relative">
               <input type="password" id="loginPassword" required placeholder="パスワード"
-                class="input-field w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none transition pr-10">
-              <button type="button" onclick="togglePass('loginPassword')" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">表示</button>
+                class="input-field w-full bg-dark-600 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/25 focus:outline-none transition pr-10">
+              <button type="button" onclick="togglePass('loginPassword')" class="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 text-xs hover:text-gold transition">表示</button>
             </div>
           </div>
 
           <!-- テストアカウント -->
-          <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4 text-xs text-amber-700">
-            <p class="font-bold mb-1">🧪 テストアカウント</p>
-            <p>メール: <span class="font-mono cursor-pointer underline" onclick="fillTest()">lover@example.com</span></p>
+          <div class="bg-gold/5 border border-gold/20 rounded-lg p-3 mb-4 text-xs text-gold/80">
+            <p class="font-bold mb-1">テストアカウント</p>
+            <p>メール: <span class="font-mono cursor-pointer underline hover:text-gold" onclick="fillTest()">lover@example.com</span></p>
             <p>パスワード: <span class="font-mono">password123</span></p>
-            <button type="button" onclick="fillTest()" class="mt-1 text-amber-800 font-bold underline">→ 自動入力</button>
+            <button type="button" onclick="fillTest()" class="mt-1 text-gold font-bold underline hover:text-gold-hover transition">自動入力</button>
           </div>
 
           <button type="submit" id="loginBtn"
-            class="btn-primary w-full text-white font-bold py-3 rounded-xl transition">
+            class="w-full bg-gold text-dark-900 font-bold py-3 rounded-xl transition hover:bg-gold-hover">
             ログイン
           </button>
         </form>
@@ -84,64 +100,64 @@
         <form id="registerForm" class="hidden" onsubmit="handleRegister(event)">
           <!-- 氏名 -->
           <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">氏名 <span class="text-red-500">*</span></label>
+            <label class="block text-sm font-medium text-white/60 mb-1">氏名 <span class="text-red-400">*</span></label>
             <div class="grid grid-cols-2 gap-2">
               <input type="text" id="regLastName" required placeholder="山田"
-                class="input-field w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none transition">
+                class="input-field w-full bg-dark-600 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/25 focus:outline-none transition">
               <input type="text" id="regFirstName" required placeholder="太郎"
-                class="input-field w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none transition">
+                class="input-field w-full bg-dark-600 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/25 focus:outline-none transition">
             </div>
-            <p class="text-xs text-gray-400 mt-1">姓 ／ 名</p>
+            <p class="text-xs text-white/30 mt-1">姓 ／ 名</p>
           </div>
           <!-- 携帯電話 -->
           <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">携帯電話番号 <span class="text-red-500">*</span></label>
+            <label class="block text-sm font-medium text-white/60 mb-1">携帯電話番号 <span class="text-red-400">*</span></label>
             <input type="tel" id="regPhone" required placeholder="090-1234-5678"
-              class="input-field w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none transition">
+              class="input-field w-full bg-dark-600 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/25 focus:outline-none transition">
           </div>
           <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">ユーザー名 <span class="text-red-500">*</span></label>
+            <label class="block text-sm font-medium text-white/60 mb-1">ユーザー名 <span class="text-red-400">*</span></label>
             <input type="text" id="regUsername" required placeholder="half_alpha_only"
               pattern="[a-zA-Z0-9_]+" title="半角英数字とアンダーバーのみ"
-              class="input-field w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none transition">
-            <p class="text-xs text-gray-400 mt-1">半角英数字とアンダーバーのみ（公開されます）</p>
+              class="input-field w-full bg-dark-600 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/25 focus:outline-none transition">
+            <p class="text-xs text-white/30 mt-1">半角英数字とアンダーバーのみ（公開されます）</p>
           </div>
           <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">メールアドレス <span class="text-red-500">*</span></label>
+            <label class="block text-sm font-medium text-white/60 mb-1">メールアドレス <span class="text-red-400">*</span></label>
             <input type="email" id="regEmail" required placeholder="wine@example.com"
-              class="input-field w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none transition">
+              class="input-field w-full bg-dark-600 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/25 focus:outline-none transition">
           </div>
           <div class="mb-6">
-            <label class="block text-sm font-medium text-gray-700 mb-1">パスワード <span class="text-red-500">*</span></label>
+            <label class="block text-sm font-medium text-white/60 mb-1">パスワード <span class="text-red-400">*</span></label>
             <div class="relative">
               <input type="password" id="regPassword" required placeholder="6文字以上" minlength="6"
-                class="input-field w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none transition pr-10">
-              <button type="button" onclick="togglePass('regPassword')" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">表示</button>
+                class="input-field w-full bg-dark-600 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/25 focus:outline-none transition pr-10">
+              <button type="button" onclick="togglePass('regPassword')" class="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 text-xs hover:text-gold transition">表示</button>
             </div>
           </div>
 
           <!-- 利用規約・プライバシーポリシー同意 -->
-          <div class="mb-4 bg-gray-50 border border-gray-200 rounded-xl p-3">
+          <div class="mb-4 bg-dark-600/50 border border-white/5 rounded-xl p-3">
             <label class="flex items-start gap-2 cursor-pointer">
-              <input type="checkbox" id="agreeTerms" required class="mt-0.5 accent-red-600">
-              <span class="text-xs text-gray-600">
-                <a href="/terms" target="_blank" class="text-red-600 underline hover:text-red-800">利用規約</a>および
-                <a href="/privacy" target="_blank" class="text-red-600 underline hover:text-red-800">プライバシーポリシー</a>
-                に同意します <span class="text-red-500">*</span>
+              <input type="checkbox" id="agreeTerms" required class="mt-0.5 accent-gold">
+              <span class="text-xs text-white/50">
+                <a href="/terms" target="_blank" class="text-gold underline hover:text-gold-hover">利用規約</a>および
+                <a href="/privacy" target="_blank" class="text-gold underline hover:text-gold-hover">プライバシーポリシー</a>
+                に同意します <span class="text-red-400">*</span>
               </span>
             </label>
           </div>
 
           <button type="submit" id="regBtn"
-            class="btn-primary w-full text-white font-bold py-3 rounded-xl transition">
+            class="w-full bg-gold text-dark-900 font-bold py-3 rounded-xl transition hover:bg-gold-hover">
             新規登録
           </button>
         </form>
       </div>
     </div>
 
-    <p class="text-center text-red-300 text-xs mt-4">
-      <a href="/" class="hover:text-white">← オークション一覧に戻る</a>
+    <p class="text-center text-white/30 text-xs mt-6">
+      <a href="/" class="text-gold/60 hover:text-gold transition">← オークション一覧に戻る</a>
     </p>
   </div>
 
@@ -155,14 +171,14 @@
       const isLogin = tab === 'login';
       document.getElementById('loginForm').classList.toggle('hidden', !isLogin);
       document.getElementById('registerForm').classList.toggle('hidden', isLogin);
-      document.getElementById('tabLogin').classList.toggle('border-red-600', isLogin);
-      document.getElementById('tabLogin').classList.toggle('text-red-600', isLogin);
+      document.getElementById('tabLogin').classList.toggle('border-gold', isLogin);
+      document.getElementById('tabLogin').classList.toggle('text-gold', isLogin);
       document.getElementById('tabLogin').classList.toggle('border-transparent', !isLogin);
-      document.getElementById('tabLogin').classList.toggle('text-gray-400', !isLogin);
-      document.getElementById('tabRegister').classList.toggle('border-red-600', !isLogin);
-      document.getElementById('tabRegister').classList.toggle('text-red-600', !isLogin);
+      document.getElementById('tabLogin').classList.toggle('text-white/40', !isLogin);
+      document.getElementById('tabRegister').classList.toggle('border-gold', !isLogin);
+      document.getElementById('tabRegister').classList.toggle('text-gold', !isLogin);
       document.getElementById('tabRegister').classList.toggle('border-transparent', isLogin);
-      document.getElementById('tabRegister').classList.toggle('text-gray-400', isLogin);
+      document.getElementById('tabRegister').classList.toggle('text-white/40', isLogin);
       hideMessages();
     }
 

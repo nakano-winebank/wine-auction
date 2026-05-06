@@ -5,55 +5,77 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ワインオークション — 商品詳細</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            gold: { DEFAULT: '#C9A96E', hover: '#B8860B', dim: 'rgba(201,169,110,0.15)' },
+            dark: { 900: '#0A0A0A', 800: '#141414', 700: '#1C1C1C', 600: '#252525', 500: '#2F2F2F' }
+          },
+          fontFamily: {
+            serif: ['"Cormorant Garamond"', '"Noto Serif JP"', 'serif'],
+            sans: ['Inter', '"Noto Sans JP"', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
   <script src="/socket.io/socket.io.js"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
-    body { font-family: 'Noto Sans JP', sans-serif; }
-    .wine-badge { background: linear-gradient(135deg, #7B2D8B, #C0392B); }
-    .bid-btn { background: linear-gradient(135deg, #C0392B, #922B21); transition: all 0.2s; }
-    .bid-btn:hover { background: linear-gradient(135deg, #922B21, #7B241C); transform: translateY(-1px); }
-    .bid-btn:disabled { background: #9ca3af; transform: none; cursor: not-allowed; }
-    .timer-block { background: linear-gradient(135deg, #1a1a2e, #16213e); }
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@400;500;700&display=swap');
+    body { font-family: 'Inter', 'Noto Sans JP', sans-serif; }
+    h1, h2, h3, .heading, .font-serif { font-family: 'Cormorant Garamond', 'Noto Serif JP', serif; }
+
+    .wine-badge { background: linear-gradient(135deg, #C9A96E, #B8860B); }
+    .bid-btn { background: #C9A96E; color: #0A0A0A; transition: all 0.2s; }
+    .bid-btn:hover { background: #B8860B; transform: translateY(-1px); }
+    .bid-btn:disabled { background: #4a4a4a; color: #888; transform: none; cursor: not-allowed; }
+    .timer-block { background: linear-gradient(135deg, #141414, #1C1C1C); border: 1px solid rgba(255,255,255,0.05); }
     .timer-digit { font-size: 2.2rem; font-weight: 800; letter-spacing: 0.05em; }
-    .tag-vintage { background: #F3E8FF; color: #6B21A8; }
-    .tag-region { background: #FEF3C7; color: #92400E; }
-    .tag-grape { background: #DCFCE7; color: #166534; }
-    .winning { background: #F0FDF4; border-color: #22C55E; }
-    .losing { background: #FEF2F2; border-color: #EF4444; }
+    .tag-pill { background: transparent; color: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.1); }
+    .winning { background: rgba(201,169,110,0.08); border-color: #C9A96E; }
+    .losing { background: rgba(239,68,68,0.08); border-color: #EF4444; }
     .modal-overlay { backdrop-filter: blur(4px); }
-    .bid-row:first-child td { background: #FFF7ED; }
-    .bid-row:nth-child(even) td { background: #F9FAFB; }
-    .score-badge { background: linear-gradient(135deg, #92400E, #D97706); }
-    .winemark { background: linear-gradient(135deg, #6B1A1A 0%, #9B2335 50%, #C0392B 100%); box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
-    .progress-bar { background: linear-gradient(90deg, #7B2D8B, #C0392B); }
+    .bid-row:first-child td { background: rgba(201,169,110,0.06); }
+    .bid-row:nth-child(even) td { background: rgba(255,255,255,0.02); }
+    .score-badge { background: linear-gradient(135deg, #C9A96E, #B8860B); }
+    .winemark { background: #141414; border: 1px solid #C9A96E; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
+    .progress-bar { background: linear-gradient(90deg, #C9A96E, #B8860B); }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     .fade-in { animation: fadeIn 0.3s ease; }
-    @keyframes priceUp { 0% { transform: scale(1.15); color: #16a34a; } 100% { transform: scale(1); color: inherit; } }
+    @keyframes priceUp { 0% { transform: scale(1.15); color: #C9A96E; } 100% { transform: scale(1); color: inherit; } }
     .price-update { animation: priceUp 0.6s ease; }
     @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.6; } }
     .pulse { animation: pulse 1s infinite; }
+
+    /* スクロールバー */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0A0A0A; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #C9A96E; }
   </style>
 </head>
-<body class="bg-gray-50">
+<body class="bg-dark-900 min-h-screen text-white/90">
 
   <!-- ヘッダー -->
-  <header class="bg-white border-b border-gray-200 sticky top-0 z-40">
+  <header class="bg-dark-800/95 backdrop-blur-md border-b border-white/5 sticky top-0 z-40">
     <div class="max-w-6xl mx-auto px-4">
       <div class="flex items-center h-14 gap-2">
-        <a href="/" class="text-gray-400 hover:text-gray-600 flex-shrink-0 p-1">
+        <a href="/" class="text-white/40 hover:text-white/70 flex-shrink-0 p-1">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
         </a>
         <a href="/" class="flex items-center gap-2 flex-shrink-0">
-          <div class="wine-badge text-white px-3 py-1 rounded-full text-sm font-bold">🍷 WINE</div>
-          <span class="text-gray-800 font-bold hidden sm:block">オークション</span>
+          <div class="wine-badge text-dark-900 px-3 py-1 rounded-full text-sm font-bold">WINE</div>
+          <span class="text-white/90 font-bold hidden sm:block font-serif text-lg tracking-wide">WineBank</span>
         </a>
         <div class="ml-auto flex items-center gap-3">
-          <button id="watchBtn" onclick="toggleWatch()" class="text-gray-400 hover:text-red-500 transition p-1">
+          <button id="watchBtn" onclick="toggleWatch()" class="text-white/40 hover:text-gold transition p-1">
             <svg class="w-6 h-6" id="watchIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
           </button>
-          <a href="/mypage" class="text-sm text-gray-600 hover:text-gray-900 hidden" id="mypageLinkHeader">マイページ</a>
-          <span class="text-sm text-gray-700 font-medium hidden max-w-24 truncate" id="headerUser"></span>
-          <a href="/login" class="bg-purple-700 text-white text-sm px-4 py-1.5 rounded-full hover:bg-purple-800 flex-shrink-0" id="headerLoginBtn">ログイン</a>
+          <a href="/mypage" class="text-sm text-white/60 hover:text-white/90 hidden" id="mypageLinkHeader">マイページ</a>
+          <span class="text-sm text-white/70 font-medium hidden max-w-24 truncate" id="headerUser"></span>
+          <a href="/login" class="bg-gold text-dark-900 text-sm px-4 py-1.5 rounded-full hover:bg-gold-hover font-medium flex-shrink-0" id="headerLoginBtn">ログイン</a>
         </div>
       </div>
     </div>
@@ -63,62 +85,62 @@
     <!-- ローディング -->
     <div class="text-center py-20" id="loadingState">
       <div class="text-4xl mb-4 pulse">🍷</div>
-      <p class="text-gray-500">読み込み中...</p>
+      <p class="text-white/40">読み込み中...</p>
     </div>
   </div>
 
   <!-- 入札履歴モーダル -->
   <div id="historyModal" class="fixed inset-0 z-50 hidden">
-    <div class="modal-overlay absolute inset-0 bg-black bg-opacity-50" onclick="closeHistory()"></div>
-    <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl flex flex-col fade-in">
-      <div class="flex items-center justify-between p-4 border-b border-gray-200">
+    <div class="modal-overlay absolute inset-0 bg-black bg-opacity-60" onclick="closeHistory()"></div>
+    <div class="absolute right-0 top-0 h-full w-full max-w-md bg-dark-800 shadow-2xl flex flex-col fade-in border-l border-white/5">
+      <div class="flex items-center justify-between p-4 border-b border-white/10">
         <div>
-          <h2 class="font-bold text-gray-900">入札履歴</h2>
-          <p class="text-xs text-gray-500 mt-0.5" id="historySubtitle">読み込み中...</p>
+          <h2 class="font-bold text-white/90 font-serif text-lg">入札履歴</h2>
+          <p class="text-xs text-white/40 mt-0.5" id="historySubtitle">読み込み中...</p>
         </div>
-        <button onclick="closeHistory()" class="text-gray-400 hover:text-gray-600">
+        <button onclick="closeHistory()" class="text-white/40 hover:text-white/70">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
           </svg>
         </button>
       </div>
-      <div class="p-4 bg-gray-50 border-b border-gray-200 grid grid-cols-3 gap-3 text-center text-sm" id="historyStats"></div>
+      <div class="p-4 bg-dark-700 border-b border-white/5 grid grid-cols-3 gap-3 text-center text-sm" id="historyStats"></div>
       <div class="flex-1 overflow-y-auto" id="historyList"></div>
     </div>
   </div>
 
   <!-- 入札確認モーダル -->
   <div id="bidModal" class="fixed inset-0 z-50 hidden items-center justify-center">
-    <div class="absolute inset-0 bg-black bg-opacity-50" onclick="closeBidModal()"></div>
-    <div class="relative bg-white rounded-2xl shadow-2xl p-6 mx-4 w-full max-w-sm fade-in">
-      <h2 class="font-bold text-gray-900 text-lg mb-1">入札の確認</h2>
-      <p class="text-gray-500 text-sm mb-4">以下の内容で入札します</p>
-      <div class="bg-gray-50 rounded-xl p-4 mb-4">
+    <div class="absolute inset-0 bg-black bg-opacity-60" onclick="closeBidModal()"></div>
+    <div class="relative bg-dark-800 border border-white/10 rounded-2xl shadow-2xl p-6 mx-4 w-full max-w-sm fade-in">
+      <h2 class="font-bold text-white/90 text-lg mb-1 font-serif">入札の確認</h2>
+      <p class="text-white/40 text-sm mb-4">以下の内容で入札します</p>
+      <div class="bg-dark-700 rounded-xl p-4 mb-4 border border-white/5">
         <div class="flex justify-between text-sm mb-2">
-          <span class="text-gray-500">商品</span>
-          <span class="font-medium text-gray-900 text-right text-xs max-w-32 truncate" id="confirmTitle"></span>
+          <span class="text-white/40">商品</span>
+          <span class="font-medium text-white/90 text-right text-xs max-w-32 truncate" id="confirmTitle"></span>
         </div>
         <div class="flex justify-between text-sm mb-2">
-          <span class="text-gray-500">現在の価格</span>
-          <span class="text-gray-700" id="confirmCurrentPrice"></span>
+          <span class="text-white/40">現在の価格</span>
+          <span class="text-white/70" id="confirmCurrentPrice"></span>
         </div>
-        <div class="flex justify-between pt-2 border-t border-gray-200">
-          <span class="font-bold text-gray-900">入札金額</span>
-          <span class="font-bold text-2xl text-red-600" id="confirmBidPrice"></span>
+        <div class="flex justify-between pt-2 border-t border-white/10">
+          <span class="font-bold text-white/90">入札金額</span>
+          <span class="font-bold text-2xl text-gold font-serif" id="confirmBidPrice"></span>
         </div>
       </div>
-      <div class="bg-blue-50 rounded-lg p-3 mb-4 text-xs text-blue-700">
+      <div class="bg-dark-700 border border-gold/20 rounded-lg p-3 mb-4 text-xs text-gold/80">
         ⚠️ 落札した場合、購入義務が生じます。キャンセルはできません。
       </div>
       <div class="flex gap-3">
-        <button onclick="closeBidModal()" class="flex-1 border border-gray-300 rounded-xl py-3 text-gray-700 font-medium hover:bg-gray-50">キャンセル</button>
-        <button onclick="confirmBid()" id="confirmBidBtn" class="flex-1 bid-btn text-white rounded-xl py-3 font-bold">入札する</button>
+        <button onclick="closeBidModal()" class="flex-1 border border-white/10 rounded-xl py-3 text-white/70 font-medium hover:bg-dark-600 transition">キャンセル</button>
+        <button onclick="confirmBid()" id="confirmBidBtn" class="flex-1 bid-btn rounded-xl py-3 font-bold">入札する</button>
       </div>
     </div>
   </div>
 
   <!-- トースト -->
-  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-full text-sm font-medium shadow-lg z-50 hidden transition-all max-w-sm text-center"></div>
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-dark-800 border border-white/10 text-white px-6 py-3 rounded-full text-sm font-medium shadow-lg z-50 hidden transition-all max-w-sm text-center"></div>
 
   <script>
     const token = localStorage.getItem('token');
@@ -164,8 +186,8 @@
           if (statusBox) {
             statusBox.className = 'losing border rounded-lg p-3 flex items-center gap-2 mb-3';
             statusBox.innerHTML = `
-              <svg class="w-4 h-4 text-red-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
-              <p class="text-sm text-red-700 font-medium" id="bidStatusText">入札を上回られました（¥${data.new_price.toLocaleString()}）</p>`;
+              <svg class="w-4 h-4 text-red-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
+              <p class="text-sm text-red-400 font-medium" id="bidStatusText">入札を上回られました（¥${data.new_price.toLocaleString()}）</p>`;
           }
           if (auction) auction.is_top_bidder = false;
         }
@@ -187,7 +209,7 @@
         auction = await res.json();
         renderPage(auction);
       } catch(e) {
-        document.getElementById('loadingState').innerHTML = '<p class="text-gray-400 py-20 text-center">商品が見つかりませんでした</p>';
+        document.getElementById('loadingState').innerHTML = '<p class="text-white/30 py-20 text-center">商品が見つかりませんでした</p>';
       }
     }
 
@@ -200,42 +222,42 @@
 
       // ウォッチアイコン
       if (a.is_watched) {
-        document.getElementById('watchIcon').setAttribute('fill', '#EF4444');
-        document.getElementById('watchIcon').setAttribute('stroke', '#EF4444');
+        document.getElementById('watchIcon').setAttribute('fill', '#C9A96E');
+        document.getElementById('watchIcon').setAttribute('stroke', '#C9A96E');
       }
 
       // ステータス表示
       let statusHtml = '';
       if (isEnded) {
         if (isTopBidder) {
-          statusHtml = `<div class="bg-green-50 border border-green-300 rounded-lg p-4 mb-3">
-            <p class="text-green-800 font-bold text-sm mb-1">🎉 おめでとうございます！落札しました</p>
-            <p class="text-green-700 text-xs mb-3">落札金額: ¥${a.current_price.toLocaleString()}</p>
-            <a href="/checkout?id=${a.id}" class="block w-full text-center bg-red-700 text-white py-2.5 rounded-lg font-bold text-sm hover:bg-red-800 transition">
+          statusHtml = `<div class="bg-gold/10 border border-gold/30 rounded-lg p-4 mb-3">
+            <p class="text-gold font-bold text-sm mb-1">🎉 おめでとうございます！落札しました</p>
+            <p class="text-gold/70 text-xs mb-3">落札金額: ¥${a.current_price.toLocaleString()}</p>
+            <a href="/checkout?id=${a.id}" class="block w-full text-center bg-gold text-dark-900 py-2.5 rounded-lg font-bold text-sm hover:bg-gold-hover transition">
               💳 購入手続きへ →
             </a>
           </div>`;
         } else {
-          statusHtml = `<div class="bg-gray-100 border border-gray-300 rounded-lg p-3 flex items-center gap-2 mb-3">
-            <span class="text-gray-500 text-sm">このオークションは終了しました</span>
+          statusHtml = `<div class="bg-dark-600 border border-white/10 rounded-lg p-3 flex items-center gap-2 mb-3">
+            <span class="text-white/40 text-sm">このオークションは終了しました</span>
           </div>`;
         }
       } else if (!currentUser) {
-        statusHtml = `<div class="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center gap-2 mb-3">
-          <span class="text-blue-700 text-sm">入札するには <a href="/login" class="font-bold underline">ログイン</a> が必要です</span>
+        statusHtml = `<div class="bg-dark-600 border border-gold/20 rounded-lg p-3 flex items-center gap-2 mb-3">
+          <span class="text-gold/80 text-sm">入札するには <a href="/login" class="font-bold underline text-gold">ログイン</a> が必要です</span>
         </div>`;
       } else if (isSeller) {
-        statusHtml = `<div class="bg-yellow-50 border border-yellow-300 rounded-lg p-3 mb-3">
-          <span class="text-yellow-700 text-sm font-medium">📦 あなたの出品です</span>
+        statusHtml = `<div class="bg-dark-600 border border-gold/30 rounded-lg p-3 mb-3">
+          <span class="text-gold/80 text-sm font-medium">📦 あなたの出品です</span>
         </div>`;
       } else if (isTopBidder) {
         statusHtml = `<div class="winning border rounded-lg p-3 flex items-center gap-2 mb-3" id="bidStatusBox">
-          <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-          <p class="text-sm text-green-700 font-medium" id="bidStatusText">現在の最高入札者です（¥${a.current_price.toLocaleString()}）</p>
+          <svg class="w-4 h-4 text-gold flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+          <p class="text-sm text-gold font-medium" id="bidStatusText">現在の最高入札者です（¥${a.current_price.toLocaleString()}）</p>
         </div>`;
       } else {
-        statusHtml = `<div class="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-3" id="bidStatusBox">
-          <p class="text-sm text-gray-600" id="bidStatusText">入札してみましょう</p>
+        statusHtml = `<div class="bg-dark-600 border border-white/10 rounded-lg p-3 mb-3" id="bidStatusBox">
+          <p class="text-sm text-white/50" id="bidStatusText">入札してみましょう</p>
         </div>`;
       }
 
@@ -244,22 +266,22 @@
         <div>
           <div class="flex gap-2 mb-2">
             <div class="relative flex-1">
-              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">¥</span>
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 font-medium">¥</span>
               <input type="number" id="bidInput" placeholder="${minBid.toLocaleString()}以上" min="${minBid}" step="1000"
-                class="w-full border-2 border-gray-200 rounded-xl pl-7 pr-3 py-3 text-lg font-bold focus:outline-none focus:border-purple-500 transition"
+                class="w-full bg-dark-600 border-2 border-white/10 rounded-xl pl-7 pr-3 py-3 text-lg font-bold text-white/90 focus:outline-none focus:border-gold transition"
                 ${!currentUser ? 'disabled onclick="location.href=\'/login\'"' : ''}>
             </div>
-            <button onclick="${currentUser ? 'placeBid()' : 'location.href=\"/login\"'}" class="bid-btn text-white font-bold px-6 rounded-xl text-sm" id="bidSubmitBtn">
+            <button onclick="${currentUser ? 'placeBid()' : 'location.href=\"/login\"'}" class="bid-btn font-bold px-6 rounded-xl text-sm" id="bidSubmitBtn">
               ${currentUser ? '入札する' : 'ログイン'}
             </button>
           </div>
           <div class="flex gap-2 mb-2">
             ${[minBid, a.current_price + 5000, a.current_price + 10000, a.current_price + 25000].map(amt => `
-              <button onclick="${currentUser ? `quickBid(${amt})` : 'location.href=\"/login\"'}" class="flex-1 text-xs border border-gray-200 rounded-lg py-2 hover:border-purple-400 hover:bg-purple-50 transition text-gray-600">
-                +¥${(amt - a.current_price).toLocaleString()}<br><span class="text-gray-400">¥${amt.toLocaleString()}</span>
+              <button onclick="${currentUser ? `quickBid(${amt})` : 'location.href=\"/login\"'}" class="flex-1 text-xs border border-white/10 rounded-lg py-2 hover:border-gold/40 hover:bg-gold/5 transition text-white/50">
+                +¥${(amt - a.current_price).toLocaleString()}<br><span class="text-white/30">¥${amt.toLocaleString()}</span>
               </button>`).join('')}
           </div>
-          <p class="text-xs text-gray-400 text-center">次の入札は ¥${minBid.toLocaleString()}以上</p>
+          <p class="text-xs text-white/30 text-center">次の入札は ¥${minBid.toLocaleString()}以上</p>
         </div>` : '';
 
       document.getElementById('loadingState').classList.add('hidden');
@@ -274,11 +296,11 @@
                 : a.image_url
                   ? `<img src="${a.image_url}" alt="${a.title}" class="w-full h-full object-cover" id="mainImg">`
                   : `<div class="text-center"><div class="text-8xl mb-3">${a.image_emoji}</div><p class="text-white text-sm opacity-80">${a.producer}</p></div>`}
-              <div class="winemark absolute top-3 right-3 text-white rounded-lg px-2 py-1 text-center" style="min-width:58px;">
+              <div class="winemark absolute top-3 right-3 text-gold rounded-lg px-2 py-1 text-center" style="min-width:58px;">
                 <div style="font-size:10px;font-weight:900;letter-spacing:0.5px;line-height:1.5;">WineBank</div>
                 <div style="font-size:9px;line-height:1.3;">✓ 真贋済み</div>
               </div>
-              ${a.score_rp ? `<div class="absolute top-3 left-3 score-badge text-white text-xs px-3 py-1 rounded-full font-bold">RP ${a.score_rp}点</div>` : ''}
+              ${a.score_rp ? `<div class="absolute top-3 left-3 score-badge text-dark-900 text-xs px-3 py-1 rounded-full font-bold">RP ${a.score_rp}点</div>` : ''}
               <div class="absolute bottom-3 left-3 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">${a.volume_ml}ml${a.condition_note ? ' / ' + a.condition_note : ''}</div>
             </div>
 
@@ -287,7 +309,7 @@
             <div class="flex gap-2 mb-3 overflow-x-auto pb-1">
               ${a.images.map((img, i) => `
                 <button onclick="switchImage('${img.url}', this)"
-                  class="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 ${i === 0 ? 'border-purple-500' : 'border-gray-200'} hover:border-purple-400 transition">
+                  class="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 ${i === 0 ? 'border-gold' : 'border-white/10'} hover:border-gold/60 transition">
                   <img src="${img.url}" alt="${img.label || ''}" class="w-full h-full object-cover">
                 </button>
               `).join('')}
@@ -298,24 +320,24 @@
             ${(a.images && a.images.length > 0) ? `
             <div class="flex gap-1 mb-3 flex-wrap" id="imageLabels">
               ${a.images.map((img, i) => img.label ? `
-                <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">${img.label}</span>
+                <span class="text-xs bg-dark-600 text-white/40 px-2 py-0.5 rounded-full border border-white/5">${img.label}</span>
               ` : '').join('')}
             </div>` : ''}
 
             <!-- ワイン詳細テーブル -->
-            <div class="bg-white rounded-xl border border-gray-200 p-4">
-              <h3 class="font-bold text-gray-800 mb-3 text-sm">ワイン詳細</h3>
+            <div class="bg-dark-700 rounded-xl border border-white/5 p-4">
+              <h3 class="font-bold text-white/90 mb-3 text-sm font-serif text-lg">ワイン詳細</h3>
               <div class="grid grid-cols-2 gap-y-2 text-sm">
-                <div class="text-gray-500">生産者</div><div class="font-medium text-gray-900">${a.producer}</div>
-                ${a.vintage ? `<div class="text-gray-500">ヴィンテージ</div><div class="font-medium text-gray-900">${a.vintage}年</div>` : ''}
-                ${a.region ? `<div class="text-gray-500">産地</div><div class="font-medium text-gray-900">${a.region}</div>` : ''}
-                ${a.appellation ? `<div class="text-gray-500">アペラシオン</div><div class="font-medium text-gray-900">${a.appellation}</div>` : ''}
-                ${a.grape ? `<div class="text-gray-500">品種</div><div class="font-medium text-gray-900">${a.grape}</div>` : ''}
-                <div class="text-gray-500">容量</div><div class="font-medium text-gray-900">${a.volume_ml}ml</div>
-                ${a.condition_note ? `<div class="text-gray-500">保管状態</div><div class="font-medium text-gray-900">${a.condition_note}</div>` : ''}
-                ${(a.score_rp || a.score_ws) ? `<div class="text-gray-500">スコア</div><div class="font-medium text-gray-900">
-                  ${a.score_rp ? `<span class="score-badge text-white text-xs px-2 py-0.5 rounded">RP ${a.score_rp}</span>` : ''}
-                  ${a.score_ws ? `<span class="score-badge text-white text-xs px-2 py-0.5 rounded ml-1">WS ${a.score_ws}</span>` : ''}
+                <div class="text-white/40">生産者</div><div class="font-medium text-white/90">${a.producer}</div>
+                ${a.vintage ? `<div class="text-white/40">ヴィンテージ</div><div class="font-medium text-white/90">${a.vintage}年</div>` : ''}
+                ${a.region ? `<div class="text-white/40">産地</div><div class="font-medium text-white/90">${a.region}</div>` : ''}
+                ${a.appellation ? `<div class="text-white/40">アペラシオン</div><div class="font-medium text-white/90">${a.appellation}</div>` : ''}
+                ${a.grape ? `<div class="text-white/40">品種</div><div class="font-medium text-white/90">${a.grape}</div>` : ''}
+                <div class="text-white/40">容量</div><div class="font-medium text-white/90">${a.volume_ml}ml</div>
+                ${a.condition_note ? `<div class="text-white/40">保管状態</div><div class="font-medium text-white/90">${a.condition_note}</div>` : ''}
+                ${(a.score_rp || a.score_ws) ? `<div class="text-white/40">スコア</div><div class="font-medium text-white/90">
+                  ${a.score_rp ? `<span class="score-badge text-dark-900 text-xs px-2 py-0.5 rounded">RP ${a.score_rp}</span>` : ''}
+                  ${a.score_ws ? `<span class="score-badge text-dark-900 text-xs px-2 py-0.5 rounded ml-1">WS ${a.score_ws}</span>` : ''}
                 </div>` : ''}
               </div>
             </div>
@@ -324,49 +346,49 @@
           <!-- 右：入札 -->
           <div>
             <div class="flex flex-wrap gap-2 mb-2">
-              ${a.vintage ? `<span class="tag-vintage text-xs px-2 py-0.5 rounded-full">${a.vintage}</span>` : ''}
-              ${a.region ? `<span class="tag-region text-xs px-2 py-0.5 rounded-full">${a.region}</span>` : ''}
-              ${a.grape ? `<span class="tag-grape text-xs px-2 py-0.5 rounded-full">${a.grape.split('/')[0].trim()}</span>` : ''}
+              ${a.vintage ? `<span class="tag-pill text-xs px-2 py-0.5 rounded-full">${a.vintage}</span>` : ''}
+              ${a.region ? `<span class="tag-pill text-xs px-2 py-0.5 rounded-full">${a.region}</span>` : ''}
+              ${a.grape ? `<span class="tag-pill text-xs px-2 py-0.5 rounded-full">${a.grape.split('/')[0].trim()}</span>` : ''}
             </div>
-            <h1 class="text-xl font-bold text-gray-900 mb-1">${a.title}</h1>
-            <p class="text-sm text-gray-500 mb-4">${a.producer}${a.appellation ? ' / ' + a.appellation : ''}</p>
+            <h1 class="text-xl font-bold text-white/90 mb-1 font-serif text-2xl">${a.title}</h1>
+            <p class="text-sm text-white/40 mb-4">${a.producer}${a.appellation ? ' / ' + a.appellation : ''}</p>
 
             <!-- タイマー -->
             <div class="timer-block rounded-xl p-4 mb-4">
               <div class="flex items-center justify-between mb-3">
-                <p class="text-gray-400 text-xs">${isEnded ? 'オークション終了' : 'オークション終了まで'}</p>
-                <p class="text-gray-400 text-xs" id="endDateLabel">${formatEndDate(a.end_time)}</p>
+                <p class="text-white/40 text-xs">${isEnded ? 'オークション終了' : 'オークション終了まで'}</p>
+                <p class="text-white/40 text-xs" id="endDateLabel">${formatEndDate(a.end_time)}</p>
               </div>
-              ${isEnded ? `<p class="text-center text-gray-400 py-2">終了しました</p>` : `
+              ${isEnded ? `<p class="text-center text-white/30 py-2">終了しました</p>` : `
               <div class="flex items-center gap-1 justify-center">
-                <div class="text-center"><div class="timer-digit text-white" id="timer-h">00</div><div class="text-gray-500 text-xs mt-1">時間</div></div>
-                <div class="timer-digit text-red-500 mb-4">:</div>
-                <div class="text-center"><div class="timer-digit text-white" id="timer-m">00</div><div class="text-gray-500 text-xs mt-1">分</div></div>
-                <div class="timer-digit text-red-500 mb-4">:</div>
-                <div class="text-center"><div class="timer-digit text-white" id="timer-s">00</div><div class="text-gray-500 text-xs mt-1">秒</div></div>
+                <div class="text-center"><div class="timer-digit text-white" id="timer-h">00</div><div class="text-white/40 text-xs mt-1">時間</div></div>
+                <div class="timer-digit text-gold mb-4">:</div>
+                <div class="text-center"><div class="timer-digit text-white" id="timer-m">00</div><div class="text-white/40 text-xs mt-1">分</div></div>
+                <div class="timer-digit text-gold mb-4">:</div>
+                <div class="text-center"><div class="timer-digit text-white" id="timer-s">00</div><div class="text-white/40 text-xs mt-1">秒</div></div>
               </div>
-              <p class="text-center text-gray-500 text-xs mt-2">※ 終了5分以内の入札で自動延長されます</p>`}
+              <p class="text-center text-white/30 text-xs mt-2">※ 終了5分以内の入札で自動延長されます</p>`}
             </div>
 
             <!-- 価格 -->
-            <div class="bg-white rounded-xl border border-gray-200 p-4 mb-4">
+            <div class="bg-dark-700 rounded-xl border border-white/5 p-4 mb-4">
               <div class="flex items-center justify-between mb-3">
                 <div>
-                  <p class="text-xs text-gray-400 mb-0.5">現在の価格</p>
-                  <p class="text-3xl font-bold text-gray-900" id="currentPrice">¥${a.current_price.toLocaleString()}</p>
-                  <p class="text-xs text-gray-400 mt-0.5">開始価格 ¥${a.starting_price.toLocaleString()}</p>
+                  <p class="text-xs text-white/40 mb-0.5">現在の価格</p>
+                  <p class="text-3xl font-bold text-gold font-serif" id="currentPrice">¥${a.current_price.toLocaleString()}</p>
+                  <p class="text-xs text-white/30 mt-0.5">開始価格 ¥${a.starting_price.toLocaleString()}</p>
                 </div>
-                <button onclick="openHistory()" class="text-sm text-purple-600 hover:text-purple-800 border border-purple-200 rounded-full px-3 py-1.5 hover:bg-purple-50 transition">
+                <button onclick="openHistory()" class="text-sm text-gold hover:text-gold-hover border border-gold/30 rounded-full px-3 py-1.5 hover:bg-gold/5 transition">
                   入札履歴 <span id="bidCountBadge">${a.bid_count}</span>件 →
                 </button>
               </div>
               <div class="mb-3">
-                <div class="flex justify-between text-xs text-gray-400 mb-1">
+                <div class="flex justify-between text-xs text-white/30 mb-1">
                   <span>¥${a.starting_price.toLocaleString()}</span>
                   <span id="bidderCountLabel">入札者 ${a.bidder_count}人</span>
                   <span id="maxPriceLabel">¥${(a.starting_price * 3).toLocaleString()}+</span>
                 </div>
-                <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                <div class="h-1.5 bg-dark-500 rounded-full overflow-hidden">
                   <div class="progress-bar h-full rounded-full" id="progressBar" style="width: ${Math.max(5, progressPct)}%"></div>
                 </div>
               </div>
@@ -376,26 +398,26 @@
             </div>
 
             <!-- 出品者 -->
-            <div class="bg-white rounded-xl border border-gray-200 p-4 mb-4">
+            <div class="bg-dark-700 rounded-xl border border-white/5 p-4 mb-4">
               <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 font-bold text-lg">
+                <div class="w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center text-gold font-bold text-lg">
                   ${(a.seller_name || a.seller_username || '?')[0].toUpperCase()}
                 </div>
                 <div class="flex-1">
-                  <p class="font-medium text-gray-900 text-sm">${a.seller_name || a.seller_username}</p>
-                  <div class="flex items-center gap-2 text-xs text-gray-500">
+                  <p class="font-medium text-white/90 text-sm">${a.seller_name || a.seller_username}</p>
+                  <div class="flex items-center gap-2 text-xs text-white/40">
                     <span>⭐ ${(a.seller_rating || 5.0).toFixed(1)}</span>
                     <span>・取引 ${a.seller_trade_count || 0}件</span>
-                    ${a.is_verified_seller ? '<span class="bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">認定セラー</span>' : ''}
+                    ${a.is_verified_seller ? '<span class="bg-gold/10 text-gold px-1.5 py-0.5 rounded border border-gold/20">認定セラー</span>' : ''}
                   </div>
                 </div>
               </div>
             </div>
 
             <!-- 説明 -->
-            <div class="bg-white rounded-xl border border-gray-200 p-4">
-              <h3 class="font-bold text-gray-800 mb-2 text-sm">商品説明</h3>
-              <p class="text-sm text-gray-700 leading-relaxed whitespace-pre-line">${a.description || '説明なし'}</p>
+            <div class="bg-dark-700 rounded-xl border border-white/5 p-4">
+              <h3 class="font-bold text-white/90 mb-2 text-sm font-serif text-lg">商品説明</h3>
+              <p class="text-sm text-white/60 leading-relaxed whitespace-pre-line">${a.description || '説明なし'}</p>
             </div>
           </div>
         </div>`;
@@ -510,8 +532,8 @@
         if (statusBox) {
           statusBox.className = 'winning border rounded-lg p-3 flex items-center gap-2 mb-3';
           statusBox.innerHTML = `
-            <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-            <p class="text-sm text-green-700 font-medium" id="bidStatusText">現在の最高入札者です（¥${data.new_price.toLocaleString()}）</p>`;
+            <svg class="w-4 h-4 text-gold flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+            <p class="text-sm text-gold font-medium" id="bidStatusText">現在の最高入札者です（¥${data.new_price.toLocaleString()}）</p>`;
         }
 
         document.getElementById('bidInput').value = '';
@@ -529,7 +551,7 @@
       document.getElementById('historyModal').classList.remove('hidden');
       document.getElementById('historySubtitle').textContent = '読み込み中...';
       document.getElementById('historyStats').innerHTML = '';
-      document.getElementById('historyList').innerHTML = '<p class="text-center text-gray-400 py-8">読み込み中...</p>';
+      document.getElementById('historyList').innerHTML = '<p class="text-center text-white/30 py-8">読み込み中...</p>';
 
       try {
         const res = await fetch(`/api/auctions/${auctionId}/bids`);
@@ -539,38 +561,38 @@
 
         document.getElementById('historySubtitle').textContent = `${bids.length}件の入札`;
         document.getElementById('historyStats').innerHTML = `
-          <div><p class="text-gray-500 text-xs mb-1">開始価格</p><p class="font-bold text-gray-900">¥${a.starting_price.toLocaleString()}</p></div>
-          <div><p class="text-gray-500 text-xs mb-1">現在の価格</p><p class="font-bold text-red-600 text-lg">¥${a.current_price.toLocaleString()}</p></div>
-          <div><p class="text-gray-500 text-xs mb-1">上昇率</p><p class="font-bold text-green-600">+${Math.round((a.current_price - a.starting_price) / a.starting_price * 100)}%</p></div>`;
+          <div><p class="text-white/40 text-xs mb-1">開始価格</p><p class="font-bold text-white/90">¥${a.starting_price.toLocaleString()}</p></div>
+          <div><p class="text-white/40 text-xs mb-1">現在の価格</p><p class="font-bold text-gold text-lg font-serif">¥${a.current_price.toLocaleString()}</p></div>
+          <div><p class="text-white/40 text-xs mb-1">上昇率</p><p class="font-bold text-gold">+${Math.round((a.current_price - a.starting_price) / a.starting_price * 100)}%</p></div>`;
 
         if (!bids.length) {
-          document.getElementById('historyList').innerHTML = '<p class="text-center text-gray-400 py-8">まだ入札はありません</p>';
+          document.getElementById('historyList').innerHTML = '<p class="text-center text-white/30 py-8">まだ入札はありません</p>';
           return;
         }
 
         document.getElementById('historyList').innerHTML = `
           <table class="w-full text-sm">
-            <thead class="bg-gray-50 sticky top-0"><tr class="text-xs text-gray-500">
+            <thead class="bg-dark-700 sticky top-0"><tr class="text-xs text-white/40">
               <th class="text-left px-4 py-2 font-medium">入札者</th>
               <th class="text-right px-4 py-2 font-medium">金額</th>
               <th class="text-right px-4 py-2 font-medium">日時</th>
             </tr></thead>
             <tbody>
               ${bids.map((bid, i) => `
-                <tr class="bid-row border-b border-gray-100">
+                <tr class="bid-row border-b border-white/5">
                   <td class="px-4 py-3">
                     <div class="flex items-center gap-2">
-                      <div class="w-7 h-7 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 text-xs font-bold">
+                      <div class="w-7 h-7 rounded-full bg-gold/10 flex items-center justify-center text-gold text-xs font-bold">
                         ${bid.display_name[0].toUpperCase()}
                       </div>
                       <div>
-                        <span class="text-gray-700">${bid.display_name}</span>
-                        ${bid.is_highest ? '<span class="ml-1 text-xs bg-amber-100 text-amber-700 px-1.5 rounded">最高入札</span>' : ''}
+                        <span class="text-white/70">${bid.display_name}</span>
+                        ${bid.is_highest ? '<span class="ml-1 text-xs bg-gold/10 text-gold px-1.5 rounded border border-gold/20">最高入札</span>' : ''}
                       </div>
                     </div>
                   </td>
-                  <td class="px-4 py-3 text-right ${bid.is_highest ? 'font-bold text-gray-900' : 'text-gray-700'}">¥${bid.amount.toLocaleString()}</td>
-                  <td class="px-4 py-3 text-right text-gray-400 text-xs">${formatRelativeTime(bid.created_at)}</td>
+                  <td class="px-4 py-3 text-right ${bid.is_highest ? 'font-bold text-white/90' : 'text-white/60'}">¥${bid.amount.toLocaleString()}</td>
+                  <td class="px-4 py-3 text-right text-white/30 text-xs">${formatRelativeTime(bid.created_at)}</td>
                 </tr>`).join('')}
             </tbody>
           </table>`;
@@ -593,8 +615,8 @@
         const data = await res.json();
         const icon = document.getElementById('watchIcon');
         if (data.watched) {
-          icon.setAttribute('fill', '#EF4444');
-          icon.setAttribute('stroke', '#EF4444');
+          icon.setAttribute('fill', '#C9A96E');
+          icon.setAttribute('stroke', '#C9A96E');
           showToast('❤️ ウォッチリストに追加しました');
         } else {
           icon.setAttribute('fill', 'none');
@@ -607,16 +629,16 @@
     // 抜かれ通知（目立つバナー）
     function showOutbidNotification(newPrice) {
       const banner = document.createElement('div');
-      banner.className = 'fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-red-600 text-white px-6 py-4 rounded-xl shadow-2xl text-sm font-medium max-w-sm w-full mx-4 fade-in';
+      banner.className = 'fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-red-900/90 border border-red-500/30 text-white px-6 py-4 rounded-xl shadow-2xl text-sm font-medium max-w-sm w-full mx-4 fade-in';
       banner.innerHTML = `
         <div class="flex items-start gap-3">
           <span class="text-xl flex-shrink-0">⚠️</span>
           <div>
             <p class="font-bold mb-1">入札を上回られました！</p>
-            <p class="text-red-100">現在の最高入札額: ¥${newPrice.toLocaleString()}</p>
-            <p class="text-red-200 text-xs mt-1">入札を続けますか？</p>
+            <p class="text-red-200">現在の最高入札額: ¥${newPrice.toLocaleString()}</p>
+            <p class="text-red-300 text-xs mt-1">入札を続けますか？</p>
           </div>
-          <button onclick="this.parentElement.parentElement.remove()" class="ml-auto text-red-200 hover:text-white flex-shrink-0">✕</button>
+          <button onclick="this.parentElement.parentElement.remove()" class="ml-auto text-red-300 hover:text-white flex-shrink-0">✕</button>
         </div>`;
       document.body.appendChild(banner);
       setTimeout(() => banner.remove(), 8000);
@@ -626,15 +648,15 @@
     function switchImage(url, btn) {
       const mainImg = document.getElementById('mainImg');
       if (mainImg) mainImg.src = url;
-      document.querySelectorAll('#mainImageBox ~ div button').forEach(b => b.classList.replace('border-purple-500','border-gray-200'));
-      if (btn) btn.classList.replace('border-gray-200','border-purple-500');
+      document.querySelectorAll('#mainImageBox ~ div button').forEach(b => b.classList.replace('border-gold','border-white/10'));
+      if (btn) btn.classList.replace('border-white/10','border-gold');
     }
 
     // トースト
     function showToast(msg, isError = false) {
       const toast = document.getElementById('toast');
       toast.textContent = msg;
-      toast.className = `fixed bottom-6 left-1/2 -translate-x-1/2 ${isError ? 'bg-red-700' : 'bg-gray-900'} text-white px-6 py-3 rounded-full text-sm font-medium shadow-lg z-50 transition-all max-w-sm text-center`;
+      toast.className = `fixed bottom-6 left-1/2 -translate-x-1/2 ${isError ? 'bg-red-900/90 border-red-500/30' : 'bg-dark-800 border-white/10'} border text-white px-6 py-3 rounded-full text-sm font-medium shadow-lg z-50 transition-all max-w-sm text-center`;
       toast.classList.remove('hidden');
       setTimeout(() => toast.classList.add('hidden'), 3500);
     }
