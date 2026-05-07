@@ -116,6 +116,12 @@
               class="input-field w-full bg-dark-600 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/25 focus:outline-none transition">
           </div>
           <div class="mb-4">
+            <label class="block text-sm font-medium text-white/60 mb-1">生年月日 <span class="text-red-400">*</span></label>
+            <input type="date" id="regBirthdate" required max="2006-12-31"
+              class="input-field w-full bg-dark-600 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/25 focus:outline-none transition">
+            <p class="text-xs text-white/30 mt-1">20歳以上の方のみご利用いただけます</p>
+          </div>
+          <div class="mb-4">
             <label class="block text-sm font-medium text-white/60 mb-1">ユーザー名 <span class="text-red-400">*</span></label>
             <input type="text" id="regUsername" required placeholder="half_alpha_only"
               pattern="[a-zA-Z0-9_]+" title="半角英数字とアンダーバーのみ"
@@ -251,6 +257,7 @@
         const firstName = document.getElementById('regFirstName').value.trim();
         const full_name = lastName + ' ' + firstName;
         const phone = document.getElementById('regPhone').value.trim();
+        const birthdate = document.getElementById('regBirthdate').value;
 
         const res = await fetch('/api/auth/register', {
           method: 'POST',
@@ -261,7 +268,8 @@
             password: document.getElementById('regPassword').value,
             display_name: document.getElementById('regUsername').value,
             full_name,
-            phone
+            phone,
+            birthdate
           })
         });
         const data = await res.json();

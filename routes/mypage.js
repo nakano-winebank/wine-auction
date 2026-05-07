@@ -170,18 +170,45 @@ router.get('/messages/unread/count', authenticateToken, (req, res) => {
   res.json({ count: count.c });
 });
 
-// 注文履歴
+// 注文履歴（購入・販売両方）
 router.get('/orders', authenticateToken, (req, res) => {
   const orders = db.prepare(`
     SELECT o.*, a.title, a.producer, a.image_emoji, a.image_color,
-           s.display_name as seller_name
+           s.display_name as seller_name, b.display_name as buyer_name,
+           o.fulfillment_status, o.tracking_number, o.carrier,
+           o.shipped_at, o.delivered_at, o.completed_at,
+           CASE WHEN o.buyer_id = ? THEN 'buyer' ELSE 'seller' END as role
     FROM orders o
     JOIN auctions a ON o.auction_id = a.id
     JOIN users s ON o.seller_id = s.id
-    WHERE o.buyer_id = ?
+    JOIN users b ON o.buyer_id = b.id
+    WHERE o.buyer_id = ? OR o.seller_id = ?
     ORDER BY o.created_at DESC
-  `).all(req.user.id);
+  `).all(req.user.id, req.user.id, req.user.id);
   res.json({ orders });
+});
+
+// 出品者: 発送処理
+router.patch('/orders/:id/ship', authenticateToken, (req, res) => {
+  const { tracking_number, carrier } = req.body;
+  const orderId = parseInt(req.params.id);
+  const order = db.prepare('SELECT * FROM orders WHERE id = ? AND seller_id = ?').get(orderId, req.user.id);
+  if (!order) return res.status(403).json({ error: 'アクセス権がありません' });
+  if (order.fulfillment_status !== 'paid') return res.status(400).json({ error: 'この注文はまだ発送できません' });
+  db.prepare(`UPDATE orders SET fulfillment_status = 'shipped', tracking_number = ?, carrier = ?,
+              shipped_at = datetime('now','localtime') WHERE id = ?`).run(tracking_number || null, carrier || null, orderId);
+  res.json({ success: true });
+});
+
+// 購入者: 受取確認
+router.patch('/orders/:id/confirm', authenticateToken, (req, res) => {
+  const orderId = parseInt(req.params.id);
+  const order = db.prepare('SELECT * FROM orders WHERE id = ? AND buyer_id = ?').get(orderId, req.user.id);
+  if (!order) return res.status(403).json({ error: 'アクセス権がありません' });
+  if (order.fulfillment_status !== 'shipped') return res.status(400).json({ error: 'まだ発送されていません' });
+  db.prepare(`UPDATE orders SET fulfillment_status = 'delivered',
+              delivered_at = datetime('now','localtime') WHERE id = ?`).run(orderId);
+  res.json({ success: true });
 });
 
 module.exports = router;

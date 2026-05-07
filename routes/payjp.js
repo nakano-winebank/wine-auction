@@ -132,7 +132,7 @@ router.post('/charge', authenticateToken, async (req, res) => {
             stripe_payment_intent_id = ?, stripe_status = 'succeeded',
             shipping_name = ?, shipping_zip = ?, shipping_address = ?, shipping_phone = ?,
             shipping_method = ?, shipping_fee = ?,
-            status = 'paid', paid_at = datetime('now', 'localtime')
+            status = 'paid', fulfillment_status = 'paid', paid_at = datetime('now', 'localtime')
           WHERE auction_id = ? AND buyer_id = ?
         `).run(chargeId, shipping_name, shipping_zip, shipping_address, shipping_phone, method, fee, auctionId, userId);
       } else {
@@ -140,8 +140,8 @@ router.post('/charge', authenticateToken, async (req, res) => {
           INSERT INTO orders
             (auction_id, buyer_id, seller_id, amount, stripe_payment_intent_id, stripe_status,
              shipping_name, shipping_zip, shipping_address, shipping_phone,
-             shipping_method, shipping_fee, status, paid_at)
-          VALUES (?, ?, ?, ?, ?, 'succeeded', ?, ?, ?, ?, ?, ?, 'paid', datetime('now', 'localtime'))
+             shipping_method, shipping_fee, status, fulfillment_status, paid_at)
+          VALUES (?, ?, ?, ?, ?, 'succeeded', ?, ?, ?, ?, ?, ?, 'paid', 'paid', datetime('now', 'localtime'))
         `).run(auctionId, userId, auction.seller_id, total, chargeId,
                shipping_name, shipping_zip, shipping_address, shipping_phone, method, fee);
       }

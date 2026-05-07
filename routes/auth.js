@@ -9,10 +9,18 @@ const { sendVerificationEmail, sendPasswordResetEmail } = require('../utils/mail
 
 // 新規登録
 router.post('/register', (req, res) => {
-  const { username, email, password, display_name, full_name, phone } = req.body;
+  const { username, email, password, display_name, full_name, phone, birthdate } = req.body;
 
   if (!username || !email || !password) {
     return res.status(400).json({ error: 'ユーザー名・メールアドレス・パスワードは必須です' });
+  }
+  // 生年月日・年齢チェック（20歳以上）
+  if (birthdate) {
+    const bd = new Date(birthdate);
+    const today = new Date();
+    let age = today.getFullYear() - bd.getFullYear();
+    if (today.getMonth() < bd.getMonth() || (today.getMonth() === bd.getMonth() && today.getDate() < bd.getDate())) age--;
+    if (age < 20) return res.status(400).json({ error: '20歳未満の方はご利用いただけません' });
   }
   if (password.length < 6) {
     return res.status(400).json({ error: 'パスワードは6文字以上にしてください' });
@@ -30,8 +38,8 @@ router.post('/register', (req, res) => {
   const verification_token = crypto.randomBytes(32).toString('hex');
 
   const result = db.prepare(
-    'INSERT INTO users (username, email, password_hash, display_name, full_name, phone, verification_token) VALUES (?, ?, ?, ?, ?, ?, ?)'
-  ).run(username, email, password_hash, display_name || username, full_name || null, phone || null, verification_token);
+    'INSERT INTO users (username, email, password_hash, display_name, full_name, phone, birthdate, verification_token) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+  ).run(username, email, password_hash, display_name || username, full_name || null, phone || null, birthdate || null, verification_token);
 
   sendVerificationEmail(email, username, verification_token).catch(() => {});
 

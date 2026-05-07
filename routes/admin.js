@@ -34,7 +34,7 @@ router.get('/users', (req, res) => {
   const offset = (parseInt(page) - 1) * limit;
   const search = q ? `%${q}%` : '%';
   const users = db.prepare(`
-    SELECT id, username, email, display_name, rating, trade_count,
+    SELECT id, username, email, display_name, birthdate, rating, trade_count,
            is_verified_seller, is_admin, email_verified, is_blocked, created_at
     FROM users WHERE username LIKE ? OR email LIKE ?
     ORDER BY created_at DESC LIMIT ? OFFSET ?
@@ -46,7 +46,7 @@ router.get('/users', (req, res) => {
 // ユーザー詳細
 router.get('/users/:id', (req, res) => {
   const user = db.prepare(`
-    SELECT id, username, email, display_name, full_name, phone,
+    SELECT id, username, email, display_name, full_name, phone, birthdate,
            address_zip, address_pref, address_city, address_street,
            bank_name, bank_branch, bank_account_type, bank_account_number, bank_account_holder,
            license_image_url, license_verified,
@@ -164,6 +164,134 @@ router.get('/orders', (req, res) => {
   `).all(limit, offset);
   const total = db.prepare('SELECT COUNT(*) as c FROM orders').get().c;
   res.json({ orders, total, page: parseInt(page), pages: Math.ceil(total / limit) });
+});
+
+// ===== ユーザー落札・出品履歴 =====
+router.get('/users/:id/history', (req, res) => {
+  const userId = parseInt(req.params.id);
+  const bids = db.prepare(`
+    SELECT a.id, a.title, a.producer, a.current_price, a.status, a.end_time,
+           MAX(b.amount) as max_bid, COUNT(b.id) as bid_count,
+           CASE WHEN EXISTS (
+             SELECT 1 FROM bids b2 WHERE b2.auction_id = a.id
+             AND b2.amount = a.current_price AND b2.bidder_id = ?
+           ) THEN 1 ELSE 0 END as is_winner
+    FROM bids b JOIN auctions a ON b.auction_id = a.id
+    WHERE b.bidder_id = ? GROUP BY a.id ORDER BY a.end_time DESC
+  `).all(userId, userId);
+  const listings = db.prepare(`
+    SELECT a.*, (SELECT COUNT(*) FROM bids WHERE auction_id = a.id) as total_bids,
+           (SELECT MAX(amount) FROM bids WHERE auction_id = a.id) as highest_bid
+    FROM auctions a WHERE a.seller_id = ? ORDER BY a.created_at DESC
+  `).all(userId);
+  const orders = db.prepare(`
+    SELECT o.*, a.title, a.producer FROM orders o
+    JOIN auctions a ON o.auction_id = a.id
+    WHERE o.buyer_id = ? OR o.seller_id = ? ORDER BY o.created_at DESC
+  `).all(userId, userId);
+  res.json({ bids, listings, orders });
+});
+
+router.get('/users/:id/history/csv', (req, res) => {
+  const userId = parseInt(req.params.id);
+  const user = db.prepare('SELECT username FROM users WHERE id = ?').get(userId);
+  const bids = db.prepare(`
+    SELECT a.title, a.producer, MAX(b.amount) as max_bid, a.current_price, a.status, a.end_time,
+           CASE WHEN EXISTS (
+             SELECT 1 FROM bids b2 WHERE b2.auction_id = a.id
+             AND b2.amount = a.current_price AND b2.bidder_id = ?
+           ) THEN '落札' ELSE '未落札' END as result
+    FROM bids b JOIN auctions a ON b.auction_id = a.id
+    WHERE b.bidder_id = ? GROUP BY a.id ORDER BY a.end_time DESC
+  `).all(userId, userId);
+  const listings = db.prepare(`
+    SELECT a.title, a.producer, a.starting_price, a.current_price, a.bid_count, a.status, a.end_time
+    FROM auctions a WHERE a.seller_id = ? ORDER BY a.created_at DESC
+  `).all(userId);
+
+  let csv = '﻿'; // BOM for Excel
+  csv += '=== 入札履歴 ===\n';
+  csv += 'タイトル,生産者,最高入札額,落札価格,ステータス,結果,終了日時\n';
+  bids.forEach(b => csv += `"${b.title}","${b.producer}",${b.max_bid},${b.current_price},${b.status},${b.result},"${b.end_time}"\n`);
+  csv += '\n=== 出品履歴 ===\n';
+  csv += 'タイトル,生産者,開始価格,現在価格,入札数,ステータス,終了日時\n';
+  listings.forEach(l => csv += `"${l.title}","${l.producer}",${l.starting_price},${l.current_price},${l.bid_count},${l.status},"${l.end_time}"\n`);
+
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+  res.setHeader('Content-Disposition', `attachment; filename=user_${user?.username || userId}_history.csv`);
+  res.send(csv);
+});
+
+// ===== ウォッチリスト分析 =====
+router.get('/watchlist/analytics', (req, res) => {
+  const data = db.prepare(`
+    SELECT a.id, a.title, a.producer, a.current_price, a.status, a.end_time,
+           COUNT(w.id) as watcher_count
+    FROM watchlist w JOIN auctions a ON w.auction_id = a.id
+    GROUP BY a.id ORDER BY watcher_count DESC
+  `).all();
+  res.json({ watchlist: data });
+});
+
+router.get('/watchlist/analytics/:auctionId', (req, res) => {
+  const auctionId = parseInt(req.params.auctionId);
+  const watchers = db.prepare(`
+    SELECT u.id, u.username, u.display_name, u.email, w.created_at as watched_at
+    FROM watchlist w JOIN users u ON w.user_id = u.id
+    WHERE w.auction_id = ? ORDER BY w.created_at DESC
+  `).all(auctionId);
+  res.json({ watchers });
+});
+
+router.get('/watchlist/csv', (req, res) => {
+  const data = db.prepare(`
+    SELECT a.title, a.producer, a.current_price, a.status,
+           u.username, u.email, u.display_name, w.created_at
+    FROM watchlist w
+    JOIN auctions a ON w.auction_id = a.id
+    JOIN users u ON w.user_id = u.id
+    ORDER BY a.id, w.created_at DESC
+  `).all();
+  let csv = '﻿';
+  csv += 'ワインタイトル,生産者,現在価格,ステータス,ユーザー名,メール,表示名,ウォッチ日時\n';
+  data.forEach(d => csv += `"${d.title}","${d.producer}",${d.current_price},${d.status},"${d.username}","${d.email}","${d.display_name || ''}","${d.created_at}"\n`);
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+  res.setHeader('Content-Disposition', 'attachment; filename=watchlist_analytics.csv');
+  res.send(csv);
+});
+
+// ===== 配送ステータス管理 =====
+router.patch('/orders/:id/status', (req, res) => {
+  const { fulfillment_status, tracking_number, carrier } = req.body;
+  const orderId = parseInt(req.params.id);
+  const validStatuses = ['pending_payment', 'paid', 'shipping', 'shipped', 'delivered', 'completed'];
+  if (!validStatuses.includes(fulfillment_status)) return res.status(400).json({ error: '無効なステータスです' });
+
+  const fields = ['fulfillment_status = ?'];
+  const vals = [fulfillment_status];
+  if (tracking_number !== undefined) { fields.push('tracking_number = ?'); vals.push(tracking_number); }
+  if (carrier !== undefined) { fields.push('carrier = ?'); vals.push(carrier); }
+  if (fulfillment_status === 'shipped') fields.push("shipped_at = datetime('now','localtime')");
+  if (fulfillment_status === 'delivered') fields.push("delivered_at = datetime('now','localtime')");
+  if (fulfillment_status === 'completed') fields.push("completed_at = datetime('now','localtime')");
+
+  vals.push(orderId);
+  db.prepare(`UPDATE orders SET ${fields.join(', ')} WHERE id = ?`).run(...vals);
+  res.json({ success: true });
+});
+
+// 注文一覧（配送ステータス含む）
+router.get('/orders/all', (req, res) => {
+  const orders = db.prepare(`
+    SELECT o.*, a.title, a.producer, ub.username as buyer, ub.email as buyer_email,
+           us.username as seller, us.email as seller_email
+    FROM orders o
+    JOIN auctions a ON o.auction_id = a.id
+    JOIN users ub ON o.buyer_id = ub.id
+    JOIN users us ON o.seller_id = us.id
+    ORDER BY o.created_at DESC
+  `).all();
+  res.json({ orders });
 });
 
 module.exports = router;

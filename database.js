@@ -136,6 +136,19 @@ addrCols.forEach(col => { if (!userCols.includes(col)) db.exec(`ALTER TABLE user
 const auctionCols2 = db.prepare("PRAGMA table_info(auctions)").all().map(c => c.name);
 if (!auctionCols2.includes('approval_status')) db.exec("ALTER TABLE auctions ADD COLUMN approval_status TEXT DEFAULT 'approved'");
 
+// 生年月日
+const userCols2 = db.prepare("PRAGMA table_info(users)").all().map(c => c.name);
+if (!userCols2.includes('birthdate')) db.exec("ALTER TABLE users ADD COLUMN birthdate TEXT");
+
+// 配送ステータス管理
+const orderCols2 = db.prepare("PRAGMA table_info(orders)").all().map(c => c.name);
+if (!orderCols2.includes('fulfillment_status')) db.exec("ALTER TABLE orders ADD COLUMN fulfillment_status TEXT DEFAULT 'pending_payment'");
+if (!orderCols2.includes('tracking_number')) db.exec("ALTER TABLE orders ADD COLUMN tracking_number TEXT");
+if (!orderCols2.includes('carrier')) db.exec("ALTER TABLE orders ADD COLUMN carrier TEXT");
+if (!orderCols2.includes('shipped_at')) db.exec("ALTER TABLE orders ADD COLUMN shipped_at TEXT");
+if (!orderCols2.includes('delivered_at')) db.exec("ALTER TABLE orders ADD COLUMN delivered_at TEXT");
+if (!orderCols2.includes('completed_at')) db.exec("ALTER TABLE orders ADD COLUMN completed_at TEXT");
+
 // メッセージテーブル（落札後の出品者↔落札者やりとり）
 db.exec(`
   CREATE TABLE IF NOT EXISTS messages (
