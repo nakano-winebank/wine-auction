@@ -215,7 +215,7 @@
           const priceEl = card.querySelector('.auction-price');
           const bidCountEl = card.querySelector('.auction-bid-count');
           if (priceEl) priceEl.textContent = '¥' + data.new_price.toLocaleString();
-          if (bidCountEl) bidCountEl.textContent = data.bid_count + ' bids';
+          if (bidCountEl) bidCountEl.textContent = data.bid_count + ' 件入札';
         }
       });
     } catch(e) {}
@@ -325,7 +325,7 @@
               <!-- Authenticated badge -->
               <div class="absolute top-3 right-3 flex items-center gap-1 bg-dark-900/50 backdrop-blur-sm rounded px-2 py-0.5">
                 <svg class="w-3 h-3 text-gold" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                <span class="text-[9px] text-gold/80 tracking-wider uppercase">Verified</span>
+                <span class="text-[9px] text-gold/80 tracking-wider">認証済</span>
               </div>
             </div>
             <div class="p-4">
@@ -334,10 +334,10 @@
               <p class="text-[11px] text-white/25 mb-3 tracking-wide">${metaText}</p>
               <div class="flex items-end justify-between pt-2 border-t border-white/5">
                 <div>
-                  <p class="text-[9px] text-gold/50 uppercase tracking-[0.2em] mb-0.5">Current Bid</p>
+                  <p class="text-[9px] text-gold/50 tracking-[0.2em] mb-0.5">現在価格</p>
                   <p class="text-xl font-serif font-semibold text-gold auction-price">¥${a.current_price.toLocaleString()}</p>
                 </div>
-                <p class="text-[11px] text-white/25 auction-bid-count">${a.bid_count} bids</p>
+                <p class="text-[11px] text-white/25 auction-bid-count">${a.bid_count} 件入札</p>
               </div>
             </div>
           </a>`;
@@ -348,7 +348,7 @@
         const endTime = new Date(el.dataset.end);
         const id = setInterval(() => {
           const diff = endTime - new Date();
-          if (diff <= 0) { el.textContent = 'Ended'; clearInterval(id); return; }
+          if (diff <= 0) { el.textContent = '終了'; clearInterval(id); return; }
           el.textContent = formatCountdown(diff);
         }, 1000);
         timers[el.dataset.end] = id;
