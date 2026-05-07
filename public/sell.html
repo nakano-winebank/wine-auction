@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>出品 — WINE BANK</title>
+  <title>出品 — WineBank</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
           colors: {
-            gold: { DEFAULT: '#C9A96E', hover: '#B8860B' },
+            gold: { DEFAULT: '#A78450', hover: '#8B6914' },
             dark: { 900: '#0A0A0A', 800: '#141414', 700: '#1C1C1C', 600: '#252525', 500: '#2F2F2F' }
           },
           fontFamily: {
-            serif: ['Cormorant Garamond', 'serif'],
+            serif: ['Noto Serif JP', 'serif'],
             sans: ['Inter', 'Noto Sans JP', 'sans-serif'],
           }
         }
@@ -22,19 +22,19 @@
     }
   </script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@300;400;500;600&family=Noto+Sans+JP:wght@400;500;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Noto+Serif+JP:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap');
     body { font-family: 'Inter', 'Noto Sans JP', sans-serif; }
     .input-field { background: #1C1C1C; border: 1px solid rgba(255,255,255,0.1); color: #fff; }
-    .input-field:focus { border-color: #C9A96E; box-shadow: 0 0 0 2px rgba(201,169,110,0.15); outline: none; }
+    .input-field:focus { border-color: #A78450; box-shadow: 0 0 0 2px rgba(167,132,80,0.15); outline: none; }
     .input-field::placeholder { color: rgba(255,255,255,0.25); }
     select.input-field option { background: #1C1C1C; color: #fff; }
-    .btn-gold { background: linear-gradient(135deg, #C9A96E, #B8860B); color: #0A0A0A; font-weight: 700; transition: all 0.3s; }
-    .btn-gold:hover { background: linear-gradient(135deg, #B8860B, #96720B); transform: translateY(-1px); box-shadow: 0 4px 20px rgba(201,169,110,0.3); }
+    .btn-gold { background: linear-gradient(135deg, #A78450, #8B6914); color: #0A0A0A; font-weight: 700; transition: all 0.3s; }
+    .btn-gold:hover { background: linear-gradient(135deg, #8B6914, #96720B); transform: translateY(-1px); box-shadow: 0 4px 20px rgba(167,132,80,0.3); }
     .btn-gold:disabled { opacity: 0.5; transform: none; box-shadow: none; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
     .fade-in { animation: fadeIn 0.3s ease; }
     .slot-area { border-color: rgba(255,255,255,0.1); }
-    .slot-area:hover { border-color: rgba(201,169,110,0.5); background: rgba(201,169,110,0.05); }
+    .slot-area:hover { border-color: rgba(167,132,80,0.5); background: rgba(167,132,80,0.05); }
   </style>
 </head>
 <body class="bg-dark-900 min-h-screen">
@@ -47,7 +47,7 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
         </a>
         <a href="/" class="flex items-center gap-2">
-          <span class="font-serif text-gold text-lg font-semibold tracking-wider">WINE BANK</span>
+          <span class="text-gold"><svg class="h-5" viewBox="0 0 176.426 30.418" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M20.687 9.871l8.482 20.55 3.669-8.887L24.355.984z"/><path d="M40.909 1.975l-.069.168c.26-.631.581-1.159 1.295-1.159h1.263V0H32.039v.984h1.12c.714 0 1.035.528 1.3 1.159l.008.02.007.017.011.027 3.165 7.666z"/><path d="M9.691 1.982l-.011-.026.011.026c-.311-.753-.136-1 .7-1h.963V0H0v.984h1.123c.714 0 1.035.528 1.3 1.159l-.152-.368L14.09 30.416l3.669-8.887-8.044-19.49-.023-.057"/><path d="M38.609 15.697h2.29v13.7h-2.29v.916h8.98v-.916h-2.29v-13.7h2.29v-.916h-8.98z"/><path d="M60.602 15.697a10.273 10.273 0 011.551.034c.563.036.563.317.6 1.057v7.009l-7.643-9.016h-6.13v.916a12.094 12.094 0 011.727.034c.527.036.527.247.563 1.093v11.3c-.036 1.021-.14 1.233-.881 1.233H48.98v.951h5.917v-.951h-1.584c-.81-.034-.846-.352-.881-1.233V17.879l10.46 12.539h1.021v-13.63c.036-.669.071-.986.494-1.057.1-.034 1.62-.034 1.831-.034v-.916h-5.636z"/><path d="M76.663 29.397h-2.432v-6.515c2.572 0 3.311.21 3.558 2.887h.917v-6.412h-.917c-.176 2.36-.917 2.571-3.558 2.571v-6.231h3.45c2.183.106 3.1.352 3.943 3.2h.881l-.352-4.12H67.54v.916h2.29v13.7h-2.29v.916h15.215l.387-5.071h-.881c-1.09 4.085-3.168 4.12-5.6 4.155"/><path d="M128.892 14.322h-1.057l-5.669 13.594c-.53 1.093-.634 1.2-.846 1.338-.247.141-.283.141-2.078.141v.916h6.128v-.916c-2.078 0-2.43 0-2.43-.6a1.414 1.414 0 01.1-.493l1.022-2.571 2.677-6.445 2.4 6.445 1.373 3.662h-2.183v.916h8.522v-.916h-1.936z"/><path d="M149.37 15.697a10.271 10.271 0 011.551.034c.563.036.563.317.6 1.057v7.009l-7.643-9.016h-6.128v.916a12.1 12.1 0 011.727.034c.527.036.527.247.563 1.093v11.3c-.036 1.021-.14 1.233-.881 1.233h-1.409v.951h5.917v-.951h-1.584c-.81-.034-.846-.352-.881-1.233V17.879l10.461 12.539h1.021v-13.63c.036-.669.071-.986.494-1.057.1-.034 1.62-.034 1.831-.034v-.916h-5.636z"/><path d="M162.927 15.697h2.115v-.916h-8.733v.916h2.29v13.7h-2.29v.916h8.733v-.916h-2.111z"/><path d="M171.597 26.427c-1.322-1.374-4.939-5.941-4.939-5.941l3.242-3.417a4.648 4.648 0 011.831-1.3 7.609 7.609 0 011.8-.07v-.915h-6.622v.915h1.9c.1 0 .351.034.351.246a1.236 1.236 0 01-.316.6l-5.636 5.988s3.487 4.883 5.5 6.415c2.855 2.174 5.784 1.6 7.719-.549-2.064.551-3.461-.548-4.828-1.968"/><path d="M112.157 14.491c3.782-.634 5.674-3.911 5.674-7.19 0-3.651-2.345-7.3-7.034-7.3H94.602v1.087h2.8c.011.111.017.226.017.348v27.609a3.041 3.041 0 01-.023.364h-2.8v1.009h17.362c5.044 0 7.566-3.954 7.566-7.908 0-3.9-2.459-7.916-7.373-8.019m-.276-7.19c0 3.651-3.183 6.541-7.872 6.541h-.584V1.437c0-.122.006-.238.017-.348h1.405c4.689 0 7.034 2.562 7.034 6.213m-7.034 22.108h-1.4a3.309 3.309 0 01-.024-.428v.428-14.558h1.893c5.044 0 8.262 3.705 8.262 7.659s-3.689 6.9-8.733 6.9"/></svg></span>
         </a>
         <span class="font-medium text-white/90 ml-1 text-sm">出品</span>
       </div>
@@ -65,7 +65,7 @@
 
           <!-- ワイン基本情報 -->
           <div class="bg-dark-700 rounded-xl border border-white/5 p-6">
-            <h2 class="font-serif text-gold text-lg mb-5 tracking-wide">Wine Information</h2>
+            <h2 class="font-serif text-gold text-lg mb-5 tracking-wide">ワイン情報</h2>
 
             <!-- 複数画像アップロード -->
             <div class="mb-6">
@@ -255,7 +255,7 @@
 
           <!-- 保管・状態 -->
           <div class="bg-dark-700 rounded-xl border border-white/5 p-6">
-            <h2 class="font-serif text-gold text-lg mb-5 tracking-wide">Condition & Storage</h2>
+            <h2 class="font-serif text-gold text-lg mb-5 tracking-wide">保管・状態</h2>
             <div class="mb-4">
               <label class="block text-sm font-medium text-white/60 mb-1.5">保管状態 <span class="text-gold text-xs">*</span></label>
               <input type="text" id="condition_note" required placeholder="未開封 / 温度管理済みセラー保管"
@@ -270,7 +270,7 @@
 
           <!-- オークション設定 -->
           <div class="bg-dark-700 rounded-xl border border-white/5 p-6">
-            <h2 class="font-serif text-gold text-lg mb-5 tracking-wide">Auction Settings</h2>
+            <h2 class="font-serif text-gold text-lg mb-5 tracking-wide">オークション設定</h2>
 
             <div class="grid grid-cols-2 gap-4 mb-4">
               <div>
@@ -309,7 +309,7 @@
       <!-- プレビュー（右1列） -->
       <div class="lg:col-span-1">
         <div class="sticky top-20">
-          <h3 class="text-xs font-medium text-white/30 uppercase tracking-widest mb-3">Preview</h3>
+          <h3 class="text-xs font-medium text-white/30 uppercase tracking-widest mb-3">プレビュー</h3>
           <div class="bg-dark-700 rounded-xl border border-white/5 overflow-hidden">
             <div id="previewImage" class="bg-gradient-to-br from-dark-600 to-dark-800 h-48 flex items-center justify-center relative">
               <div class="text-center">
@@ -339,8 +339,8 @@
   <!-- フッター -->
   <footer class="border-t border-white/5 mt-16 py-8">
     <div class="max-w-5xl mx-auto px-4 text-center">
-      <p class="font-serif text-gold/40 text-sm tracking-widest">WINE BANK</p>
-      <p class="text-white/20 text-xs mt-1">&copy; 2024 Wine Bank. All rights reserved.</p>
+      <span class="text-gold/40"><svg class="h-4" viewBox="0 0 176.426 30.418" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M20.687 9.871l8.482 20.55 3.669-8.887L24.355.984z"/><path d="M40.909 1.975l-.069.168c.26-.631.581-1.159 1.295-1.159h1.263V0H32.039v.984h1.12c.714 0 1.035.528 1.3 1.159l.008.02.007.017.011.027 3.165 7.666z"/><path d="M9.691 1.982l-.011-.026.011.026c-.311-.753-.136-1 .7-1h.963V0H0v.984h1.123c.714 0 1.035.528 1.3 1.159l-.152-.368L14.09 30.416l3.669-8.887-8.044-19.49-.023-.057"/><path d="M38.609 15.697h2.29v13.7h-2.29v.916h8.98v-.916h-2.29v-13.7h2.29v-.916h-8.98z"/><path d="M60.602 15.697a10.273 10.273 0 011.551.034c.563.036.563.317.6 1.057v7.009l-7.643-9.016h-6.13v.916a12.094 12.094 0 011.727.034c.527.036.527.247.563 1.093v11.3c-.036 1.021-.14 1.233-.881 1.233H48.98v.951h5.917v-.951h-1.584c-.81-.034-.846-.352-.881-1.233V17.879l10.46 12.539h1.021v-13.63c.036-.669.071-.986.494-1.057.1-.034 1.62-.034 1.831-.034v-.916h-5.636z"/><path d="M76.663 29.397h-2.432v-6.515c2.572 0 3.311.21 3.558 2.887h.917v-6.412h-.917c-.176 2.36-.917 2.571-3.558 2.571v-6.231h3.45c2.183.106 3.1.352 3.943 3.2h.881l-.352-4.12H67.54v.916h2.29v13.7h-2.29v.916h15.215l.387-5.071h-.881c-1.09 4.085-3.168 4.12-5.6 4.155"/><path d="M128.892 14.322h-1.057l-5.669 13.594c-.53 1.093-.634 1.2-.846 1.338-.247.141-.283.141-2.078.141v.916h6.128v-.916c-2.078 0-2.43 0-2.43-.6a1.414 1.414 0 01.1-.493l1.022-2.571 2.677-6.445 2.4 6.445 1.373 3.662h-2.183v.916h8.522v-.916h-1.936z"/><path d="M149.37 15.697a10.271 10.271 0 011.551.034c.563.036.563.317.6 1.057v7.009l-7.643-9.016h-6.128v.916a12.1 12.1 0 011.727.034c.527.036.527.247.563 1.093v11.3c-.036 1.021-.14 1.233-.881 1.233h-1.409v.951h5.917v-.951h-1.584c-.81-.034-.846-.352-.881-1.233V17.879l10.461 12.539h1.021v-13.63c.036-.669.071-.986.494-1.057.1-.034 1.62-.034 1.831-.034v-.916h-5.636z"/><path d="M162.927 15.697h2.115v-.916h-8.733v.916h2.29v13.7h-2.29v.916h8.733v-.916h-2.111z"/><path d="M171.597 26.427c-1.322-1.374-4.939-5.941-4.939-5.941l3.242-3.417a4.648 4.648 0 011.831-1.3 7.609 7.609 0 011.8-.07v-.915h-6.622v.915h1.9c.1 0 .351.034.351.246a1.236 1.236 0 01-.316.6l-5.636 5.988s3.487 4.883 5.5 6.415c2.855 2.174 5.784 1.6 7.719-.549-2.064.551-3.461-.548-4.828-1.968"/><path d="M112.157 14.491c3.782-.634 5.674-3.911 5.674-7.19 0-3.651-2.345-7.3-7.034-7.3H94.602v1.087h2.8c.011.111.017.226.017.348v27.609a3.041 3.041 0 01-.023.364h-2.8v1.009h17.362c5.044 0 7.566-3.954 7.566-7.908 0-3.9-2.459-7.916-7.373-8.019m-.276-7.19c0 3.651-3.183 6.541-7.872 6.541h-.584V1.437c0-.122.006-.238.017-.348h1.405c4.689 0 7.034 2.562 7.034 6.213m-7.034 22.108h-1.4a3.309 3.309 0 01-.024-.428v.428-14.558h1.893c5.044 0 8.262 3.705 8.262 7.659s-3.689 6.9-8.733 6.9"/></svg></span>
+      <p class="text-white/20 text-xs mt-1">&copy; 2026 株式会社WineBank</p>
     </div>
   </footer>
 

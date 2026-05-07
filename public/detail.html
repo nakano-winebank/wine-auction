@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ワインオークション — 商品詳細</title>
+  <title>商品詳細 — WineBank</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
           colors: {
-            gold: { DEFAULT: '#C9A96E', hover: '#B8860B', dim: 'rgba(201,169,110,0.15)' },
+            gold: { DEFAULT: '#A78450', hover: '#8B6914', dim: 'rgba(167,132,80,0.15)' },
             dark: { 900: '#0A0A0A', 800: '#141414', 700: '#1C1C1C', 600: '#252525', 500: '#2F2F2F' }
           },
           fontFamily: {
-            serif: ['"Cormorant Garamond"', '"Noto Serif JP"', 'serif'],
+            serif: ['"Noto Serif JP"', 'serif'],
             sans: ['Inter', '"Noto Sans JP"', 'sans-serif']
           }
         }
@@ -23,28 +23,28 @@
   </script>
   <script src="/socket.io/socket.io.js"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@400;500;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@400;500;700&display=swap');
     body { font-family: 'Inter', 'Noto Sans JP', sans-serif; }
-    h1, h2, h3, .heading, .font-serif { font-family: 'Cormorant Garamond', 'Noto Serif JP', serif; }
+    h1, h2, h3, .heading, .font-serif { font-family: 'Noto Serif JP', serif; }
 
-    .wine-badge { background: linear-gradient(135deg, #C9A96E, #B8860B); }
-    .bid-btn { background: #C9A96E; color: #0A0A0A; transition: all 0.2s; }
-    .bid-btn:hover { background: #B8860B; transform: translateY(-1px); }
+    .wine-badge { background: linear-gradient(135deg, #A78450, #8B6914); }
+    .bid-btn { background: #A78450; color: #0A0A0A; transition: all 0.2s; }
+    .bid-btn:hover { background: #8B6914; transform: translateY(-1px); }
     .bid-btn:disabled { background: #4a4a4a; color: #888; transform: none; cursor: not-allowed; }
     .timer-block { background: linear-gradient(135deg, #141414, #1C1C1C); border: 1px solid rgba(255,255,255,0.05); }
     .timer-digit { font-size: 2.2rem; font-weight: 800; letter-spacing: 0.05em; }
     .tag-pill { background: transparent; color: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.1); }
-    .winning { background: rgba(201,169,110,0.08); border-color: #C9A96E; }
+    .winning { background: rgba(167,132,80,0.08); border-color: #A78450; }
     .losing { background: rgba(239,68,68,0.08); border-color: #EF4444; }
     .modal-overlay { backdrop-filter: blur(4px); }
-    .bid-row:first-child td { background: rgba(201,169,110,0.06); }
+    .bid-row:first-child td { background: rgba(167,132,80,0.06); }
     .bid-row:nth-child(even) td { background: rgba(255,255,255,0.02); }
-    .score-badge { background: linear-gradient(135deg, #C9A96E, #B8860B); }
-    .winemark { background: #141414; border: 1px solid #C9A96E; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
-    .progress-bar { background: linear-gradient(90deg, #C9A96E, #B8860B); }
+    .score-badge { background: linear-gradient(135deg, #A78450, #8B6914); }
+    .winemark { background: #141414; border: 1px solid #A78450; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
+    .progress-bar { background: linear-gradient(90deg, #A78450, #8B6914); }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     .fade-in { animation: fadeIn 0.3s ease; }
-    @keyframes priceUp { 0% { transform: scale(1.15); color: #C9A96E; } 100% { transform: scale(1); color: inherit; } }
+    @keyframes priceUp { 0% { transform: scale(1.15); color: #A78450; } 100% { transform: scale(1); color: inherit; } }
     .price-update { animation: priceUp 0.6s ease; }
     @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.6; } }
     .pulse { animation: pulse 1s infinite; }
@@ -53,7 +53,7 @@
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: #0A0A0A; }
     ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: #C9A96E; }
+    ::-webkit-scrollbar-thumb:hover { background: #A78450; }
   </style>
 </head>
 <body class="bg-dark-900 min-h-screen text-white/90">
@@ -65,9 +65,8 @@
         <a href="/" class="text-white/40 hover:text-white/70 flex-shrink-0 p-1">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
         </a>
-        <a href="/" class="flex items-center gap-2 flex-shrink-0">
-          <div class="wine-badge text-dark-900 px-3 py-1 rounded-full text-sm font-bold">WINE</div>
-          <span class="text-white/90 font-bold hidden sm:block font-serif text-lg tracking-wide">WineBank</span>
+        <a href="/" class="flex items-center gap-2 flex-shrink-0 text-gold">
+          <svg class="h-5" viewBox="0 0 176.426 30.418" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M20.687 9.871l8.482 20.55 3.669-8.887L24.355.984z"/><path d="M40.909 1.975l-.069.168c.26-.631.581-1.159 1.295-1.159h1.263V0H32.039v.984h1.12c.714 0 1.035.528 1.3 1.159l.008.02.007.017.011.027 3.165 7.666z"/><path d="M9.691 1.982l-.011-.026.011.026c-.311-.753-.136-1 .7-1h.963V0H0v.984h1.123c.714 0 1.035.528 1.3 1.159l-.152-.368L14.09 30.416l3.669-8.887-8.044-19.49-.023-.057"/><path d="M38.609 15.697h2.29v13.7h-2.29v.916h8.98v-.916h-2.29v-13.7h2.29v-.916h-8.98z"/><path d="M60.602 15.697a10.273 10.273 0 011.551.034c.563.036.563.317.6 1.057v7.009l-7.643-9.016h-6.13v.916a12.094 12.094 0 011.727.034c.527.036.527.247.563 1.093v11.3c-.036 1.021-.14 1.233-.881 1.233H48.98v.951h5.917v-.951h-1.584c-.81-.034-.846-.352-.881-1.233V17.879l10.46 12.539h1.021v-13.63c.036-.669.071-.986.494-1.057.1-.034 1.62-.034 1.831-.034v-.916h-5.636z"/><path d="M76.663 29.397h-2.432v-6.515c2.572 0 3.311.21 3.558 2.887h.917v-6.412h-.917c-.176 2.36-.917 2.571-3.558 2.571v-6.231h3.45c2.183.106 3.1.352 3.943 3.2h.881l-.352-4.12H67.54v.916h2.29v13.7h-2.29v.916h15.215l.387-5.071h-.881c-1.09 4.085-3.168 4.12-5.6 4.155"/><path d="M128.892 14.322h-1.057l-5.669 13.594c-.53 1.093-.634 1.2-.846 1.338-.247.141-.283.141-2.078.141v.916h6.128v-.916c-2.078 0-2.43 0-2.43-.6a1.414 1.414 0 01.1-.493l1.022-2.571 2.677-6.445 2.4 6.445 1.373 3.662h-2.183v.916h8.522v-.916h-1.936z"/><path d="M149.37 15.697a10.271 10.271 0 011.551.034c.563.036.563.317.6 1.057v7.009l-7.643-9.016h-6.128v.916a12.1 12.1 0 011.727.034c.527.036.527.247.563 1.093v11.3c-.036 1.021-.14 1.233-.881 1.233h-1.409v.951h5.917v-.951h-1.584c-.81-.034-.846-.352-.881-1.233V17.879l10.461 12.539h1.021v-13.63c.036-.669.071-.986.494-1.057.1-.034 1.62-.034 1.831-.034v-.916h-5.636z"/><path d="M162.927 15.697h2.115v-.916h-8.733v.916h2.29v13.7h-2.29v.916h8.733v-.916h-2.111z"/><path d="M171.597 26.427c-1.322-1.374-4.939-5.941-4.939-5.941l3.242-3.417a4.648 4.648 0 011.831-1.3 7.609 7.609 0 011.8-.07v-.915h-6.622v.915h1.9c.1 0 .351.034.351.246a1.236 1.236 0 01-.316.6l-5.636 5.988s3.487 4.883 5.5 6.415c2.855 2.174 5.784 1.6 7.719-.549-2.064.551-3.461-.548-4.828-1.968"/><path d="M112.157 14.491c3.782-.634 5.674-3.911 5.674-7.19 0-3.651-2.345-7.3-7.034-7.3H94.602v1.087h2.8c.011.111.017.226.017.348v27.609a3.041 3.041 0 01-.023.364h-2.8v1.009h17.362c5.044 0 7.566-3.954 7.566-7.908 0-3.9-2.459-7.916-7.373-8.019m-.276-7.19c0 3.651-3.183 6.541-7.872 6.541h-.584V1.437c0-.122.006-.238.017-.348h1.405c4.689 0 7.034 2.562 7.034 6.213m-7.034 22.108h-1.4a3.309 3.309 0 01-.024-.428v.428-14.558h1.893c5.044 0 8.262 3.705 8.262 7.659s-3.689 6.9-8.733 6.9"/></svg>
         </a>
         <div class="ml-auto flex items-center gap-3">
           <button id="watchBtn" onclick="toggleWatch()" class="text-white/40 hover:text-gold transition p-1">
@@ -222,8 +221,8 @@
 
       // ウォッチアイコン
       if (a.is_watched) {
-        document.getElementById('watchIcon').setAttribute('fill', '#C9A96E');
-        document.getElementById('watchIcon').setAttribute('stroke', '#C9A96E');
+        document.getElementById('watchIcon').setAttribute('fill', '#A78450');
+        document.getElementById('watchIcon').setAttribute('stroke', '#A78450');
       }
 
       // ステータス表示
@@ -615,8 +614,8 @@
         const data = await res.json();
         const icon = document.getElementById('watchIcon');
         if (data.watched) {
-          icon.setAttribute('fill', '#C9A96E');
-          icon.setAttribute('stroke', '#C9A96E');
+          icon.setAttribute('fill', '#A78450');
+          icon.setAttribute('stroke', '#A78450');
           showToast('❤️ ウォッチリストに追加しました');
         } else {
           icon.setAttribute('fill', 'none');
