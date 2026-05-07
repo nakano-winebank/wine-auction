@@ -89,21 +89,21 @@ app.use('/api/admin', require('./routes/admin'));
 app.use('/api/import', require('./routes/import'));
 
 // 入札履歴 GET
-app.get('/api/auctions/:id/bids', (req, res) => {
+app.get('/api/auctions/:id/bids', async (req, res) => {
   const db = require('./database');
-  const bids = db.prepare(`
+  const bids = await db.prepare(`
     SELECT b.id, b.amount, b.created_at, u.display_name, u.username
     FROM bids b JOIN users u ON b.bidder_id = u.id
     WHERE b.auction_id = ? ORDER BY b.amount DESC
   `).all(req.params.id);
-  const auction = db.prepare('SELECT starting_price, current_price, bid_count FROM auctions WHERE id = ?').get(req.params.id);
+  const auction = await db.prepare('SELECT starting_price, current_price, bid_count FROM auctions WHERE id = ?').get(req.params.id);
   res.json({ bids: bids.map((b, i) => ({ ...b, is_highest: i === 0 })), auction });
 });
 
 // 入札 POST（Socket.io統合）
 const { authenticateToken } = require('./middleware/auth');
 
-app.post('/api/auctions/:id/bids', bidLimiter, authenticateToken, (req, res) => {
+app.post('/api/auctions/:id/bids', bidLimiter, authenticateToken, async (req, res) => {
   const db = require('./database');
   const auctionId = parseInt(req.params.id);
   const { amount } = req.body;
@@ -114,8 +114,8 @@ app.post('/api/auctions/:id/bids', bidLimiter, authenticateToken, (req, res) => 
   const bidAmount = parseInt(amount);
 
   try {
-    const result = db.transaction(() => {
-      const auction = db.prepare('SELECT * FROM auctions WHERE id = ?').get(auctionId);
+    const result = await db.transaction(async () => {
+      const auction = await db.prepare('SELECT * FROM auctions WHERE id = ?').get(auctionId);
       if (!auction) throw new Error('オークションが見つかりません');
       if (auction.status !== 'active') throw new Error('このオークションは終了しています');
 
@@ -123,30 +123,26 @@ app.post('/api/auctions/:id/bids', bidLimiter, authenticateToken, (req, res) => 
       if (endTime <= new Date()) throw new Error('オークションは終了しています');
       if (auction.seller_id === req.user.id) throw new Error('自分の出品には入札できません');
 
-      // ブロックチェック（出品者が入札者をブロックしている場合）
-      const isBlocked = db.prepare('SELECT id FROM blocked_users WHERE blocker_id = ? AND blocked_id = ?').get(auction.seller_id, req.user.id);
+      const isBlocked = await db.prepare('SELECT id FROM blocked_users WHERE blocker_id = ? AND blocked_id = ?').get(auction.seller_id, req.user.id);
       if (isBlocked) throw new Error('この出品者から入札をブロックされています');
 
       const minBid = auction.current_price + 1000;
       if (bidAmount < minBid) throw new Error(`入札金額は¥${minBid.toLocaleString()}以上にしてください`);
 
-      const existingBid = db.prepare('SELECT id FROM bids WHERE auction_id = ? AND bidder_id = ?').get(auctionId, req.user.id);
+      const existingBid = await db.prepare('SELECT id FROM bids WHERE auction_id = ? AND bidder_id = ?').get(auctionId, req.user.id);
       const isNewBidder = !existingBid;
 
-      // 前の最高入札者を記録（メール通知用）
-      const prevTopBid = db.prepare(`
+      const prevTopBid = await db.prepare(`
         SELECT b.amount, u.email, u.display_name, u.username
         FROM bids b JOIN users u ON b.bidder_id = u.id
         WHERE b.auction_id = ? AND b.bidder_id != ?
         ORDER BY b.amount DESC LIMIT 1
       `).get(auctionId, req.user.id);
 
-      db.prepare('INSERT INTO bids (auction_id, bidder_id, amount) VALUES (?, ?, ?)').run(auctionId, req.user.id, bidAmount);
+      await db.prepare('INSERT INTO bids (auction_id, bidder_id, amount) VALUES (?, ?, ?)').run(auctionId, req.user.id, bidAmount);
 
-      // ウォッチリストに自動追加（既にある場合は無視）
-      db.prepare('INSERT OR IGNORE INTO watchlist (user_id, auction_id) VALUES (?, ?)').run(req.user.id, auctionId);
+      await db.prepare('INSERT OR IGNORE INTO watchlist (user_id, auction_id) VALUES (?, ?)').run(req.user.id, auctionId);
 
-      // 終了5分前なら5分延長
       let newEndTime = auction.end_time;
       let extended = false;
       const fiveMin = new Date(Date.now() + 5 * 60 * 1000);
@@ -155,40 +151,36 @@ app.post('/api/auctions/:id/bids', bidLimiter, authenticateToken, (req, res) => 
         extended = true;
       }
 
-      db.prepare(`UPDATE auctions SET current_price = ?, bid_count = bid_count + 1,
+      await db.prepare(`UPDATE auctions SET current_price = ?, bid_count = bid_count + 1,
         bidder_count = bidder_count + ?, end_time = ? WHERE id = ?
       `).run(bidAmount, isNewBidder ? 1 : 0, newEndTime, auctionId);
 
       return {
-        auction: db.prepare('SELECT * FROM auctions WHERE id = ?').get(auctionId),
+        auction: await db.prepare('SELECT * FROM auctions WHERE id = ?').get(auctionId),
         extended,
         prevTopBid
       };
     });
 
-    // 前の最高入札者にメール通知（非同期・ノンブロッキング）
+    // 前の最高入札者にメール通知
     if (result.prevTopBid && result.prevTopBid.email) {
       const name = result.prevTopBid.display_name || result.prevTopBid.username;
       sendOutbidEmail(result.prevTopBid.email, name, result.auction.title, bidAmount, auctionId);
     }
 
-    // ウォッチリスト登録者に入札通知（入札者・出品者は除く）
-    {
-      const db = require('./database');
-      const watchers = db.prepare(`
-        SELECT u.email, u.display_name, u.username
-        FROM watchlist w JOIN users u ON w.user_id = u.id
-        WHERE w.auction_id = ? AND w.user_id != ? AND w.user_id != ?
-      `).all(auctionId, req.user.id, result.auction.seller_id);
-      watchers.forEach(w => {
-        sendWatchlistBidNotification(
-          w.email, w.display_name || w.username,
-          result.auction.title, bidAmount, auctionId
-        ).catch(() => {});
-      });
-    }
+    // ウォッチリスト登録者に入札通知
+    const watchers = await db.prepare(`
+      SELECT u.email, u.display_name, u.username
+      FROM watchlist w JOIN users u ON w.user_id = u.id
+      WHERE w.auction_id = ? AND w.user_id != ? AND w.user_id != ?
+    `).all(auctionId, req.user.id, result.auction.seller_id);
+    watchers.forEach(w => {
+      sendWatchlistBidNotification(
+        w.email, w.display_name || w.username,
+        result.auction.title, bidAmount, auctionId
+      ).catch(() => {});
+    });
 
-    // リアルタイム通知（全接続ユーザーに配信）
     io.to(`auction:${auctionId}`).emit('bid:new', {
       auction_id: auctionId,
       amount: bidAmount,
@@ -217,7 +209,7 @@ app.post('/api/auctions/:id/bids', bidLimiter, authenticateToken, (req, res) => 
 // メール設定テストエンドポイント（管理者専用）
 app.get('/api/email-test', authenticateToken, async (req, res) => {
   const db = require('./database');
-  const u = db.prepare('SELECT is_admin, email FROM users WHERE id = ?').get(req.user.id);
+  const u = await db.prepare('SELECT is_admin, email FROM users WHERE id = ?').get(req.user.id);
   if (!u || !u.is_admin) return res.status(403).json({ error: '管理者のみ' });
   const RESEND_API_KEY = process.env.RESEND_API_KEY;
   if (!RESEND_API_KEY) {
@@ -260,28 +252,35 @@ io.on('connection', (socket) => {
 });
 
 // 期限切れオークションを1分ごとにチェック
-setInterval(() => {
+setInterval(async () => {
   const db = require('./database');
   try {
-    const ended = db.prepare(
+    const ended = await db.prepare(
       `SELECT id FROM auctions WHERE status = 'active' AND end_time <= datetime('now')`
     ).all();
     if (ended.length > 0) {
-      db.prepare(`UPDATE auctions SET status = 'ended' WHERE status = 'active' AND end_time <= datetime('now')`).run();
+      await db.prepare(`UPDATE auctions SET status = 'ended' WHERE status = 'active' AND end_time <= datetime('now')`).run();
       ended.forEach(a => io.to(`auction:${a.id}`).emit('auction:ended', { auction_id: a.id }));
     }
   } catch(e) {}
 }, 60 * 1000);
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log(`
+
+// DB初期化してからサーバー起動
+const db = require('./database');
+(async () => {
+  if (db.init) await db.init();
+  server.listen(PORT, () => {
+    console.log(`
 🍷 ワインオークション サーバー起動
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📡 http://localhost:${PORT}
+${db.isPG ? '🐘 PostgreSQL モード' : '📦 SQLite モード'}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
 テストアカウント:
   メール: lover@example.com
   パスワード: password123
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
-});
+  });
+})();

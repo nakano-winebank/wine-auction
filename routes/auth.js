@@ -8,7 +8,7 @@ const { JWT_SECRET, authenticateToken } = require('../middleware/auth');
 const { sendVerificationEmail, sendPasswordResetEmail } = require('../utils/mailer');
 
 // 新規登録
-router.post('/register', (req, res) => {
+router.post('/register', async (req, res) => {
   const { username, email, password, display_name, full_name, phone, birthdate } = req.body;
 
   if (!username || !email || !password) {
@@ -29,7 +29,7 @@ router.post('/register', (req, res) => {
     return res.status(400).json({ error: 'ユーザー名は半角英数字とアンダーバーのみ使用できます' });
   }
 
-  const existing = db.prepare('SELECT id FROM users WHERE username = ? OR email = ?').get(username, email);
+  const existing = await db.prepare('SELECT id FROM users WHERE username = ? OR email = ?').get(username, email);
   if (existing) {
     return res.status(409).json({ error: 'このユーザー名またはメールアドレスはすでに使用されています' });
   }
@@ -37,7 +37,7 @@ router.post('/register', (req, res) => {
   const password_hash = bcrypt.hashSync(password, 10);
   const verification_token = crypto.randomBytes(32).toString('hex');
 
-  const result = db.prepare(
+  const result = await db.prepare(
     'INSERT INTO users (username, email, password_hash, display_name, full_name, phone, birthdate, verification_token) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
   ).run(username, email, password_hash, display_name || username, full_name || null, phone || null, birthdate || null, verification_token);
 
@@ -57,14 +57,14 @@ router.post('/register', (req, res) => {
 });
 
 // ログイン
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
     return res.status(400).json({ error: 'メールアドレスとパスワードを入力してください' });
   }
 
-  const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+  const user = await db.prepare('SELECT * FROM users WHERE email = ?').get(email);
   if (!user || !bcrypt.compareSync(password, user.password_hash)) {
     return res.status(401).json({ error: 'メールアドレスまたはパスワードが正しくありません' });
   }
@@ -96,39 +96,39 @@ router.post('/login', (req, res) => {
 });
 
 // メール確認
-router.get('/verify-email', (req, res) => {
+router.get('/verify-email', async (req, res) => {
   const { token } = req.query;
   if (!token) return res.status(400).json({ error: 'トークンが必要です' });
 
-  const user = db.prepare('SELECT id FROM users WHERE verification_token = ?').get(token);
+  const user = await db.prepare('SELECT id FROM users WHERE verification_token = ?').get(token);
   if (!user) return res.status(400).json({ error: '無効または期限切れのトークンです' });
 
-  db.prepare('UPDATE users SET email_verified = 1, verification_token = NULL WHERE id = ?').run(user.id);
+  await db.prepare('UPDATE users SET email_verified = 1, verification_token = NULL WHERE id = ?').run(user.id);
   res.json({ success: true, message: 'メールアドレスを確認しました' });
 });
 
 // メール確認再送
-router.post('/resend-verification', authenticateToken, (req, res) => {
-  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
+router.post('/resend-verification', authenticateToken, async (req, res) => {
+  const user = await db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
   if (user.email_verified) return res.status(400).json({ error: 'すでに確認済みです' });
 
   const token = crypto.randomBytes(32).toString('hex');
-  db.prepare('UPDATE users SET verification_token = ? WHERE id = ?').run(token, user.id);
+  await db.prepare('UPDATE users SET verification_token = ? WHERE id = ?').run(token, user.id);
   sendVerificationEmail(user.email, user.username, token).catch(() => {});
   res.json({ success: true, message: '確認メールを再送しました' });
 });
 
 // パスワードリセット要求
-router.post('/forgot-password', (req, res) => {
+router.post('/forgot-password', async (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ error: 'メールアドレスを入力してください' });
 
-  const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+  const user = await db.prepare('SELECT * FROM users WHERE email = ?').get(email);
   // ユーザーが存在しなくても同じレスポンスを返す（enumeration防止）
   if (user) {
     const resetToken = crypto.randomBytes(32).toString('hex');
     const expires = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 1時間
-    db.prepare('UPDATE users SET reset_token = ?, reset_token_expires = ? WHERE id = ?')
+    await db.prepare('UPDATE users SET reset_token = ?, reset_token_expires = ? WHERE id = ?')
       .run(resetToken, expires, user.id);
     sendPasswordResetEmail(user.email, user.username, resetToken).catch(() => {});
   }
@@ -137,27 +137,27 @@ router.post('/forgot-password', (req, res) => {
 });
 
 // パスワードリセット実行
-router.post('/reset-password', (req, res) => {
+router.post('/reset-password', async (req, res) => {
   const { token, password } = req.body;
   if (!token || !password) return res.status(400).json({ error: 'トークンとパスワードが必要です' });
   if (password.length < 6) return res.status(400).json({ error: 'パスワードは6文字以上にしてください' });
 
-  const user = db.prepare('SELECT * FROM users WHERE reset_token = ?').get(token);
+  const user = await db.prepare('SELECT * FROM users WHERE reset_token = ?').get(token);
   if (!user) return res.status(400).json({ error: '無効なトークンです' });
   if (new Date(user.reset_token_expires) < new Date()) {
     return res.status(400).json({ error: 'トークンの有効期限が切れています。再度お試しください。' });
   }
 
   const hash = bcrypt.hashSync(password, 10);
-  db.prepare('UPDATE users SET password_hash = ?, reset_token = NULL, reset_token_expires = NULL WHERE id = ?')
+  await db.prepare('UPDATE users SET password_hash = ?, reset_token = NULL, reset_token_expires = NULL WHERE id = ?')
     .run(hash, user.id);
 
   res.json({ success: true, message: 'パスワードを変更しました' });
 });
 
 // 自分のプロフィール取得
-router.get('/me', authenticateToken, (req, res) => {
-  const user = db.prepare(`
+router.get('/me', authenticateToken, async (req, res) => {
+  const user = await db.prepare(`
     SELECT id, username, email, display_name, full_name, phone,
            license_image_url, license_verified,
            rating, trade_count, is_verified_seller, is_admin, email_verified, created_at

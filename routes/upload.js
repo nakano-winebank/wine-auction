@@ -19,7 +19,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const allowed = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
     const ext = path.extname(file.originalname).toLowerCase();
@@ -28,7 +28,7 @@ const upload = multer({
   }
 });
 
-// POST /api/upload/image — 1枚アップロード
+// POST /api/upload/image
 router.post('/image', authenticateToken, (req, res) => {
   upload.single('image')(req, res, (err) => {
     if (err) return res.status(400).json({ error: err.message });
@@ -37,19 +37,21 @@ router.post('/image', authenticateToken, (req, res) => {
   });
 });
 
-// POST /api/upload/auction-images/:auctionId — 複数枚保存
-router.post('/auction-images/:auctionId', authenticateToken, (req, res) => {
+// POST /api/upload/auction-images/:auctionId
+router.post('/auction-images/:auctionId', authenticateToken, async (req, res) => {
   const db = require('../database');
   const auctionId = parseInt(req.params.auctionId);
-  const auction = db.prepare('SELECT * FROM auctions WHERE id = ? AND seller_id = ?').get(auctionId, req.user.id);
+  const auction = await db.prepare('SELECT * FROM auctions WHERE id = ? AND seller_id = ?').get(auctionId, req.user.id);
   if (!auction) return res.status(403).json({ error: '権限がありません' });
 
-  const { images } = req.body; // [{ url, label, sort_order }]
+  const { images } = req.body;
   if (!Array.isArray(images) || images.length === 0) return res.status(400).json({ error: '画像データがありません' });
 
-  db.prepare('DELETE FROM auction_images WHERE auction_id = ?').run(auctionId);
-  const stmt = db.prepare('INSERT INTO auction_images (auction_id, url, label, sort_order) VALUES (?, ?, ?, ?)');
-  images.forEach((img, i) => stmt.run(auctionId, img.url, img.label || null, img.sort_order ?? i));
+  await db.prepare('DELETE FROM auction_images WHERE auction_id = ?').run(auctionId);
+  for (let i = 0; i < images.length; i++) {
+    const img = images[i];
+    await db.prepare('INSERT INTO auction_images (auction_id, url, label, sort_order) VALUES (?, ?, ?, ?)').run(auctionId, img.url, img.label || null, img.sort_order ?? i);
+  }
 
   res.json({ success: true });
 });

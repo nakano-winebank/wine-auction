@@ -5,8 +5,8 @@ const { authenticateToken } = require('../middleware/auth');
 const { sendAuctionApprovedEmail, sendAuctionRejectedEmail } = require('../utils/mailer');
 
 // 管理者チェックミドルウェア
-function requireAdmin(req, res, next) {
-  const user = db.prepare('SELECT is_admin FROM users WHERE id = ?').get(req.user.id);
+async function requireAdmin(req, res, next) {
+  const user = await db.prepare('SELECT is_admin FROM users WHERE id = ?').get(req.user.id);
   if (!user || !user.is_admin) return res.status(403).json({ error: '管理者権限が必要です' });
   next();
 }
@@ -14,38 +14,38 @@ function requireAdmin(req, res, next) {
 router.use(authenticateToken, requireAdmin);
 
 // ダッシュボード統計
-router.get('/stats', (req, res) => {
+router.get('/stats', async (req, res) => {
   const stats = {
-    users:    db.prepare('SELECT COUNT(*) as c FROM users').get().c,
-    auctions: db.prepare('SELECT COUNT(*) as c FROM auctions').get().c,
-    active:   db.prepare("SELECT COUNT(*) as c FROM auctions WHERE status='active'").get().c,
-    bids:     db.prepare('SELECT COUNT(*) as c FROM bids').get().c,
-    orders:   db.prepare('SELECT COUNT(*) as c FROM orders').get().c,
-    paid:     db.prepare("SELECT COUNT(*) as c FROM orders WHERE status='paid'").get().c,
-    revenue:  db.prepare("SELECT COALESCE(SUM(amount),0) as s FROM orders WHERE status='paid'").get().s,
+    users:    (await db.prepare('SELECT COUNT(*) as c FROM users').get()).c,
+    auctions: (await db.prepare('SELECT COUNT(*) as c FROM auctions').get()).c,
+    active:   (await db.prepare("SELECT COUNT(*) as c FROM auctions WHERE status='active'").get()).c,
+    bids:     (await db.prepare('SELECT COUNT(*) as c FROM bids').get()).c,
+    orders:   (await db.prepare('SELECT COUNT(*) as c FROM orders').get()).c,
+    paid:     (await db.prepare("SELECT COUNT(*) as c FROM orders WHERE status='paid'").get()).c,
+    revenue:  (await db.prepare("SELECT COALESCE(SUM(amount),0) as s FROM orders WHERE status='paid'").get()).s,
   };
   res.json(stats);
 });
 
 // ユーザー一覧
-router.get('/users', (req, res) => {
+router.get('/users', async (req, res) => {
   const { q, page = 1 } = req.query;
   const limit = 20;
   const offset = (parseInt(page) - 1) * limit;
   const search = q ? `%${q}%` : '%';
-  const users = db.prepare(`
+  const users = await db.prepare(`
     SELECT id, username, email, display_name, birthdate, rating, trade_count,
            is_verified_seller, is_admin, email_verified, is_blocked, created_at
     FROM users WHERE username LIKE ? OR email LIKE ?
     ORDER BY created_at DESC LIMIT ? OFFSET ?
   `).all(search, search, limit, offset);
-  const total = db.prepare('SELECT COUNT(*) as c FROM users WHERE username LIKE ? OR email LIKE ?').get(search, search).c;
+  const total = (await db.prepare('SELECT COUNT(*) as c FROM users WHERE username LIKE ? OR email LIKE ?').get(search, search)).c;
   res.json({ users, total, page: parseInt(page), pages: Math.ceil(total / limit) });
 });
 
 // ユーザー詳細
-router.get('/users/:id', (req, res) => {
-  const user = db.prepare(`
+router.get('/users/:id', async (req, res) => {
+  const user = await db.prepare(`
     SELECT id, username, email, display_name, full_name, phone, birthdate,
            address_zip, address_pref, address_city, address_street,
            bank_name, bank_branch, bank_account_type, bank_account_number, bank_account_holder,
@@ -58,7 +58,7 @@ router.get('/users/:id', (req, res) => {
 });
 
 // ユーザー操作
-router.patch('/users/:id', (req, res) => {
+router.patch('/users/:id', async (req, res) => {
   const { is_blocked, is_admin, is_verified_seller } = req.body;
   const userId = parseInt(req.params.id);
 
@@ -70,19 +70,19 @@ router.patch('/users/:id', (req, res) => {
 
   if (!fields.length) return res.status(400).json({ error: '更新フィールドがありません' });
   vals.push(userId);
-  db.prepare(`UPDATE users SET ${fields.join(', ')} WHERE id = ?`).run(...vals);
+  await db.prepare(`UPDATE users SET ${fields.join(', ')} WHERE id = ?`).run(...vals);
   res.json({ success: true });
 });
 
 // オークション一覧
-router.get('/auctions', (req, res) => {
+router.get('/auctions', async (req, res) => {
   const { status, page = 1 } = req.query;
   const limit = 20;
   const offset = (parseInt(page) - 1) * limit;
   const whereClause = status ? 'WHERE a.status = ?' : 'WHERE 1=1';
   const params = status ? [status, limit, offset] : [limit, offset];
 
-  const auctions = db.prepare(`
+  const auctions = await db.prepare(`
     SELECT a.id, a.title, a.producer, a.current_price, a.bid_count,
            a.status, a.end_time, a.created_at, u.username as seller
     FROM auctions a JOIN users u ON a.seller_id = u.id
@@ -91,19 +91,19 @@ router.get('/auctions', (req, res) => {
   `).all(...params);
 
   const total = status
-    ? db.prepare("SELECT COUNT(*) as c FROM auctions WHERE status = ?").get(status).c
-    : db.prepare("SELECT COUNT(*) as c FROM auctions").get().c;
+    ? (await db.prepare("SELECT COUNT(*) as c FROM auctions WHERE status = ?").get(status)).c
+    : (await db.prepare("SELECT COUNT(*) as c FROM auctions").get()).c;
 
   res.json({ auctions, total, page: parseInt(page), pages: Math.ceil(total / limit) });
 });
 
 // オークション操作（強制終了・承認・否認）
-router.patch('/auctions/:id', (req, res) => {
+router.patch('/auctions/:id', async (req, res) => {
   const { status, reason } = req.body;
   const auctionId = parseInt(req.params.id);
   if (!['active', 'ended', 'rejected'].includes(status)) return res.status(400).json({ error: '無効なステータスです' });
 
-  const auction = db.prepare(`
+  const auction = await db.prepare(`
     SELECT a.*, u.email as seller_email, u.display_name as seller_name, u.username as seller_username
     FROM auctions a JOIN users u ON a.seller_id = u.id
     WHERE a.id = ?
@@ -111,35 +111,34 @@ router.patch('/auctions/:id', (req, res) => {
   if (!auction) return res.status(404).json({ error: 'オークションが見つかりません' });
 
   if (status === 'active') {
-    // 承認：end_timeを承認時点から再計算（元の出品期間を維持）
     const originalDuration = new Date(auction.end_time) - new Date(auction.created_at);
     const newEndTime = new Date(Date.now() + originalDuration).toISOString().replace('T', ' ').slice(0, 19);
-    db.prepare('UPDATE auctions SET status = ?, approval_status = ?, end_time = ? WHERE id = ?').run('active', 'approved', newEndTime, auctionId);
+    await db.prepare('UPDATE auctions SET status = ?, approval_status = ?, end_time = ? WHERE id = ?').run('active', 'approved', newEndTime, auctionId);
     sendAuctionApprovedEmail(auction.seller_email, auction.seller_name || auction.seller_username, auction.title, auctionId).catch(() => {});
   } else if (status === 'rejected') {
-    db.prepare('UPDATE auctions SET status = ?, approval_status = ? WHERE id = ?').run('rejected', 'rejected', auctionId);
+    await db.prepare('UPDATE auctions SET status = ?, approval_status = ? WHERE id = ?').run('rejected', 'rejected', auctionId);
     sendAuctionRejectedEmail(auction.seller_email, auction.seller_name || auction.seller_username, auction.title, reason || '').catch(() => {});
   } else {
-    db.prepare('UPDATE auctions SET status = ? WHERE id = ?').run(status, auctionId);
+    await db.prepare('UPDATE auctions SET status = ? WHERE id = ?').run(status, auctionId);
   }
 
   res.json({ success: true });
 });
 
 // 本人確認書類 審査
-router.patch('/users/:id/license', (req, res) => {
+router.patch('/users/:id/license', async (req, res) => {
   const { approved } = req.body;
   const userId = parseInt(req.params.id);
-  db.prepare('UPDATE users SET license_verified = ? WHERE id = ?').run(approved ? 1 : 0, userId);
+  await db.prepare('UPDATE users SET license_verified = ? WHERE id = ?').run(approved ? 1 : 0, userId);
   if (approved) {
-    db.prepare('UPDATE users SET is_verified_seller = 1 WHERE id = ?').run(userId);
+    await db.prepare('UPDATE users SET is_verified_seller = 1 WHERE id = ?').run(userId);
   }
   res.json({ success: true });
 });
 
 // 承認待ちオークション一覧
-router.get('/auctions/pending', (req, res) => {
-  const auctions = db.prepare(`
+router.get('/auctions/pending', async (req, res) => {
+  const auctions = await db.prepare(`
     SELECT a.id, a.title, a.producer, a.starting_price, a.created_at, a.approval_status,
            u.username as seller, u.email as seller_email, u.display_name as seller_name
     FROM auctions a JOIN users u ON a.seller_id = u.id
@@ -150,11 +149,11 @@ router.get('/auctions/pending', (req, res) => {
 });
 
 // 注文一覧
-router.get('/orders', (req, res) => {
+router.get('/orders', async (req, res) => {
   const { page = 1 } = req.query;
   const limit = 20;
   const offset = (parseInt(page) - 1) * limit;
-  const orders = db.prepare(`
+  const orders = await db.prepare(`
     SELECT o.*, a.title, ub.username as buyer, us.username as seller
     FROM orders o
     JOIN auctions a ON o.auction_id = a.id
@@ -162,14 +161,14 @@ router.get('/orders', (req, res) => {
     JOIN users us ON o.seller_id = us.id
     ORDER BY o.created_at DESC LIMIT ? OFFSET ?
   `).all(limit, offset);
-  const total = db.prepare('SELECT COUNT(*) as c FROM orders').get().c;
+  const total = (await db.prepare('SELECT COUNT(*) as c FROM orders').get()).c;
   res.json({ orders, total, page: parseInt(page), pages: Math.ceil(total / limit) });
 });
 
 // ===== ユーザー落札・出品履歴 =====
-router.get('/users/:id/history', (req, res) => {
+router.get('/users/:id/history', async (req, res) => {
   const userId = parseInt(req.params.id);
-  const bids = db.prepare(`
+  const bids = await db.prepare(`
     SELECT a.id, a.title, a.producer, a.current_price, a.status, a.end_time,
            MAX(b.amount) as max_bid, COUNT(b.id) as bid_count,
            CASE WHEN EXISTS (
@@ -179,12 +178,12 @@ router.get('/users/:id/history', (req, res) => {
     FROM bids b JOIN auctions a ON b.auction_id = a.id
     WHERE b.bidder_id = ? GROUP BY a.id ORDER BY a.end_time DESC
   `).all(userId, userId);
-  const listings = db.prepare(`
+  const listings = await db.prepare(`
     SELECT a.*, (SELECT COUNT(*) FROM bids WHERE auction_id = a.id) as total_bids,
            (SELECT MAX(amount) FROM bids WHERE auction_id = a.id) as highest_bid
     FROM auctions a WHERE a.seller_id = ? ORDER BY a.created_at DESC
   `).all(userId);
-  const orders = db.prepare(`
+  const orders = await db.prepare(`
     SELECT o.*, a.title, a.producer FROM orders o
     JOIN auctions a ON o.auction_id = a.id
     WHERE o.buyer_id = ? OR o.seller_id = ? ORDER BY o.created_at DESC
@@ -192,10 +191,10 @@ router.get('/users/:id/history', (req, res) => {
   res.json({ bids, listings, orders });
 });
 
-router.get('/users/:id/history/csv', (req, res) => {
+router.get('/users/:id/history/csv', async (req, res) => {
   const userId = parseInt(req.params.id);
-  const user = db.prepare('SELECT username FROM users WHERE id = ?').get(userId);
-  const bids = db.prepare(`
+  const user = await db.prepare('SELECT username FROM users WHERE id = ?').get(userId);
+  const bids = await db.prepare(`
     SELECT a.title, a.producer, MAX(b.amount) as max_bid, a.current_price, a.status, a.end_time,
            CASE WHEN EXISTS (
              SELECT 1 FROM bids b2 WHERE b2.auction_id = a.id
@@ -204,12 +203,12 @@ router.get('/users/:id/history/csv', (req, res) => {
     FROM bids b JOIN auctions a ON b.auction_id = a.id
     WHERE b.bidder_id = ? GROUP BY a.id ORDER BY a.end_time DESC
   `).all(userId, userId);
-  const listings = db.prepare(`
+  const listings = await db.prepare(`
     SELECT a.title, a.producer, a.starting_price, a.current_price, a.bid_count, a.status, a.end_time
     FROM auctions a WHERE a.seller_id = ? ORDER BY a.created_at DESC
   `).all(userId);
 
-  let csv = '﻿'; // BOM for Excel
+  let csv = '﻿';
   csv += '=== 入札履歴 ===\n';
   csv += 'タイトル,生産者,最高入札額,落札価格,ステータス,結果,終了日時\n';
   bids.forEach(b => csv += `"${b.title}","${b.producer}",${b.max_bid},${b.current_price},${b.status},${b.result},"${b.end_time}"\n`);
@@ -223,8 +222,8 @@ router.get('/users/:id/history/csv', (req, res) => {
 });
 
 // ===== ウォッチリスト分析 =====
-router.get('/watchlist/analytics', (req, res) => {
-  const data = db.prepare(`
+router.get('/watchlist/analytics', async (req, res) => {
+  const data = await db.prepare(`
     SELECT a.id, a.title, a.producer, a.current_price, a.status, a.end_time,
            COUNT(w.id) as watcher_count
     FROM watchlist w JOIN auctions a ON w.auction_id = a.id
@@ -233,9 +232,9 @@ router.get('/watchlist/analytics', (req, res) => {
   res.json({ watchlist: data });
 });
 
-router.get('/watchlist/analytics/:auctionId', (req, res) => {
+router.get('/watchlist/analytics/:auctionId', async (req, res) => {
   const auctionId = parseInt(req.params.auctionId);
-  const watchers = db.prepare(`
+  const watchers = await db.prepare(`
     SELECT u.id, u.username, u.display_name, u.email, w.created_at as watched_at
     FROM watchlist w JOIN users u ON w.user_id = u.id
     WHERE w.auction_id = ? ORDER BY w.created_at DESC
@@ -243,8 +242,8 @@ router.get('/watchlist/analytics/:auctionId', (req, res) => {
   res.json({ watchers });
 });
 
-router.get('/watchlist/csv', (req, res) => {
-  const data = db.prepare(`
+router.get('/watchlist/csv', async (req, res) => {
+  const data = await db.prepare(`
     SELECT a.title, a.producer, a.current_price, a.status,
            u.username, u.email, u.display_name, w.created_at
     FROM watchlist w
@@ -261,7 +260,7 @@ router.get('/watchlist/csv', (req, res) => {
 });
 
 // ===== 配送ステータス管理 =====
-router.patch('/orders/:id/status', (req, res) => {
+router.patch('/orders/:id/status', async (req, res) => {
   const { fulfillment_status, tracking_number, carrier } = req.body;
   const orderId = parseInt(req.params.id);
   const validStatuses = ['pending_payment', 'paid', 'shipping', 'shipped', 'delivered', 'completed'];
@@ -276,13 +275,13 @@ router.patch('/orders/:id/status', (req, res) => {
   if (fulfillment_status === 'completed') fields.push("completed_at = datetime('now','localtime')");
 
   vals.push(orderId);
-  db.prepare(`UPDATE orders SET ${fields.join(', ')} WHERE id = ?`).run(...vals);
+  await db.prepare(`UPDATE orders SET ${fields.join(', ')} WHERE id = ?`).run(...vals);
   res.json({ success: true });
 });
 
 // 注文一覧（配送ステータス含む）
-router.get('/orders/all', (req, res) => {
-  const orders = db.prepare(`
+router.get('/orders/all', async (req, res) => {
+  const orders = await db.prepare(`
     SELECT o.*, a.title, a.producer, ub.username as buyer, ub.email as buyer_email,
            us.username as seller, us.email as seller_email
     FROM orders o
