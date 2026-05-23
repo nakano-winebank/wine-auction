@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../database');
 const { authenticateToken } = require('../middleware/auth');
-const { sendNewMessageNotification } = require('../utils/mailer');
+const { sendNewMessageNotification, sendShippingNotification } = require('../utils/mailer');
 
 // マイページデータ（入札中・出品中・ウォッチリスト）
 router.get('/', authenticateToken, async (req, res) => {
@@ -189,6 +189,21 @@ router.patch('/orders/:id/ship', authenticateToken, async (req, res) => {
   if (order.fulfillment_status !== 'paid') return res.status(400).json({ error: 'この注文はまだ発送できません' });
   await db.prepare(`UPDATE orders SET fulfillment_status = 'shipped', tracking_number = ?, carrier = ?,
               shipped_at = datetime('now','localtime') WHERE id = ?`).run(tracking_number || null, carrier || null, orderId);
+
+  // 購入者に発送通知メール
+  const buyer = await db.prepare('SELECT email, display_name, username FROM users WHERE id = ?').get(order.buyer_id);
+  const auction = await db.prepare('SELECT title FROM auctions WHERE id = ?').get(order.auction_id);
+  if (buyer && auction) {
+    sendShippingNotification(
+      buyer.email,
+      buyer.display_name || buyer.username,
+      auction.title,
+      tracking_number || null,
+      carrier || null,
+      orderId
+    ).catch(() => {});
+  }
+
   res.json({ success: true });
 });
 
@@ -201,6 +216,56 @@ router.patch('/orders/:id/confirm', authenticateToken, async (req, res) => {
   await db.prepare(`UPDATE orders SET fulfillment_status = 'delivered',
               delivered_at = datetime('now','localtime') WHERE id = ?`).run(orderId);
   res.json({ success: true });
+});
+
+// 購入者: 評価送信 → 取引完了
+router.post('/orders/:id/rate', authenticateToken, async (req, res) => {
+  const orderId = parseInt(req.params.id);
+  const { score, comment } = req.body;
+
+  if (!score || score < 1 || score > 5) {
+    return res.status(400).json({ error: '評価は1〜5で入力してください' });
+  }
+
+  const order = await db.prepare('SELECT * FROM orders WHERE id = ? AND buyer_id = ?').get(orderId, req.user.id);
+  if (!order) return res.status(403).json({ error: 'アクセス権がありません' });
+  if (order.fulfillment_status !== 'delivered') {
+    return res.status(400).json({ error: '受取確認済みの注文のみ評価できます' });
+  }
+
+  const existing = await db.prepare('SELECT id FROM ratings WHERE order_id = ?').get(orderId);
+  if (existing) return res.status(400).json({ error: 'すでに評価済みです' });
+
+  await db.prepare('INSERT INTO ratings (order_id, rater_id, rated_id, score, comment) VALUES (?, ?, ?, ?, ?)')
+    .run(orderId, req.user.id, order.seller_id, parseInt(score), (comment || '').trim() || null);
+
+  // 出品者の平均評価を更新
+  const avg = await db.prepare('SELECT AVG(score) as avg_score, COUNT(*) as cnt FROM ratings WHERE rated_id = ?').get(order.seller_id);
+  if (avg && avg.avg_score) {
+    await db.prepare('UPDATE users SET rating = ? WHERE id = ?').run(Math.round(avg.avg_score * 10) / 10, order.seller_id);
+  }
+
+  // 取引完了に更新
+  await db.prepare(`UPDATE orders SET fulfillment_status = 'completed', completed_at = datetime('now','localtime') WHERE id = ?`).run(orderId);
+
+  res.json({ success: true, message: '評価を送信し、取引が完了しました' });
+});
+
+// 購入者用: 配送先住所をプロフィールから取得
+router.get('/shipping-address', authenticateToken, async (req, res) => {
+  const user = await db.prepare(`
+    SELECT full_name, phone, address_zip, address_pref, address_city, address_street
+    FROM users WHERE id = ?
+  `).get(req.user.id);
+  if (!user) return res.status(404).json({ error: 'ユーザーが見つかりません' });
+
+  const address = [user.address_pref, user.address_city, user.address_street].filter(Boolean).join('');
+  res.json({
+    name: user.full_name || '',
+    zip: user.address_zip || '',
+    address: address || '',
+    phone: user.phone || ''
+  });
 });
 
 module.exports = router;

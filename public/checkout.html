@@ -293,6 +293,9 @@
         document.getElementById('loadingState').classList.add('hidden');
         document.getElementById('mainContent').classList.remove('hidden');
 
+        // プロフィールの住所を自動入力
+        autoFillAddress();
+
       } catch (e) {
         showError('データの取得に失敗しました');
       }
@@ -431,6 +434,28 @@
         const total = orderData.auction.current_price + (shippingData.fee || 0);
         document.getElementById('payBtnText').innerHTML = `¥<span id="payBtnAmount">${total.toLocaleString()}</span> を支払う`;
       }
+    }
+
+    async function autoFillAddress() {
+      try {
+        const res = await fetch('/api/mypage/shipping-address', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!res.ok) return;
+        const addr = await res.json();
+        if (addr.name && !document.getElementById('shippingName').value) {
+          document.getElementById('shippingName').value = addr.name;
+        }
+        if (addr.zip && !document.getElementById('shippingZip').value) {
+          document.getElementById('shippingZip').value = addr.zip;
+        }
+        if (addr.address && !document.getElementById('shippingAddress').value) {
+          document.getElementById('shippingAddress').value = addr.address;
+        }
+        if (addr.phone && !document.getElementById('shippingPhone').value) {
+          document.getElementById('shippingPhone').value = addr.phone;
+        }
+      } catch(e) { /* ignore */ }
     }
 
     function showError(msg) {

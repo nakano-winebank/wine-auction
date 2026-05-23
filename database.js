@@ -245,6 +245,18 @@ if (USE_PG) {
       )
     `);
 
+    await exec(`
+      CREATE TABLE IF NOT EXISTS ratings (
+        id SERIAL PRIMARY KEY,
+        order_id INT NOT NULL REFERENCES orders(id) UNIQUE,
+        rater_id INT NOT NULL REFERENCES users(id),
+        rated_id INT NOT NULL REFERENCES users(id),
+        score INT NOT NULL CHECK (score >= 1 AND score <= 5),
+        comment TEXT,
+        created_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+
     // シードデータ（初回のみ）
     const countResult = await pool.query('SELECT COUNT(*) as c FROM users');
     if (parseInt(countResult.rows[0].c) === 0) {
@@ -560,6 +572,16 @@ if (USE_PG) {
       receiver_id INTEGER NOT NULL REFERENCES users(id),
       content TEXT NOT NULL,
       is_read INTEGER DEFAULT 0,
+      created_at TEXT DEFAULT (datetime('now', 'localtime'))
+    );
+
+    CREATE TABLE IF NOT EXISTS ratings (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      order_id INTEGER NOT NULL REFERENCES orders(id) UNIQUE,
+      rater_id INTEGER NOT NULL REFERENCES users(id),
+      rated_id INTEGER NOT NULL REFERENCES users(id),
+      score INTEGER NOT NULL CHECK (score >= 1 AND score <= 5),
+      comment TEXT,
       created_at TEXT DEFAULT (datetime('now', 'localtime'))
     );
   `);

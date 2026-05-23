@@ -169,6 +169,33 @@ async function sendNewMessageNotification(email, receiverName, senderName, aucti
   });
 }
 
+// 発送通知メール（購入者へ）
+async function sendShippingNotification(email, buyerName, auctionTitle, trackingNumber, carrier, orderId) {
+  const url = `${BASE_URL}/mypage`;
+  const trackingInfo = trackingNumber
+    ? `<tr><td style="padding:8px;background:#f5f5f5"><b>追跡番号</b></td><td style="padding:8px">${trackingNumber}${carrier ? ` (${carrier})` : ''}</td></tr>`
+    : '';
+  await sendMail({
+    to: email,
+    subject: `【WineBank】商品が発送されました：${auctionTitle}`,
+    html: `
+      <div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:24px">
+        <h2 style="color:#6B1A1A">🍷 WineBank オークション</h2>
+        <p>${buyerName} 様</p>
+        <p>ご落札いただいた商品が発送されました。</p>
+        <table style="border-collapse:collapse;width:100%;margin:16px 0">
+          <tr><td style="padding:8px;background:#f5f5f5"><b>商品</b></td><td style="padding:8px">${auctionTitle}</td></tr>
+          ${trackingInfo}
+        </table>
+        <p>商品到着後、マイページから受取確認をお願いいたします。</p>
+        <a href="${url}" style="display:inline-block;margin:16px 0;background:#6B1A1A;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold">
+          マイページで確認する
+        </a>
+      </div>
+    `,
+  });
+}
+
 module.exports = {
   sendVerificationEmail,
   sendPasswordResetEmail,
@@ -177,4 +204,5 @@ module.exports = {
   sendAuctionRejectedEmail,
   sendWatchlistBidNotification,
   sendNewMessageNotification,
+  sendShippingNotification,
 };
