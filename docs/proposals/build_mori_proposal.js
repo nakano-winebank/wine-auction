@@ -218,12 +218,14 @@ function band(s, y, text, o = {}) {
   cols.forEach((c, i) => {
     const x = M + i * (cw + 0.30);
     card(s, x, 2.36, cw, 2.86);
-    num(s, x + 0.28, 2.60, 0.46, c.n);
+    s.addShape(pres.ShapeType.rect, {
+      x: x + 0.28, y: 2.66, w: 0.34, h: 0.035, fill: { color: TAN }, line: { width: 0 },
+    });
     s.addText(c.t, {
-      x: x + 0.28, y: 3.18, w: cw - 0.56, h: 0.32, margin: 0,
+      x: x + 0.28, y: 2.86, w: cw - 0.56, h: 0.32, margin: 0,
       fontFace: FJP, fontSize: 15, bold: true, color: INK,
     });
-    bullets(s, c.b, x + 0.28, 3.58, cw - 0.56, 1.50, { size: 10.2, lineSpacing: 14.5, gap: 6 });
+    bullets(s, c.b, x + 0.28, 3.28, cw - 0.56, 1.80, { size: 10.2, lineSpacing: 14.5, gap: 6 });
   });
 
   s.addText("各プログラムは単独でも成立します。まずは設備投資を伴わないCloud Wine Cave／WineGO／CLUBから、3か月のPoCでご検証いただくご提案です。", {
@@ -302,9 +304,9 @@ function band(s, y, text, o = {}) {
     "①が土台です。②〜⑥は①の在庫と配送網の上に載ることで、それぞれ単独より強く働きます。");
 
   const progs = [
-    { n: "01", t: "Cloud Wine Cave", d: "当社の管理在庫を、テナント飲食店・居住者が「自分のセラー」として使える共有セラー。", tag: "飲食店／レジデンス", main: true },
+    { n: "01", t: "Cloud Wine Cave", d: "当社の管理在庫を「自分のセラー」として使う。共有セラー型・置きワイン型・レジデンス向けの3形態。", tag: "飲食店／レジデンス", main: true },
     { n: "02", t: "WineGO ヒルズ・デリバリー", d: "街区内ターミナルから定温のまま最短5分。Cloud Wine Caveを成立させる配送網。", tag: "飲食店／ワーカー／レジデンス" },
-    { n: "03", t: "WineBank CLUB ヒルズ会員", d: "テナント法人・居住者向けの会員枠。飲食20%OFF、コルケージ無料、配送特典。", tag: "ワーカー／レジデンス" },
+    { n: "03", t: "WineBank CLUB ヒルズ会員", d: "通常プランに加え、ヒルズ向けにオーダーメイドした Hills WineBank CLUB をご提案。", tag: "ワーカー／レジデンス" },
     { n: "04", t: "クラウドワインセラー出店", d: "数千本のウォークインセラーを核とした、在庫共有型フードホールを商業区画に。", tag: "商業施設" },
     { n: "05", t: "ティエリー・マルクス業態出店", d: "ミシュラン累計7つ星シェフの日本再進出業態。街区の格とメディア露出を創出。", tag: "商業施設" },
     { n: "06", t: "ワイン預りサービス", d: "居住者のご自宅ワインをお預かりし、一覧化して定温保管。必要なときに出庫。", tag: "レジデンス" },
@@ -346,7 +348,7 @@ function band(s, y, text, o = {}) {
   const stats = [
     ["30億円", "当社の管理ワイン在庫"],
     ["50万本", "アクセスできる在庫本数"],
-    ["最短5分", "街区内ターミナルからの配送"],
+    ["最短翌日", "前日午前中のご注文で翌日着"],
     ["0円", "利用者が抱える在庫金額"],
   ];
   const stw = (W - M * 2 - 0.28 * 3) / 4;
@@ -368,7 +370,7 @@ function band(s, y, text, o = {}) {
   const steps = [
     ["01", "リストから選ぶ", "専用アプリ／Webから数万本の在庫を検索。銘柄・ヴィンテージ・価格が一覧で見える。"],
     ["02", "注文する", "在庫は当社が保有。発注の瞬間まで、利用者側に資金負担も保管責任も発生しない。"],
-    ["03", "定温で届く", "街区内のWineGOターミナルから、10〜15℃を保ったまま最短5分でお届け。"],
+    ["03", "定温で届く", "10〜15℃を保ったままお届け。館内ストレージ開設後は即日・最短5分。"],
     ["04", "使った分だけ支払う", "月締め請求。売れ残りリスクも、セラー設備への投資も不要。"],
   ];
   const fw = (W - M * 2 - 0.46 * 3) / 4;
@@ -392,10 +394,14 @@ function band(s, y, text, o = {}) {
     }
   });
 
-  band(s, 5.24, "「持たずに、使う」。ワインの在庫を、街のインフラとして共有する。", { h: 0.52, size: 14 });
-
-  s.addText("当社は「5年以内に100億円相当のワインをクラウドワインリストへ」を掲げています。ヒルズはその最初の街として最適な条件が揃っています。", {
-    x: M, y: 5.94, w: 12.0, h: 0.32, margin: 0, fontFace: FJP, fontSize: 10.5, color: GREY,
+  card(s, M, 5.22, W - M * 2, 0.92, { fill: MIST });
+  s.addText("スピードは、在庫をどこに置くかで決まります。", {
+    x: M + 0.34, y: 5.34, w: 4.90, h: 0.30, margin: 0,
+    fontFace: FJP, fontSize: 13, bold: true, color: INK,
+  });
+  s.addText("現状は当社倉庫からの配送のため、前日午前中のご注文で翌日着が基本です。館内にワインストレージをご用意いただければ、同じ仕組みが即日・最短5分になります。この一点が、高級店にとっての価値を大きく変えます（詳細は後掲のご相談事項）。", {
+    x: M + 0.34, y: 5.64, w: 11.7, h: 0.44, margin: 0,
+    fontFace: FJP, fontSize: 10.2, color: GREY, lineSpacing: 14,
   });
 }
 
@@ -423,7 +429,7 @@ function band(s, y, text, o = {}) {
         ["設備", "セラー投資は不要。街区内ターミナルが担う"],
         ["リスク", "保管・劣化・破損のリスクは当社が保有"],
         ["品揃え", "数万本のリストがそのまま自店のリストに"],
-        ["突発対応", "注文から最短5分。席を立たずに追加できる"],
+        ["突発対応", "前日午前中の注文で翌日着。館内ストレージ開設後は最短5分"],
       ],
     },
   ];
@@ -473,24 +479,96 @@ function band(s, y, text, o = {}) {
   });
 }
 
+/* ============================ 6b. 置きワイン（消化仕入） ============================ */
+{
+  const s = slide("PROGRAM 01-B", "置きワイン ─ 売れた分だけ、お支払いいただく",
+    "ワインの月商が見込める店には、在庫を店内に置きます。所有権は当社のまま、売れた本数だけを月締めでご請求します。");
+
+  head(s, "仕組み", M, 1.60, 4.0);
+  const flow = [
+    ["当社が銘柄を選定し、店内セラーへ預託", "所有権は当社。店は仕入計上をせず、リストに載せて販売するだけ。"],
+    ["売れた本数のみ、月締めでご請求", "キャッシュアウトは売れた後。仕入時点の資金拘束が発生しません。"],
+    ["売れ残り・劣化・破損は当社負担", "動かない銘柄は当社が回収し、入れ替えます。店に損失は残りません。"],
+    ["定期的に構成を見直す", "客層と販売実績を見て、価格帯と銘柄を組み替えていきます。"],
+  ];
+  flow.forEach((f, i) => {
+    const y = 2.00 + i * 0.86;
+    s.addShape(pres.ShapeType.rect, {
+      x: M, y: y + 0.10, w: 0.22, h: 0.035, fill: { color: TAN }, line: { width: 0 },
+    });
+    s.addText(f[0], {
+      x: M + 0.38, y, w: 6.10, h: 0.28, margin: 0,
+      fontFace: FJP, fontSize: 12.5, bold: true, color: INK,
+    });
+    s.addText(f[1], {
+      x: M + 0.38, y: y + 0.30, w: 6.10, h: 0.44, margin: 0,
+      fontFace: FJP, fontSize: 10, color: GREY, lineSpacing: 14,
+    });
+  });
+
+  card(s, M, 5.50, 6.48, 1.20, { fill: MIST });
+  s.addText("対象と条件", {
+    x: M + 0.30, y: 5.62, w: 6.0, h: 0.26, margin: 0,
+    fontFace: FJP, fontSize: 12.5, bold: true, color: TAN_D,
+  });
+  s.addText("ワインの月商が一定以上ある店を優先します。とくに海外からの富裕層が多く入る店は、高単価銘柄の回転が読めるため相性が良いと考えています。与信は売上入金を担保とする形（口座振替・売上債権譲渡等）でご相談させてください。", {
+    x: M + 0.30, y: 5.90, w: 5.90, h: 0.68, margin: 0,
+    fontFace: FJP, fontSize: 9.8, color: INK, lineSpacing: 13.5,
+  });
+
+  const rx = M + 6.82;
+  const rw = W - M - rx;
+  card(s, rx, 1.60, rw, 2.42, { fill: NAVY });
+  s.addText("店にとって、何が変わるか", {
+    x: rx + 0.32, y: 1.78, w: rw - 0.64, h: 0.30, margin: 0,
+    fontFace: FJP, fontSize: 15, bold: true, color: TAN_LT,
+  });
+  bullets(s, [
+    "自己資金では置けない価格帯を、リストに載せられる",
+    "在庫を持つのは当社。店の在庫回転率は悪化しない",
+    "品揃えの厚みが、そのまま客単価に効く",
+    "セラーの空きスペースを当社在庫で埋められる",
+  ], rx + 0.32, 2.16, rw - 0.64, 1.70, { size: 10.2, lineSpacing: 15, gap: 6, color: "E3E6E8" });
+
+  card(s, rx, 4.20, rw, 1.32, { fill: PAPER, line: LINE });
+  s.addText("森ビル様の便益", {
+    x: rx + 0.30, y: 4.34, w: rw - 0.60, h: 0.28, margin: 0,
+    fontFace: FJP, fontSize: 12.5, bold: true, color: TAN_D,
+  });
+  s.addText("テナント飲食店の客単価と収益性が上がります。大きなセラーを持たない店でも高級ワインを扱えるため、区画の使い方の選択肢が広がります。", {
+    x: rx + 0.30, y: 4.64, w: rw - 0.60, h: 0.68, margin: 0,
+    fontFace: FJP, fontSize: 9.8, color: INK, lineSpacing: 13.5,
+  });
+
+  card(s, rx, 5.70, rw, 1.00, { fill: MIST });
+  s.addText("共有セラー型との併用", {
+    x: rx + 0.30, y: 5.82, w: rw - 0.60, h: 0.26, margin: 0,
+    fontFace: FJP, fontSize: 11.5, bold: true, color: INK,
+  });
+  s.addText("定番は置きワインで店に置き、突発の一本はCloud Wine Caveから引く。この二段構えが実務上いちばん機能します。", {
+    x: rx + 0.30, y: 6.08, w: rw - 0.60, h: 0.52, margin: 0,
+    fontFace: FJP, fontSize: 9.6, color: GREY, lineSpacing: 13,
+  });
+}
+
 /* ============================ 7. Cloud Wine Cave for レジデンス ============================ */
 {
-  const s = slide("PROGRAM 01-B", "Cloud Wine Cave for レジデンス居住者",
+  const s = slide("PROGRAM 01-C", "Cloud Wine Cave for レジデンス居住者",
     "同じ在庫をヒルズレジデンス居住者にも開放するご提案です。価格は飲食店向け卸値の1.1倍を想定。開放の是非は森ビル様とご相談させてください。");
 
   // pricing concept
   card(s, M, 1.60, 6.10, 2.34, { fill: NAVY });
-  s.addText("価格設計：卸値 × 1.1", {
+  s.addText("価格設計：卸値 × 1.1〜1.3", {
     x: M + 0.34, y: 1.80, w: 5.4, h: 0.36, margin: 0,
     fontFace: FJP, fontSize: 17, bold: true, color: TAN_LT,
   });
-  s.addText("テナント飲食店向けの卸値に対し、居住者向けは1.1倍。飲食店の仕入価格を必ず下回らせない設計とすることで、テナントとの価格逆転を防ぎます。", {
+  s.addText("テナント飲食店向けの卸値に対し、居住者向けは1.1〜1.3倍。飲食店の仕入価格を必ず下回らせない設計とすることで、テナントとの価格逆転を防ぎます。", {
     x: M + 0.34, y: 2.24, w: 5.42, h: 0.62, margin: 0,
     fontFace: FJP, fontSize: 10.5, color: "DDE1E4", lineSpacing: 15,
   });
   const ladder = [
     ["テナント飲食店", "卸値"],
-    ["レジデンス居住者", "卸値 × 1.1"],
+    ["レジデンス居住者", "卸値 × 1.1〜1.3"],
     ["一般のネット最安値", "これを下回る水準"],
     ["レストラン店頭価格", "市価の2〜3倍"],
   ];
@@ -621,27 +699,27 @@ function band(s, y, text, o = {}) {
 
 /* ============================ 9. WineBank CLUB ============================ */
 {
-  const s = slide("PROGRAM 03", "WineBank CLUB ヒルズ会員プログラム",
-    "既存のWineBank CLUBに「ヒルズ枠」を新設。テナント法人の福利厚生と、レジデンス居住者特典として提供します。");
+  const s = slide("PROGRAM 03-A", "WineBank CLUB（通常）",
+    "まず現行のWineBank CLUBです。月額会費制で、ワインの購入とグループ飲食店のご利用がお得になる会員サービスです。");
 
   card(s, M, 1.60, 7.36, 4.14, { fill: MIST });
-  s.addText("会員特典（ヒルズ枠・標準セット）", {
+  s.addText("現行の会員特典", {
     x: M + 0.34, y: 1.80, w: 6.8, h: 0.32, margin: 0,
     fontFace: FJP, fontSize: 16, bold: true, color: INK,
   });
   const perks = [
-    ["グループ飲食店 20%OFF", "アピシウス、ティエリー・マルクス業態ほか。将来的に100店舗以上へ拡大予定。"],
-    ["コルケージ完全無料", "提携26店舗へのBYOで抜栓料・持込料ゼロ。重いボトルはWineGOが運ぶ「手ぶらBYO」。"],
+    ["グループ飲食店 20%OFF", "将来的に100店舗以上へ拡大予定。"],
+    ["コルケージ完全無料", "提携26店舗へのBYOで抜栓料・持込料ゼロ。WineGOで購入した場合は最短5分で「手ぶらBYO」。"],
     ["ワイン配送 月3回無料", "自宅・会食先・贈答先へ。都心はWineGOで当日デリバリー。"],
-    ["Cloud Wine Cave の利用", "居住者は卸値×1.1でご購入。専属コンシェルジュが銘柄選定をお手伝い。"],
-    ["ワイン100本お預かり", "ご自宅に眠るワインを引き取り、撮影・登録のうえ定温保管。"],
+    ["ネット最安値水準での購入", "インポーター直の仕入力による特別価格。会員ランクに応じて設定。"],
+    ["優先割当", "アロケーションワイン、希少ウイスキー等を会員に優先してご案内。"],
   ];
   perks.forEach((p, i) => {
     const y = 2.26 + i * 0.66;
     s.addShape(pres.ShapeType.ellipse, {
       x: M + 0.36, y: y + 0.04, w: 0.30, h: 0.30, fill: { color: TAN }, line: { width: 0 },
     });
-    s.addText("✓", {
+    s.addText("\u2713", {
       x: M + 0.36, y: y + 0.04, w: 0.30, h: 0.30, margin: 0, align: "center", valign: "middle",
       fontFace: FEN, fontSize: 11, bold: true, color: PAPER,
     });
@@ -657,31 +735,93 @@ function band(s, y, text, o = {}) {
 
   const rx = M + 7.70;
   const rw = W - M - rx;
-  card(s, rx, 1.60, rw, 1.86, { fill: NAVY });
-  s.addText("森ビル様の便益", {
+  card(s, rx, 1.60, rw, 1.86, { fill: MIST });
+  s.addText("会費と運用", {
     x: rx + 0.32, y: 1.76, w: rw - 0.64, h: 0.30, margin: 0,
-    fontFace: FJP, fontSize: 15, bold: true, color: TAN_LT,
-  });
-  bullets(s, [
-    "テナント法人への他にない福利厚生メニュー",
-    "レジデンス契約時の付加価値・更新率向上",
-    "Hills Club／アカデミーヒルズ等 既存会員組織との相互送客",
-  ], rx + 0.32, 2.12, rw - 0.64, 1.20, { size: 10.2, lineSpacing: 14, gap: 4, color: "E3E6E8" });
-
-  card(s, rx, 3.62, rw, 2.12);
-  s.addText("提供・課金イメージ", {
-    x: rx + 0.32, y: 3.78, w: rw - 0.64, h: 0.30, margin: 0,
     fontFace: FJP, fontSize: 15, bold: true, color: INK,
   });
   bullets(s, [
-    "個人会員：年会費制（通常30万円／年、ヒルズ枠は特別設定）",
-    "法人会員：テナント企業単位の包括契約（人数枠課金）",
-    "森ビル様には会費のレベニューシェアをお支払い",
-    "入会・本人確認・請求は当社が全て運用（森ビル様の実務負荷ゼロ）",
-  ], rx + 0.32, 4.14, rw - 0.64, 1.50, { size: 10, lineSpacing: 14, gap: 4 });
+    "個人会員：年会費 30万円／年",
+    "入会・本人確認・請求はすべて当社が運用",
+    "会員数は千人規模への拡大を計画",
+  ], rx + 0.32, 2.12, rw - 0.64, 1.20, { size: 10.2, lineSpacing: 14, gap: 4 });
 
-  s.addText("会員特典の内訳と相当額は Appendix をご参照ください。", {
-    x: M, y: 5.90, w: 12.0, h: 0.28, margin: 0, fontFace: FJP, fontSize: 9.5, color: GREY_LT,
+  card(s, rx, 3.62, rw, 2.12, { fill: NAVY });
+  s.addText("ワイン100本のお預かりについて", {
+    x: rx + 0.32, y: 3.78, w: rw - 0.64, h: 0.30, margin: 0,
+    fontFace: FJP, fontSize: 14, bold: true, color: TAN_LT,
+  });
+  s.addText("ご自宅ワインのお預かりは、CLUBの標準特典ではありません。別プランとしてご案内しているもので、本ご提案では Program 06「ワイン預りサービス」として切り出しています。混同を避けるため、ここでは含めていません。", {
+    x: rx + 0.32, y: 4.12, w: rw - 0.64, h: 1.50, margin: 0,
+    fontFace: FJP, fontSize: 9.8, color: "DDE1E4", lineSpacing: 14,
+  });
+
+  s.addText("ヒルズ向けには、この通常プランをそのまま提供せず、次ページのとおりオーダーメイドさせていただきたく存じます。", {
+    x: M, y: 5.90, w: 12.0, h: 0.28, margin: 0, fontFace: FJP, fontSize: 10, bold: true, color: TAN_D,
+  });
+}
+
+/* ============================ 9b. Hills WineBank CLUB ============================ */
+{
+  const s = slide("PROGRAM 03-B", "Hills WineBank CLUB ─ ヒルズ向けのオーダーメイド",
+    "通常のCLUBをそのまま持ち込むのではなく、館内で完結する特典に組み替えます。名称・ブランディングは森ビル様とご相談させてください。");
+
+  const rows = [
+    ["項目", "通常の WineBank CLUB", "Hills WineBank CLUB（ご提案）"],
+    ["対象", "一般個人", "ヒルズのテナント法人・レジデンス居住者"],
+    ["年会費", "30万円／年", "ヒルズ枠として特別設定。法人は人数枠課金"],
+    ["飲食特典", "グループ飲食店 20%OFF", "グループ店に加え、館内の対象店を追加"],
+    ["コルケージ", "提携26店舗へのBYO無料", "館内対象店を追加。会食先への事前配送込み"],
+    ["配送", "月3回無料", "館内ストレージ開設後は即日・回数を拡大"],
+    ["ワイン購入", "ネット最安値水準", "Cloud Wine Cave を卸値×1.1〜1.3で利用"],
+    ["受渡し", "自宅・会食先へ配送", "住宅棟共用部のプライベートセラーで受渡し"],
+    ["入会窓口", "当社EC・会員紹介", "レジデンスコンシェルジュ／テナント総務経由"],
+  ];
+  const colW = [1.46, 2.86, 3.72];
+  const tW = colW.reduce((a, b) => a + b, 0);
+  s.addTable(rows, {
+    x: M, y: 1.60, w: tW, colW,
+    border: { type: "solid", color: LINE, pt: 0.75 },
+    fontFace: FJP, fontSize: 9.6, color: INK, valign: "middle", rowH: 0.46,
+    autoPage: false,
+  });
+  s.addShape(pres.ShapeType.rect, {
+    x: M, y: 1.60, w: tW, h: 0.46, fill: { color: NAVY }, line: { width: 0 },
+  });
+  let hx = M;
+  rows[0].forEach((hstr, i) => {
+    s.addText(hstr, {
+      x: hx + 0.12, y: 1.60, w: colW[i] - 0.24, h: 0.46, margin: 0, valign: "middle",
+      fontFace: FJP, fontSize: 9.6, bold: true, color: TAN_LT,
+    });
+    hx += colW[i];
+  });
+
+  const rx = M + tW + 0.34;
+  const rw = W - M - rx;
+  card(s, rx, 1.60, rw, 2.06, { fill: MIST });
+  s.addText("オーダーメイドの考え方", {
+    x: rx + 0.30, y: 1.74, w: rw - 0.60, h: 0.28, margin: 0,
+    fontFace: FJP, fontSize: 13, bold: true, color: INK,
+  });
+  bullets(s, [
+    "Hills Club・アカデミーヒルズ等の既存会員組織と機能が重複しない設計にする",
+    "特典は「館内で完結するもの」を優先する",
+    "テナント法人は総務経由の一括契約とし、個人手続きを増やさない",
+  ], rx + 0.30, 2.06, rw - 0.60, 1.50, { size: 9.8, lineSpacing: 13.5, gap: 6 });
+
+  card(s, rx, 3.84, rw, 1.72, { fill: NAVY });
+  s.addText("通常CLUBとの切り分け", {
+    x: rx + 0.30, y: 3.98, w: rw - 0.60, h: 0.28, margin: 0,
+    fontFace: FJP, fontSize: 13, bold: true, color: TAN_LT,
+  });
+  s.addText("ワイン100本のお預かりは、CLUBの標準特典ではなく Program 06「ワイン預りサービス」として切り出しています。混同を避けるため、Hills版では預り枠の有無・本数・料金を個別に設計します。", {
+    x: rx + 0.30, y: 4.30, w: rw - 0.60, h: 1.06, margin: 0,
+    fontFace: FJP, fontSize: 9.8, color: "DDE1E4", lineSpacing: 14,
+  });
+
+  s.addText("年会費・特典水準は、対象人数と館内対象店の範囲が決まった段階で確定させていただきます。会員特典の相当額の考え方は Appendix に記載しています。", {
+    x: M, y: 5.86, w: 12.0, h: 0.30, margin: 0, fontFace: FJP, fontSize: 9.6, color: GREY,
   });
 }
 
@@ -794,7 +934,7 @@ function band(s, y, text, o = {}) {
 
 /* ============================ 12. ワイン預りサービス ============================ */
 {
-  const s = slide("PROGRAM 06", "居住者向け ワイン預りサービス",
+  const s = slide("PROGRAM 06", "居住者向け ワイン預りサービス（預り料要検討）",
     "Cloud Wine Caveの逆方向のサービスです。ご自宅のセラーは、いずれ必ず満杯になります。");
 
   const steps = [
@@ -959,6 +1099,250 @@ function band(s, y, text, o = {}) {
   });
 
   band(s, 5.68, "森ビル様に新たな設備投資・人員配置をお願いしない設計。運営・与信・在庫リスクは当社が保有します。", { h: 0.50, size: 13 });
+}
+
+/* ============================ 14b. 森ビル様へのご相談事項 ============================ */
+{
+  const s = slide("REQUEST", "森ビル様へご相談させていただきたいこと",
+    "当社が負担するものと、森ビル様にお願いしたいものを整理しました。①がこのご提案の成否を決めます。");
+
+  const asks = [
+    {
+      t: "館内ワインストレージのご提供", pri: "最重要",
+      ask: "街区内に定温のワイン保管スペース（15〜30坪）をご用意いただきたく存じます。",
+      ours: "定温設備・什器・在庫（数千〜1万本）・常駐スタッフ・運営はすべて当社が負担します。在庫リスクも当社が保有します。",
+      dark: true,
+    },
+    {
+      t: "テナント飲食店へのご紹介", pri: "",
+      ask: "Cloud Wine Cave と置きワインの導入について、対象店へのお取り次ぎをお願いしたく存じます。",
+      ours: "提案・与信審査・導入運用・アフターは当社が行います。森ビル様に営業の実務は発生しません。",
+      dark: false,
+    },
+    {
+      t: "館内動線・搬入の運用ご調整", pri: "",
+      ask: "配送スタッフの館内動線、荷捌き場の使用、夜間帯の出入りについてご調整をお願いします。",
+      ours: "車両・スタッフ・保険・温度管理はすべて当社側で手配します。",
+      dark: false,
+    },
+    {
+      t: "居住者・テナント法人へのご案内", pri: "",
+      ask: "レジデンスコンシェルジュおよびテナント総務経由での告知導線をお願いしたく存じます。",
+      ours: "入会受付・本人確認・請求・問い合わせ対応は当社が一括で運用します。",
+      dark: false,
+    },
+  ];
+
+  const cw = (W - M * 2 - 0.28) / 2;
+  const chh = 2.24;
+  asks.forEach((a, i) => {
+    const col = i % 2, row = Math.floor(i / 2);
+    const x = M + col * (cw + 0.28);
+    const y = 1.60 + row * (chh + 0.24);
+    card(s, x, y, cw, chh, { fill: a.dark ? NAVY : MIST });
+    s.addText(`0${i + 1}`, {
+      x: x + 0.30, y: y + 0.20, w: 0.60, h: 0.28, margin: 0,
+      fontFace: FEN, fontSize: 12, bold: true, color: TAN,
+    });
+    s.addText(a.t, {
+      x: x + 0.86, y: y + 0.18, w: cw - 2.00, h: 0.32, margin: 0,
+      fontFace: FJP, fontSize: 15, bold: true, color: a.dark ? PAPER : INK,
+    });
+    if (a.pri) {
+      s.addShape(pres.ShapeType.roundRect, {
+        x: x + cw - 1.06, y: y + 0.18, w: 0.80, h: 0.28, rectRadius: 0.03,
+        fill: { color: TAN }, line: { width: 0 },
+      });
+      s.addText(a.pri, {
+        x: x + cw - 1.06, y: y + 0.18, w: 0.80, h: 0.28, margin: 0, align: "center", valign: "middle",
+        fontFace: FJP, fontSize: 8.5, bold: true, color: PAPER,
+      });
+    }
+    s.addText("お願いしたいこと", {
+      x: x + 0.30, y: y + 0.62, w: cw - 0.60, h: 0.24, margin: 0,
+      fontFace: FJP, fontSize: 9.2, bold: true, color: a.dark ? TAN : TAN_D,
+    });
+    s.addText(a.ask, {
+      x: x + 0.30, y: y + 0.86, w: cw - 0.60, h: 0.48, margin: 0,
+      fontFace: FJP, fontSize: 10.2, color: a.dark ? PAPER : INK, lineSpacing: 14,
+    });
+    s.addText("当社が負担するもの", {
+      x: x + 0.30, y: y + 1.40, w: cw - 0.60, h: 0.24, margin: 0,
+      fontFace: FJP, fontSize: 9.2, bold: true, color: a.dark ? TAN : TAN_D,
+    });
+    s.addText(a.ours, {
+      x: x + 0.30, y: y + 1.64, w: cw - 0.60, h: 0.52, margin: 0,
+      fontFace: FJP, fontSize: 9.8, color: a.dark ? "DDE1E4" : GREY, lineSpacing: 13.5,
+    });
+  });
+
+  s.addText("①以外は、既存の館内オペレーションの中でご対応いただける範囲を想定しています。①については次ページで経済性を整理しました。", {
+    x: M, y: 6.42, w: 12.0, h: 0.30, margin: 0, fontFace: FJP, fontSize: 10, color: GREY,
+  });
+}
+
+/* ============================ 14c. 館内ワインストレージ ============================ */
+{
+  const s = slide("REQUEST 01", "館内ワインストレージの共同開設をご相談させてください",
+    "場所を森ビル様に、在庫と運営を当社に。この分担が、館内の飲食テナントとレジデンスの体験を一段変えます。");
+
+  // before / after speed
+  const speed = [
+    { h: "現状（当社倉庫からの配送）", v: "前日午前中のご注文で 翌日着", dark: false },
+    { h: "館内ストレージ開設後", v: "即日・最短5分", dark: true },
+  ];
+  speed.forEach((sp, i) => {
+    const x = M + i * 3.30;
+    card(s, x, 1.58, 3.10, 0.94, { fill: sp.dark ? NAVY : MIST });
+    s.addText(sp.h, {
+      x: x + 0.26, y: 1.66, w: 2.58, h: 0.26, margin: 0,
+      fontFace: FJP, fontSize: 9.4, color: sp.dark ? TAN_LT : GREY,
+    });
+    s.addText(sp.v, {
+      x: x + 0.26, y: 1.94, w: 2.58, h: 0.44, margin: 0,
+      fontFace: FJP, fontSize: sp.dark ? 17 : 13, bold: true, color: sp.dark ? PAPER : INK,
+    });
+  });
+  s.addText("「今夜あと一本」に応えられるかどうかが、高級店にとっての価値の分かれ目になります。", {
+    x: M + 6.90, y: 1.58, w: 5.20, h: 0.94, margin: 0, valign: "middle",
+    fontFace: FJP, fontSize: 11.5, bold: true, color: TAN_D, lineSpacing: 17,
+  });
+
+  head(s, "投資が回収される循環", M, 2.72, 5.0);
+  const loop = [
+    ["飲食店", "店内のワインセラーを縮小できる。高級店では一般に3〜8坪を占めています。"],
+    ["飲食店", "空いた面積を客席や厨房に転用し、売上を伸ばせる。"],
+    ["飲食店 → 森ビル様", "その対価として、館内ストレージの利用料をお支払いいただく。"],
+    ["森ビル様", "区画から利用料収入が立ち、開設費の回収見通しが持てる。"],
+    ["当社", "在庫と配送スタッフを常駐させ、館内へ即日で届ける。"],
+    ["飲食店", "在庫を持たないまま品揃えが厚くなり、客単価が上がる。"],
+  ];
+  loop.forEach((l, i) => {
+    const y = 3.10 + i * 0.53;
+    s.addText(String(i + 1), {
+      x: M, y, w: 0.30, h: 0.26, margin: 0,
+      fontFace: FEN, fontSize: 10.5, bold: true, color: TAN,
+    });
+    s.addText(l[0], {
+      x: M + 0.34, y, w: 1.62, h: 0.26, margin: 0,
+      fontFace: FJP, fontSize: 10, bold: true, color: INK,
+    });
+    s.addText(l[1], {
+      x: M + 2.00, y, w: 4.52, h: 0.44, margin: 0,
+      fontFace: FJP, fontSize: 9.8, color: GREY, lineSpacing: 13.5,
+    });
+  });
+
+  const rx = M + 6.90;
+  const rw = W - M - rx;
+  card(s, rx, 2.72, rw, 2.28, { fill: MIST });
+  s.addText("負担の切り分け", {
+    x: rx + 0.30, y: 2.86, w: rw - 0.60, h: 0.28, margin: 0,
+    fontFace: FJP, fontSize: 13, bold: true, color: INK,
+  });
+  const split = [
+    ["場所（15〜30坪）", "森ビル様"],
+    ["定温設備・什器", "当社"],
+    ["ワイン在庫（数千〜1万本）", "当社"],
+    ["常駐スタッフ・配送", "当社"],
+    ["在庫リスク・劣化・破損", "当社"],
+  ];
+  split.forEach((sp, i) => {
+    const y = 3.22 + i * 0.34;
+    s.addText(sp[0], {
+      x: rx + 0.30, y, w: 3.20, h: 0.28, margin: 0, valign: "middle",
+      fontFace: FJP, fontSize: 9.8, color: INK,
+    });
+    s.addText(sp[1], {
+      x: rx + 3.56, y, w: 1.30, h: 0.28, margin: 0, valign: "middle",
+      fontFace: FJP, fontSize: 9.8, bold: true, color: sp[1] === "森ビル様" ? TAN_D : GREY,
+    });
+    if (i < split.length - 1) {
+      s.addShape(pres.ShapeType.line, {
+        x: rx + 0.30, y: y + 0.31, w: rw - 0.60, h: 0, line: { color: "E4E6E8", width: 1 },
+      });
+    }
+  });
+
+  card(s, rx, 5.18, rw, 1.52, { fill: NAVY });
+  s.addText("テナント利用が想定に届かない場合", {
+    x: rx + 0.30, y: 5.32, w: rw - 0.60, h: 0.28, margin: 0,
+    fontFace: FJP, fontSize: 12.5, bold: true, color: TAN_LT,
+  });
+  s.addText("当社が全量を活用します。レジデンス居住者向けの供給、館外への配送、EC出荷に転用できるため、稼働率のリスクは当社が引き取る形でご相談させてください。", {
+    x: rx + 0.30, y: 5.62, w: rw - 0.60, h: 0.94, margin: 0,
+    fontFace: FJP, fontSize: 9.8, color: "DDE1E4", lineSpacing: 14,
+  });
+
+  s.addText("※ セラー面積・席数の数値は一般的な高級飲食店を前提とした当社の目安です。実際の利用料水準・区画条件は個別にご相談させてください。", {
+    x: M, y: 6.42, w: 6.60, h: 0.44, margin: 0, fontFace: FJP, fontSize: 8.6, color: GREY_LT, lineSpacing: 12,
+  });
+}
+
+/* ============================ 14d. 差別化 ============================ */
+{
+  const s = slide("WHY WINEBANK", "ワインを供給するだけの相手なら、他にもいます",
+    "在庫を並べるだけなら専門小売でも足ります。街区の中で回すには、配送・会員・飲食・保管まで自社で持っている必要があります。");
+
+  const rows = [
+    ["", "ワイン専門小売・インポーター", "WineBank"],
+    ["正規品の在庫供給", "可能", "可能（管理在庫30億円・50万本）"],
+    ["街区内への即日・即時配送", "対応していない", "WineGO により自社で実施"],
+    ["在庫リスクの引受（消化仕入）", "限定的", "置きワインとして標準で提供"],
+    ["会員基盤・課金の運用", "小売の会員制度まで", "CLUB として会費・特典・請求を運用"],
+    ["レストランの運営", "行っていない", "グランメゾンを自社で運営"],
+    ["シェフの招致", "行っていない", "ティエリー・マルクス業態を出店可能"],
+    ["ワインの預り・保管", "行っていない", "都内2か所・動産保険付きで受託"],
+    ["商業区画の企画", "テナント出店まで", "セラー在庫共有型フードホールを企画・運営"],
+  ];
+  const colW = [2.66, 2.60, 3.36];
+  const tW = colW.reduce((a, b) => a + b, 0);
+  s.addTable(rows, {
+    x: M, y: 1.66, w: tW, colW,
+    border: { type: "solid", color: LINE, pt: 0.75 },
+    fontFace: FJP, fontSize: 9.8, color: INK, valign: "middle", rowH: 0.46,
+    autoPage: false,
+  });
+  s.addShape(pres.ShapeType.rect, {
+    x: M, y: 1.66, w: tW, h: 0.46, fill: { color: NAVY }, line: { width: 0 },
+  });
+  let hx = M;
+  rows[0].forEach((hstr, i) => {
+    s.addText(hstr, {
+      x: hx + 0.12, y: 1.66, w: colW[i] - 0.24, h: 0.46, margin: 0, valign: "middle",
+      fontFace: FJP, fontSize: 9.8, bold: true, color: TAN_LT,
+    });
+    hx += colW[i];
+  });
+
+  const rx = M + tW + 0.34;
+  const rw = W - M - rx;
+  card(s, rx, 1.66, rw, 2.30, { fill: NAVY });
+  s.addText("この一枚で申し上げたいこと", {
+    x: rx + 0.30, y: 1.82, w: rw - 0.60, h: 0.28, margin: 0,
+    fontFace: FJP, fontSize: 13, bold: true, color: TAN_LT,
+  });
+  s.addText("館内ストレージをご用意いただいた先で、そこに置いた在庫を「動かす」手段を持っているかどうかが差になります。当社は配送・会員・飲食・保管を自社で持っているため、置いた在庫が滞留しません。", {
+    x: rx + 0.30, y: 2.14, w: rw - 0.60, h: 1.70, margin: 0,
+    fontFace: FJP, fontSize: 10, color: "DDE1E4", lineSpacing: 14.5,
+  });
+
+  card(s, rx, 4.10, rw, 2.16, { fill: MIST });
+  s.addText("自社で持っているもの", {
+    x: rx + 0.30, y: 4.24, w: rw - 0.60, h: 0.28, margin: 0,
+    fontFace: FJP, fontSize: 13, bold: true, color: INK,
+  });
+  bullets(s, [
+    "仕入：55年の酒販実績と輸出入免許",
+    "保管：都内2か所の定温倉庫",
+    "配送：WineGO の定温ラストワンマイル",
+    "販売：EC・卸・会員制サロン",
+    "飲食：グランメゾンの運営",
+  ], rx + 0.30, 4.58, rw - 0.60, 1.58, { size: 9.4, lineSpacing: 13, gap: 3 });
+
+  s.addText("※ 比較欄は一般的な高級ワイン専門小売・インポーターの事業範囲についての当社の理解です。特定の企業を指すものではありません。", {
+    x: M, y: 6.44, w: tW, h: 0.30, margin: 0, fontFace: FJP, fontSize: 8.6, color: GREY_LT,
+  });
 }
 
 /* ============================ 15. スキーム ============================ */
@@ -1164,7 +1548,7 @@ function band(s, y, text, o = {}) {
   const acts = [
     ["01", "Cloud Wine Cave の試験導入", "テナント飲食店5店にリストとアプリを提供。発注から着荷までの実運用を検証。"],
     ["02", "館内デリバリーの実証", "バックヤードに仮設ターミナルを設置し、定温配送のリードタイムと運用負荷を計測。"],
-    ["03", "居住者向け先行案内", "CLUB会員となった居住者に卸値×1.1で開放し、需要と単価を確認。"],
+    ["03", "居住者向け先行案内", "CLUB会員となった居住者に卸値×1.1〜1.3で開放し、需要と単価を確認。"],
   ];
   acts.forEach((a, i) => {
     const y = 2.04 + i * 1.30;
