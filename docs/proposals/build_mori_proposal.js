@@ -1337,6 +1337,258 @@ function bullets(s, items, x, y, w, h, opts = {}) {
   });
 }
 
+/* ============================ 22. Appendix C: price structure ============================ */
+{
+  const s = contentSlide("APPENDIX C", "なぜ、価格で勝てるのか",
+    "ワイン流通は、生産者から消費者までに何段もの中間マージンが積み上がります。当社は最上流に立っています。");
+
+  const baseY = 4.66;
+  const maxH = 2.26;
+  const bars = [
+    { name: "インポーター\n仕入価格", v: 40, disp: "40", wb: true },
+    { name: "酒販店①\n仕入価格", v: 60, disp: "60" },
+    { name: "酒販店②\n仕入価格", v: 70, disp: "70" },
+    { name: "一般消費者\n購入価格", v: 100, disp: "80〜100" },
+    { name: "レストラン\n店頭価格", v: 300, disp: "150〜300", range: 150 },
+  ];
+  const bw = 1.62, gap = 0.62;
+  const startX = (W - (bars.length * bw + (bars.length - 1) * gap)) / 2;
+
+  // why the top of the chain is not contestable
+  card(s, M, 2.06, 7.20, 1.30, { fill: MIST });
+  s.addText("最上流に立てる理由", {
+    x: M + 0.30, y: 2.22, w: 6.6, h: 0.28, margin: 0,
+    fontFace: FJP, fontSize: 13, bold: true, color: WINE_DEEP,
+  });
+  bullets(s, [
+    "創業55年の酒販業実績による、生産者・インポーターとの信頼とパイプ",
+    "国内大手インポーターとの直接取引による特価・正規品仕入",
+    "海外輸出入ライセンスを活かした独自の仕入ネットワークと情報収集",
+  ], M + 0.30, 2.56, 6.60, 0.70, { size: 9.8, lineSpacing: 13, gap: 2 });
+
+  // baseline
+  s.addShape(pres.ShapeType.line, {
+    x: startX - 0.30, y: baseY, w: bars.length * bw + (bars.length - 1) * gap + 0.60, h: 0,
+    line: { color: "DCD3D7", width: 1 },
+  });
+
+  bars.forEach((b, i) => {
+    const x = startX + i * (bw + gap);
+    const h = (b.v / 300) * maxH;
+    if (b.range) {
+      const hLow = (b.range / 300) * maxH;
+      s.addShape(pres.ShapeType.rect, {
+        x, y: baseY - h, w: bw, h: h - hLow,
+        fill: { color: WINE_SOFT, transparency: 52 }, line: { width: 0 },
+      });
+      s.addShape(pres.ShapeType.rect, {
+        x, y: baseY - hLow, w: bw, h: hLow,
+        fill: { color: WINE_SOFT }, line: { width: 0 },
+      });
+    } else {
+      s.addShape(pres.ShapeType.rect, {
+        x, y: baseY - h, w: bw, h,
+        fill: { color: b.wb ? GOLD : WINE }, line: { width: 0 },
+      });
+    }
+    s.addText(b.disp, {
+      x, y: baseY - h - 0.38, w: bw, h: 0.32, margin: 0, align: "center",
+      fontFace: FJP, fontSize: 15, bold: true, color: b.wb ? "8A6A18" : WINE_DEEP,
+    });
+    s.addText(b.name, {
+      x, y: baseY + 0.10, w: bw, h: 0.50, margin: 0, align: "center",
+      fontFace: FJP, fontSize: 10, color: GREY, lineSpacing: 13.5,
+    });
+    if (b.wb) {
+      s.addText("WineBank はここ", {
+        x: x - 0.20, y: baseY - h - 0.74, w: bw + 0.40, h: 0.30, margin: 0, align: "center",
+        fontFace: FJP, fontSize: 11, bold: true, color: GOLD,
+      });
+    }
+  });
+
+  // punch band with the three consequences
+  card(s, M, 5.42, W - M * 2, 1.06, { fill: WINE_DEEP, shadow: false });
+  s.addText("レストラン店頭価格の\n1/4〜1/7 の水準で仕入れる。", {
+    x: M + 0.34, y: 5.42, w: 4.40, h: 1.06, margin: 0, valign: "middle",
+    fontFace: FJP, fontSize: 15, bold: true, color: GOLD, lineSpacing: 21,
+  });
+  const meanings = [
+    ["会員は最安値で買える", "ネット最安値水準から\nさらに10〜20%OFF"],
+    ["飲食店は在庫ゼロで足りる", "資金を寝かせずに\nワインリストが華やぐ"],
+    ["新規参入は追随できない", "参入業者は「70」の\n水準からしか始まらない"],
+  ];
+  meanings.forEach((m2, i) => {
+    const x = M + 5.10 + i * 2.42;
+    s.addText(m2[0], {
+      x, y: 5.60, w: 2.32, h: 0.28, margin: 0,
+      fontFace: FJP, fontSize: 10.5, bold: true, color: PAPER,
+    });
+    s.addText(m2[1], {
+      x, y: 5.90, w: 2.32, h: 0.48, margin: 0,
+      fontFace: FJP, fontSize: 9, color: "CBBAC1", lineSpacing: 12.5,
+    });
+  });
+
+  s.addText("※ 希望小売価格を100とした相対指数。ネット最安値／並行輸入価格は概ね80の水準。出典：当社資料。", {
+    x: M, y: 6.58, w: 12.0, h: 0.28, margin: 0, fontFace: FJP, fontSize: 8.8, color: GREY_LT,
+  });
+}
+
+/* ============================ 23. Appendix D: founder ============================ */
+{
+  const s = contentSlide("APPENDIX D", "代表取締役 中野 邦人",
+    "不動産投資・不動産証券化・ホテルコンド開発・スペースシェアリングを経て、ワインへ。デベロッパーの言語が通じる相手です。");
+
+  // left: career timeline
+  s.addText("経歴", {
+    x: M, y: 1.98, w: 3.0, h: 0.30, margin: 0,
+    fontFace: FJP, fontSize: 14, bold: true, color: WINE_DEEP,
+  });
+  const career = [
+    ["2001", "株式会社モリモト", "不動産投資事業部にて不動産の購入・売却および不動産証券化に従事"],
+    ["2003", "株式会社LEXINGTON", "富裕層向け資産コンサルティング"],
+    ["2006", "株式会社Seven Signatures 取締役", "ホテルコンド事業開発・投資スキーム構築・国内不動産開発。ハワイのTrump Tower Waikikiプロジェクトに参画"],
+    ["2008", "株式会社あどばる 設立・代表取締役社長", "不動産のスペースシェアリング事業。飲食・宿泊・会議の時間貸しコンテンツを展開"],
+    ["2020", "株式会社WineBank をM&Aにより100%取得、代表取締役就任", ""],
+    ["2021", "株式会社あどばる が東証プライム上場グループ入り", ""],
+    ["2022", "株式会社AbHeri が東証グロース上場グループ入り", ""],
+  ];
+  let cy = 2.36;
+  career.forEach((c) => {
+    const y = cy;
+    cy += c[2] ? 0.68 : 0.46;
+    s.addText(c[0], {
+      x: M, y, w: 0.72, h: 0.28, margin: 0,
+      fontFace: FEN, fontSize: 12, bold: true, color: GOLD,
+    });
+    s.addText(c[1], {
+      x: M + 0.78, y, w: 6.20, h: 0.28, margin: 0,
+      fontFace: FJP, fontSize: 10.8, bold: true, color: TEXT,
+    });
+    if (c[2]) {
+      s.addText(c[2], {
+        x: M + 0.78, y: y + 0.27, w: 6.20, h: 0.38, margin: 0,
+        fontFace: FJP, fontSize: 9.2, color: GREY, lineSpacing: 12.5,
+      });
+    }
+  });
+
+  // right: three hooks
+  const rx = M + 7.28;
+  const rw = W - M - rx;
+  const hooks = [
+    { n: "01", t: "不動産・施設運営の出身", d: "不動産証券化、ホテルコンド開発、時間貸しスペース事業。街と区画の経済で会話ができます。" },
+    { n: "02", t: "2社を上場企業グループへ", d: "あどばる（東証プライム）、AbHeri（東証グロース）。立ち上げから引き渡しまでを2度経験。" },
+    { n: "03", t: "いまはワイン一本", d: "2020年にWineBankを承継。シリアルアントレプレナーとして本事業に専念しています。" },
+  ];
+  hooks.forEach((hk, i) => {
+    const y = 1.98 + i * 1.48;
+    card(s, rx, y, rw, 1.32, { fill: i === 0 ? WINE_DEEP : MIST, shadow: i !== 0 });
+    const dark = i === 0;
+    badge(s, rx + 0.28, y + 0.22, 0.46, hk.n,
+      { size: 11, fill: dark ? WINE_DEEP : "FFFFFF", line: GOLD, color: dark ? GOLD : WINE });
+    s.addText(hk.t, {
+      x: rx + 0.86, y: y + 0.22, w: rw - 1.14, h: 0.46, margin: 0, valign: "middle",
+      fontFace: FJP, fontSize: 13, bold: true, color: dark ? GOLD : WINE_DEEP,
+    });
+    s.addText(hk.d, {
+      x: rx + 0.28, y: y + 0.76, w: rw - 0.56, h: 0.48, margin: 0,
+      fontFace: FJP, fontSize: 9.8, color: dark ? "E8DDE1" : TEXT, lineSpacing: 13.5,
+    });
+  });
+
+  s.addText("※ Seven Signatures在籍時、Donald Trump氏とのハワイ・Trump Tower Waikikiプロジェクトにおいて1日あたり売上高のギネス記録を樹立。", {
+    x: M, y: 6.56, w: 12.0, h: 0.28, margin: 0,
+    fontFace: FJP, fontSize: 8.8, color: GREY_LT,
+  });
+}
+
+/* ============================ 24. Appendix E: history & momentum ============================ */
+{
+  const s = contentSlide("APPENDIX E", "55年の沿革と、いま動いていること",
+    "1970年札幌の酒販店として創業。承継後の6年間で、EC・ファンド・グランメゾン・プラットフォームを積み上げました。");
+
+  s.addText("沿革", {
+    x: M, y: 1.98, w: 3.0, h: 0.30, margin: 0,
+    fontFace: FJP, fontSize: 14, bold: true, color: WINE_DEEP,
+  });
+  const hist = [
+    ["1970.10", "北海道札幌で「有限会社中村」開業。1996年よりワイン販売に注力"],
+    ["2007.05", "楽天市場に出店しワインEC開始（現在はYahoo・寺田ワインマーケットにも出店）"],
+    ["2011.04", "ラ・ブリック（レストラン）／カーヴ・ド・ブリック（ワインショップ）開業"],
+    ["2020.07", "中野邦人がM&Aにより100%取得、代表取締役就任"],
+    ["2022.05", "Wine Cave Roppongi 開業"],
+    ["2022.07", "ワインファンド1号 運用開始（2026年4月時点 累計+18.06%）"],
+    ["2022.09", "株式会社WineBank へ商号変更"],
+    ["2023.02", "ワイン投資プラットフォーム「WineBank」リリース"],
+    ["2024.06", "創業41年のグランメゾン「アピシウス」を100%株式取得"],
+    ["2026.07", "六本木の路面店に「Bistro & Bar WineBank terrace」開業"],
+  ];
+  hist.forEach((r, i) => {
+    const y = 2.36 + i * 0.38;
+    s.addText(r[0], {
+      x: M, y, w: 0.92, h: 0.30, margin: 0, valign: "middle",
+      fontFace: FEN, fontSize: 9.6, bold: true, color: GOLD,
+    });
+    s.addText(r[1], {
+      x: M + 0.98, y, w: 5.86, h: 0.30, margin: 0, valign: "middle",
+      fontFace: FJP, fontSize: 9.6, color: TEXT, lineSpacing: 13,
+    });
+  });
+
+  const rx = M + 7.16;
+  const rw = W - M - rx;
+  card(s, rx, 1.98, rw, 2.62, { fill: MIST });
+  s.addText("いま動いている3つの大型提携", {
+    x: rx + 0.30, y: 2.16, w: rw - 0.60, h: 0.30, margin: 0,
+    fontFace: FJP, fontSize: 14, bold: true, color: WINE_DEEP,
+  });
+  const deals = [
+    ["SBI証券", "世界初のワインST（セキュリティトークン）の構築・販売"],
+    ["ティエリー・マルクス × TBS", "有名仏シェフとのレストラン事業。ライセンスとPRの両輪"],
+    ["WineBank CLUB ＋ 他社提携", "レストランサブスク。レコール・デュ・ヴァン等と業務提携"],
+  ];
+  deals.forEach((d, i) => {
+    const y = 2.56 + i * 0.68;
+    badge(s, rx + 0.30, y + 0.02, 0.36, String(i + 1), { size: 10 });
+    s.addText(d[0], {
+      x: rx + 0.78, y, w: rw - 1.08, h: 0.26, margin: 0,
+      fontFace: FJP, fontSize: 11.5, bold: true, color: WINE,
+    });
+    s.addText(d[1], {
+      x: rx + 0.78, y: y + 0.26, w: rw - 1.08, h: 0.34, margin: 0,
+      fontFace: FJP, fontSize: 9.2, color: GREY, lineSpacing: 12.5,
+    });
+  });
+
+  card(s, rx, 4.76, rw, 1.44, { fill: WINE_DEEP, shadow: false });
+  s.addText("中長期の絵姿（2029年9月期）", {
+    x: rx + 0.30, y: 4.92, w: rw - 0.60, h: 0.28, margin: 0,
+    fontFace: FJP, fontSize: 13, bold: true, color: GOLD,
+  });
+  const goals = [["在庫 55億円", "管理ワイン在庫"], ["売上 25億円", "ワイン関連事業"], ["IPO", "を見据えた成長"]];
+  const gw = (rw - 0.60) / 3;
+  goals.forEach((g, i) => {
+    const x = rx + 0.30 + i * gw;
+    s.addText(g[0], {
+      x, y: 5.28, w: gw - 0.10, h: 0.34, margin: 0,
+      fontFace: FJP, fontSize: 14, bold: true, color: PAPER,
+    });
+    s.addText(g[1], {
+      x, y: 5.62, w: gw - 0.10, h: 0.28, margin: 0,
+      fontFace: FJP, fontSize: 8.6, color: "CBBAC1",
+    });
+  });
+
+  s.addText("主要株主：マネーフォワードベンチャーパートナーズ株式会社／株式会社ベクトル／寺田倉庫株式会社／株式会社PrivateBANK", {
+    x: M, y: 6.20, w: 12.0, h: 0.26, margin: 0, fontFace: FJP, fontSize: 9, color: GREY,
+  });
+  s.addText("※ 中長期計画は当社事業計画に基づく想定であり、確定的な見通しではありません。上表のワイン関連事業売上とは別途、レストラン事業売上を見込んでいます。", {
+    x: M, y: 6.50, w: 12.0, h: 0.26, margin: 0, fontFace: FJP, fontSize: 8.6, color: GREY_LT,
+  });
+}
+
 /* ============================ write ============================ */
 const OUT = process.argv[2] || "森ビル様_業務提携ご提案_WineBank.pptx";
 pres.writeFile({ fileName: OUT }).then(() => console.log("wrote", OUT));
