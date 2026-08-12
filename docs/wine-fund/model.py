@@ -10,12 +10,24 @@
 """
 
 # ---------------------------------------------------------------- 基本前提
-CAPITAL     = 500_000_000   # 投資枠
-UTIL        = 0.95          # 稼働率（現金は5%。残り95%をワイン購入に充当）
-RAMP_MONTHS = 6             # 仕入展開期間
-MARKUP      = 0.01          # WineBank -> SPC 現物譲渡時の付加率
-TERM_YEARS  = 5             # 運用期間
-LOT_RRP     = 1_000_000     # 1ロット = 定価100万円相当（平均定価25,000円なら約40本）
+CAPITAL      = 500_000_000  # 投資枠
+UTIL         = 0.95         # 稼働率（現金は5%。残り95%をワイン購入に充当）
+RAMP_MONTHS  = 6            # 仕入展開期間
+MARKUP       = 0.01         # WineBank -> SPC 現物譲渡時の付加率
+TERM_YEARS   = 5            # 運用期間
+LOT_RRP      = 1_000_000    # 1ロット = 定価100万円相当（平均定価25,000円なら約40本）
+
+# ワイン価格の年間上昇率。保有期間中に価格帯全体（希望小売・ネット最安・卸値）が
+# 連動して上昇するため、取得原価は据え置きのまま売値だけが上がる。
+# 会社資料ではFine Wineのリセールバリューを年率10%程度としているが、
+# 保守的に6%を主線とする。
+APPRECIATION = 0.06
+
+
+def appr(hold_months, rate=None):
+    """保有期間ぶんの価格上昇倍率。"""
+    r = APPRECIATION if rate is None else rate
+    return (1 + r) ** (hold_months / 12.0)
 
 # --- 共通費用 -------------------------------------------------------------
 STORAGE_PER_LOT_YEAR = 7_500    # 定温倉庫 保管料 円/ロット/年（月約16円/本）
@@ -64,12 +76,24 @@ def unit(mkt_cost, p_b2b, p_b2c, mix_b2b, markup=MARKUP,
     )
 
 
+# ------------------------------ 保有期間を織り込んだ単位経済（定価100あたり）
+def unit_held(u, hold_months, rate=None):
+    """取得時の定価を100としたときの、売却時点の売値・手取り・粗利。"""
+    k = appr(hold_months, rate)
+    price = u["price"] * k
+    var   = u["var"] * k
+    net   = price - var
+    return dict(k=k, price=price, var=var, net=net,
+                gross=net - u["spc_cost"], gm=(net - u["spc_cost"]) / price,
+                spc_cost=u["spc_cost"])
+
+
 # ------------------------------------------------------ 定常（年間）実力値
-def steady(u, hold_months, capital=CAPITAL, util=UTIL):
+def steady(u, hold_months, capital=CAPITAL, util=UTIL, rate=None):
     book  = capital * util
     turns = 12.0 / hold_months
     cogs  = book * turns
-    sales = cogs * u["mult"]
+    sales = cogs * u["mult"] * appr(hold_months, rate)
     lots_held = book / u["lot_cost"]
     lots_year = cogs / u["lot_cost"]
     cost = dict(
@@ -89,10 +113,11 @@ def steady(u, hold_months, capital=CAPITAL, util=UTIL):
 
 # ------------------------------------------------ 月次キャッシュフローモデル
 def monthly(u, hold_months, years=TERM_YEARS, capital=CAPITAL, util=UTIL,
-            ramp=RAMP_MONTHS):
+            ramp=RAMP_MONTHS, rate=None):
     T = int(years * 12)
     book  = capital * util
     batch = book / ramp
+    mult  = u["mult"] * appr(hold_months, rate)   # 保有期間ぶんの値上がりを含む
 
     open_batches = []
     sales_m = [0.0] * (T + 1)
@@ -103,7 +128,7 @@ def monthly(u, hold_months, years=TERM_YEARS, capital=CAPITAL, util=UTIL,
     for m in range(1, T + 1):
         for sell_m, amt in [b for b in open_batches if b[0] == m]:
             open_batches.remove((sell_m, amt))
-            sales_m[m] += amt * u["mult"]
+            sales_m[m] += amt * mult
             cogs_m[m]  += amt
             inventory  -= amt
 
