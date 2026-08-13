@@ -34,9 +34,11 @@ STORAGE_PER_LOT_YEAR = 7_500    # 定温倉庫 保管料 円/ロット/年（月
 INSURANCE_RATE       = 0.0015   # 動産総合保険 平均在庫簿価に対する年率
 INBOUND_PER_LOT      = 320      # 入庫・検品 円/ロット
 
-SPC_MAINTENANCE = 2_000_000     # SPC維持費（税務・事務受託・法務／監査費用を除く）
+SPC_MAINTENANCE = 2_000_000     # SPC維持費（税務・事務受託・法務）
 SPC_PERSONNEL   = 3_600_000     # SPC運営に係るWineBank側の実務人件費
-SPC_FIXED_TOTAL = SPC_MAINTENANCE + SPC_PERSONNEL
+SPC_AUP         =   500_000     # 合意された手続（AUP）報告書
+SPC_RESERVE     =   500_000     # 予備費
+SPC_FIXED_TOTAL = SPC_MAINTENANCE + SPC_PERSONNEL + SPC_AUP + SPC_RESERVE
 
 # --- チャネル別 変動販売費（売上比） -------------------------------------
 #   B2B : 出庫・配送 0.6% ＋ 決済・与信（貸倒引当）0.4%
@@ -112,52 +114,62 @@ def steady(u, hold_months, capital=CAPITAL, util=UTIL, rate=None):
 
 
 # ------------------------------------------------ 月次キャッシュフローモデル
-def monthly(u, hold_months, years=TERM_YEARS, capital=CAPITAL, util=UTIL,
-            ramp=RAMP_MONTHS, rate=None):
-    T = int(years * 12)
-    book  = capital * util
-    batch = book / ramp
-    mult  = u["mult"] * appr(hold_months, rate)   # 保有期間ぶんの値上がりを含む
+DAYS_PER_MONTH = 30   # 1年＝360日として日次で刻む
 
-    open_batches = []
-    sales_m = [0.0] * (T + 1)
-    cogs_m  = [0.0] * (T + 1)
-    cost_m  = [0.0] * (T + 1)
+
+def monthly(u, hold_months, years=TERM_YEARS, capital=CAPITAL, util=UTIL,
+            ramp=RAMP_MONTHS, rate=None, share=0.5):
+    """日次キャッシュフロー。保有期間を整数月に丸めると満期までに何回転
+    収まるかで結果が跳ねるため、日次で刻んで段差をならす。
+
+    share は税前利益のうち投資家に配分する比率。"""
+    D       = int(round(years * 12 * DAYS_PER_MONTH))
+    hold_d  = max(1, int(round(hold_months * DAYS_PER_MONTH)))
+    ramp_d  = max(1, int(round(ramp * DAYS_PER_MONTH)))
+    book    = capital * util
+    daily_buy = book / ramp_d
+    mult    = u["mult"] * appr(hold_months, rate)
+
+    pending = {}                      # 売却日 -> 原価
+    sales_d = [0.0] * (D + 1)
+    cogs_d  = [0.0] * (D + 1)
+    cost_d  = [0.0] * (D + 1)
     inventory = 0.0
 
-    for m in range(1, T + 1):
-        for sell_m, amt in [b for b in open_batches if b[0] == m]:
-            open_batches.remove((sell_m, amt))
-            sales_m[m] += amt * mult
-            cogs_m[m]  += amt
+    for t in range(1, D + 1):
+        amt = pending.pop(t, 0.0)
+        if amt:
+            sales_d[t] += amt * mult
+            cogs_d[t]  += amt
             inventory  -= amt
 
-        buy = (batch if m <= ramp else 0.0) + cogs_m[m]
-        if buy > 0 and m + hold_months <= T:
-            open_batches.append((m + hold_months, buy))
+        buy = (daily_buy if t <= ramp_d else 0.0) + cogs_d[t]
+        if buy > 0 and t + hold_d <= D:
+            pending[t + hold_d] = pending.get(t + hold_d, 0.0) + buy
             inventory += buy
-            cost_m[m] += (buy / u["lot_cost"]) * INBOUND_PER_LOT
+            cost_d[t] += (buy / u["lot_cost"]) * INBOUND_PER_LOT
 
-        cost_m[m] += (inventory / u["lot_cost"]) * STORAGE_PER_LOT_YEAR / 12
-        cost_m[m] += inventory * INSURANCE_RATE / 12
-        cost_m[m] += sales_m[m] * u["var_rate"]
-        cost_m[m] += SPC_FIXED_TOTAL / 12
+        cost_d[t] += (inventory / u["lot_cost"]) * STORAGE_PER_LOT_YEAR / 360
+        cost_d[t] += inventory * INSURANCE_RATE / 360
+        cost_d[t] += sales_d[t] * u["var_rate"]
+        cost_d[t] += SPC_FIXED_TOTAL / 360
 
-    # 半期ごとの税前利益を折半して分配
+    # 半期（180日）ごとに税前利益を按分して分配
+    half = 180
     flows, carry = [-capital], 0.0
-    for h in range(1, int(years * 2) + 1):
-        a, b = (h - 1) * 6 + 1, h * 6
-        carry += sum(sales_m[a:b + 1]) - sum(cogs_m[a:b + 1]) - sum(cost_m[a:b + 1])
-        payout = max(carry, 0.0) / 2
-        carry -= payout * 2
-        flows.append(payout)
+    for h in range(1, int(round(years * 2)) + 1):
+        a, b = (h - 1) * half + 1, h * half
+        carry += sum(sales_d[a:b + 1]) - sum(cogs_d[a:b + 1]) - sum(cost_d[a:b + 1])
+        distributable = max(carry, 0.0)      # 累損は繰越、黒字分のみ分配
+        carry -= distributable
+        flows.append(distributable * share)  # 投資家への配分
     flows[-1] += capital
 
     dist = sum(flows[1:]) - capital
-    return dict(flows=flows, total_sales=sum(sales_m), total_cogs=sum(cogs_m),
-                total_cost=sum(cost_m), total_distributed=dist,
+    return dict(flows=flows, total_sales=sum(sales_d), total_cogs=sum(cogs_d),
+                total_cost=sum(cost_d), total_distributed=dist,
                 avg_yield=dist / capital / years,
-                turns_realized=sum(cogs_m) / book)
+                turns_realized=sum(cogs_d) / book)
 
 
 def oku(x):   return f"{x/100_000_000:,.2f}億"
