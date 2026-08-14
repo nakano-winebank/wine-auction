@@ -12,7 +12,9 @@
 | `leverage.py` | 費用積み増しの影響、デット比率別の感応度 |
 | `structure.py` | デット2億＋エクイティ3億の資本構成での投資家リターン（**本番用の数値はこれ**） |
 | `build.js` | 提案資料（PPTX）の生成スクリプト（pptxgenjs） |
-| `WineBank_ワインファンドSPC組成提案_5億_20260811.pptx` | 生成物（全23枚） |
+| `annex.js` | 契約別紙ドラフト（DOCX）の生成スクリプト（docx-js） |
+| `WineBank_ワインファンドSPC組成提案_5億_20260811.pptx` | 提案資料（全23枚） |
+| `WineBank_ワインファンド_契約別紙ドラフト_20260811.docx` | 匿名組合契約 別紙ドラフト（在庫配分方針／情報開示・報告／利益相反管理） |
 
 ## 実行
 
@@ -21,7 +23,8 @@ python3 model.py    # 単位経済・定常年間実力値・通算リターン
 python3 report.py   # 感応度・実務水準チェック
 python3 leverage.py # 費用積み増しとデット比率の感応度
 python3 structure.py # 資本構成込みの投資家リターン（本番用）
-npm install pptxgenjs && node build.js   # PPTX生成
+npm install pptxgenjs && node build.js   # 提案資料（PPTX）生成
+npm install docx && node annex.js        # 契約別紙ドラフト（DOCX）生成
 ```
 
 ## 提示指標について
