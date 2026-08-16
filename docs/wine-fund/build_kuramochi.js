@@ -163,11 +163,11 @@ const CHART_BASE = {
     fontFace: LATIN, fontSize: 13, bold: true, color: IVORY, charSpacing: 5.5,
   });
   s.addShape(pres.ShapeType.roundRect, {
-    x: M, y: 1.86, w: 3.60, h: 0.36, rectRadius: 0.04,
+    x: M, y: 1.86, w: 3.30, h: 0.36, rectRadius: 0.04,
     fill: { color: CARD2 }, line: { color: GOLD_D, width: 1 },
   });
-  s.addText("山本案｜デット2億＋エクイティ3億", {
-    x: M, y: 1.86, w: 3.60, h: 0.36, margin: 0, align: "center", valign: "middle",
+  s.addText("倉持案｜エクイティ5億円のみ", {
+    x: M, y: 1.86, w: 3.30, h: 0.36, margin: 0, align: "center", valign: "middle",
     fontFace: SANS, fontSize: 11, bold: true, color: GOLD_L, charSpacing: 1.2,
   });
   s.addText("WINE FUND ｜ SPC PROPOSAL", {
@@ -182,7 +182,7 @@ const CHART_BASE = {
     x: M, y: 3.56, w: 8.6, h: 0.78, margin: 0,
     fontFace: SERIF, fontSize: 41, bold: true, color: GOLD_L,
   });
-  s.addText("総額 5億円（デット2億＋エクイティ3億）／ 運用期間5年 ／ 半期分配", {
+  s.addText("総額 5億円（エクイティのみ・デットなし）／ 運用期間5年 ／ 半期分配", {
     x: M, y: 4.52, w: 9.0, h: 0.3, margin: 0,
     fontFace: SANS, fontSize: 12.5, color: MUTED,
   });
@@ -212,10 +212,10 @@ const CHART_BASE = {
     "実物ワインの流通価格差を収益源とする、現物裏付け型の短期回転ファンド。");
 
   const tw = (CW - 0.30 * 3) / 4;
-  stat(s, M + (tw + 0.30) * 0, 1.82, tw, 1.62, "3", "億円", "投資家エクイティ", "SPC総額5億円（デット2億＋エクイティ3億）／運用期間5年");
+  stat(s, M + (tw + 0.30) * 0, 1.82, tw, 1.62, "5", "億円", "投資家エクイティ", "総額5億円をすべて匿名組合出資で構成（デットなし）／運用期間5年");
   stat(s, M + (tw + 0.30) * 1, 1.82, tw, 1.62, "12", "ヶ月", "在庫回転期間（主線）", "最短9ヶ月、延びても15〜18ヶ月を想定レンジとする");
-  stat(s, M + (tw + 0.30) * 2, 1.82, tw, 1.62, "21.0", "%", "投資家利回り（定常年間）", "出資3億円に対する取分。投資家帰属利益の50%を受領");
-  stat(s, M + (tw + 0.30) * 3, 1.82, tw, 1.62, "16.7", "%", "年平均利回り（5年通算）", "在庫回転12ヶ月／累計分配額÷出資3億円÷5年",
+  stat(s, M + (tw + 0.30) * 2, 1.82, tw, 1.62, "21.0", "%", "投資家利回り（定常年間）", "出資5億円に対する取分。SPC税前利益の50%を受領");
+  stat(s, M + (tw + 0.30) * 3, 1.82, tw, 1.62, "16.7", "%", "年平均利回り（5年通算）", "在庫回転12ヶ月／累計分配額÷出資5億円÷5年",
     { vs: 30, fill: CARD2, line: GOLD_D });
 
   const pts = [
@@ -224,7 +224,7 @@ const CHART_BASE = {
     ["収益は「流通価格差」と「ワインの値上がり」の二階建て。",
      "同一商品の流通段階間の価格差（フロー）に加え、保有期間中の価格上昇年6%（ストック）が乗る。値上がり分は保有期間によらず利回りを底上げする。"],
     ["報酬体系は従来どおり。投資家が得た利益をWineBankと折半する成功報酬型。",
-     "SPC税前利益のうち出資3億円に帰属する分（5分の3）を投資家とWineBankで折半する。期中の管理報酬（残高比例フィー）は課さない。デット2億円の金利と保証責任はWineBankが負担する。"],
+     "総額5億円がすべて投資家の出資であるため、SPC税前利益の全額が投資家に帰属し、これを投資家とWineBankで折半する。期中の管理報酬（残高比例フィー）は課さない。"],
     ["費用は削っていない。監査・法務まで積んだうえでの数字。",
      "AUP50万円・予備費50万円を含むSPC固定費660万円、変動販売費、保管・保険をすべて計上済み。利回りを作るために費用を圧縮してはいない。"],
   ];
@@ -241,59 +241,57 @@ const CHART_BASE = {
     });
     y += 0.68;
   });
-  s.addNotes("骨子。主線は回転12ヶ月で投資家利回り21.0%、5年通算の年平均利回り16.7%。想定レンジ9〜18ヶ月では14.9〜27.1%。");
+  s.addNotes("倉持案。デットなし・エクイティ5億のみ。主線21.0%、5年通算16.7%。利回りは山本案と同率。");
 }
 
 // ═══════════════════════════════════════════════════════════ 03 資本構成
 {
   const s = chrome(base(), "CAPITAL STRUCTURE", "資本構成とリターンの配分",
-    "総額5億円をデット2億円と投資家出資3億円で構成する。投資家に帰属する利益を投資家とWineBankで折半する報酬体系は従来どおり。");
+    "総額5億円をすべて匿名組合出資で構成する。借入を用いないため、SPC税前利益の全額が投資家に帰属し、これを投資家とWineBankで折半する。");
 
-  const bw = (CW - 0.30 * 2) / 3, by = 1.78;
+  const bw = (CW - 0.30) / 2, by = 1.78;
   const tranches = [
-    ["デット", "2.0", "億円", "金利4%（固定）", ["投資家からの借入", "利息はWineBankが負担", "SPC資産から満期に返済"], false],
-    ["出資｜投資家", "3.0", "億円", "投資家帰属利益の50%", ["匿名組合出資", "満期に元本償還", "半期ごとに分配"], true],
-    ["GP｜WineBank", "139", "百万円", "成功報酬63百万円＋デット分76百万円", ["現金拠出はなし", "デット2億の金利と保証責任を負担", "期中の管理報酬は課さない"], false],
+    ["出資｜投資家", "5.0", "億円", "SPC税前利益の50%",
+     ["匿名組合出資（デットなし）", "満期に元本償還", "半期ごとに分配"], true],
+    ["GP｜WineBank", "105", "百万円", "成功報酬＝SPC税前利益の50%",
+     ["現金拠出はなし", "調達・保管・販売の実務を担当", "期中の管理報酬は課さない"], false],
   ];
   tranches.forEach((t, i) => {
     const x = M + (bw + 0.30) * i;
-    card(s, x, by, bw, 1.86, { fill: t[5] ? CARD2 : CARD, line: t[5] ? GOLD_D : LINE });
-    s.addText(t[0], { x: x + 0.26, y: by + 0.16, w: bw - 0.52, h: 0.26, margin: 0, fontFace: SANS, fontSize: 11.5, bold: true, color: t[5] ? GOLD_L : IVORY });
+    card(s, x, by, bw, 1.72, { fill: t[5] ? CARD2 : CARD, line: t[5] ? GOLD_D : LINE });
+    s.addText(t[0], { x: x + 0.26, y: by + 0.14, w: bw - 0.52, h: 0.26, margin: 0, fontFace: SANS, fontSize: 11.5, bold: true, color: t[5] ? GOLD_L : IVORY });
     s.addText([
       { text: t[1], options: { fontFace: LATIN, fontSize: 28, bold: true, color: GOLD_L } },
       { text: " " + t[2], options: { fontFace: SANS, fontSize: 12, bold: true, color: GOLD_L } },
-    ], { x: x + 0.26, y: by + 0.44, w: bw - 0.52, h: 0.46, margin: 0, valign: "middle" });
-    s.addText(t[3], { x: x + 0.26, y: by + 0.94, w: bw - 0.52, h: 0.24, margin: 0, fontFace: SANS, fontSize: 10.5, bold: true, color: IVORY });
+    ], { x: x + 0.26, y: by + 0.40, w: bw - 0.52, h: 0.44, margin: 0, valign: "middle" });
+    s.addText(t[3], { x: x + 0.26, y: by + 0.86, w: bw - 0.52, h: 0.24, margin: 0, fontFace: SANS, fontSize: 10.5, bold: true, color: IVORY });
     s.addText(t[4].map((v) => "・" + v).join("\n"), {
-      x: x + 0.26, y: by + 1.18, w: bw - 0.52, h: 0.62, margin: 0,
+      x: x + 0.26, y: by + 1.10, w: bw - 0.52, h: 0.60, margin: 0,
       fontFace: SANS, fontSize: 9, color: MUTED, lineSpacingMultiple: 1.2 });
   });
 
   const rows = [
     [th("項目"), th("金額"), th("内容")],
     [td("年間税前利益（SPC）"), td("2.10億円", { bold: true }), td("在庫回転12ヶ月・年間売上7.48億円の主線ケース", { align: "left" })],
-    [td("├ 投資家帰属分"), td("126百万円"), td("出資3億円÷総額5億円＝5分の3。この分を投資家とWineBankで折半する", { align: "left" })],
-    [td("│　├ 投資家"), td("63百万円", { bold: true, color: GOLD_L }), td("出資3億円に対し 投資家利回り 21.0%", { align: "left", color: GOLD_L, bold: true })],
-    [td("│　└ WineBank"), td("63百万円"), td("投資家帰属利益の50%（成功報酬）", { align: "left" })],
-    [td("└ デット2億円帰属分"), td("84百万円"), td("金利8百万円を控除し76百万円をWineBankが受領。保証責任を負う対価", { align: "left" })],
-    [td("デット提供者への利息"), td("8百万円"), td("2億円×4%。WineBankが負担するためSPCの費用には計上しない", { align: "left" })],
+    [td("├ 投資家"), td("105百万円", { bold: true, color: GOLD_L }), td("出資5億円に対し 投資家利回り 21.0%", { align: "left", color: GOLD_L, bold: true })],
+    [td("└ WineBank"), td("105百万円"), td("SPC税前利益の50%（成功報酬）。現金拠出はなく、実務の対価として受領する", { align: "left" })],
+    [td("借入・支払利息"), td("なし"), td("SPCは無借金。借入契約・保証・金利の税務処理といった論点が発生しない", { align: "left" })],
   ];
-  table(s, rows, M, 3.74, CW, [2.60, 1.90, 7.39], { rowH: 0.315, fontSize: 8.5 });
+  table(s, rows, M, 3.60, CW, [2.60, 1.90, 7.39], { rowH: 0.30, fontSize: 8.5 });
 
-  card(s, M, 6.02, CW, 0.94, { fill: CARD2, line: GOLD_D });
-  s.addText("以前の資料からの変更点（回転12ヶ月）", { x: M + 0.30, y: 6.10, w: 5, h: 0.22, margin: 0, fontFace: SANS, fontSize: 10.5, bold: true, color: GOLD_L });
-  s.addText([
-    { text: "① 旧版：投資家5億円出資・折半・値上がり未計上 ", options: { fontFace: SANS, fontSize: 9.5, color: MUTED } },
-    { text: "17.0%", options: { fontFace: LATIN, fontSize: 12, bold: true, color: IVORY } },
-    { text: "　→　② ワイン価格の年6%上昇を織り込む ", options: { fontFace: SANS, fontSize: 9.5, color: MUTED } },
-    { text: "21.0%", options: { fontFace: LATIN, fontSize: 12, bold: true, color: IVORY } },
-    { text: "　→　③ デット2億円を導入し、出資を3億円に ", options: { fontFace: SANS, fontSize: 9.5, color: MUTED } },
-    { text: "21.0%", options: { fontFace: LATIN, fontSize: 12, bold: true, color: GOLD_L } },
-  ], { x: M + 0.30, y: 6.34, w: CW - 0.60, h: 0.24, margin: 0, valign: "middle" });
-  s.addText("※ 折半は一貫して変更していない。出資が5億円→3億円になる一方で帰属利益も5分の3になるため、比率としては同じ21.0%。デット2億円分の利益は保証責任を負うWineBankに帰属する。", {
-    x: M + 0.30, y: 6.60, w: CW - 0.60, h: 0.24, margin: 0, fontFace: SANS, fontSize: 8, color: DIM });
-
-  s.addNotes("投資家帰属分（3/5）を折半。デット導入は投資家利回りを変えない。主線21.0%。");
+  card(s, M, 5.16, CW, 1.78, { fill: CARD2, line: GOLD_D });
+  s.addText("山本案（デット2億＋エクイティ3億）との比較 ── 投資家利回りは両案とも21.0%で同じ", {
+    x: M + 0.30, y: 5.24, w: 9.5, h: 0.24, margin: 0, fontFace: SANS, fontSize: 11, bold: true, color: GOLD_L });
+  const cmp = [
+    [th("回転12ヶ月・ニュートラル"), th("倉持案（エクイティ5億）"), th("山本案（デット2億＋エクイティ3億）")],
+    [td("投資家のリスク資本"), td("5億円"), td("3億円（別に貸付2億円）")],
+    [td("投資家の年間受取"), td("105百万円", { bold: true, color: GOLD_L }), td("取分63百万円 ＋ 受取利息8百万円 ＝ 71百万円")],
+    [td("投資家利回り（出資ベース）"), td("21.0%", { bold: true, color: GOLD_L }), td("21.0%", { bold: true, color: GOLD_L })],
+    [td("投資家利回り（拠出5億ベース）"), td("21.0%", { bold: true, color: GOLD_L }), td("14.2%", { bold: true, color: RED })],
+    [td("WineBank取分"), td("105百万円"), td("139百万円（成功報酬63＋デット分76）")],
+  ];
+  table(s, cmp, M + 0.30, 5.52, CW - 0.60, [3.30, 2.70, 5.29], { rowH: 0.21, fontSize: 8 });
+  s.addNotes("倉持案。デットなし・エクイティ5億。投資家利回りは山本案と同率21.0%だが、5億拠出ベースでは倉持案21.0%に対し山本案14.2%。");
 }
 
 // ═══════════════════════════════════════════════════════════ 04 販売計画
@@ -303,10 +301,10 @@ const CHART_BASE = {
 
   const rows = [
     [th("在庫回転期間"), th("必要な年間販売額"), th("年間税前利益"), th("投資家取分"), th("投資家利回り"), th("WineBank取分"), th("位置づけ")],
-    [td("9ヶ月（最短）"), td("9.83億円"), td("2.71億円"), td("81百万円"), td("27.1%", { bold: true, color: GOLD_L }), td("182百万円"), td("販路拡大が実現した場合の上限", { align: "left" })],
-    [td("12ヶ月（主線）", { bold: true, color: GOLD_L }), td("7.48億円", { bold: true, color: GOLD_L }), td("2.10億円"), td("63百万円"), td("21.0%", { bold: true, color: GOLD_L }), td("139百万円"), td("貴社基準20%を満たす水準", { align: "left", color: GOLD_L })],
-    [td("15ヶ月"), td("6.07億円"), td("1.73億円"), td("52百万円"), td("17.3%", { bold: true, color: RED }), td("113百万円"), td("20%を下回る", { align: "left", color: RED })],
-    [td("18ヶ月"), td("5.13億円"), td("1.49億円"), td("45百万円"), td("14.9%", { bold: true, color: RED }), td("96百万円"), td("20%を下回る", { align: "left", color: RED })],
+    [td("9ヶ月（最短）"), td("9.83億円"), td("2.71億円"), td("136百万円"), td("27.1%", { bold: true, color: GOLD_L }), td("136百万円"), td("販路拡大が実現した場合の上限", { align: "left" })],
+    [td("12ヶ月（主線）", { bold: true, color: GOLD_L }), td("7.48億円", { bold: true, color: GOLD_L }), td("2.10億円"), td("105百万円"), td("21.0%", { bold: true, color: GOLD_L }), td("105百万円"), td("貴社基準20%を満たす水準", { align: "left", color: GOLD_L })],
+    [td("15ヶ月"), td("6.07億円"), td("1.73億円"), td("87百万円"), td("17.3%", { bold: true, color: RED }), td("87百万円"), td("20%を下回る", { align: "left", color: RED })],
+    [td("18ヶ月"), td("5.13億円"), td("1.49億円"), td("74百万円"), td("14.9%", { bold: true, color: RED }), td("74百万円"), td("20%を下回る", { align: "left", color: RED })],
   ];
   table(s, rows, M, 1.80, CW, [1.74, 1.72, 1.44, 1.62, 1.42, 1.72, 2.23], { rowH: 0.42 });
 
@@ -340,7 +338,7 @@ const CHART_BASE = {
 
   card(s, bx1, by, bw, bh);
   s.addText("投資家（資産管理会社）", { x: bx1 + 0.24, y: by + 0.24, w: bw - 0.48, h: 0.28, margin: 0, fontFace: SANS, fontSize: 13, bold: true, color: IVORY });
-  s.addText("匿名組合出資　3億円", { x: bx1 + 0.24, y: by + 0.58, w: bw - 0.48, h: 0.26, margin: 0, fontFace: SANS, fontSize: 10.5, color: GOLD_L });
+  s.addText("匿名組合出資　5億円（デットなし）", { x: bx1 + 0.24, y: by + 0.58, w: bw - 0.48, h: 0.26, margin: 0, fontFace: SANS, fontSize: 10.5, color: GOLD_L });
   s.addText("投資家帰属利益の50%を半期ごとに受領", { x: bx1 + 0.24, y: by + 0.86, w: bw - 0.48, h: 0.26, margin: 0, fontFace: SANS, fontSize: 9.5, color: MUTED });
 
   card(s, bx2, by, bw, bh, { fill: CARD2, line: GOLD_D });
@@ -361,7 +359,7 @@ const CHART_BASE = {
     ["01", "調達", "WineBankが自社の免許・取引口座でインポーター／酒販店から正規品を調達", "定価比 40〜60"],
     ["02", "譲渡", "現物をSPCへ譲渡（酒類卸売）。独立企業間価格として1%を付加", "SPC取得原価 50.5"],
     ["03", "保管・販売", "定温倉庫で保管（全量付保）。B2B酒販店卸とB2C自社EC・オークションの2系統で販売", "定価比 70／80"],
-    ["04", "分配", "SPCの税前利益のうち出資3億円に帰属する分を折半し半期ごとに分配。元本はSPC内で継続運用", "投資家50：WB50"],
+    ["04", "分配", "SPCの税前利益を投資家とWineBankで折半し半期ごとに分配。元本はSPC内で継続運用", "投資家50：WB50"],
   ];
   steps.forEach((st, i) => {
     const x = M + (sw + 0.28) * i;
@@ -600,7 +598,7 @@ const CHART_BASE = {
       fontFace: SANS, fontSize: 9, color: MUTED, lineSpacingMultiple: 1.2 });
   });
 
-  s.addText("※ 保管料は業務用パレット定温保管の水準（月10〜20円／本）。個人向けセラー預かり（月100〜150円／本）とは別の料金帯。主線（在庫回転12ヶ月・年間販売7.48億円）における年間SPC費用の合計は6,282万円で、内訳は変動販売費4,816万円・保管705万円・SPC固定費660万円・保険71万円・入庫30万円。デット2億円の金利はWineBankが負担するためSPCの費用には含まない。その他の運用前提：総額の95%をワイン購入に充当（現金5%）／仕入展開6ヶ月／ローリング運用／利益は複利再投資せず半期分配／税前利益のうち出資3億円に帰属する5分の3を投資家とWineBankで折半／利回りは投資家の税引前ベース。", {
+  s.addText("※ 保管料は業務用パレット定温保管の水準（月10〜20円／本）。個人向けセラー預かり（月100〜150円／本）とは別の料金帯。主線（在庫回転12ヶ月・年間販売7.48億円）における年間SPC費用の合計は6,282万円で、内訳は変動販売費4,816万円・保管705万円・SPC固定費660万円・保険71万円・入庫30万円。その他の運用前提：総額の95%をワイン購入に充当（現金5%）／仕入展開6ヶ月／ローリング運用／利益は複利再投資せず半期分配／SPC税前利益を投資家とWineBankで折半／利回りは投資家の税引前ベース。", {
     x: M, y: 6.26, w: CW, h: 0.48, margin: 0, fontFace: SANS, fontSize: 8.5, color: DIM, lineSpacingMultiple: 1.2,
   });
   s.addNotes("保管料は業務用パレット保管の水準。ロスは保険でカバーするため未計上。");
@@ -609,14 +607,14 @@ const CHART_BASE = {
 // ═══════════════════════════════════════════════════════════ 09 ベースケース表
 {
   const s = chrome(base(), "BASE CASE ｜ 主線", "ニュートラル：在庫回転期間別シミュレーション",
-    "SPC取得原価50.5・ワイン価格上昇 年6%／総額5億円（デット2億＋出資3億）・投資家帰属利益を折半・稼働率95%");
+    "SPC取得原価50.5・ワイン価格上昇 年6%／総額5億円（すべてエクイティ）・SPC税前利益を折半・稼働率95%");
 
   const rows = [
-    [th("在庫回転期間"), th("年間売上"), th("年間粗利※"), th("粗利率"), th("年間税前利益"), th("投資家帰属分（5分の3）"), th("投資家取分（折半後）"), th("投資家利回り"), th("5年累計分配"), th("投資家 年平均利回り 5年通算")],
-    [td("9ヶ月"), td("9.83億"), td("2.86億"), td("29.1%"), td("2.71億"), td("163百万"), td("81百万"), td("27.1%", { bold: true, color: GOLD_L }), td("365百万"), td("24.3%", { bold: true, color: GOLD_L })],
-    [td("12ヶ月（主線）", { bold: true, color: GOLD_L }), td("7.48億"), td("2.25億"), td("30.0%"), td("2.10億"), td("126百万"), td("63百万"), td("21.0%", { bold: true, color: GOLD_L }), td("251百万"), td("16.7%", { bold: true, color: GOLD_L })],
-    [td("15ヶ月"), td("6.07億"), td("1.88億"), td("31.0%"), td("1.73億"), td("104百万"), td("52百万"), td("17.3%", { bold: true, color: RED }), td("193百万"), td("12.9%", { bold: true })],
-    [td("18ヶ月"), td("5.13億"), td("1.64億"), td("31.9%"), td("1.49億"), td("89百万"), td("45百万"), td("14.9%", { bold: true, color: RED }), td("200百万"), td("13.3%", { bold: true })],
+    [th("在庫回転期間"), th("年間売上"), th("年間粗利※"), th("粗利率"), th("年間税前利益"), th("投資家取分（折半後）"), th("WineBank取分"), th("投資家利回り"), th("5年累計分配"), th("投資家 年平均利回り 5年通算")],
+    [td("9ヶ月"), td("9.83億"), td("2.86億"), td("29.1%"), td("2.71億"), td("136百万"), td("136百万"), td("27.1%", { bold: true, color: GOLD_L }), td("609百万"), td("24.3%", { bold: true, color: GOLD_L })],
+    [td("12ヶ月（主線）", { bold: true, color: GOLD_L }), td("7.48億"), td("2.25億"), td("30.0%"), td("2.10億"), td("105百万"), td("105百万"), td("21.0%", { bold: true, color: GOLD_L }), td("418百万"), td("16.7%", { bold: true, color: GOLD_L })],
+    [td("15ヶ月"), td("6.07億"), td("1.88億"), td("31.0%"), td("1.73億"), td("87百万"), td("87百万"), td("17.3%", { bold: true, color: RED }), td("322百万"), td("12.9%", { bold: true })],
+    [td("18ヶ月"), td("5.13億"), td("1.64億"), td("31.9%"), td("1.49億"), td("74百万"), td("74百万"), td("14.9%", { bold: true, color: RED }), td("334百万"), td("13.3%", { bold: true })],
   ];
   table(s, rows, M, 1.82, CW, [1.52, 0.94, 0.94, 0.80, 1.14, 1.62, 1.55, 1.10, 1.06, 1.22], { rowH: 0.40 });
 
@@ -627,7 +625,7 @@ const CHART_BASE = {
     ["粗利率 30.0%", "分母は売却時の売値79.50", false],
     ["投下原価利益率 47.3%", "分母は投下資本である取得原価50.50。年1回転なので資本が年47.3%増える", true],
     ["税前利益 2.10億円", "SPC費用（保管・保険・入庫・固定 約1,500万円）控除後の年間税前利益", false],
-    ["投資家利回り 21.0%", "うち出資3億円に帰属する126百万円を折半した63百万円を、出資3億円で除したもの", true],
+    ["投資家利回り 21.0%", "税前利益2.10億円を折半した105百万円を、出資5億円で除したもの", true],
   ];
   let by = 4.52;
   bridge.forEach((b) => {
@@ -654,7 +652,7 @@ const CHART_BASE = {
 // ═══════════════════════════════════════════════════════════ 10 回転とリターン
 {
   const s = chrome(base(), "BASE CASE ｜ 主線", "在庫回転期間と投資家リターンの関係",
-    "いずれも出資3億円に対する数値。20%の分岐点は回転12.7ヶ月であり、主線12ヶ月との余裕は小さい。");
+    "いずれも出資5億円に対する数値。20%の分岐点は回転12.7ヶ月であり、主線12ヶ月との余裕は小さい。");
 
   const cats = ["9ヶ月", "12ヶ月", "15ヶ月", "18ヶ月"];
   const cwid = (CW - 0.32) / 2;
@@ -751,10 +749,10 @@ const CHART_BASE = {
     x: M + 0.28, y: 1.98, w: CW / 2 - 0.71, h: 0.28, margin: 0, fontFace: SANS, fontSize: 11.5, bold: true, color: GOLD_L });
   table(s, [
     [th("回転期間"), th("必要年間売上"), th("年間税前"), th("投資家取分"), th("投資家利回り")],
-    [td("9ヶ月"), td("13.10億"), td("5.13億"), td("154百万"), td("51.3%", { bold: true, color: GOLD_L })],
-    [td("12ヶ月"), td("9.97億"), td("3.94億"), td("118百万"), td("39.4%", { bold: true, color: GOLD_L })],
-    [td("15ヶ月"), td("8.09億"), td("3.22億"), td("97百万"), td("32.2%")],
-    [td("18ヶ月"), td("6.84億"), td("2.75億"), td("82百万"), td("27.5%")],
+    [td("9ヶ月"), td("13.10億"), td("5.13億"), td("257百万"), td("51.3%", { bold: true, color: GOLD_L })],
+    [td("12ヶ月"), td("9.97億"), td("3.94億"), td("197百万"), td("39.4%", { bold: true, color: GOLD_L })],
+    [td("15ヶ月"), td("8.09億"), td("3.22億"), td("161百万"), td("32.2%")],
+    [td("18ヶ月"), td("6.84億"), td("2.75億"), td("137百万"), td("27.5%")],
   ], M + 0.28, 2.32, 5.23, [0.90, 1.05, 0.98, 0.98, 1.32], { rowH: 0.315, fontSize: 9.5 });
   s.addText("インポーター直仕入の比率を引き上げ、販売をネット最安値帯に寄せることで到達。ただし回転12ヶ月でも年間10億円の販売を要するため、現状の販売実力では到達しない。上限の目安として示す。", {
     x: M + 0.28, y: 4.00, w: CW / 2 - 0.71, h: 0.52, margin: 0, fontFace: SANS, fontSize: 9, color: MUTED, lineSpacingMultiple: 1.2 });
@@ -765,10 +763,10 @@ const CHART_BASE = {
     x: nx + 0.28, y: 1.98, w: CW / 2 - 0.71, h: 0.28, margin: 0, fontFace: SANS, fontSize: 11.5, bold: true, color: IVORY });
   table(s, [
     [th("回転期間"), th("必要年間売上"), th("年間税前"), th("投資家取分"), th("投資家利回り")],
-    [td("9ヶ月"), td("8.94億"), td("1.88億"), td("56百万"), td("18.8%", { bold: true, color: RED })],
-    [td("12ヶ月"), td("6.70億"), td("1.37億"), td("41百万"), td("13.7%", { bold: true, color: RED })],
-    [td("15ヶ月"), td("5.36億"), td("1.07億"), td("32百万"), td("10.7%", { color: RED })],
-    [td("18ヶ月"), td("4.47億"), td("0.87億"), td("26百万"), td("8.7%", { color: RED })],
+    [td("9ヶ月"), td("8.94億"), td("1.88億"), td("94百万"), td("18.8%", { bold: true, color: RED })],
+    [td("12ヶ月"), td("6.70億"), td("1.37億"), td("69百万"), td("13.7%", { bold: true, color: RED })],
+    [td("15ヶ月"), td("5.36億"), td("1.07億"), td("54百万"), td("10.7%", { color: RED })],
+    [td("18ヶ月"), td("4.47億"), td("0.87億"), td("43百万"), td("8.7%", { color: RED })],
   ], nx + 0.28, 2.32, 5.23, [0.90, 1.05, 0.98, 0.98, 1.32], { rowH: 0.315, fontSize: 9.5 });
   s.addText("値引き（▲3.5pt）と価格横ばい（▲4.0pt）が同時に起きた複合ケース。この複合下振れでは回転8.5ヶ月まで縮めないと20%に届かず、想定レンジでは20%を確保できない。値引きを禁じることが最優先の防衛線となる。", {
     x: nx + 0.28, y: 4.00, w: CW / 2 - 0.71, h: 0.52, margin: 0, fontFace: SANS, fontSize: 9, color: MUTED, lineSpacingMultiple: 1.2 });
@@ -783,7 +781,7 @@ const CHART_BASE = {
 // ═══════════════════════════════════════════════════════════ 12 3シナリオ比較
 {
   const s = chrome(base(), "COMPARISON", "3シナリオ比較：投資家 定常年間利回り",
-    "出資3億円に対する投資家の年間実力値。SPC税前利益のうち出資3億円に帰属する分（5分の3）を、投資家とWineBankで折半した後の金額ベース。");
+    "出資5億円に対する投資家の年間実力値。SPC税前利益を投資家とWineBankで折半した後の金額ベース。");
 
   const cats = ["9ヶ月", "12ヶ月", "15ヶ月", "18ヶ月"];
   card(s, M, 1.80, CW, 2.98);
@@ -802,7 +800,7 @@ const CHART_BASE = {
   }));
 
   const cols = [
-    ["主線の提示レンジ", "回転12ヶ月で投資家利回り21.0%。想定レンジ9〜18ヶ月では14.9〜27.1%となり、20%を確保できるのは回転12.7ヶ月までとなる。", true],
+    ["主線の提示レンジ", "回転12ヶ月で投資家利回り21.0%（年105百万円）。想定レンジ9〜18ヶ月では14.9〜27.1%となり、20%を確保できるのは回転12.7ヶ月までとなる。", true],
     ["上振れの条件", "調達をインポーター直に寄せた場合の水準。ただし回転12ヶ月で年間10億円の販売を要するため、現状は到達しない。上限の目安。", false],
     ["下振れの限界", "値引き5%と価格横ばいが重なった場合、想定レンジ内では20%に届かない（分岐点は回転8.5ヶ月）。値引き販売の禁止が最優先の防衛線となる。", false],
   ];
@@ -970,9 +968,9 @@ const CHART_BASE = {
     [th("項目"), th("内容")],
     [td("組成形態"), td("合同会社＋匿名組合（GK-TK）。SPCレベルでは非課税、投資家側で課税", { align: "left" })],
     [td("ファンド形態"), td("適格機関投資家等特例業務による私募。適格機関投資家1名以上の確保を組成条件とする", { align: "left" })],
-    [td("募集総額"), td("総額5億円（デット2億円＋エクイティ3億円）", { align: "left", color: GOLD_L, bold: true })],
-    [td("デット"), td("2億円・金利4%（固定）。調達コストはWineBankが負担しSPCに計上しない", { align: "left" })],
-    [td("損益の配分"), td("SPC税前利益のうち出資3億円に帰属する分（5分の3）を投資家とWineBankで折半（成功報酬）", { align: "left", color: GOLD_L, bold: true })],
+    [td("募集総額"), td("総額5億円（すべてエクイティ＝匿名組合出資。デットなし）", { align: "left", color: GOLD_L, bold: true })],
+    [td("借入"), td("なし。SPCは無借金で運営し、借入契約・保証・金利の論点が発生しない", { align: "left" })],
+    [td("損益の配分"), td("SPC税前利益を投資家とWineBankで折半（成功報酬）。期中の管理報酬は課さない", { align: "left", color: GOLD_L, bold: true })],
     [td("運用期間"), td("5年。満期時に在庫を売却清算のうえ元本償還", { align: "left" })],
     [td("中途解約"), td("3年経過後、年度ごとの解約日に申出可（90日前通知）。当初3年間はロックアップ", { align: "left", color: GOLD_L, bold: true })],
     [td("分配"), td("半期ごと。元本はSPC内に留保し継続運用", { align: "left" })],
@@ -986,7 +984,7 @@ const CHART_BASE = {
     [td("在庫回転目標"), td("12ヶ月。最短9ヶ月、延びても15〜18ヶ月を想定レンジとする", { align: "left", color: GOLD_L, bold: true })],
     [td("価格前提"), td("ワイン価格の年間上昇6%。会社資料のFine Wine年率10%に対し保守的に設定", { align: "left" })],
     [td("SPC負担費用"), td("保管・保険・入庫・変動販売費／維持費200万・人件費360万・AUP50万・予備費50万", { align: "left" })],
-    [td("想定リターン"), td("投資家利回り21.0%（回転12ヶ月・定常年間）。5年通算の年平均は16.7%", { align: "left", color: GOLD_L, bold: true })],
+    [td("想定リターン"), td("投資家利回り21.0%＝年105百万円（回転12ヶ月）。5年通算の年平均は16.7%", { align: "left", color: GOLD_L, bold: true })],
     [td("報告"), td("四半期：在庫明細・簿価・売上・試算表／年次：決算", { align: "left" })],
     [td("外部検証"), td("AUP（合意された手続）を年次で実施。配分ルールの遵守状況も対象に含める", { align: "left" })],
     [td("在庫配分"), td("在庫比率によるプロラタ配分を原則とし、判断を要する場合はSPC在庫を優先する", { align: "left", color: GOLD_L, bold: true })],
@@ -1043,7 +1041,7 @@ const CHART_BASE = {
     ["出口をB2B・B2Cの両輪で持っている",
      "酒販店卸（B2B）に加え、自社EC・オークション・CLUB会員・グループのアピシウス（B2C）。手取りの高いチャネルを選べる構造。"],
     ["運営者と利害が完全に一致している",
-     "報酬は投資家が得た利益を折半する成功報酬に一本化。期中の管理報酬は課さず、デット2億円の金利と保証責任もWineBankが負担する。投資家が儲からなければWineBankも儲からない。"],
+     "報酬はSPC税前利益を折半する成功報酬に一本化。投資家の105百万円とWineBankの105百万円は完全に同額。投資家が儲からなければWineBankも儲からない。"],
   ];
   let my = 1.72;
   merits.forEach((m, i) => {
@@ -1066,13 +1064,13 @@ const CHART_BASE = {
 
   const checks = [
     ["想定利回り20%（実績）に対して",
-     "在庫回転12ヶ月を主線とし、投資家利回り21.0%。20%の分岐点は回転12.7ヶ月であり、余裕は0.7ヶ月しかない。",
+     "投資家利回り21.0%＝年105百万円。20%の分岐点は回転12.7ヶ月で、余裕は0.7ヶ月しかない。",
      "回転12ヶ月の達成が20%確保の必要条件となる。流動性上位の銘柄に絞って組み入れ、回転期間を運用KPIとして四半期報告する。"],
     ["解約条件に対して",
      "運用期間5年・当初3年ロックアップ・4年目以降は年度ごとの解約。",
      "この設計により現金保有を5%に抑え、総額の95%をワインに充当できる。半期解約を前提とすると稼働率が下がり21.0%→18.7%に低下する。"],
     ["リスク分散に対して",
-     "伝統的資産と相関の低い実物資産。既存30億円のポートフォリオに対しエクイティ3億円は約10%。",
+     "伝統的資産と相関の低い実物資産。既存30億円のポートフォリオに対し出資5億円は約17%。",
      "単一銘柄ではなく約3.8万本・複数産地への分散となり、ポートフォリオ内での分散効果が働く。"],
   ];
   let cy = 2.34;
@@ -1137,5 +1135,5 @@ const CHART_BASE = {
   });
 }
 
-pres.writeFile({ fileName: "WineBank_ワインファンドSPC組成提案_山本案_デット2億エクイティ3億_20260816.pptx" })
+pres.writeFile({ fileName: "WineBank_ワインファンドSPC組成提案_倉持案_エクイティ5億_20260816.pptx" })
   .then((f) => console.log("written:", f));
