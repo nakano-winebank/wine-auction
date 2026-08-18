@@ -1,0 +1,476 @@
+<title>ティエリー・マルクス六本木 開業工程</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<style>
+:root{
+  --bg:#F5F4F2; --surface:#FFFFFF; --surface-2:#FAF8F6;
+  --ink:#1B1A19; --ink-2:#4C4744; --ink-3:#807A76;
+  --line:#E4DFDA; --line-strong:#CEC7C1;
+  --accent:#8C2740;
+  --t1:#2C4A6E; --t2:#9C6E28; --t3:#8C2740; --t4:#4E6B54; --t5:#6B4A72;
+  --band:rgba(27,26,25,.035);
+  --today:#1B1A19;
+  --on-bar:#FFFFFF;
+  --shadow:0 1px 2px rgba(27,26,25,.05), 0 10px 30px -22px rgba(27,26,25,.5);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17151A; --surface:#1F1C24; --surface-2:#262230;
+    --ink:#EDEAE6; --ink-2:#B9B2AC; --ink-3:#8B837E;
+    --line:#332F3A; --line-strong:#4C4655;
+    --accent:#E0748E;
+    --t1:#7FA9DB; --t2:#D3A257; --t3:#E0748E; --t4:#8FB897; --t5:#B98FC4;
+    --band:rgba(255,255,255,.035);
+    --today:#EDEAE6;
+    --on-bar:#141218;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 12px 32px -22px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#17151A; --surface:#1F1C24; --surface-2:#262230;
+  --ink:#EDEAE6; --ink-2:#B9B2AC; --ink-3:#8B837E;
+  --line:#332F3A; --line-strong:#4C4655;
+  --accent:#E0748E;
+  --t1:#7FA9DB; --t2:#D3A257; --t3:#E0748E; --t4:#8FB897; --t5:#B98FC4;
+  --band:rgba(255,255,255,.035);
+  --today:#EDEAE6;
+  --on-bar:#141218;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 12px 32px -22px rgba(0,0,0,.9);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Yu Gothic",system-ui,sans-serif;
+  font-size:15px;
+  line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:clamp(28px,5vw,64px) clamp(16px,4vw,40px) 96px}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+
+/* ---------- header ---------- */
+.eyebrow{
+  font-size:11px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--accent);font-weight:700;margin:0 0 14px;
+}
+h1{
+  font-family:"Zen Old Mincho",serif;font-weight:700;
+  font-size:clamp(30px,5.2vw,50px);line-height:1.22;letter-spacing:.01em;
+  margin:0 0 6px;text-wrap:balance;
+}
+.subtitle{
+  font-family:"Zen Old Mincho",serif;font-size:clamp(15px,2.2vw,19px);
+  color:var(--ink-2);margin:0 0 26px;letter-spacing:.04em;
+}
+.stamp{
+  display:inline-flex;align-items:center;gap:9px;
+  border:1px solid var(--line-strong);border-radius:999px;
+  padding:5px 14px;font-size:12.5px;color:var(--ink-2);background:var(--surface);
+}
+.stamp .dot{width:7px;height:7px;border-radius:50%;background:var(--accent)}
+
+/* ---------- facts ---------- */
+.facts{
+  display:grid;gap:1px;background:var(--line);
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  border:1px solid var(--line);border-radius:10px;overflow:hidden;
+  margin:32px 0 8px;box-shadow:var(--shadow);
+}
+.fact{background:var(--surface);padding:16px 18px}
+.fact dt{font-size:11px;letter-spacing:.12em;color:var(--ink-3);margin:0 0 5px}
+.fact dd{margin:0;font-size:15px;font-weight:500;line-height:1.5}
+.fact dd small{display:block;font-weight:400;font-size:12.5px;color:var(--ink-3);margin-top:2px}
+.fact.key dd{color:var(--accent);font-weight:700}
+
+/* ---------- section ---------- */
+section{margin-top:56px}
+h2{
+  font-family:"Zen Old Mincho",serif;font-weight:600;
+  font-size:22px;margin:0 0 6px;letter-spacing:.03em;
+}
+.lede{color:var(--ink-2);font-size:13.5px;margin:0 0 22px;max-width:62ch}
+
+/* ---------- legend ---------- */
+.legend{display:flex;flex-wrap:wrap;gap:8px 20px;margin:0 0 16px;font-size:12.5px;color:var(--ink-2)}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.swatch{width:14px;height:9px;border-radius:2px;display:inline-block}
+.dia{width:9px;height:9px;transform:rotate(45deg);display:inline-block;background:var(--ink)}
+.nowline{width:14px;height:0;border-top:2px dashed var(--today);display:inline-block}
+
+/* ---------- gantt ---------- */
+.scroller{
+  overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+  background:var(--surface);box-shadow:var(--shadow);
+}
+.chart{min-width:940px;position:relative}
+.row{display:grid;grid-template-columns:var(--labw,264px) 1fr;align-items:stretch}
+.label{
+  position:sticky;left:0;z-index:3;background:var(--surface);
+  border-right:1px solid var(--line-strong);
+  padding:7px 16px;display:flex;align-items:center;gap:8px;min-height:34px;
+  font-size:13px;line-height:1.4;
+}
+.track{position:relative;min-height:34px;border-bottom:1px solid var(--line)}
+.row:last-child .track{border-bottom:0}
+.row.alt .track,.row.alt .label{background:var(--surface-2)}
+
+/* month header */
+.head{position:sticky;top:0;z-index:5}
+.head .label{
+  background:var(--surface);z-index:6;border-bottom:1px solid var(--line-strong);
+  font-size:11px;letter-spacing:.14em;color:var(--ink-3);
+}
+.months{position:relative;height:52px;border-bottom:1px solid var(--line-strong);background:var(--surface)}
+.mo{
+  position:absolute;top:0;bottom:0;border-left:1px solid var(--line);
+  display:flex;flex-direction:column;justify-content:center;padding-left:9px;
+}
+.mo.yr{border-left:1px solid var(--line-strong)}
+.mo b{font-size:14px;font-weight:500;letter-spacing:.02em}
+.mo i{font-style:normal;font-size:10px;letter-spacing:.1em;color:var(--ink-3)}
+
+/* group rows */
+.grp .label{
+  font-family:"Zen Old Mincho",serif;font-size:14.5px;font-weight:700;letter-spacing:.06em;
+  background:var(--surface-2);border-top:1px solid var(--line-strong);
+}
+.grp .track{background:var(--surface-2);border-top:1px solid var(--line-strong);border-bottom:1px solid var(--line)}
+.chip{width:10px;height:10px;border-radius:2px;flex:none}
+
+/* gridlines + today */
+.lines{position:absolute;inset:0;pointer-events:none;z-index:1}
+.lines .v{position:absolute;top:0;bottom:0;width:1px;background:var(--line)}
+.lines .v.yr{background:var(--line-strong)}
+.now{position:absolute;top:0;bottom:0;right:0;z-index:4;pointer-events:none}
+.now .l{position:absolute;top:0;bottom:0;border-left:2px dashed var(--today);opacity:.55}
+.now .tag{
+  position:absolute;top:60px;font-size:10px;letter-spacing:.12em;
+  color:var(--ink-2);background:var(--surface);padding:1px 6px;border-radius:3px;
+  border:1px solid var(--line-strong);white-space:nowrap;
+}
+
+/* bars */
+.bar{
+  position:absolute;top:50%;transform:translateY(-50%);height:16px;border-radius:3px;
+  z-index:2;display:flex;align-items:center;padding:0 7px;overflow:hidden;
+}
+.bar.now-active{box-shadow:0 0 0 2px var(--surface),0 0 0 3.5px currentColor}
+.bar .txt{font-size:10px;letter-spacing:.04em;color:var(--on-bar);white-space:nowrap;font-weight:500}
+.outdate{
+  position:absolute;top:50%;transform:translateY(-50%);z-index:2;
+  font-size:10px;color:var(--ink-3);white-space:nowrap;padding-left:7px;
+}
+.ms{position:absolute;top:50%;transform:translate(-50%,-50%);z-index:3}
+.ms .d{display:block;width:11px;height:11px;transform:rotate(45deg);border:2px solid var(--surface)}
+.mslab{
+  position:absolute;top:50%;transform:translateY(-50%);z-index:3;
+  font-size:10.5px;font-weight:700;white-space:nowrap;letter-spacing:.03em;
+}
+.tag-live{
+  font-size:9.5px;letter-spacing:.08em;border:1px solid currentColor;border-radius:3px;
+  padding:0 4px;flex:none;line-height:1.5;
+}
+
+/* ---------- tables ---------- */
+.tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface);box-shadow:var(--shadow)}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:13.5px}
+th,td{padding:11px 16px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+thead th{
+  font-size:11px;letter-spacing:.13em;color:var(--ink-3);font-weight:500;
+  background:var(--surface-2);border-bottom:1px solid var(--line-strong);white-space:nowrap;
+}
+tbody tr:last-child td{border-bottom:0}
+td.num{text-align:right;font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums;white-space:nowrap}
+td.dt{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--ink-2)}
+tr.mark td{background:color-mix(in srgb,var(--accent) 7%,transparent)}
+tr.mark td.dt,tr.mark td:nth-child(2){color:var(--accent);font-weight:700}
+
+/* ---------- risks ---------- */
+.risks{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.risk{
+  background:var(--surface);border:1px solid var(--line);border-radius:10px;
+  padding:18px 20px;box-shadow:var(--shadow);
+}
+.risk .cat{
+  font-size:10.5px;letter-spacing:.16em;color:var(--accent);font-weight:700;
+  display:block;margin-bottom:7px;
+}
+.risk h3{font-size:14.5px;margin:0 0 8px;font-weight:700;line-height:1.5}
+.risk p{margin:0;font-size:13px;color:var(--ink-2);line-height:1.72}
+.risk p + p{margin-top:9px;padding-top:9px;border-top:1px solid var(--line)}
+.risk .fix{color:var(--ink)}
+.risk .fix b{color:var(--accent);font-weight:700;font-size:10.5px;letter-spacing:.1em;margin-right:7px}
+
+footer{
+  margin-top:64px;padding-top:22px;border-top:1px solid var(--line);
+  font-size:12px;color:var(--ink-3);line-height:1.9;
+}
+@media (max-width:640px){
+  .chart{--labw:184px}
+  .label{padding:7px 11px;font-size:12px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">Tokyo Midtown &nbsp;/&nbsp; B0105 · B0106</p>
+  <h1>（仮称）THIERRY MARX BISTRO<br>開業までの工程</h1>
+  <p class="subtitle">株式会社WineBank ／ 東京ミッドタウン 六本木 — 2026年8月 ▸ 2027年4月30日 開業</p>
+  <span class="stamp"><span class="dot"></span>2026年8月18日 時点 — 設計プラン検討・幹部採用フェーズ</span>
+
+  <dl class="facts">
+    <div class="fact"><dt>施設・区画</dt><dd>東京ミッドタウン<small>B0105号室・B0106号室</small></dd></div>
+    <div class="fact"><dt>契約面積</dt><dd class="mono">183.59㎡<small>55.53坪 ＋ 共用部客席 146.38㎡</small></dd></div>
+    <div class="fact key"><dt>引渡日</dt><dd class="mono">2027.02.15<small>（予定）第2回敷金 預託日の翌日</small></dd></div>
+    <div class="fact key"><dt>営業開始日</dt><dd class="mono">2027.04.30<small>（予定）出店料等の起算日</small></dd></div>
+    <div class="fact"><dt>出店期間 満了日</dt><dd class="mono">2037.01.31<small>定期借家・更新なし</small></dd></div>
+    <div class="fact"><dt>営業時間</dt><dd class="mono">11:00 – 23:00<small>全席禁煙／飲食・重飲食（フレンチ）</small></dd></div>
+  </dl>
+</header>
+
+<section>
+  <h2>全体工程</h2>
+  <p class="lede">賃貸借契約（案）で確定している引渡日・営業開始日・支払期限を軸に、設計 → 承認 → B/C工事 → トレーニングの各フェーズを配置しています。ひし形は期日が動かせないマイルストーンです。</p>
+
+  <div class="legend" id="legend"></div>
+  <div class="scroller"><div class="chart" id="chart"></div></div>
+</section>
+
+<section>
+  <h2>マイルストーン</h2>
+  <p class="lede">網掛けは契約書で日付・金額が確定している事項。それ以外は確定事項から逆算した目標日です。</p>
+  <div class="tblwrap">
+    <table>
+      <thead><tr><th>期日</th><th>マイルストーン</th><th>根拠・備考</th></tr></thead>
+      <tbody>
+        <tr class="mark"><td class="dt">2026.09.01</td><td>定期建物賃貸借契約 締結</td><td>第1回敷金 ¥11,105,988 預託／内装管理費 ¥1,285,130 一括払い</td></tr>
+        <tr><td class="dt">2026.09.30</td><td>設計プラン確定</td><td>基本設計着手の前提。以降のクリティカルパスの起点</td></tr>
+        <tr><td class="dt">2026.11.30</td><td>基本設計 完了・賃貸人事前協議 完了</td><td>デザインクライテリア（特記事項 第6条2項）適合の確認</td></tr>
+        <tr><td class="dt">2027.01.31</td><td>実施設計 完了</td><td>B工事・C工事の見積確定に必要</td></tr>
+        <tr><td class="dt">2027.02.05</td><td>C工事発注先の書面提出</td><td>特記事項 第4条2項「C工事着手前、賃貸人の指定する期日まで」</td></tr>
+        <tr><td class="dt">2027.02.14</td><td>工事等承認申請 承認取得</td><td>第23条1項。承認前は着工不可</td></tr>
+        <tr class="mark"><td class="dt">2027.02.14</td><td>第2回敷金ほか 支払</td><td>敷金 ¥462,780／開店前準備期間負担金 ¥550,770／契約時販促負担金 ¥1,000,000</td></tr>
+        <tr class="mark"><td class="dt">2027.02.15</td><td>物件 引渡</td><td>要目表(4)。出店期間の起算日。以降 B工事・C工事に着手</td></tr>
+        <tr><td class="dt">2027.04.15</td><td>工事 完成・引渡検査</td><td>厨房機器・什器・備品の搬入設置を含む</td></tr>
+        <tr><td class="dt">2027.04.22</td><td>消防検査・保健所検査／飲食店営業許可 取得</td><td>申請者名義は新会社への地位承継と整合させる</td></tr>
+        <tr><td class="dt">2027.04.28</td><td>スタッフトレーニング 完了</td><td>1〜2週間（4/16〜4/28）</td></tr>
+        <tr class="mark"><td class="dt">2027.04.30</td><td>グランドオープン（営業開始日）</td><td>要目表(4)。同日から出店料・共益費・販促費の起算</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2>資金・支払スケジュール</h2>
+  <p class="lede">契約要目表および特記事項 第2条・第3条に定める支払。金額はいずれも契約書（案）記載額で、出店料等は消費税別途です。</p>
+  <div class="tblwrap">
+    <table>
+      <thead><tr><th>期日</th><th>費目</th><th>金額</th><th>備考</th></tr></thead>
+      <tbody>
+        <tr><td class="dt">2026.09.01</td><td>第1回 敷金</td><td class="num">¥11,105,988</td><td>本契約締結時</td></tr>
+        <tr><td class="dt">2026.09.01</td><td>内装管理費</td><td class="num">¥1,285,130</td><td>第1回敷金預託日に一括</td></tr>
+        <tr><td class="dt">2027.02.14</td><td>第2回 敷金</td><td class="num">¥462,780</td><td>引渡日の前日</td></tr>
+        <tr><td class="dt">2027.02.14</td><td>開店前準備期間負担金</td><td class="num">¥550,770</td><td>第2回敷金預託日に一括</td></tr>
+        <tr><td class="dt">2027.02.14</td><td>契約時販促負担金</td><td class="num">¥1,000,000</td><td>第2回敷金預託日に一括</td></tr>
+        <tr class="mark"><td class="dt">2027.04.30〜</td><td>固定出店料</td><td class="num">¥2,221,439 ／月</td><td>@¥12,100/㎡。起算日＝営業開始日</td></tr>
+        <tr class="mark"><td class="dt">2027.04.30〜</td><td>第2出店料</td><td class="num">約¥854,700 ／月</td><td>総額¥100,000,000／117ヶ月。営業開始日変更時は覚書で回数・月額を再設定</td></tr>
+        <tr class="mark"><td class="dt">2027.04.30〜</td><td>経常販売促進費</td><td class="num">¥277,588 ／月</td><td>@¥1,512/㎡</td></tr>
+        <tr class="mark"><td class="dt">2027.04.30〜</td><td>第3〜61回 敷金</td><td class="num">¥462,749 ／月</td><td>59回分割。月前半売上預り金から控除</td></tr>
+        <tr><td class="dt">売上連動</td><td>変動出店料</td><td class="num">超過額の 7.0%</td><td>月間売上高 ¥27,767,987 超過分に対して</td></tr>
+        <tr><td class="dt">売上連動</td><td>ポイントカード費用</td><td class="num">利用実績の 1.0%</td><td>ほか駐車場負担金</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2>クリティカルパスと留意点</h2>
+  <p class="lede">工期が実質2ヶ月しかない点が本プロジェクト最大の制約です。設計フェーズでの前倒しが唯一の吸収余地になります。</p>
+  <div class="risks">
+
+    <div class="risk">
+      <span class="cat">工期</span>
+      <h3>引渡（2/15）から完成（4/15）まで実質2ヶ月。B工事とC工事を並走させる前提</h3>
+      <p>183.59㎡＋共用部客席146.38㎡の重飲食・厨房付き店舗としては極めてタイトです。B工事（賃貸人指定業者）とC工事（賃借人手配）の取り合いが1日でも滞れば、4月中旬完成が崩れます。</p>
+      <p class="fix"><b>対策</b>引渡前に施工者間で総合工程・取り合い調整会議を完了させ、着工初日から動ける状態にする。厨房機器の製作リードタイムは2月引渡から逆算せず、実施設計完了時点（1月末）で発注を確定させる。</p>
+    </div>
+
+    <div class="risk">
+      <span class="cat">工事条件</span>
+      <h3>騒音・振動・臭気を伴う工事は時間制限を受ける</h3>
+      <p>特記事項 第6条により、本施設内外の事務所・住宅・美術館等に近接するため、工事実施時間等の制限が生じ、工期および費用に影響することをあらかじめ承諾する条項が入っています。</p>
+      <p class="fix"><b>対策</b>見積・工程の前提として「1日あたり可能な作業時間帯」を賃貸人に文書で確認し、深夜・早朝作業分の割増を当初予算に織り込む。斫り・溶接など制限対象工種は工程の早い段階に寄せる。</p>
+    </div>
+
+    <div class="risk">
+      <span class="cat">承認</span>
+      <h3>賃貸人承認が二段構えのクリティカルパス</h3>
+      <p>デザインクライテリア（外壁面・共用部に面する部分、サイン計画）の承認と、工事等承認申請書＋設計図書の承認（第23条1項）の双方が必要で、いずれも承認前は着工できません。共用部から1,200mm範囲の表示制限、店名掲出は原則1ヶ所などの細則があります。</p>
+      <p class="fix"><b>対策</b>実施設計完了を待たず、基本設計段階（10〜11月）からサイン・ファサード計画を先行協議。承認取得を2/14までに完了させ、引渡即着工とする。</p>
+    </div>
+
+    <div class="risk">
+      <span class="cat">費用区分</span>
+      <h3>賃貸人負担1億円の確定は「工事発注後の覚書」待ち</h3>
+      <p>B工事・C工事につき上限1億円を賃貸人が負担しますが、金額の詳細は見積書と内装工事図面に基づき確定し、工事発注後速やかに（遅くとも営業開始日までに）覚書を締結する建付けです。<strong>厨房機器・什器・備品は賃貸人負担の対象外</strong>である点に注意が必要です。</p>
+      <p class="fix"><b>対策</b>負担区分の線引き（特に厨房まわり）を発注前に賃貸人と合意し、1月末の見積確定と同時に覚書ドラフトを回付。自社負担額の資金計画を2月上旬までに確定させる。</p>
+    </div>
+
+    <div class="risk">
+      <span class="cat">組織</span>
+      <h3>新会社への地位承継と許認可名義の整合</h3>
+      <p>特記事項 第11条により、代表者が代表を務める新会社への契約上の地位承継は、賃借人が連帯保証人となることを条件に賃貸人が承諾し、3者間で別途覚書を締結します。飲食店営業許可・防火管理者の名義、工事請負契約の当事者がこれとずれると開業直前に手戻りが発生します。</p>
+      <p class="fix"><b>対策</b>新会社設立を11月末までに完了し、年内に3者覚書を締結。以降の工事発注・許認可申請はすべて新会社名義に統一する。</p>
+    </div>
+
+    <div class="risk">
+      <span class="cat">契約リスク</span>
+      <h3>開業遅延のペナルティが重い</h3>
+      <p>営業開始日に営業を開始しないことは契約解除事由（第27条1項1号）です。また営業開始日前に解約する場合は出店料等16ヶ月相当額の営業開始日前解約金に加え、賃貸人負担額が全額加算されます。一方で引渡日・営業開始日は賃貸人都合により変更されうる（第6条3項・第7条2項）ものの、満了日2037年1月31日は変更されません。</p>
+      <p class="fix"><b>対策</b>4/16〜4/28のトレーニング期間を実質的なバッファとして扱わない。工事完成を4/10目標で管理し、5日間の是正予備日を確保する。営業開始日が動く場合は第2出店料の回数・月額を定める覚書の再締結を忘れず要求する。</p>
+    </div>
+
+  </div>
+</section>
+
+<footer>
+  出典：営業と出店に関する契約書（定期建物賃貸借契約書）（案）契約番号 90238-2047-000／賃貸人 三井不動産株式会社・賃借人 株式会社WineBank。<br>
+  引渡日・営業開始日はいずれも契約書上「予定」であり、本施設の建築施工上の都合等により変更される場合があります。マイルストーンのうち契約書に明記のない日付は、確定事項からの逆算による社内目標値です。
+</footer>
+
+</div>
+
+<script>
+const START = new Date(2026, 7, 1);
+const END   = new Date(2027, 4, 31);
+const TODAY = new Date(2026, 7, 18);
+const DAY = 86400000;
+const SPAN = (END - START) / DAY;
+
+const d = (y, m, day) => new Date(y, m - 1, day);
+const pct = (dt) => ((dt - START) / DAY) / SPAN * 100;
+const fmt = (dt) => (dt.getMonth() + 1) + '/' + dt.getDate();
+
+const TRACKS = [
+  { name: '契約・法務', color: 'var(--t1)', items: [
+    { n: '契約条件精査・社内決裁', s: d(2026,8,1),  e: d(2026,8,31), live: 1 },
+    { n: '定期建物賃貸借契約 締結', ms: d(2026,9,1) },
+    { n: '施設設置契約書（共用部客席）締結', s: d(2026,9,1), e: d(2026,10,31) },
+    { n: '新会社 設立', s: d(2026,9,15), e: d(2026,11,30) },
+    { n: '地位承継 覚書（3者）締結', s: d(2026,12,1), e: d(2026,12,25) },
+    { n: 'B・C工事 賃貸人負担額 覚書', s: d(2027,1,15), e: d(2027,4,30) },
+    { n: '第2回敷金ほか 支払', ms: d(2027,2,14) },
+  ]},
+  { name: '設計', color: 'var(--t2)', items: [
+    { n: 'コンセプト・プラン決め', s: d(2026,8,1), e: d(2026,9,30), live: 1 },
+    { n: 'プラン確定', ms: d(2026,9,30) },
+    { n: 'デザインクライテリア 事前協議', s: d(2026,9,15), e: d(2026,11,30) },
+    { n: '基本設計', s: d(2026,10,1), e: d(2026,11,30) },
+    { n: '厨房計画・機器仕様確定', s: d(2026,11,1), e: d(2027,1,31) },
+    { n: '実施設計', s: d(2026,12,1), e: d(2027,1,31) },
+    { n: '保健所・消防 事前協議', s: d(2027,1,5), e: d(2027,2,28) },
+    { n: '工事等承認申請 → 賃貸人承認', s: d(2027,1,15), e: d(2027,2,14) },
+  ]},
+  { name: '工事', color: 'var(--t3)', items: [
+    { n: 'B工事 見積・発注（指定業者）', s: d(2026,12,1), e: d(2027,1,31) },
+    { n: 'C工事 施工者選定・見積', s: d(2026,12,1), e: d(2027,1,31) },
+    { n: 'C工事発注先 書面提出', ms: d(2027,2,5) },
+    { n: '物件 引渡', ms: d(2027,2,15) },
+    { n: 'B工事 施工', s: d(2027,2,15), e: d(2027,4,10) },
+    { n: 'C工事 施工（内装）', s: d(2027,2,20), e: d(2027,4,12) },
+    { n: '厨房機器・什器・備品 搬入設置', s: d(2027,4,1), e: d(2027,4,15) },
+    { n: '完成検査・是正', s: d(2027,4,13), e: d(2027,4,17) },
+    { n: '消防・保健所検査／営業許可', s: d(2027,4,15), e: d(2027,4,22) },
+  ]},
+  { name: '採用・組織', color: 'var(--t4)', items: [
+    { n: '幹部採用（総支配人・シェフ）', s: d(2026,8,1), e: d(2026,10,31), live: 1 },
+    { n: '主要ポジション採用（ソムリエ等）', s: d(2026,10,1), e: d(2026,12,31) },
+    { n: '社員採用（キッチン・ホール）', s: d(2026,11,1), e: d(2027,2,28) },
+    { n: '労務体制・就業規則 整備', s: d(2026,11,1), e: d(2027,1,31) },
+    { n: 'アルバイト採用', s: d(2027,1,5), e: d(2027,3,31) },
+  ]},
+  { name: '開業準備', color: 'var(--t5)', items: [
+    { n: 'メニュー開発・監修', s: d(2026,11,1), e: d(2027,2,28) },
+    { n: 'ワイン・食材 仕入先契約', s: d(2026,12,1), e: d(2027,3,15) },
+    { n: '原価設計・事業計画確定', s: d(2027,1,5), e: d(2027,2,28) },
+    { n: 'POS・予約システム導入', s: d(2027,1,5), e: d(2027,3,31) },
+    { n: '販促・PR／メディア対応', s: d(2027,1,15), e: d(2027,4,29) },
+    { n: '予約受付 開始', ms: d(2027,3,16) },
+    { n: 'スタッフトレーニング（1〜2週間）', s: d(2027,4,16), e: d(2027,4,28) },
+    { n: 'プレオープン・レセプション', s: d(2027,4,27), e: d(2027,4,29) },
+    { n: 'グランドオープン', ms: d(2027,4,30) },
+  ]},
+];
+
+/* ---- legend ---- */
+document.getElementById('legend').innerHTML =
+  TRACKS.map(t => `<span><i class="swatch" style="background:${t.color}"></i>${t.name}</span>`).join('') +
+  '<span><i class="dia"></i>マイルストーン</span>' +
+  '<span><i class="nowline"></i>現在（2026年8月18日）</span>';
+
+/* ---- month scale ---- */
+const months = [];
+for (let y = 2026, m = 8; !(y === 2027 && m === 6); m++) {
+  if (m > 12) { m = 1; y++; }
+  const first = d(y, m, 1);
+  const next = m === 12 ? d(y + 1, 1, 1) : d(y, m + 1, 1);
+  months.push({ y, m, l: pct(first), w: pct(next) - pct(first) });
+}
+
+const lines = months.map(o =>
+  `<i class="v${o.m === 1 ? ' yr' : ''}" style="left:${o.l}%"></i>`).join('');
+
+const head = `<div class="row head">
+  <div class="label">工程 / 2026 – 2027</div>
+  <div class="months">${months.map(o => `
+    <div class="mo${o.m === 1 ? ' yr' : ''}" style="left:${o.l}%;width:${o.w}%">
+      <b class="mono">${o.m}月</b>${o.m === 8 || o.m === 1 ? `<i class="mono">${o.y}</i>` : ''}
+    </div>`).join('')}</div>
+</div>`;
+
+/* ---- rows ---- */
+let rows = '', alt = 0;
+for (const t of TRACKS) {
+  rows += `<div class="row grp">
+    <div class="label"><i class="chip" style="background:${t.color}"></i>${t.name}</div>
+    <div class="track"></div></div>`;
+  for (const it of t.items) {
+    alt ^= 1;
+    let cell = '';
+    if (it.ms) {
+      const p = pct(it.ms), right = p > 62;
+      cell = `<div class="ms" style="left:${p}%"><i class="d" style="background:${t.color}"></i></div>
+        <div class="mslab mono" style="left:${p}%;color:${t.color};${right
+          ? 'transform:translate(-100%,-50%);padding-right:14px'
+          : 'padding-left:14px'}">${fmt(it.ms)}</div>`;
+    } else {
+      const l = pct(it.s), w = pct(it.e) - l;
+      const range = `${fmt(it.s)} – ${fmt(it.e)}`;
+      const active = it.live ? ' now-active' : '';
+      cell = w >= 11
+        ? `<div class="bar${active}" style="left:${l}%;width:${w}%;background:${t.color};color:${t.color}"><span class="txt mono">${range}</span></div>`
+        : `<div class="bar${active}" style="left:${l}%;width:${w}%;background:${t.color};color:${t.color}"></div>
+           <div class="outdate mono" style="left:${l + w}%">${range}</div>`;
+    }
+    const tag = it.live ? `<span class="tag-live" style="color:${t.color}">進行中</span>` : '';
+    rows += `<div class="row${alt ? ' alt' : ''}">
+      <div class="label">${it.n}${tag}</div>
+      <div class="track">${cell}</div></div>`;
+  }
+}
+
+const nowP = pct(TODAY);
+document.getElementById('chart').innerHTML = head + rows +
+  `<div class="lines" style="left:var(--labw,264px)">${lines}</div>
+   <div class="now" style="left:var(--labw,264px)">
+     <span class="l" style="left:${nowP}%"></span>
+     <span class="tag mono" style="left:calc(${nowP}% + 8px)">現在</span>
+   </div>`;
+</script>
