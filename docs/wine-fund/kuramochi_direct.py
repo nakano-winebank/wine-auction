@@ -295,3 +295,99 @@ def report():
 
 if __name__ == "__main__":
     report()
+
+
+# ═══════════════════════════════════════════ 提案資料（PPTX）向けのJSON書き出し
+def export_json(path="kuramochi_direct.json"):
+    """build_kuramochi2.js が読み込む数値一式を書き出す。
+
+    資料の数字を手打ちしないための口。前提を変えたらこの関数を再実行すれば
+    資料側の数値もすべて追随する。
+    """
+    import json
+    u  = unit_v2()
+    un = unit_v2("ネガティブ")
+    up = unit_v2("ポジティブ")
+
+    def row(uu, t, **kw):
+        r = steady_v2(uu, t, **kw)
+        return dict(turn=t, tier=tier_label(t), wb_share=r["wb_share"],
+                    turns=r["turns"], sales=r["sales"], gross=r["gross"],
+                    cost_total=r["cost_total"], cost_rate=r["cost_rate"],
+                    pretax=r["pretax"], investor=r["investor"], yld=r["yld"],
+                    yld_per_turn=r["yld_per_turn"],
+                    wb_tier=r["wb_tier"], wb_margin=r["wb_margin"],
+                    wb_labor=r["wb_labor"], wb_total=r["wb_total"],
+                    cost=r["cost"], lots=r["lots"])
+
+    def su(t):
+        s = self_use(u, t)
+        b = BOTTLE_RRP / 100.0
+        return dict(turn=t, wb_share=s["wb_share"], price=s["price"], net=s["net"],
+                    cost=s["cost"], wb_lost=s["wb_lost"], effective=s["effective"],
+                    off_rrp=s["off_rrp"], off_b2c=s["off_b2c"],
+                    yen_comp=s["wb_lost"] * b, yen_eff=s["effective"] * b,
+                    yen_b2c=s["b2c_now"] * b, yen_save=(s["b2c_now"] - s["effective"]) * b)
+
+    # 年率10%を確保するのに必要な値上がり率
+    def need_rate(uu):
+        lo, hi = -0.10, 0.30
+        for _ in range(80):
+            mid = (lo + hi) / 2
+            if steady_v2(uu, 12, rate=mid)["yld"] < 0.10: lo = mid
+            else: hi = mid
+        return hi
+
+    # 年率が閾値を跨ぐ回転期間
+    def cross(target):
+        prev, out = None, []
+        for i in range(30, 901):
+            t = i / 10
+            y = steady_v2(u, t)["yld"]
+            if prev is not None and (prev[1] - target) * (y - target) < 0:
+                out.append(round(t, 1))
+            prev = (t, y)
+        return out
+
+    hh = unit_v2_held = None  # 未使用
+    k12 = appr(12)
+    data = dict(
+        capital=CAPITAL, markup=MARKUP_SALE, labor_rate=LABOR_RATE,
+        var_rate=u["var_rate"], total_rate=u["var_rate"] + LABOR_RATE,
+        bottle_rrp=BOTTLE_RRP, appreciation=M.APPRECIATION,
+        unit=dict(mkt_cost=u["mkt_cost"], cost=u["spc_cost"], transfer=u["transfer"],
+                  p_b2b=u["p_b2b"], p_b2c=u["p_b2c"], price=u["price"],
+                  net_b2b=u["net_b2b"], net_b2c=u["net_b2c"],
+                  k12=k12, price12=u["price"] * k12,
+                  var12=u["price"] * k12 * u["var_rate"],
+                  labor12=u["price"] * k12 * LABOR_RATE,
+                  net12=u["price"] * k12 * (1 - u["var_rate"] - LABOR_RATE),
+                  gross12=u["price"] * k12 * (1 - u["var_rate"] - LABOR_RATE) - u["spc_cost"]),
+        scen={name: dict(cost=uu["spc_cost"], price=uu["price"],
+                         price12=uu["price"] * k12,
+                         net12=uu["price"] * k12 * (1 - uu["var_rate"] - LABOR_RATE),
+                         gross12=uu["price"] * k12 * (1 - uu["var_rate"] - LABOR_RATE) - uu["spc_cost"],
+                         yld12=steady_v2(uu, 12)["yld"],
+                         pretax12=steady_v2(uu, 12)["pretax"])
+              for name, uu in (("ネガティブ", un), ("ニュートラル", u), ("ポジティブ", up))},
+        rows=[row(u, t) for t in TURNS],
+        rows_flat=[row(u, t, rate=0.0) for t in TURNS],
+        rows_neg=[dict(row(un, t, rate=0.0)) for t in TURNS],
+        selfuse=[su(t) for t in TURNS],
+        rate_sens=[dict(rate=r, yld=steady_v2(u, 12, rate=r)["yld"],
+                        pretax=steady_v2(u, 12, rate=r)["pretax"]) for r in (0.0, 0.06, 0.10)],
+        labor_sens=[dict(rate=lr, yld=steady_v2(u, 12, labor_rate=lr)["yld"],
+                         amount=steady_v2(u, 12, labor_rate=lr)["cost"]["labor"])
+                    for lr in (0.0, 0.05, 0.075, 0.10)],
+        need_rate_10=need_rate(u), need_rate_10_neg=need_rate(un),
+        cross20=cross(0.20), cross10=cross(0.10),
+        cliffs=[dict(turn=t, wb_share=steady_v2(u, t)["wb_share"],
+                     yld=steady_v2(u, t)["yld"],
+                     investor=steady_v2(u, t)["investor"],
+                     wb_total=steady_v2(u, t)["wb_total"])
+                for t in (5.9, 6.1, 11.9, 12.1, 17.9, 18.1, 23.9, 24.1)],
+        v1=dict(yld12=0.210, yld18=0.149, turn20=12.7),   # v1（SPC・折半5億）の実績値
+    )
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=1)
+    print(f"written: {path}")
