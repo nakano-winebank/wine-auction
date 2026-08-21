@@ -9,7 +9,8 @@
             現物を売却し、投資家が自ら直接所有する（名義移転）。以後の顧客への
             販売は WineBank を受託者とする委託販売とし、所有権は投資家から
             顧客へ直接移転する。投資家が酒類の販売当事者にならないよう、
-            買戻しではなく委託販売の建て付けとする（問屋型）。
+            買戻しではなく委託販売の建て付けとする（問屋型）。顧客に対する売主は
+            WineBankであり、投資家は売買契約の当事者にならない。
             販売差益は在庫回転期間に応じたティアでWineBankと投資家が配分する。
 
 主な差分：
@@ -43,17 +44,27 @@ LABOR_RATE   = 0.075         # 人件費（WineBank側の実務人件費）。�
 BOTTLE_RRP   = 25_000        # 平均定価（円/本）。1ロット＝定価100万円相当＝約40本
 
 # 在庫回転期間に応じた WineBank の取り分。早期売却のインセンティブを持たせる設計。
-#   〜6ヶ月 70% ／ 〜12ヶ月 60% ／ 18ヶ月未満 50% ／ 24ヶ月未満 40% ／ 24ヶ月〜 30%
+#
+#   主線（回転12ヶ月）で投資家利回り15%弱となるよう、旧ラダー（70/60/50/40/30）を
+#   組み直したもの。12ヶ月の段を60%→48%とし、他の段も逆転が生じないよう引き下げた。
+#   9ヶ月の段を新設しているのは、6ヶ月70%から12ヶ月48%へ一気に落とすと境界の段差が
+#   22ポイントとなり、境界直前に値引きしてでも売り切る誘因が強くなりすぎるため。
+#   9ヶ月の段を挟むことで最大段差は11ポイントに収まる。
+#
+#   〜6ヶ月 70% ／ 〜9ヶ月 59% ／ 〜12ヶ月 48% ／ 18ヶ月未満 38%
+#   ／ 24ヶ月未満 28% ／ 24ヶ月〜 18%
 def wb_share(turn):
     if turn <= 6:  return 0.70
-    if turn <= 12: return 0.60
-    if turn < 18:  return 0.50
-    if turn < 24:  return 0.40
-    return 0.30
+    if turn <= 9:  return 0.59
+    if turn <= 12: return 0.48
+    if turn < 18:  return 0.38
+    if turn < 24:  return 0.28
+    return 0.18
 
 
 def tier_label(turn):
     if turn <= 6:  return "6ヶ月以内"
+    if turn <= 9:  return "9ヶ月以内"
     if turn <= 12: return "12ヶ月以内"
     if turn < 18:  return "18ヶ月未満"
     if turn < 24:  return "24ヶ月未満"
@@ -157,7 +168,7 @@ def report():
     print(f"  人件費     売上の {LABOR_RATE:.1%}（WineBank側の実務人件費・別建て）")
     print(f"  合計       売上の {u['var_rate']+LABOR_RATE:.2%}")
     print(f"  配分       在庫回転期間に応じたティア"
-          f"（6ヶ月70% / 12ヶ月60% / 18ヶ月未満50% / 24ヶ月未満40% / 24ヶ月〜30%）")
+          f"（6ヶ月70% / 9ヶ月59% / 12ヶ月48% / 18ヶ月未満38% / 24ヶ月未満28% / 24ヶ月〜18%）")
     print(f"  利回り     すべて年率換算（年間の投資家取分 ÷ 拠出額1億円）")
 
     print()
@@ -331,7 +342,7 @@ def export_json(path="kuramochi_direct.json"):
 
     # 年率10%を確保するのに必要な値上がり率
     def need_rate(uu):
-        lo, hi = -0.10, 0.30
+        lo, hi = -0.20, 0.30
         for _ in range(80):
             mid = (lo + hi) / 2
             if steady_v2(uu, 12, rate=mid)["yld"] < 0.10: lo = mid
@@ -339,11 +350,11 @@ def export_json(path="kuramochi_direct.json"):
         return hi
 
     # 年率が閾値を跨ぐ回転期間
-    def cross(target):
+    def cross(target, rate=None):
         prev, out = None, []
         for i in range(30, 901):
             t = i / 10
-            y = steady_v2(u, t)["yld"]
+            y = steady_v2(u, t, rate=rate)["yld"]
             if prev is not None and (prev[1] - target) * (y - target) < 0:
                 out.append(round(t, 1))
             prev = (t, y)
@@ -380,7 +391,7 @@ def export_json(path="kuramochi_direct.json"):
                          amount=steady_v2(u, 12, labor_rate=lr)["cost"]["labor"])
                     for lr in (0.0, 0.05, 0.075, 0.10)],
         need_rate_10=need_rate(u), need_rate_10_neg=need_rate(un),
-        cross20=cross(0.20), cross10=cross(0.10),
+        cross20=cross(0.20), cross10=cross(0.10), cross10_flat=cross(0.10, rate=0.0),
         cliffs=[dict(turn=t, wb_share=steady_v2(u, t)["wb_share"],
                      yld=steady_v2(u, t)["yld"],
                      investor=steady_v2(u, t)["investor"],
