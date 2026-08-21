@@ -174,10 +174,10 @@ const CHART_BASE = {
 const TIER_ROWS = [
   { label: "6ヶ月以内",  turn: 6 },
   { label: "9ヶ月以内",  turn: 9 },
-  { label: "12ヶ月以内", turn: 12, main: true },
-  { label: "18ヶ月未満", turn: 15 },
-  { label: "24ヶ月未満", turn: 18 },
-  { label: "24ヶ月〜",   turn: 24 },
+  { label: "15ヶ月以内", turn: 12, main: true },
+  { label: "18ヶ月以内", turn: 18 },
+  { label: "24ヶ月以内", turn: 24 },
+  { label: "24ヶ月超",   turn: 30 },
 ];
 const TIER_TXT = TIER_ROWS.map((t) => t.label + pct(R(t.turn).wb_share, 0)).join(" ／ ");
 
@@ -682,6 +682,12 @@ const TIER_TXT = TIER_ROWS.map((t) => t.label + pct(R(t.turn).wb_share, 0)).join
       x: x + 0.14, y: 2.98, w: tw - 0.28, h: 0.26, margin: 0, align: "center",
       fontFace: SANS, fontSize: 10, bold: true, color: GOLD_L,
     });
+    if (t.main) {
+      s.addText("主線12ヶ月はこの段", {
+        x: x + 0.14, y: 3.24, w: tw - 0.28, h: 0.20, margin: 0, align: "center",
+        fontFace: SANS, fontSize: 7.5, color: GOLD,
+      });
+    }
   });
 
   const hw = (CW - 0.30) / 2;
@@ -701,7 +707,7 @@ const TIER_TXT = TIER_ROWS.map((t) => t.label + pct(R(t.turn).wb_share, 0)).join
 
   const rows = [
     [th("在庫回転期間"), th("WineBank"), th("投資家"), th("WineBank受取"), th("投資家利回り")],
-    ...[6, 9, 12, 18, 24].map((t) => {
+    ...[6, 9, 12, 15, 18, 24].map((t) => {
       const r = R(t);
       const hl = t === 12;
       return [
@@ -713,7 +719,7 @@ const TIER_TXT = TIER_ROWS.map((t) => t.label + pct(R(t.turn).wb_share, 0)).join
       ];
     }),
   ];
-  table(s, rows, M + hw + 0.30, 3.62, hw, [1.42, 1.02, 0.94, 1.32, 1.10], { rowH: 0.38, fontSize: 9 });
+  table(s, rows, M + hw + 0.30, 3.62, hw, [1.42, 1.02, 0.94, 1.32, 1.10], { rowH: 0.33, fontSize: 9 });
 
   note(s, "※ 表のWineBank受取は年額、投資家利回りは年率。ティアは個々の在庫の保有期間ではなく、ポートフォリオ全体の在庫回転期間で判定する。WineBank受取には配分ぶんに加えて取得時の" + pct(D.markup, 0) + "マージンと人件費を含む。境界の前後では配分率が段階的に切り替わるため、境界をまたぐ時期の運用ルール（値引き販売の制限を含む）は契約別紙で定める。", 6.14);
   s.addNotes("ティア配分。WineBankが回転リスクを負う設計。境界の運用ルールは別紙で。");
@@ -889,11 +895,11 @@ const TIER_TXT = TIER_ROWS.map((t) => t.label + pct(R(t.turn).wb_share, 0)).join
   table(s, rows, M, 3.10, CW, [2.10, 2.10, 2.90, 3.30, 1.49], { rowH: 0.38, fontSize: 9 });
 
   card(s, M, 5.44, CW, 1.02, { fill: CARD2, line: GOLD_D });
-  s.addText("値上がりが横ばいでも、主線では10%を確保できます。", {
+  s.addText("値上がりが横ばいの場合、主線からの余裕は0.8ヶ月しかありません。", {
     x: M + 0.30, y: 5.56, w: 6.20, h: 0.26, margin: 0,
     fontFace: SANS, fontSize: 11.5, bold: true, color: GOLD_L,
   });
-  s.addText("ワイン価格が横ばい（0%）にとどまっても、在庫回転12ヶ月なら " + pct(RF(12).yld) + " で10%を確保する。10%を割るのは在庫回転が " + D.cross10_flat[0] + "ヶ月まで延びた場合。年" + pct(D.appreciation, 0) + "の上昇は、この上に " + pt(R(12).yld - RF(12).yld) + " を積み増すものと位置づけられる。ただし値引き販売を行うと前提が崩れ、値引き5%＋横ばいでは主線でも " + pct(RN(12).yld) + " となり10%を下回る（次頁）。", {
+  s.addText("ワイン価格が横ばい（0%）にとどまった場合、在庫回転12ヶ月なら " + pct(RF(12).yld) + " と10%は確保するものの、10%を割るのは在庫回転 " + D.cross10_flat[0] + "ヶ月であり、主線からの余裕は " + (D.cross10_flat[0] - 12).toFixed(1) + "ヶ月しかない。年" + pct(D.appreciation, 0) + "の上昇を織り込むことで、この余裕は " + (D.cross10[0] - 12).toFixed(1) + "ヶ月まで広がる。値上がりは上乗せではなく、在庫回転の余裕を確保するための前提条件と位置づけていただきたい。", {
     x: M + 0.30, y: 5.84, w: CW - 0.60, h: 0.50, margin: 0,
     fontFace: SANS, fontSize: 9.5, color: MUTED, lineSpacingMultiple: 1.25,
   });
@@ -922,7 +928,7 @@ const TIER_TXT = TIER_ROWS.map((t) => t.label + pct(R(t.turn).wb_share, 0)).join
               td(pct(r.yld), { bold: true, color: r.yld >= 0.10 ? IVORY : RED })];
     }),
   ], M + 0.28, 2.24, hw - 0.56, [1.34, 1.30, 1.30, 1.30], { rowH: 0.34, fontSize: 9 });
-  s.addText("値上がりが横ばいでも在庫回転" + D.cross10_flat[0] + "ヶ月までは10%を確保する。単独では致命的にならない。", {
+  s.addText("横ばいでも主線12ヶ月なら " + pct(RF(12).yld) + " を確保するが、10%を割るのは在庫回転 " + D.cross10_flat[0] + "ヶ月。余裕は " + (D.cross10_flat[0] - 12).toFixed(1) + "ヶ月しかない。", {
     x: M + 0.28, y: 3.98, w: hw - 0.56, h: 0.28, margin: 0,
     fontFace: SANS, fontSize: 9, color: MUTED, lineSpacingMultiple: 1.2,
   });
@@ -950,11 +956,11 @@ const TIER_TXT = TIER_ROWS.map((t) => t.label + pct(R(t.turn).wb_share, 0)).join
     x: M + 0.30, y: 4.72, w: 6, h: 0.24, margin: 0,
     fontFace: SANS, fontSize: 10.5, bold: true, color: GOLD_L,
   });
-  s.addText("10%を割る唯一の経路は「値引き」です。", {
+  s.addText("最も重いのは「値引き」、次いで「価格の横ばい」です。", {
     x: M + 0.30, y: 4.98, w: CW - 0.60, h: 0.30, margin: 0,
     fontFace: SERIF, fontSize: 16, bold: true, color: IVORY,
   });
-  s.addText("在庫回転の悪化はティア配分が吸収し、値上がりの横ばいも主線なら " + pct(RF(12).yld) + " で持ちこたえる。10%を割るのは値引きが加わったときだけである。売値5%の値引きは単位粗利を約" + pct(1 - (D.scen["ネガティブ"].gross12 / D.scen["ニュートラル"].gross12), 0) + "毀損し、価格横ばいの前提で比べると値引きなしの " + pct(RF(12).yld) + " に対し値引きありでは " + pct(RN(12).yld) + " まで低下する。ティア配分は回転の悪化を吸収できても、粗利そのものの毀損は吸収できない。価格を維持したまま販売チャネルを増やすことが本筋の改善手段であり、売れ残りはむしろ値上がりを取りにいく機会でもある。契約上、一定率を超える値引き販売にはご承認をいただく建て付けとする。", {
+  s.addText("在庫回転の悪化そのものはティア配分が吸収する（主線12ヶ月 " + pct(R(12).yld) + " に対し24ヶ月 " + pct(R(24).yld) + "）。価格が横ばいにとどまると主線では " + pct(RF(12).yld) + " を保つものの、在庫回転 " + D.cross10_flat[0] + "ヶ月で10%を割る。値引きが加われば全域で10%に届かない。売値5%の値引きは単位粗利を約" + pct(1 - (D.scen["ネガティブ"].gross12 / D.scen["ニュートラル"].gross12), 0) + "毀損し、価格横ばいの前提で比べると値引きなしの " + pct(RF(12).yld) + " に対し値引きありでは " + pct(RN(12).yld) + " まで低下する。ティア配分は回転の悪化を吸収できても、粗利そのものの毀損は吸収できない。価格を維持したまま販売チャネルを増やすことが本筋の改善手段であり、売れ残りはむしろ値上がりを取りにいく機会でもある。契約上、一定率を超える値引き販売にはご承認をいただく建て付けとする。", {
     x: M + 0.30, y: 5.34, w: CW - 0.60, h: 0.86, margin: 0,
     fontFace: SANS, fontSize: 9.5, color: MUTED, lineSpacingMultiple: 1.3,
   });
@@ -1357,7 +1363,7 @@ const TIER_TXT = TIER_ROWS.map((t) => t.label + pct(R(t.turn).wb_share, 0)).join
   const checks = [
     ["最低10%は確保したい",
      "在庫回転12ヶ月で年率 " + pct(r12.yld) + "。在庫回転が " + D.cross10[0] + "ヶ月まで延びても10%を確保する。",
-     "ワイン価格が横ばいでも " + pct(RF(12).yld) + "。10%を割るのは値引き販売が加わった場合に限られる。"],
+     "横ばいの場合は主線で " + pct(RF(12).yld) + "。ただし10%を割るのは在庫回転 " + D.cross10_flat[0] + "ヶ月であり、余裕は " + (D.cross10_flat[0] - 12).toFixed(1) + "ヶ月しかない。"],
     ["20%は取り過ぎ",
      "在庫回転が " + D.cross20[0] + "ヶ月より速くならない限り20%を超えない。",
      "想定レンジ（6〜24ヶ月）では " + pct(R(24).yld) + " 〜 " + pct(R(6).yld) + " に収まる。"],
