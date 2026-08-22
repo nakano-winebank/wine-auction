@@ -403,6 +403,80 @@ function numDot(s,x,y,n){
   s.addNotes('ソフトウェア129.8百万円は保守的に全額control。それでも在庫含み益186.7百万円で実態純資産は簿価を上回る。');
 }
 
+/* ---------- 12. FY2027 月次資金繰り ---------- */
+{
+  const CF=JSON.parse(require('fs').readFileSync('cf_data.json','utf8'));
+  const s=base('FY2027 月次資金繰り','2026年9月の在庫販売200百万円とみずほ銀行への返済200百万円を反映。単位：百万円（税込）');
+  const MO=['26/10','26/11','26/12','27/01','27/02','27/03','27/04','27/05','27/06','27/07','27/08','27/09'];
+  const defs=[['営業収入 計',CF['in'],false],['営業支出 計',CF.out,false],['経常収支',CF.ord,true],
+              ['財務・投資収支 計',CF.fin,false],['当月収支',CF.net,true],['月末 現預金残高',CF.bal,true]];
+  const x0=0.65, lw=2.4, cwd=0.86, y0=1.66, rh=0.48;
+  s.addShape(p.ShapeType.rect,{x:x0,y:y0,w:lw+cwd*12,h:0.44,fill:{color:BERRY}});
+  s.addText('科目',{x:x0+0.15,y:y0,w:lw,h:0.44,fontFace:BF,fontSize:9.5,bold:true,color:WHT,valign:'middle',margin:0});
+  MO.forEach((m,i)=>s.addText(m,{x:x0+lw+i*cwd,y:y0,w:cwd,h:0.44,fontFace:BF,fontSize:8.5,color:WHT,align:'center',valign:'middle',margin:0}));
+  defs.forEach((d,r)=>{
+    const y=y0+0.44+r*rh, isBal=d[0]==='月末 現預金残高';
+    s.addShape(p.ShapeType.rect,{x:x0,y,w:lw+cwd*12,h:rh,
+      fill:{color:isBal?CREAM:(d[2]?'F3EDE9':(r%2?'FBF9F7':WHT))},line:{color:LINE,width:0.5}});
+    s.addText(d[0],{x:x0+0.15,y,w:lw,h:rh,fontFace:BF,fontSize:9.5,bold:d[2],color:INK,valign:'middle',margin:0});
+    d[1].forEach((v,i)=>{
+      s.addText(M(v),{x:x0+lw+i*cwd,y,w:cwd,h:rh,fontFace:BF,fontSize:9,bold:d[2]||isBal,
+        color: v<0?'C0392B':(d[2]||isBal?BERRY:INK),align:'center',valign:'middle',margin:0});
+    });
+  });
+  const yb=y0+0.44+defs.length*rh+0.3;
+  const cards=[['期中 最低残高（2027年2月末）','▲2.1百万円',ROSE],['期末 現預金残高','＋12.6百万円',BERRY],['必要調達額（月商1か月のバッファ込）','37.7百万円',GOLD]];
+  cards.forEach((c,i)=>{
+    const x=0.65+i*4.22;
+    card(s,x,yb,3.95,1.12);
+    s.addText(c[0],{x:x+0.22,y:yb+0.16,w:3.5,h:0.34,fontFace:BF,fontSize:9.5,color:MUT,margin:0});
+    s.addText(c[1],{x:x+0.22,y:yb+0.52,w:3.5,h:0.5,fontFace:HF,fontSize:22,bold:true,color:c[2],margin:0});
+  });
+  foot(s,'期首現預金24.4百万円（2025/09末実績を暫定使用）、長期借入は みずほ返済後223.6百万円を7年均等返済と仮定。');
+  s.addNotes('在庫販売200百万円をみずほ返済に充てることで、長期借入の約定返済が月5.04百万円から2.66百万円へ軽くなる。これが資金繰りを支えている。');
+}
+
+/* ---------- 13. ワイン在庫と資金・感応度 ---------- */
+{
+  const s=base('ワイン在庫が資金繰りを決める','在庫の積み増しはPLに現れないが、そのまま資金流出になります。');
+  card(s,0.65,1.62,5.85,2.5);
+  s.addText('自社在庫（簿価）の推移',{x:1.0,y:1.82,w:5.2,h:0.34,fontFace:BF,fontSize:12,bold:true,color:BERRY,margin:0});
+  const hist=[['24/12末',5.6],['25/07末',4.7],['25/09末',4.8],['25/12末',5.3],['26/03末',6.2]];
+  const bx=1.0, bw=0.95, bmax=1.35, byBase=3.72;
+  hist.forEach((h,i)=>{
+    const hh=bmax*h[1]/6.5, x=bx+i*1.05;
+    s.addShape(p.ShapeType.rect,{x,y:byBase-hh,w:bw*0.72,h:hh,fill:{color:i>=2?BERRY:'C9AEB8'}});
+    s.addText(h[1].toFixed(1),{x:x-0.08,y:byBase-hh-0.32,w:bw*0.88,h:0.3,fontFace:BF,fontSize:10,bold:true,color:BERRY,align:'center',margin:0});
+    s.addText(h[0],{x:x-0.12,y:byBase+0.04,w:bw*0.96,h:0.26,fontFace:BF,fontSize:8.5,color:MUT,align:'center',margin:0});
+  });
+  s.addText('単位：億円',{x:5.0,y:1.84,w:1.3,h:0.26,fontFace:BF,fontSize:8.5,color:MUT,align:'right',margin:0});
+  card(s,6.8,1.62,5.85,2.5,BERRY);
+  s.addText('2025/09末 → 2026/03末',{x:7.15,y:1.85,w:5.15,h:0.3,fontFace:BF,fontSize:11,color:CREAM,margin:0});
+  s.addText('＋1.4億円',{x:7.15,y:2.15,w:5.15,h:0.75,fontFace:HF,fontSize:38,bold:true,color:WHT,margin:0});
+  s.addText('6か月で在庫が1.4億円増加＝月23.3百万円の資金が在庫に固定されました。この分はPLの利益には一切現れません。',
+    {x:7.15,y:2.95,w:5.15,h:0.95,fontFace:BF,fontSize:11.5,color:CREAM,valign:'top',margin:0});
+  s.addText('感応度 － 4つのケースでの必要調達額',{x:0.65,y:4.32,w:8,h:0.36,fontFace:HF,fontSize:17,bold:true,color:BERRY,margin:0});
+  const cs=[['A. 基本（在庫横ばい）','＋12.6','▲2.1','37.7',BERRY],
+            ['B. 2027/03の一時収益42百万円が未入金','▲29.4','▲44.1','79.7',ROSE],
+            ['C. 在庫をFY2026上期ペースで積み増し','▲295.4','▲310.1','345.7','C0392B'],
+            ['D. 2026/09の在庫販売200百万円が不成立','▲16.0','▲30.6','66.3',ROSE]];
+  const ty=4.78, trh=0.44;
+  s.addShape(p.ShapeType.rect,{x:0.65,y:ty,w:11.99,h:0.4,fill:{color:BERRY}});
+  [['ケース',0.9,5.6,'left'],['期末残高',6.7,1.7,'right'],['期中最低残高',8.6,1.9,'right'],['必要調達額',10.7,1.75,'right']]
+    .forEach(h=>s.addText(h[0],{x:h[1],y:ty,w:h[2],h:0.4,fontFace:BF,fontSize:9.5,bold:true,color:WHT,align:h[3],valign:'middle',margin:0}));
+  cs.forEach((c,i)=>{
+    const y=ty+0.4+i*trh;
+    s.addShape(p.ShapeType.rect,{x:0.65,y,w:11.99,h:trh,fill:{color:i===0?CREAM:(i%2?'FBF9F7':WHT)},line:{color:LINE,width:0.5}});
+    s.addText(c[0],{x:0.9,y,w:5.6,h:trh,fontFace:BF,fontSize:10.5,bold:i===0,color:INK,valign:'middle',margin:0});
+    [[c[1],6.7,1.7],[c[2],8.6,1.9],[c[3],10.7,1.75]].forEach((v,j)=>{
+      s.addText(v[0]+'百万円',{x:v[1],y,w:v[2],h:trh,fontFace:BF,fontSize:10.5,bold:j===2,
+        color:j===2?c[4]:(String(v[0]).startsWith('▲')?'C0392B':BERRY),align:'right',valign:'middle',margin:0});
+    });
+  });
+  foot(s,'必要調達額＝期中最低残高をゼロに戻す額＋運転資金バッファ（月商1か月 35.7百万円）。出典：2026年7月度 取締役会資料、決算報告書 第54期。');
+  s.addNotes('最も重要なのはケースC。在庫を積み増す方針を続けるなら3.5億円の調達が必要になる。在庫方針そのものが資金計画の変数であることを銀行に示す。');
+}
+
 /* ---------- 12. リスクと対応 ---------- */
 {
   const s=base('想定されるご指摘と当社の対応','先に論点を開示し、対応方針をあわせてご説明します。');
