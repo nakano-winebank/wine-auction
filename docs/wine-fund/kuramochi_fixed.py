@@ -343,3 +343,78 @@ def _extra():
 
 if __name__ == "__main__":
     _extra()
+
+
+# ═══════════════════════════════════════ 提案資料（PPTX）向けのJSON書き出し
+def export_json(path="kuramochi_fixed.json"):
+    """build_kuramochi3.js が読み込む数値一式を書き出す。"""
+    import json
+
+    def pace_block(name, y1, y2, tiers):
+        s = pace(y1, y2)
+        v = investor(s, tiers)
+        w = winebank(s, tiers)
+        return dict(name=name, y1=y1, y2=y2,
+                    avg_hold=v["avg_hold"], recv=v["recv"], carry=v["carry"],
+                    profit=v["profit"], irr=v["irr"],
+                    simple=v["profit"] / CAPITAL,
+                    wb_sales=w["sales"], wb_pay=w["pay"], wb_var=w["var"],
+                    wb_labor=w["labor"], wb_gross=w["gross"],
+                    wb_margin=w["margin"], wb_total=w["total"])
+
+    SET = (("1年以内に100%売却", 1.00, 0.00),
+           ("1年目80%・2年目20%", 0.80, 0.20),
+           ("1年目50%・2年目50%", 0.50, 0.50),
+           ("1年目30%・2年目70%", 0.30, 0.70))
+
+    s_main = pace(0.80, 0.20)
+    v_main = investor(s_main, TIERS_30)
+    sched = [dict(m=d["m"], book=d["book"], rate=d["rate"],
+                  recv=d["recv"], carry=d["carry"])
+             for d in v_main["detail"] if d["book"] > 0]
+
+    cases = (("上昇6%・値引きなし", 0.06, 0.00),
+             ("上昇0%・値引きなし", 0.00, 0.00),
+             ("上昇6%・値引き5%",   0.06, 0.05),
+             ("上昇0%・値引き5%",   0.00, 0.05))
+
+    def residual(rate):
+        cost = INVESTOR_COST_RATIO * 100 * (1 + rate)
+        out = []
+        for a, tag in ((APPRECIATION, "上昇6%"), (0.0, "上昇0%")):
+            price = SELL_RATIO * 100 * (1 + a) ** 2
+            net = price * (1 - VAR_RATE - LABOR_RATE)
+            out.append(dict(tag=tag, cost=cost, price=price, net=net, gross=net - cost))
+        return out
+
+    data = dict(
+        capital=CAPITAL, carry_y1=CARRY_Y1, carry_y2=CARRY_Y2, term_months=24,
+        tiers30=[dict(lim=l, rate=r) for l, r in TIERS_30],
+        tiers25=[dict(lim=l, rate=r) for l, r in TIERS_25],
+        acq_markup=ACQ_MARKUP, appreciation=APPRECIATION,
+        var_rate=VAR_RATE, labor_rate=LABOR_RATE,
+        cost_ratio=INVESTOR_COST_RATIO * 100, sell_ratio=SELL_RATIO * 100,
+        rrp_total=CAPITAL / INVESTOR_COST_RATIO,
+        paces30=[pace_block(n, a, b, TIERS_30) for n, a, b in SET],
+        paces25=[pace_block(n, a, b, TIERS_25) for n, a, b in SET],
+        schedule=sched,
+        carry_actual=[dict(name=n,
+                           carry=investor(pace(a, b), TIERS_30, carry_actual=True)["carry"],
+                           irr=investor(pace(a, b), TIERS_30, carry_actual=True)["irr"])
+                      for n, a, b in SET],
+        downside30=[dict(name=n, vals=[winebank(pace(a, b), TIERS_30,
+                                                appreciation=ap, discount=di)["total"]
+                                       for _, ap, di in cases]) for n, a, b in SET],
+        downside25=[dict(name=n, vals=[winebank(pace(a, b), TIERS_25,
+                                                appreciation=ap, discount=di)["total"]
+                                       for _, ap, di in cases]) for n, a, b in SET],
+        case_labels=[c[0] for c in cases],
+        residual30=residual(0.30), residual25=residual(0.25),
+        residual_cost=[dict(res=r, book=CAPITAL * r,
+                            pay30=CAPITAL * r * 1.30, pay25=CAPITAL * r * 1.25)
+                       for r in (0.05, 0.10, 0.20)],
+        v2=dict(investor=14_340_000, yld=0.143, wb=30_460_000),
+    )
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=1)
+    print(f"written: {path}")
