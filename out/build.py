@@ -122,7 +122,7 @@ p.cell(TT,6,'※期間表記は2026/09-2027/08。決算期(2026/10-2027/09)と1�
 p.cell(TT+1,6,'※うち約100百万円はグループ内取引（Value table・Prime・Apicius・Apicius2）。').font=RD
 O0=TT+4
 bar(p,O0,'【3】その他前提')
-oth=[('上場関連コスト（年額）',36000000,YEN,'事業計画FY2027計画値。計上しない場合は0。'),
+oth=[('上場関連コスト（年額）',0,YEN,'FY2027は計上しない方針のため0。計上する場合は年額を入力。'),
      ('営業外費用（支払利息等・年額）',15000000,YEN,'事業計画FY2027計画値'),
      ('インセンティブ 計上月（1〜12）',6,'0','6＝2027年3月'),
      ('投資売買益 計上月（1〜12）',6,'0','6＝2027年3月'),
@@ -220,31 +220,31 @@ m.freeze_panes='D5'
 # ============ ①サマリー ============
 s=wb.create_sheet('①サマリー',0)
 s.column_dimensions['A'].width=3; s.column_dimensions['B'].width=38
-for col in 'CDEFG': s.column_dimensions[col].width=18
-s.column_dimensions['H'].width=44
+for col in 'CDEF': s.column_dimensions[col].width=19
+s.column_dimensions['G'].width=46
 s['B1']='FY2027（2027年9月期）利益予測　シナリオ比較'; s['B1'].font=Font(name=F,bold=True,size=15)
 s['B2']='ベース：飲食撤退後の実力値（2026/04-06 実績3か月平均）を横ばい延伸'; s['B2'].font=Font(name=F,size=10,color='595959')
 s['B3']='単位：円（税別）　出典：事業計画202608（銀行様）月次／決算報告書 第54期'; s['B3'].font=SM
-heads=['科目','FY2026 見込','A. 撤退後実力値\n横ばいのみ','B. A＋上乗せ\n132.5百万円','C. 損益分岐\n（営業利益0）','D. 営業利益\n1億円','コメント']
+heads=['科目','FY2026 見込','A. 撤退後実力値\n横ばいのみ','B. A＋上乗せ\n132.5百万円','C. 営業利益\n1億円','コメント']
 for j,t in enumerate(heads):
     c=s.cell(5,2+j,t); c.font=HD; c.fill=HF; c.alignment=Alignment(horizontal='center',wrap_text=True,vertical='center')
 s.row_dimensions[5].height=44
 b=lambda rr: f"{Q(rr)}*12"
 spec=[
- ('既存事業 売上',      708205820, f'={b(S_M)}', f'={b(S_M)}', f'=E6+F9/{Q(GM)}', f'=E6+G9/{Q(GM)}',''),
- ('既存事業 売上総利益', 229139405, f'={b(G_M)}', f'={b(G_M)}', '=E7',            '=E7',''),
- ('＋上乗せ案件（営業収益）',0,      0,            f'={Q(ADV)}', f'={Q(ADV)}',     f'={Q(ADV)}','経営指導料92.5百万＋インセンティブ20百万'),
- ('＋追加で必要な粗利',  None,      None,         None,          '=-E14',          f'={Q(TGT)}-E14','C・Dの達成に必要な粗利の上積み'),
- ('売上総利益 合計',     229139405, '=D7+D8',     '=E7+E8',      '=F7+F8+F9',      '=G7+G8+G9',''),
- ('販管費 小計',        343932836, f'={b(P_M)}', f'={b(P_M)}',  '=E11',           '=E11','2026/04-06実績の月平均×12'),
- ('上場関連コスト',      0,         f'={Q(IPO)}', f'={Q(IPO)}',  f'={Q(IPO)}',     f'={Q(IPO)}',''),
- ('販管費 合計',        343932836, '=D11+D12',   '=E11+E12',    '=F11+F12',       '=G11+G12',''),
- ('営業利益',           -114793431,'=D10-D13',   '=E10-E13',    '=F10-F13',       '=G10-G13',''),
- ('営業外収益（投資売買益）',0,      0,            f'={Q(INV)}',  f'={Q(INV)}',     f'={Q(INV)}',''),
- ('営業外費用',          10000000,  f'={Q(NOE)}', f'={Q(NOE)}',  f'={Q(NOE)}',     f'={Q(NOE)}',''),
- ('経常利益',           -124793431,'=D14+D15-D16','=E14+E15-E16','=F14+F15-F16',  '=G14+G15-G16',''),
- ('法人税等',           0,0,0,0,0,'繰越欠損金 約252百万円により実質非課税'),
- ('当期純利益',         -124793431,'=D17-D18',   '=E17-E18',    '=F17-F18',       '=G17-G18',''),
+ ('既存事業 売上',      708205820, f'={b(S_M)}', f'={b(S_M)}', f'=E6+F9/{Q(GM)}',''),
+ ('売上総利益（既存事業）', 229139405, f'={b(G_M)}', f'={b(G_M)}', '=E7',''),
+ ('＋上乗せ案件（営業収益）',0,        0,            f'={Q(ADV)}',  f'={Q(ADV)}','経営指導料92.5百万＋インセンティブ20百万'),
+ ('＋追加で必要な粗利',    None,      None,         None,          f'={Q(TGT)}-E14','目標達成に必要な粗利の上積み'),
+ ('売上総利益 合計',       229139405, '=D7+D8',     '=E7+E8',      '=F7+F8+F9',''),
+ ('販管費 小計',          343932836, f'={b(P_M)}', f'={b(P_M)}',  '=E11','2026/04-06実績の月平均×12'),
+ ('上場関連コスト',        0,         f'={Q(IPO)}', f'={Q(IPO)}',  f'={Q(IPO)}','FY2027は計上しない方針'),
+ ('販管費 合計',          343932836, '=D11+D12',   '=E11+E12',    '=F11+F12',''),
+ ('営業利益',             -114793431,'=D10-D13',   '=E10-E13',    f'={Q(TGT)}','Cは目標営業利益を固定して逆算'),
+ ('営業外収益（投資売買益）',0,        0,            f'={Q(INV)}',  f'={Q(INV)}',''),
+ ('営業外費用',           10000000,  f'={Q(NOE)}', f'={Q(NOE)}',  f'={Q(NOE)}',''),
+ ('経常利益',             -124793431,'=D14+D15-D16','=E14+E15-E16','=F14+F15-F16',''),
+ ('法人税等',             0,0,0,0,'繰越欠損金 約252百万円により実質非課税'),
+ ('当期純利益',           -124793431,'=D17-D18',   '=E17-E18',    '=F17-F18',''),
 ]
 bold={10,13,14,17,19}
 for i,(lab,*v) in enumerate(spec):
@@ -253,19 +253,18 @@ for i,(lab,*v) in enumerate(spec):
     for j,val in enumerate(v[:-1]):
         cc=s.cell(rr,3+j,val); cc.number_format=YEN
         cc.font=SB if rr in bold else (BL if j==0 and isinstance(val,int) else BK)
-    s.cell(rr,8,note).font=SM
+    s.cell(rr,7,note).font=SM
     if rr in bold:
-        for c2 in range(2,9): s.cell(rr,c2).fill=TF; s.cell(rr,c2).border=TB
+        for c2 in range(2,8): s.cell(rr,c2).fill=TF; s.cell(rr,c2).border=TB
     if rr==14:
-        for c2 in range(2,9): s.cell(rr,c2).fill=OP
+        for c2 in range(2,8): s.cell(rr,c2).fill=OP
     if rr==17:
-        for c2 in range(2,9): s.cell(rr,c2).fill=OR_
+        for c2 in range(2,8): s.cell(rr,c2).fill=OR_
     if rr==9:
-        s.cell(rr,7).fill=YL; s.cell(rr,8).fill=YL
+        s.cell(rr,6).fill=YL; s.cell(rr,7).fill=YL
 r=21
 s.cell(r,2,'【V字回復に必要な追加売上】').font=Font(name=F,bold=True,size=12)
-add=[('損益分岐（営業利益0）に必要な追加売上','=F9/'+Q(GM),'=C23/'+Q(PLAN)),
-     ('営業利益1億円に必要な追加売上','=G9/'+Q(GM),'=C24/'+Q(PLAN))]
+add=[('営業利益1億円に必要な追加売上','=F9/'+Q(GM),'=C23/'+Q(PLAN))]
 s.cell(22,3,'追加売上').font=SB; s.cell(22,4,'新規顧客売上計画\n1,066百万円に対する比率').font=SB
 s.cell(22,4).alignment=Alignment(wrap_text=True,horizontal='center'); s.row_dimensions[22].height=30
 for c2 in (3,4): s.cell(22,c2).fill=SF
@@ -275,16 +274,17 @@ for i,(lab,f1,f2) in enumerate(add):
     c=s.cell(rr,3,f1); c.number_format=YEN; c.font=SB; c.fill=YL
     c=s.cell(rr,4,f2); c.number_format=PCT; c.font=SB; c.fill=YL
 notes=['','【判定】',
- 'A：撤退後の実力値を横ばいで延ばすだけでは営業利益▲135.6百万円。上乗せなしでは黒字化しない。',
- 'B：上乗せ案件132.5百万円を全額計上しても、上場関連コスト36百万円を計上すると営業利益は▲23.1百万円。',
- 'C：損益分岐までの距離は追加売上4,473万円。新規顧客売上計画（1,066百万円）の4.2%で到達する。',
- 'D：営業利益1億円には追加売上2億3,872万円。同計画の22.4%で到達する。',
+ 'A：撤退後の実力値を横ばいで延ばすだけでは営業利益▲99.6百万円。上乗せなしでは黒字化しない。',
+ 'B：上乗せ案件132.5百万円を計上すると営業利益＋12.9百万円・経常利益＋17.9百万円で黒字化する。',
+ 'C：営業利益1億円には、Bからさらに粗利87.1百万円の上積みが必要。追加売上は1億6,888万円。',
+ '　　これは新規顧客売上計画（1,066百万円）の15.8%にあたる。',
  '',
+ '※上場関連コストはFY2027は計上しない前提（②前提シートで年額を入力すれば再計算されます）。',
  '※上乗せ案件のうち約100百万円はグループ内取引。銀行は正常化調整で控除する可能性が高い。',
  '※FY2026見込には2026/09単月に売上232.9百万円（通期の33%）を織り込み。粗利率12%のため営業利益寄与は＋5.5百万円のみ。']
 for i,n in enumerate(notes):
     c=s.cell(26+i,2,n); c.font=Font(name=F,bold=True,size=12) if n=='【判定】' else Font(name=F,size=10)
-    s.merge_cells(start_row=26+i,start_column=2,end_row=26+i,end_column=8)
+    s.merge_cells(start_row=26+i,start_column=2,end_row=26+i,end_column=7)
 
 # ============ ⑤利益ブリッジ ============
 br=wb.create_sheet('⑤利益ブリッジ')
@@ -313,13 +313,11 @@ for i,(lab,val,note) in enumerate(steps):
     else:
         c=br.cell(rr,4,f'=D{rr-1}'); c.number_format=YEN; c.font=SB; c.fill=OP
         br.cell(rr,2).fill=OP; br.cell(rr,4).border=TB
-br.cell(12,2,'【V字回復に必要な追加売上】').font=Font(name=F,bold=True,size=12)
-br.cell(13,2,'損益分岐（営業利益0）').font=BK
+br.cell(12,2,'【営業利益1億円に必要な追加売上】').font=Font(name=F,bold=True,size=12)
+br.cell(13,2,'営業利益 1億円').font=BK
 br.cell(13,3,"='①サマリー'!C23").number_format=YEN; br.cell(13,3).font=SB; br.cell(13,3).fill=YL
-br.cell(13,5,'新規顧客売上計画1,066百万円の4.2%').font=SM
-br.cell(14,2,'営業利益 1億円').font=BK
-br.cell(14,3,"='①サマリー'!C24").number_format=YEN; br.cell(14,3).font=SB; br.cell(14,3).fill=YL
-br.cell(14,5,'同 22.4%').font=SM
+c=br.cell(13,5,"='①サマリー'!D23"); c.number_format=PCT; c.font=SB
+br.cell(13,6,'新規顧客売上計画1,066百万円に対する比率').font=SM
 
 # ============ ⑥ワイン仕入・在庫計画 ============
 iv=wb.create_sheet('⑥ワイン仕入・在庫計画')
