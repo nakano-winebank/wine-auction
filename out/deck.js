@@ -68,7 +68,7 @@ function table(s,x0,y0,cols,rows,opt){
     ['不採算3店舗の撤退は完了','2026年3月で完了。1店舗はフラッグシップ店として継続。'],
     ['固定費は年103百万円削減済み','月次販管費 38.7百万円（26/3）→ 24.6百万円（26/6）。'],
     ['FY2027に132.5百万円の収益上乗せ','経営指導料を中心としたストック型収益。'],
-    ['差額売上の粗利率は30%','前期・今期の売上平均までの差額は、保守的に粗利率30%で置いています。']
+    ['B は何もしなくても届く下限','C〜Dが過去実績に照らした本命レンジ。Dを目指すべき最低限の姿とします。']
   ];
   items.forEach((it,i)=>{
     const y=1.62+i*1.22;
@@ -78,16 +78,16 @@ function table(s,x0,y0,cols,rows,opt){
     s.addText(it[1],{x:1.42,y:y+0.55,w:6.4,h:0.42,fontFace:BF,fontSize:11,color:INK,margin:0});
   });
   card(s,8.35,1.62,4.3,4.66,BERRY);
-  s.addText('FY2027 営業利益（プランC）',{x:8.6,y:1.9,w:3.8,h:0.3,fontFace:BF,fontSize:11,color:'D9D7D2',align:'center',margin:0});
-  s.addText('＋95.6',{x:8.6,y:2.2,w:3.8,h:0.85,fontFace:HF,fontSize:42,bold:true,color:GOLD,align:'center',margin:0});
+  s.addText('FY2027 営業利益（プランD）',{x:8.6,y:1.9,w:3.8,h:0.3,fontFace:BF,fontSize:11,color:'D9D7D2',align:'center',margin:0});
+  s.addText('＋135.4',{x:8.6,y:2.2,w:3.8,h:0.85,fontFace:HF,fontSize:42,bold:true,color:GOLD,align:'center',margin:0});
   s.addText('百万円',{x:8.6,y:3.03,w:3.8,h:0.3,fontFace:BF,fontSize:11,color:'D9D7D2',align:'center',margin:0});
-  s.addText('経常利益は＋80.6百万円\nFY2026 ▲124.8百万円からの転換',{x:8.6,y:3.42,w:3.8,h:0.62,fontFace:BF,fontSize:11.5,color:WHT,align:'center',margin:0});
+  s.addText('経常利益は＋120.4百万円\n目指すべき最低限の姿',{x:8.6,y:3.42,w:3.8,h:0.62,fontFace:BF,fontSize:11.5,color:WHT,align:'center',margin:0});
   s.addShape(p.ShapeType.line,{x:8.85,y:4.24,w:3.3,h:0,line:{color:'6E6E6E',width:1}});
   s.addText('売上高（上乗せ含む）',{x:8.6,y:4.4,w:3.8,h:0.3,fontFace:BF,fontSize:11,color:'D9D7D2',align:'center',margin:0});
-  s.addText('730.5百万円',{x:8.6,y:4.7,w:3.8,h:0.6,fontFace:HF,fontSize:26,bold:true,color:GOLD,align:'center',margin:0});
-  s.addText('FY2025実績とFY2026見込の平均\n期中最低現預金は＋14.6百万円',{x:8.6,y:5.36,w:3.8,h:0.7,fontFace:BF,fontSize:11,color:WHT,align:'center',margin:0});
+  s.addText('863.0百万円',{x:8.6,y:4.7,w:3.8,h:0.6,fontFace:HF,fontSize:26,bold:true,color:GOLD,align:'center',margin:0});
+  s.addText('既存730.5（前期・今期の平均）\n＋上乗せ案件132.5百万円',{x:8.6,y:5.36,w:3.8,h:0.7,fontFace:BF,fontSize:11,color:WHT,align:'center',margin:0});
   foot(s,'出典：事業計画202608（銀行様）全社シート月次実績、決算報告書 第54期、2026年7月度 取締役会資料');
-  s.addNotes('プランCはBに、前期・今期の売上平均730.5百万円までの差額208.9百万円を粗利率30%で加算したもの。営業＋95.6百万円、経常＋80.6百万円。');
+  s.addNotes('Bは契約ベースの下限。Dは既存事業を前期・今期の平均730.5百万円に置き、上乗せ案件132.5百万円を外数で加えたもの。売上863.0百万円、経常＋120.4百万円。');
 }
 
 /* 3 2期の赤字の性質 */
@@ -295,27 +295,27 @@ function table(s,x0,y0,cols,rows,opt){
 
 /* 9 4プラン比較 */
 {
-  const s=base('3つのプラン － Cを本線とします','Bに、前期・今期の売上平均までの差額を粗利率30%で加算したものがCです。');
+  const s=base('4つのプラン － Bが下限、Dが目指す姿','いずれも差額売上の粗利率は保守的に30%。上乗せ案件を内数とするか外数とするかがCとDの違いです。');
   const data=[
-    ['売上高（上乗せ含む）','389.1','521.6','730.5'],
-    ['　うち 既存事業','389.1','389.1','598.0'],
-    ['　うち 上乗せ案件','－','132.5','132.5'],
-    ['売上総利益 合計','200.6','333.1','395.8'],
-    ['総合粗利率','51.5%','63.9%','54.2%'],
-    ['販管費','300.2','300.2','300.2'],
-    ['営業利益','▲99.6','＋32.9','＋95.6'],
-    ['経常利益','▲114.6','＋17.9','＋80.6'],
-    ['期中 最低現預金','－','－','＋14.6']
+    ['売上高（上乗せ含む）','389.1','521.6','730.5','863.0'],
+    ['　うち 既存事業','389.1','389.1','598.0','730.5'],
+    ['　うち 上乗せ案件','－','132.5','132.5','132.5'],
+    ['売上総利益 合計','200.6','333.1','395.8','435.5'],
+    ['総合粗利率','51.5%','63.9%','54.2%','50.5%'],
+    ['販管費','300.2','300.2','300.2','300.2'],
+    ['営業利益','▲99.6','＋32.9','＋95.6','＋135.4'],
+    ['経常利益','▲114.6','＋17.9','＋80.6','＋120.4'],
+    ['期中 最低現預金','－','－','＋14.6','＋40.3']
   ];
-  table(s,0.65,1.66,[{t:'（百万円）',w:4.4},{t:'A. 横ばいのみ',w:2.5,a:'right'},{t:'B. ＋上乗せ132.5',w:2.55,a:'right'},
-    {t:'C. B＋差額売上（粗利率30%）',w:2.55,a:'right'}],data,{rh:0.37,hi:[6,7,8],hs:9});
+  table(s,0.65,1.66,[{t:'（百万円）',w:3.35},{t:'A. 横ばい',w:2.0,a:'right'},{t:'B. ＋上乗せ',w:2.1,a:'right'},
+    {t:'C. 上乗せは内数',w:2.25,a:'right'},{t:'D. 上乗せは外数',w:2.29,a:'right'}],data,{rh:0.37,hi:[6,7,8],hs:9});
   card(s,0.65,5.45,5.85,1.42,BERRY);
-  s.addText('Cの粗利の内訳',{x:0.95,y:5.62,w:5.25,h:0.3,fontFace:BF,fontSize:11,bold:true,color:GOLD,margin:0});
-  s.addText('既存389.1×51.5%＝200.6　／　差額208.9×30%＝62.7　／　上乗せ132.5×100%＝132.5。合計395.8百万円です。',
+  s.addText('B は「何もしなくても」届く下限',{x:0.95,y:5.62,w:5.25,h:0.3,fontFace:BF,fontSize:11,bold:true,color:GOLD,margin:0});
+  s.addText('4-6月実績の横ばいに、契約ベースの上乗せ案件を足しただけ。新規の施策をひとつも前提にしていません。',
     {x:0.95,y:5.93,w:5.25,h:0.85,fontFace:BF,fontSize:10.5,color:WHT,valign:'top',margin:0});
   card(s,6.8,5.45,5.85,1.42,CREAM);
-  s.addText('差額売上の粗利率30%の根拠',{x:7.1,y:5.62,w:5.25,h:0.3,fontFace:BF,fontSize:11,bold:true,color:INK,margin:0});
-  s.addText('既存事業の実績はFY2025 26.8%・FY2026 32.4%。その水準に合わせ、4-6月実績の51.5%は差額分には適用していません。',
+  s.addText('D は目指すべき最低限の姿',{x:7.1,y:5.62,w:5.25,h:0.3,fontFace:BF,fontSize:11,bold:true,color:INK,margin:0});
+  s.addText('既存事業を前期・今期の平均730.5百万円に戻し、上乗せ案件132.5百万円を外数で加算。当然これ以上を狙います。',
     {x:7.1,y:5.93,w:5.25,h:0.85,fontFace:BF,fontSize:10.5,color:INK,valign:'top',margin:0});
   foot(s,'上場関連コストは計上せず、期首現預金30百万円（2026/09末のみずほ銀行200百万円返済後）を前提。上乗せ案件132.5百万円は原価なしのため総合粗利率を押し上げます。');
   s.addNotes('Cは損益だけ見れば十分だが資金が回らない。損益と資金は別物であることを明示する。');
@@ -341,7 +341,7 @@ function table(s,x0,y0,cols,rows,opt){
   s.addText('FY2026と同水準を維持。仕入を絞ると優良銘柄の割当が減り、一度失った枠を戻すには数年を要します。目先の資金のために将来の成長を削らない、という判断です。',
     {x:7.15,y:2.9,w:5.15,h:1.15,fontFace:BF,fontSize:11.5,color:CREAM,valign:'top',margin:0});
   const cards=[['期首在庫（2026/09末）','420.0百万円',INK],['FY2027 仕入','419.1百万円',BERRY],
-               ['FY2027 売上原価（出庫）','334.8百万円',INK],['期末在庫','504.3百万円',GOLD]];
+               ['FY2027 売上原価（出庫）','427.5百万円',INK],['期末在庫','411.6百万円',GOLD]];
   cards.forEach((c,i)=>{
     const x=0.65+i*3.09;
     card(s,x,4.45,2.85,1.15);
@@ -349,7 +349,7 @@ function table(s,x0,y0,cols,rows,opt){
     s.addText(c[1],{x:x+0.2,y:4.92,w:2.45,h:0.5,fontFace:HF,fontSize:18,bold:true,color:c[2],margin:0});
   });
   card(s,0.65,5.85,11.99,0.8,CREAM);
-  s.addText('在庫は420.0→504.3百万円と84.3百万円積み上がりますが、時価1.37倍の換価可能資産です。運転資金としてのご理解をお願いしたい部分です。',
+  s.addText('プランDでは売上原価427.5百万円が仕入419.1百万円とほぼ見合い、在庫は420.0→411.6百万円と横ばい。仕入を維持しても資金が固定されません。',
     {x:1.0,y:5.85,w:11.3,h:0.8,fontFace:BF,fontSize:12,bold:true,color:BERRY,valign:'middle',margin:0});
   foot(s,'出典：2026年7月度 取締役会資料「ワイン預かり残高推移KPI」（税抜・簿価）。FY2026仕入額は売上原価479.1百万円＋在庫増減▲60.0百万円から逆算。');
   s.addNotes('在庫積み増しは資金を食うが、それは成長投資であり担保余力でもある、という整理。');
@@ -357,18 +357,18 @@ function table(s,x0,y0,cols,rows,opt){
 
 /* 11 FY2027 月次推移表 */
 {
-  const s=base('FY2027 月次推移表 － プランC','既存389.1（51.5%）＋差額208.9（30%）＋上乗せ132.5（原価なし）。単位：百万円');
+  const s=base('FY2027 月次推移表 － プランD','既存389.1（51.5%）＋差額341.4（30%）＋上乗せ132.5（原価なし）。単位：百万円');
   const MO=['26/10','26/11','26/12','27/01','27/02','27/03','27/04','27/05','27/06','27/07','27/08','27/09'];
-  const gEx=263270306/12, adv=92500000/12, sga=25013422, noe=1250000;
+  const gEx=303020306/12, adv=92500000/12, sga=25013422, noe=1250000;
   const inc=i=>i===5?20000000:0, cr=i=>(i===5||i===11)?10000000:0;
   const defs=[
-    ['売上高（既存事業）',i=>598035360/12],['売上原価',i=>-(598035360-263270306)/12],
+    ['売上高（既存事業）',i=>730535360/12],['売上原価',i=>-(730535360-303020306)/12],
     ['売上総利益（既存事業）',i=>gEx],['＋経営指導料',i=>adv],
     ['＋M&A仲介',inc],['＋新規事業利益（クルーザー）',cr],
     ['売上総利益 合計',i=>gEx+adv+inc(i)+cr(i),true],['販管費',i=>-sga],
     ['営業利益',i=>gEx+adv+inc(i)+cr(i)-sga,true],['営業外費用',i=>-noe],
     ['経常利益',i=>gEx+adv+inc(i)+cr(i)-sga-noe,true]];
-  const x0=0.65, lw=2.2, cwd=0.8, y0=1.62, rh=0.40;
+  const x0=0.65, lw=2.2, cwd=0.8, y0=1.58, rh=0.365;
   s.addShape(p.ShapeType.rect,{x:x0,y:y0,w:lw+cwd*12+0.95,h:0.42,fill:{color:BERRY}});
   s.addText('科目',{x:x0+0.12,y:y0,w:lw,h:0.42,fontFace:BF,fontSize:9,bold:true,color:WHT,valign:'middle',margin:0});
   MO.forEach((m,i)=>s.addText(m,{x:x0+lw+i*cwd,y:y0,w:cwd,h:0.42,fontFace:BF,fontSize:8.5,color:WHT,align:'center',valign:'middle',margin:0}));
@@ -382,21 +382,21 @@ function table(s,x0,y0,cols,rows,opt){
       s.addText(M(v),{x:x0+lw+i*cwd,y,w:cwd,h:rh,fontFace:BF,fontSize:8.5,bold:b,color:v<0?RED:(b?BERRY:INK),align:'center',valign:'middle',margin:0}); }
     s.addText(M(tot),{x:x0+lw+12*cwd,y,w:0.95,h:rh,fontFace:BF,fontSize:9,bold:true,color:tot<0?RED:BERRY,align:'center',valign:'middle',margin:0});
   });
-  const yb=y0+0.42+defs.length*rh+0.24;
+  const yb=y0+0.42+defs.length*rh+0.20;
   card(s,0.65,yb,11.99,0.92,CREAM);
-  [['売上高 合計（上乗せ含む）','730.5百万円'],['通期 営業利益','＋95.6百万円'],['通期 経常利益','＋80.6百万円']].forEach((c,i)=>{
+  [['売上高 合計（上乗せ含む）','863.0百万円'],['通期 営業利益','＋135.4百万円'],['通期 経常利益','＋120.4百万円']].forEach((c,i)=>{
     const x=1.0+i*3.95;
     s.addText(c[0],{x,y:yb+0.08,w:3.6,h:0.26,fontFace:BF,fontSize:9.5,color:MUT,margin:0});
     s.addText(c[1],{x,y:yb+0.30,w:3.6,h:0.34,fontFace:HF,fontSize:16,bold:true,color:BERRY,margin:0});
   });
   s.addText('経営指導料は12か月按分。M&A仲介は2027/03、新規クルーザー事業は2027/03と2027/09に各10百万円を計上。',
     {x:1.0,y:yb+0.64,w:11.3,h:0.24,fontFace:BF,fontSize:8.5,color:MUT,margin:0});
-  s.addNotes('通常月は経常＋3.4百万円。3月にM&A仲介と新規クルーザー事業30百万円が乗る。通期経常＋80.6百万円。');
+  s.addNotes('プランDの月次。通期経常＋120.4百万円。3月にM&A仲介と新規クルーザー事業30百万円が乗る。');
 }
 
 /* 12 月次資金繰り */
 {
-  const s=base('FY2027 月次資金繰り － プランC','ワイン仕入419.1百万円を維持したまま、期中に一度も現預金がマイナスになりません。単位：百万円（税込）');
+  const s=base('FY2027 月次資金繰り － プランD','ワイン仕入419.1百万円を維持したまま、期中に一度も現預金がマイナスになりません。単位：百万円（税込）');
   const MO=['26/10','26/11','26/12','27/01','27/02','27/03','27/04','27/05','27/06','27/07','27/08','27/09'];
   const defs=[['営業収入 計',CF['in'],false],['営業支出 計',CF.out,false],['経常収支',CF.ord,true],
               ['財務収支 計',CF.fin,false],['当月収支',CF.net,true],['月末 現預金残高',CF.bal,true]];
@@ -413,12 +413,12 @@ function table(s,x0,y0,cols,rows,opt){
       color:v<0?RED:(d[2]||isBal?BERRY:INK),align:'center',valign:'middle',margin:0}));
   });
   const yb=y0+0.42+defs.length*rh+0.28;
-  card(s,0.65,yb,5.85,1.5,BERRY);
-  s.addText('ボトルネックは2027年2月',{x:0.95,y:yb+0.18,w:5.25,h:0.32,fontFace:BF,fontSize:12,bold:true,color:GOLD,margin:0});
-  s.addText('11月にFY2026分の消費税確定納付3.6百万円、2月に当期の中間納付2.0百万円。3月の一時収益44百万円が入るまでが最も薄い期間ですが、最低14.6百万円を確保します。',
-    {x:0.95,y:yb+0.55,w:5.25,h:0.95,fontFace:BF,fontSize:10.5,color:WHT,valign:'top',margin:0});
-  const cs=[['A. プランC（本線）','＋41.4','＋14.6'],['B. 仕入を売上原価に連動','＋38.6','＋11.8'],
-            ['C. 一時収益44百万円が未入金','▲2.6','▲29.4'],['D. 差額売上208.9百万円が未達','▲153.4','▲180.2']];
+  card(s,0.65,yb,5.85,1.62,BERRY);
+  s.addText('最も薄いのは期首直後',{x:0.95,y:yb+0.18,w:5.25,h:0.32,fontFace:BF,fontSize:12,bold:true,color:GOLD,margin:0});
+  s.addText('期首30.0百万円に対し、期中最低は2026/10末の40.3百万円。11月にFY2026分の消費税確定納付3.6百万円、2・5・8月に中間納付2.0百万円を織り込んでも、以降は毎月プラスで積み上がり期末187.1百万円。',
+    {x:0.95,y:yb+0.55,w:5.25,h:1.05,fontFace:BF,fontSize:10.5,color:WHT,valign:'top',margin:0});
+  const cs=[['A. プランD（本線）','＋187.1','＋40.3'],['B. 仕入を売上原価に連動','＋177.8','＋31.0'],
+            ['C. 一時収益44百万円が未入金','＋143.1','▲3.7'],['D. 差額売上341.4百万円が未達（プランB）','▲188.4','▲335.3']];
   s.addShape(p.ShapeType.rect,{x:6.8,y:yb,w:5.85,h:0.36,fill:{color:BERRY}});
   [['感応度',6.95,2.6,'left'],['期末残高',9.55,1.4,'right'],['期中最低',11.05,1.45,'right']]
     .forEach(h=>s.addText(h[0],{x:h[1],y:yb,w:h[2],h:0.36,fontFace:BF,fontSize:9,bold:true,color:WHT,align:h[3],valign:'middle',margin:0}));
@@ -430,7 +430,7 @@ function table(s,x0,y0,cols,rows,opt){
       color:String(v[0]).startsWith('▲')?RED:BERRY,align:'right',valign:'middle',margin:0}));
   });
   foot(s,'期首現預金30百万円（2026/09末にみずほ銀行へ200百万円返済後）。消費税はFY2026実績から算定（確定3.6＋中間2.0×3回＝年9.6百万円）。');
-  s.addNotes('保守前提でも期中最低14.6百万円を確保。仕入を維持しても在庫が積み上がらないため、資金が固定されないことが効いている。');
+  s.addNotes('プランDでは期中最低40.3百万円、期末187.1百万円。仕入を維持しても在庫が積み上がらないため、資金が固定されないことが効いている。ケースDはプランBにとどまった場合で、その差が本計画の意味。');
 }
 
 /* 13 財務基盤 */
@@ -487,27 +487,28 @@ function table(s,x0,y0,cols,rows,opt){
 
 /* 15 蓋然性 ★ */
 {
-  const s=base('プランCの蓋然性 － 過去実績が裏付けています','売上は前期・今期と同水準。上振れを織り込まず、粗利率も過去実績の平均に落としています。');
+  const s=base('C〜D が本命レンジ － トラックレコードが裏付けます','Bは何もしなくても届く下限。過去2期の売上実績に照らすと、C〜Dの蓋然性が最も高いと考えています。');
   const data=[
     ['FY2024 実績','512.5','203.7','39.8%','－'],
-    ['FY2025 実績','752.9','201.9','26.8%','97.0%'],
-    ['FY2026 見込','708.2','229.1','32.4%','103.2%'],
-    ['プランC（FY2027）','730.5','395.8','54.2%','100.0%']
+    ['FY2025 実績','752.9','201.9','26.8%','－'],
+    ['FY2026 見込','708.2','229.1','32.4%','－'],
+    ['プランC（既存598.0）','730.5','395.8','54.2%','81.9%'],
+    ['プランD（既存730.5）','863.0','435.5','50.5%','100.0%']
   ];
   table(s,0.65,1.66,[{t:'期',w:2.9},{t:'売上高（百万円）',w:2.2,a:'right'},{t:'事業粗利（百万円）',w:2.3,a:'right'},
-    {t:'粗利率',w:1.6,a:'right'},{t:'プランC/実績',w:2.0,a:'right'}],data,{rh:0.52,hi:[3]});
-  card(s,0.65,4.15,5.85,1.55,BERRY);
-  s.addText('売上は過去2期と同水準',{x:0.95,y:4.33,w:5.25,h:0.32,fontFace:BF,fontSize:12,bold:true,color:GOLD,margin:0});
-  s.addText('プランCの730.5百万円は、FY2025実績752.9とFY2026見込708.2のちょうど平均。新たな成長を前提にせず、過去2期に到達した売上規模をそのまま置いています。',
-    {x:0.95,y:4.7,w:5.25,h:0.95,fontFace:BF,fontSize:11,color:WHT,valign:'top',margin:0});
-  card(s,6.8,4.15,5.85,1.55,CREAM);
-  s.addText('差額分の粗利率は保守的に30%',{x:7.1,y:4.33,w:5.25,h:0.32,fontFace:BF,fontSize:12,bold:true,color:INK,margin:0});
-  s.addText('Bからの差額売上208.9百万円には粗利率30%を適用。FY2025 26.8%・FY2026 32.4%という実績水準に合わせた保守値で、4-6月実績の51.5%は使っていません。',
-    {x:7.1,y:4.7,w:5.25,h:0.95,fontFace:BF,fontSize:11,color:INK,valign:'top',margin:0});
-  card(s,0.65,5.9,11.99,0.85,CREAM);
-  s.addText('差額売上208.9百万円の粗利率が4-6月実績の51.5%であれば、同じ売上730.5百万円で経常利益は約125百万円。プランCはその上振れを織り込んでいません。',
+    {t:'粗利率',w:1.6,a:'right'},{t:'既存事業／2期平均',w:2.0,a:'right'}],data,{rh:0.42,hi:[3,4]});
+  card(s,0.65,4.42,5.85,1.35,BERRY);
+  s.addText('B は下限、D は目指す姿',{x:0.95,y:4.58,w:5.25,h:0.32,fontFace:BF,fontSize:12,bold:true,color:GOLD,margin:0});
+  s.addText('Bは4-6月実績の横ばいに契約分を足しただけの下限。Dの既存事業730.5百万円は過去2期の平均そのもので、新たな成長を前提にしていません。当然これ以上を狙います。',
+    {x:0.95,y:4.92,w:5.25,h:0.8,fontFace:BF,fontSize:10.5,color:WHT,valign:'top',margin:0});
+  card(s,6.8,4.42,5.85,1.35,CREAM);
+  s.addText('C〜D の蓋然性が最も高い',{x:7.1,y:4.58,w:5.25,h:0.32,fontFace:BF,fontSize:12,bold:true,color:INK,margin:0});
+  s.addText('既存事業売上はCが過去2期平均の81.9%、Dが100.0%。過去に到達した水準の範囲内であり、粗利率も実績平均の30%。実績に照らして無理のないレンジです。',
+    {x:7.1,y:4.92,w:5.25,h:0.8,fontFace:BF,fontSize:10.5,color:INK,valign:'top',margin:0});
+  card(s,0.65,5.95,11.99,0.85,CREAM);
+  s.addText('B（経常＋17.9百万円）は何もしなくても届く下限。C（＋80.6）〜D（＋120.4）が過去実績に照らした本命レンジであり、施策を打つ以上はD超えを目指します。',
     {x:1.0,y:5.9,w:11.3,h:0.85,fontFace:BF,fontSize:12,bold:true,color:BERRY,valign:'middle',margin:0});
-  foot(s,'プランCの粗利395.8百万円＝既存389.1×51.5%（200.6）＋差額208.9×30%（62.7）＋上乗せ132.5（原価なし）。出典：事業計画202608（銀行様）、決算報告書 第54期。');
+  foot(s,'「既存事業／2期平均」＝各プランの既存事業売上が過去2期平均730.5百万円に占める比率。差額売上の粗利率は30%（FY2025 26.8%・FY2026 32.4%の水準）。');
   s.addNotes('売上7億円は過去2期の実績値。プランCはそれを下回る6.2億円で成立する。粗利率改善の分だけ上振れ余地がある。');
 }
 
@@ -516,12 +517,11 @@ function table(s,x0,y0,cols,rows,opt){
   const s=p.addSlide(); s.background={color:WHT};
   s.addShape(p.ShapeType.rect,{x:0,y:0,w:0.16,h:H,fill:{color:INK}});
   s.addText('まとめ',{x:0.9,y:0.75,w:8,h:0.7,fontFace:HF,fontSize:34,bold:true,color:INK,margin:0});
-  s.addShape(p.ShapeType.rect,{x:0.9,y:1.5,w:1.6,h:0.025,fill:{color:GOLD}});
   const pts=[
     ['FY2026の赤字は構造改革の費用','不採算3店舗の撤退は2026年3月に完了。年103百万円の固定費削減は実績です。'],
     ['上乗せ案件だけで営業損益は黒字転換','132.5百万円の計上により、FY2026比147.7百万円の改善。'],
     ['ワイン仕入は落としません','割当を守り2〜3年先の成長を確保。在庫は時価1.37倍の換価可能資産です。'],
-    ['売上は過去2期と同水準・差額分は粗利率30%','売上730.5百万円は2期平均そのもの。営業利益＋95.6／経常利益＋80.6百万円です。']
+    ['B は下限、C〜D が本命レンジ','Bは何もしなくても＋17.9百万円。Dは売上863.0百万円・経常＋120.4百万円で、目指すべき最低限の姿です。']
   ];
   pts.forEach((t,i)=>{
     const y=1.75+i*1.12;
@@ -530,16 +530,16 @@ function table(s,x0,y0,cols,rows,opt){
     s.addText(t[0],{x:1.55,y,w:7.4,h:0.4,fontFace:BF,fontSize:15.5,bold:true,color:INK,margin:0});
     s.addText(t[1],{x:1.55,y:y+0.42,w:7.4,h:0.44,fontFace:BF,fontSize:11.5,color:'6E6E6E',margin:0});
   });
-  card(s,9.4,1.75,3.25,4.25,INK);
+  card(s,9.4,1.75,3.25,2.55,INK);
   s.addText('ご相談事項',{x:9.65,y:2.0,w:2.75,h:0.34,fontFace:BF,fontSize:12,bold:true,color:GOLD,margin:0});
   s.addText([
-    {text:'2026年11月のつなぎ資金',options:{bullet:true,breakLine:true}},
+    {text:'短期借入162百万円の借換継続',options:{bullet:true,breakLine:true}},
     {text:'在庫見合いの運転資金枠',options:{bullet:true,breakLine:true}},
     {text:'財務制限条項の事前確認',options:{bullet:true,breakLine:true}},
     {text:'月次資金繰り表のご報告',options:{bullet:true}}
   ],{x:9.65,y:2.45,w:2.75,h:2.0,fontFace:BF,fontSize:11,color:WHT,paraSpaceAfter:9,margin:0});
   s.addText('株式会社WineBank',{x:0.9,y:6.55,w:6,h:0.34,fontFace:BF,fontSize:11,color:MUT,margin:0});
-  s.addNotes('依頼事項を明確にして締める。11月のつなぎと在庫見合い枠の2点が具体的な依頼。');
+  s.addNotes('依頼事項を明確にして締める。短期の借換継続と在庫見合いの運転資金枠の2点が具体的な依頼。');
 }
 
 p.writeFile({fileName:'WineBank_FY2027_銀行提出.pptx'}).then(f=>console.log('written:',f));
