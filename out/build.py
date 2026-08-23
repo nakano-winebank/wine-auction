@@ -8,15 +8,15 @@ from openpyxl.utils import get_column_letter
 
 F='メイリオ'
 # WineBank ハウススタイル：無彩色モノトーン ＋ メイリオ
-BK=Font(name=F); BL=Font(name=F,color='1A1A1A',bold=True); GR=Font(name=F,color='595959')
+BK=Font(name=F); BL=Font(name=F,color='8A6A24',bold=True); GR=Font(name=F,color='595959')
 SB=Font(name=F,bold=True); HD=Font(name=F,bold=True,color='FFFFFF')
 SM=Font(name=F,size=9,color='8C8C8C'); RD=Font(name=F,size=9,color='333333')
 GY=Font(name=F,color='8C8C8C',italic=True)
-HF=PatternFill('solid',fgColor='1A1A1A'); SF=PatternFill('solid',fgColor='EEEDEA')
-YL=PatternFill('solid',fgColor='E6E4E0'); TF=PatternFill('solid',fgColor='F0EFEC')
-OP=PatternFill('solid',fgColor='EEEDEA'); OR_=PatternFill('solid',fgColor='E0DEDA')
-GRP=PatternFill('solid',fgColor='E8E6E2')
-CREAMFILL=PatternFill('solid',fgColor='F5F4F1')
+HF=PatternFill('solid',fgColor='1A1A1A'); SF=PatternFill('solid',fgColor='F2F1EE')
+YL=PatternFill('solid',fgColor='FAF3E2'); TF=PatternFill('solid',fgColor='F7F6F3')
+OP=PatternFill('solid',fgColor='F7F6F3'); OR_=PatternFill('solid',fgColor='F4EDDC')
+GRP=PatternFill('solid',fgColor='EFEEEA')
+CREAMFILL=PatternFill('solid',fgColor='FBFAF7')
 TB=Border(top=Side(style='thin',color='1A1A1A'))
 YEN='¥#,##0;(¥#,##0);-'; PCT='0.0%'
 SGA=json.load(open('sga_monthly.json'))
@@ -99,37 +99,37 @@ c=p.cell(9,3,'=C7/C6'); c.number_format=PCT; c.font=BK
 p.cell(6,6,'2026/03以前は撤退した不採算3店舗の売上・費用を含むため基準から除外（貴社ご指摘）。').font=RD
 S_M,G_M,P_M,GM=6,7,8,9
 bar(p,11,'【2】上乗せ案件（2026/09-2027/08）')
-for j,t in enumerate(['区分','金額','','損益計上区分']):
+for j,t in enumerate(['区分・案件','金額','取引先','損益計上区分']):
     c=p.cell(12,2+j,t); c.font=SB; c.fill=SF
-items=[('経営指導料　Value table',10000000,'営業収益（12か月按分）'),
-       ('経営指導料　Prime',60000000,'営業収益（12か月按分）'),
-       ('経営指導料　Apicius',10000000,'営業収益（12か月按分）'),
-       ('経営指導料　Thierry Marx【グループ／2026年4月開業】',2500000,'営業収益（12か月按分）'),
-       ('経営指導料　ito＋Aqua＋Hokkaido',10000000,'営業収益（12か月按分）'),
-       ('インセンティブ　Apicius2 shot【外部／株主売却】',20000000,'営業収益（成功報酬・一時）'),
-       ('クルーザー事業利益　1回目',10000000,'営業収益（2027/03）'),
-       ('クルーザー事業利益　2回目',10000000,'営業収益（2027/09）')]
+items=[('経営指導料　間接グループ5社',80000000,'中野出資','営業収益（12か月按分）'),
+       ('経営指導料　Thierry Marx（2026年4月開業）',2500000,'Apiciusグループ','営業収益（12か月按分）'),
+       ('経営指導料　Apicius',10000000,'中野出資','営業収益（12か月按分）'),
+       ('M&A仲介　Apicius既存株主売却仲介',20000000,'外部','営業収益（一時）'),
+       ('新規事業利益　新規クルーザー事業 1回目',10000000,'外部','営業収益（一時）'),
+       ('新規事業利益　新規クルーザー事業 2回目',10000000,'外部','営業収益（一時）')]
 I0=13
-for i,(n,v,k) in enumerate(items):
+for i,(n,v,tori,k) in enumerate(items):
     p.cell(I0+i,2,n).font=BK
     c=p.cell(I0+i,3,v); c.font=BL; c.number_format=YEN; c.fill=YL
+    p.cell(I0+i,4,tori).font=BK
     p.cell(I0+i,5,k).font=BK
-I1=I0+7; TT=I1+1
-CR1,CR2=I1-1,I1
+I1=I0+5; TT=I1+1
+MNA=I0+3
+CR1,CR2=I0+4,I0+5
 for lab,f_,rr in [('合計',f'=SUM(C{I0}:C{I1})',TT),('　うち 営業収益',f'=SUM(C{I0}:C{I1})',TT+1),('　うち 営業外収益',0,TT+2)]:
     p.cell(rr,2,lab).font=SB if rr==TT else BK
     c=p.cell(rr,3,f_); c.number_format=YEN; c.font=SB if rr==TT else BK
     if rr==TT: c.fill=TF
 ADV,INV=TT+1,TT+2
-p.cell(TT+2,6,'※外部50.0百万円＝ito＋Aqua＋Hokkaido／Apicius2 shot（外部株主売却）／クルーザー事業利益。クルーザーは事業利益のため全額営業収益に計上し、営業外収益は0。').font=RD
+p.cell(TT+2,6,'※新規クルーザー事業利益は投資損益ではなく事業利益のため、全額を営業収益に計上。営業外収益は0。').font=RD
 p.cell(TT,6,'※期間表記は2026/09-2027/08。決算期(2026/10-2027/09)と1か月ズレるため全額FY2027帰属で試算。').font=RD
-p.cell(TT+1,6,'※うち82.5百万円はグループ内取引（Value table・Prime・Apicius・Thierry Marx）。Thierry Marxは2026年4月開業のグループ店。').font=RD
+p.cell(TT+1,6,'※グループ内 92.5百万円（中野出資90.0＋Apiciusグループ2.5）／外部 40.0百万円（M&A仲介20.0＋新規クルーザー事業20.0）。').font=RD
 O0=TT+4
 bar(p,O0,'【3】その他前提')
 oth=[('営業外費用（支払利息等・年額）',15000000,YEN,'事業計画FY2027計画値'),
-     ('インセンティブ 計上月（1〜12）',6,'0','6＝2027年3月'),
-     ('クルーザー事業利益 1回目 計上月',6,'0','6＝2027年3月'),
-     ('クルーザー事業利益 2回目 計上月',12,'0','12＝2027年9月（期末までに計上）'),
+     ('M&A仲介 計上月（1〜12）',6,'0','6＝2027年3月'),
+     ('新規クルーザー事業 1回目 計上月',6,'0','6＝2027年3月'),
+     ('新規クルーザー事業 2回目 計上月',12,'0','12＝2027年9月（期末までに計上）'),
      ('目標経常利益',100000000,YEN,'シナリオCの目標。営業利益ではなく経常利益で設定。'),
      ('新規顧客売上 計画額（FY2027）',1066000000,YEN,'事業計画のワイン投資 新規顧客計画 合計'),
      ('シナリオ選択（1＝B 上乗せのみ／2＝C 経常利益1億円／3＝D CFが回る売上）',3,'0','③月次推移・⑦資金繰り表に反映'),
@@ -145,6 +145,39 @@ rr=O0+10
 p.cell(rr,2,'法人税等').font=BK; p.cell(rr,3,'均等割のみ').font=BL
 p.cell(rr,6,'繰越欠損金 約252百万円（FY2025▲127.4＋FY2026▲124.8）。資本金1,000万円の中小法人は所得の100%控除可。').font=SM
 p.cell(rr,6).alignment=Alignment(wrap_text=True,vertical='top'); p.row_dimensions[rr].height=32
+
+# 【6】消費税の算定（FY2026分＝FY2027の資金繰りに乗る納付額）
+CT0=rr+2
+bar(p,CT0,'【6】消費税の算定　※FY2027の資金繰りに乗るのはFY2026分の確定納付と当期の中間納付')
+ct=[('消費税率',0.10,PCT,True,''),
+    ('FY2026 課税売上高',708205820,YEN,True,'事業計画FY2026見込の売上高'),
+    ('FY2026 ワイン仕入（課税仕入）',None,YEN,False,'売上原価479,066,414＋在庫増減▲60,000,000'),
+    ('FY2026 販管費のうち課税仕入',208594315,YEN,True,'販管費343,932,836−人件費・減価償却・租税公課等135,338,521'),
+    ('　仮受消費税',None,YEN,False,''),
+    ('　仮払消費税',None,YEN,False,''),
+    ('FY2026 確定消費税額',None,YEN,False,'仮受−仮払。赤字でも人件費・減価償却は仕入税額控除できないため納付が生じる'),
+    ('　うちFY2026中に中間納付済',4500000,YEN,True,'FY2025確定額ベースの中間納付（年3回）の概算。実績値に差し替えてください'),
+    ('2026/11 確定納付額',None,YEN,False,'FY2027の資金繰りに計上'),
+    ('FY2027 中間納付（1回あたり）',None,YEN,False,'確定額÷4。2027/02・05・08の年3回'),]
+for i,(t,v,fmt,inp,nt) in enumerate(ct):
+    r2=CT0+1+i
+    p.cell(r2,2,t).font=BK
+    c=p.cell(r2,3,v if inp else None); c.number_format=fmt
+    if inp: c.font=BL; c.fill=YL
+    else: c.font=SB; c.fill=TF
+    p.cell(r2,6,nt).font=SM
+CT_RATE,CT_SALES,CT_BUY,CT_SGA=CT0+1,CT0+2,CT0+3,CT0+4
+CT_UKE,CT_HARAI,CT_FIX,CT_MIDPAID,CT_FIN,CT_MID=CT0+5,CT0+6,CT0+7,CT0+8,CT0+9,CT0+10
+p.cell(CT_BUY,3,f'=C{O0+9}').number_format=YEN
+p.cell(CT_UKE,3,f'=C{CT_SALES}*C{CT_RATE}').number_format=YEN
+p.cell(CT_HARAI,3,f'=(C{CT_BUY}+C{CT_SGA})*C{CT_RATE}').number_format=YEN
+p.cell(CT_FIX,3,f'=C{CT_UKE}-C{CT_HARAI}').number_format=YEN
+p.cell(CT_FIN,3,f'=C{CT_FIX}-C{CT_MIDPAID}').number_format=YEN
+p.cell(CT_MID,3,f'=C{CT_FIX}/4').number_format=YEN
+for r2 in (CT_BUY,CT_UKE,CT_HARAI,CT_FIX,CT_FIN,CT_MID):
+    p.cell(r2,3).font=SB; p.cell(r2,3).fill=TF
+p.cell(CT_FIX,3).fill=OR_
+p.cell(CT_FIX+4,6,'※ワイン仕入が課税売上−課税販管費（約499.6百万円）を超えると還付に転じる。FY2026の仕入419.1百万円では納付側。').font=RD
 Q=lambda r: f"'②前提'!$C${r}"
 
 # ============ ③FY2027月次推移 ============
@@ -189,16 +222,16 @@ R_C=r+4;  mrow(R_C,'　売上原価',f'=C{R_TS}-C{R_TS+2}-C{R_TS+3}',lambda i,c:
 R_G=r+5;  mrow(R_G,'既存事業 売上総利益',f'={Q(G_M)}')
 R_AG=r+6; mrow(R_AG,'追加売上 総利益',f'=C{R_AS}*{Q(GM)}',lambda i,c:f'={c}{R_AS}*{Q(GM)}')
 R_A0=r+7
-adv_lbl=['経営指導料 Value table','経営指導料 Prime','経営指導料 Apicius','経営指導料 Thierry Marx','経営指導料 ito＋Aqua＋Hokkaido']
+adv_lbl=['経営指導料 間接グループ5社','経営指導料 Thierry Marx','経営指導料 Apicius']
 for k,lab in enumerate(adv_lbl):
     mrow(R_A0+k,'＋'+lab,f'={Q(I0+k)}/12')
-R_INC=R_A0+5
-mrow(R_INC,'＋インセンティブ Apicius2 shot',None,lambda i,c:f'=IF({i+1}={Q(MI)},{Q(I0+5)},0)')
+R_INC=R_A0+3
+mrow(R_INC,'＋M&A仲介（Apicius株主売却）',None,lambda i,c:f'=IF({i+1}={Q(MI)},{Q(MNA)},0)')
 R_CR=R_INC+1
-mrow(R_CR,'＋クルーザー事業利益',None,
+mrow(R_CR,'＋新規事業利益（クルーザー）',None,
      lambda i,c:f'=IF({i+1}={Q(MC1)},{Q(CR1)},0)+IF({i+1}={Q(MC2)},{Q(CR2)},0)')
 R_GT=R_CR+1
-mrow(R_GT,'売上総利益 合計',f'=C{R_G}+C{R_AG}+SUM(C{R_A0}:C{R_A0+4})',
+mrow(R_GT,'売上総利益 合計',f'=C{R_G}+C{R_AG}+SUM(C{R_A0}:C{R_A0+2})',
      lambda i,c:f'={c}{R_G}+{c}{R_AG}+SUM({c}{R_A0}:{c}{R_CR})',bold=True,fill=TF,top=True)
 r=R_GT+2
 m.cell(r,2,'【販売費及び一般管理費】').font=SB; m.cell(r,2).fill=GRP
@@ -225,7 +258,7 @@ for i in range(12):
     f_=f'=D{R_ORD}' if i==0 else f'={get_column_letter(3+i)}{R_CUM}+{col}{R_ORD}'
     c=m.cell(R_CUM,4+i,f_); c.number_format=YEN; c.font=SB; c.fill=OR_
 m.cell(R_CUM+2,2,'※既存事業の売上・粗利・販管費は2026/04-06実績の月平均を横ばい。成長・季節変動は織り込んでいない保守前提。').font=SM
-m.cell(R_CUM+3,2,'※経営指導料は12か月按分。インセンティブとクルーザー事業利益は②前提で指定した月に計上（クルーザーは2027/03と2027/09に各10百万円）。').font=SM
+m.cell(R_CUM+3,2,'※経営指導料は12か月按分。M&A仲介と新規クルーザー事業は②前提で指定した月に計上（クルーザーは2027/03と2027/09に各10百万円）。').font=SM
 m.freeze_panes='D5'
 
 # ============ ①サマリー ============
@@ -244,7 +277,7 @@ b=lambda rr: f"{Q(rr)}*12"
 spec=[
  ('既存事業 売上',      708205820, f'={b(S_M)}', f'={b(S_M)}', f'=E6+F9/{Q(GM)}','=E6+$C$24',''),
  ('売上総利益（既存事業）', 229139405, f'={b(G_M)}', f'={b(G_M)}', '=E7','=E7',''),
- ('＋上乗せ案件（営業収益）',0,        0,            f'={Q(ADV)}',  f'={Q(ADV)}',f'={Q(ADV)}','経営指導料92.5＋インセンティブ20＋クルーザー20'),
+ ('＋上乗せ案件（営業収益）',0,        0,            f'={Q(ADV)}',  f'={Q(ADV)}',f'={Q(ADV)}','経営指導料92.5＋M&A仲介20＋新規事業利益20'),
  ('＋追加で必要な粗利',    None,      None,         None,          f'={Q(TGT)}+F14-F13+F11-F7-F8',f'=$C$24*{Q(GM)}','追加売上から生じる粗利'),
  ('売上総利益 合計',       229139405, '=D7+D8',     '=E7+E8',      '=F7+F8+F9','=G7+G8+G9',''),
  ('販管費',              343932836, f'={b(P_M)}', f'={b(P_M)}',  '=E11','=E11','2026/04-06実績の月平均×12'),
@@ -307,7 +340,7 @@ for j,t in enumerate(['項目','増減','累計','内容']):
 steps=[('FY2026 営業利益（見込）',-114793431,'現行計画の今期着地見込'),
        ('① 既存事業 粗利の減少',f'={Q(G_M)}*12-229139405','FY2026は2025/11・2026/09の大口を含む。撤退後実力値ベースでは減少'),
        ('② 販管費の削減',f'=343932836-{Q(P_M)}*12','不採算3店舗の撤退＋固定費削減。10-3月平均比で月▲8.58百万円'),
-       ('③ 上乗せ案件（営業収益）',f'={Q(ADV)}','経営指導料92.5＋インセンティブ20＋クルーザー事業利益20'),
+       ('③ 上乗せ案件（営業収益）',f'={Q(ADV)}','経営指導料92.5＋M&A仲介20＋新規事業利益20'),
        ('FY2027 営業利益（保守シナリオB）',None,'①〜③の合計')]
 for i,(lab,val,note) in enumerate(steps):
     rr=5+i
@@ -407,7 +440,7 @@ cf['B1']='FY2027（2026年10月-2027年9月）月次資金繰り表'; cf['B1'].f
 cf['B2']='単位：円（税込ベース）　シナリオC（経常利益1億円）／ワイン仕入FY2026同額の前提　青字＝入力セル・緑字＝他シートからのリンク'; cf['B2'].font=SM
 bar(cf,4,'【前提】',16)
 pre=[('期首現預金（2026/09末）',30000000,'2026/09末にみずほ銀行へ200百万円を返済した後のキャッシュポジション（貴社ご指定）。',True),
-     ('消費税率',0.10,'',False),
+     ('消費税率',None,'②前提の【6】消費税の算定から自動参照',False),
      ('売上 回収サイト（か月）',1.0,'売掛金回転32.2日（2025/09末BS）より1.06か月→1.0か月と設定。',False),
      ('仕入 支払サイト（か月）',1.0,'買掛金回転23.5日（2025/09末BS）より0.77か月→1.0か月と設定。',False),
      ('長期借入金 約定返済（月額）',2662179,'★要差替え。長期借入423,623,000円−みずほ一括返済200,000,000円＝223,623,000円を7年均等返済と仮定した暫定値。',True),
@@ -415,7 +448,7 @@ pre=[('期首現預金（2026/09末）',30000000,'2026/09末にみずほ銀行�
 for i,(t,v,nt,warn) in enumerate(pre):
     r=5+i
     cf.cell(r,2,t).font=BK
-    c=cf.cell(r,3,v); c.font=BL
+    c=cf.cell(r,3,f'={Q(CT_RATE)}' if t=='消費税率' else v); c.font=GR if t=='消費税率' else BL
     if warn: c.fill=YL
     c.number_format=PCT if t=='消費税率' else ('0.0' if 'サイト' in t else YEN)
     cf.cell(r,4,nt).font=RD if warn else SM
@@ -453,14 +486,14 @@ cf.cell(hd,2,'【営業収入】').font=SB; cf.cell(hd,2).fill=GRP
 for c in range(3,17): cf.cell(hd,c).fill=GRP
 IN_S=hd+1; IN_A=hd+2; IN_I=hd+3; IN_T=hd+6
 crow(IN_S,'売上入金（税込）',lambda i,c:f"='③FY2027月次推移'!{c}{R_TS}*(1+{Y(CF_TAX)})",font=GR)
-crow(IN_A,'経営指導料 入金（税込）',lambda i,c:f"=SUM('③FY2027月次推移'!{c}{R_A0}:{c}{R_A0+4})*(1+{Y(CF_TAX)})",font=GR)
-crow(IN_I,'インセンティブ 入金（税込）',lambda i,c:f"='③FY2027月次推移'!{c}{R_INC}*(1+{Y(CF_TAX)})",font=GR)
+crow(IN_A,'経営指導料 入金（税込）',lambda i,c:f"=SUM('③FY2027月次推移'!{c}{R_A0}:{c}{R_A0+2})*(1+{Y(CF_TAX)})",font=GR)
+crow(IN_I,'M&A仲介 入金（税込）',lambda i,c:f"='③FY2027月次推移'!{c}{R_INC}*(1+{Y(CF_TAX)})",font=GR)
 IN_R=IN_I+1
 recv=[0,0,0,0,0,0,0,0,0,0,0,0]
 crow(IN_R,'前期末売掛金 回収',lambda i,c:recv[i],inp=True)
 IN_CR=IN_R+1
-crow(IN_CR,'クルーザー事業利益 入金（税込）',lambda i,c:f"='③FY2027月次推移'!{c}{R_CR}*(1+{Y(CF_TAX)})",font=GR)
-cf.cell(IN_CR,17,'2027/03と2027/09に各10百万円。課税取引として税込入金と仮定。').font=SM
+crow(IN_CR,'新規事業利益 入金（税込）',lambda i,c:f"='③FY2027月次推移'!{c}{R_CR}*(1+{Y(CF_TAX)})",font=GR)
+cf.cell(IN_CR,17,'新規クルーザー事業。2027/03と2027/09に各10百万円。課税取引として税込入金と仮定。').font=SM
 cf.cell(IN_R,17,'2026/09の在庫販売200百万円の代金回収およびみずほ銀行への返済は2026/09末までに完了済み（期首現預金30百万円に反映）。').font=RD
 crow(IN_T,'営業収入 計',lambda i,c:f'=SUM({c}{IN_S}:{c}{IN_CR})',bold=True,fill=TF,top=True)
 
@@ -480,9 +513,12 @@ depr=SG0+ACC.index('減価償却費')
 crow(OUT_O,'その他販管費（税込・減価償却除く）',
      lambda i,c:(f"=(('③FY2027月次推移'!{c}{R_SGT}-AVERAGE('④FY2026月次実績'!I{depr}:K{depr})-({hexpr})-({ntexpr}))*(1+{Y(CF_TAX)}))+({ntexpr})"),font=GR)
 crow(OUT_INT,'支払利息',lambda i,c:f"='③FY2027月次推移'!{c}{R_NOE}",font=GR)
-ct=[0,30000000,0,0,0,0,0,5000000,0,0,0,0]
-crow(OUT_CT,'消費税 納付',lambda i,c:ct[i],inp=True)
-cf.cell(OUT_CT,17,'2026/11はFY2026分の確定納付。2026/09の在庫販売200百万円に係る仮受消費税20百万円を含む（仕入時に仮払控除済のため純増）。').font=RD
+def _ctax(i,c):
+    if i==1:  return f'={Q(CT_FIN)}'      # 2026/11 確定納付
+    if i in (4,7,10): return f'={Q(CT_MID)}'  # 2027/02・05・08 中間納付
+    return 0
+crow(OUT_CT,'消費税 納付',_ctax,font=GR)
+cf.cell(OUT_CT,17,'②前提【6】の算定結果を参照。2026/11＝FY2026分の確定納付、2027/02・05・08＝当期の中間納付（年3回）。').font=RD
 tx=[0,463105,0,0,0,0,0,0,0,0,0,0]
 crow(OUT_TX,'法人税等（均等割）',lambda i,c:tx[i],inp=True)
 crow(OUT_T,'営業支出 計',lambda i,c:f'=SUM({c}{OUT_W}:{c}{OUT_TX})',bold=True,fill=TF,top=True)
@@ -535,7 +571,7 @@ cases=[('A. 基本（シナリオD：仕入FY2026同額・CFが回る売上）',
         f"=D{sr+2}+({Q(BUY26)}-'③FY2027月次推移'!$P${R_C})*(1+{Y(CF_TAX)})",
         '仕入＝売上原価（②前提のワイン仕入方針を1に変更）。在庫は増えない'),
        ('C. 2027/03・09の一時収益が入らない',f'=C{sr+2}-(P{IN_I}+P{IN_CR})',f'=D{sr+2}-(P{IN_I}+P{IN_CR})',
-        'インセンティブ22.0百万円＋クルーザー事業利益22.0百万円（いずれも税込）が未入金'),
+        'M&A仲介22.0百万円＋新規事業利益22.0百万円（いずれも税込）が未入金'),
        ('D. 追加売上が未達（プランBにとどまる）',f"=C{sr+2}-'①サマリー'!$C$24*(1+{Y(CF_TAX)})",
         f"=D{sr+2}-'①サマリー'!$C$24*(1+{Y(CF_TAX)})",
         '追加売上231.9百万円が未達。仕入方針2では仕入額が減らないため全額が資金不足に直結')]
@@ -576,7 +612,7 @@ cf.cell(RS+1,6,'0＝期中に一度も現預金がマイナスにならない水
 sga_m=Q(P_M)
 other_expr=f"(({sga_m}-AVERAGE('④FY2026月次実績'!I{depr}:K{depr})-({hexpr})-({ntexpr}))*(1+{Y(CF_TAX)}))+({ntexpr})"
 cf.cell(RS+2,2,'月次ネット収支（追加売上を除く）').font=BK
-c=cf.cell(RS+2,3,f"={Q(S_M)}*(1+{Y(CF_TAX)})+SUM('②前提'!$C${I0}:$C${I0+4})/12*(1+{Y(CF_TAX)})"
+c=cf.cell(RS+2,3,f"={Q(S_M)}*(1+{Y(CF_TAX)})+SUM('②前提'!$C${I0}:$C${I0+2})/12*(1+{Y(CF_TAX)})"
                  f"-{Q(BUY26)}/12*(1+{Y(CF_TAX)})-({hexpr})-({other_expr})-{Q(NOE)}/12-{Y(CF_LTR)}")
 c.number_format=YEN; c.font=SB; c.fill=TF
 cf.cell(RS+2,6,'既存事業売上＋経営指導料の入金から、ワイン仕入・人件費・その他販管費・支払利息・長期借入返済を差し引いた月次ネット。').font=SM

@@ -7,9 +7,9 @@ p.author = '株式会社WineBank';
 p.title  = 'WineBank 事業再生計画 FY2027';
 
 const W=13.3, H=7.5;
-// WineBank ハウススタイル：無彩色モノトーン ＋ メイリオ
-const BERRY='1A1A1A', ROSE='595959', CREAM='F0EFEC', SAND='F7F6F3';
-const INK='1A1A1A', MUT='8C8C8C', WHT='FFFFFF', GOLD='333333', LINE='DCDAD6', RED='595959';
+// WineBank ハウススタイル：白基調 ＋ 黒 ＋ ゴールド ／ メイリオ
+const BERRY='1A1A1A', ROSE='6E6E6E', CREAM='FAF3E2', SAND='FFFFFF';
+const INK='1A1A1A', MUT='8C8C8C', WHT='FFFFFF', GOLD='A98442', LINE='E2E0DC', RED='6E6E6E';
 const HF='メイリオ', BF='メイリオ';
 const sh=()=>({type:'outer',color:'000000',blur:9,offset:2,angle:90,opacity:0.08});
 const M=v=>(v<0?'▲':'')+(Math.abs(v)/1e6).toFixed(1);
@@ -35,7 +35,7 @@ function table(s,x0,y0,cols,rows,opt){
   cols.forEach(c=>{ s.addText(c.t,{x:cx+0.12,y:y0,w:c.w-0.24,h:hh,fontFace:BF,fontSize:o.hs||9.5,bold:true,color:WHT,align:c.a||'left',valign:'middle',margin:0}); cx+=c.w; });
   rows.forEach((r,i)=>{
     const y=y0+hh+i*rh, hl=o.hi&&o.hi.includes(i);
-    s.addShape(p.ShapeType.rect,{x:x0,y,w:tw,h:rh,fill:{color:hl?CREAM:(i%2?'FAFAF8':WHT)},line:{color:LINE,width:0.5}});
+    s.addShape(p.ShapeType.rect,{x:x0,y,w:tw,h:rh,fill:{color:hl?CREAM:(i%2?'FBFAF8':WHT)},line:{color:LINE,width:0.5}});
     let x=x0;
     cols.forEach((c,j)=>{
       const v=r[j], neg=String(v).startsWith('▲');
@@ -49,15 +49,15 @@ function table(s,x0,y0,cols,rows,opt){
 
 /* 1 表紙 */
 {
-  const s=p.addSlide(); s.background={color:BERRY};
-  s.addShape(p.ShapeType.ellipse,{x:10.4,y:-1.5,w:5.2,h:5.2,fill:{color:'2E2E2E'}});
-  s.addShape(p.ShapeType.ellipse,{x:11.6,y:4.6,w:3.4,h:3.4,fill:{color:'111111'}});
-  s.addText('株式会社WineBank',{x:0.9,y:1.75,w:9,h:0.4,fontFace:BF,fontSize:14,color:CREAM,charSpacing:2,margin:0});
-  s.addText('事業再生計画',{x:0.9,y:2.25,w:10,h:0.9,fontFace:HF,fontSize:46,bold:true,color:WHT,margin:0});
-  s.addText('2027年9月期 － V字回復の根拠と資金計画',{x:0.9,y:3.2,w:10.5,h:0.6,fontFace:HF,fontSize:24,color:CREAM,margin:0});
-  s.addText('金融機関・株主各位',{x:0.9,y:4.5,w:6,h:0.34,fontFace:BF,fontSize:13,color:CREAM,margin:0});
-  s.addText('2026年8月',{x:0.9,y:4.9,w:6,h:0.34,fontFace:BF,fontSize:13,color:CREAM,margin:0});
-  s.addText('本資料は2026年6月までの月次実績にもとづく計画です。',{x:0.9,y:6.5,w:11,h:0.34,fontFace:BF,fontSize:9.5,color:'A8A6A2',margin:0});
+  const s=p.addSlide(); s.background={color:WHT};
+  s.addShape(p.ShapeType.rect,{x:0,y:0,w:0.16,h:H,fill:{color:INK}});
+  s.addText('株式会社WineBank',{x:0.9,y:1.7,w:9,h:0.4,fontFace:BF,fontSize:13,color:GOLD,charSpacing:3,margin:0});
+  s.addText('事業再生計画',{x:0.9,y:2.2,w:10,h:0.95,fontFace:HF,fontSize:46,bold:true,color:INK,margin:0});
+  s.addText('2027年9月期 － V字回復の根拠と資金計画',{x:0.9,y:3.25,w:10.5,h:0.6,fontFace:HF,fontSize:23,color:'4A4A4A',margin:0});
+  s.addShape(p.ShapeType.rect,{x:0.9,y:4.25,w:1.6,h:0.025,fill:{color:GOLD}});
+  s.addText('金融機関・株主各位',{x:0.9,y:4.6,w:6,h:0.34,fontFace:BF,fontSize:13,color:INK,margin:0});
+  s.addText('2026年8月',{x:0.9,y:5.0,w:6,h:0.34,fontFace:BF,fontSize:13,color:MUT,margin:0});
+  s.addText('本資料は2026年6月までの月次実績にもとづく計画です。',{x:0.9,y:6.5,w:11,h:0.34,fontFace:BF,fontSize:9.5,color:MUT,margin:0});
   s.addNotes('FY2026の赤字の主因である不採算3店舗の撤退は2026年3月で完了。WineBankテラスはWineBank CLUBのフラッグシップ店として改善のうえ継続。4月以降が再編後の実力値。');
 }
 
@@ -79,15 +79,15 @@ function table(s,x0,y0,cols,rows,opt){
   });
   card(s,8.35,1.62,4.3,4.66,BERRY);
   s.addText('FY2027 経常利益（Dプラン）',{x:8.6,y:1.9,w:3.8,h:0.3,fontFace:BF,fontSize:11,color:CREAM,align:'center',margin:0});
-  s.addText('＋137.5',{x:8.6,y:2.2,w:3.8,h:0.85,fontFace:HF,fontSize:42,bold:true,color:WHT,align:'center',margin:0});
+  s.addText('＋109.2',{x:8.6,y:2.2,w:3.8,h:0.85,fontFace:HF,fontSize:42,bold:true,color:GOLD,align:'center',margin:0});
   s.addText('百万円',{x:8.6,y:3.03,w:3.8,h:0.3,fontFace:BF,fontSize:11,color:CREAM,align:'center',margin:0});
-  s.addText('FY2026 ▲124.8百万円から\n＋262.3百万円の改善',{x:8.6,y:3.42,w:3.8,h:0.62,fontFace:BF,fontSize:11.5,color:WHT,align:'center',margin:0});
-  s.addShape(p.ShapeType.line,{x:8.85,y:4.24,w:3.3,h:0,line:{color:'4A4A4A',width:1}});
+  s.addText('FY2026 ▲124.8百万円から\n＋234.0百万円の改善',{x:8.6,y:3.42,w:3.8,h:0.62,fontFace:BF,fontSize:11.5,color:WHT,align:'center',margin:0});
+  s.addShape(p.ShapeType.line,{x:8.85,y:4.24,w:3.3,h:0,line:{color:'6E6E6E',width:1}});
   s.addText('必要な売上高',{x:8.6,y:4.4,w:3.8,h:0.3,fontFace:BF,fontSize:11,color:CREAM,align:'center',margin:0});
-  s.addText('621.1百万円',{x:8.6,y:4.7,w:3.8,h:0.6,fontFace:HF,fontSize:28,bold:true,color:CREAM,align:'center',margin:0});
-  s.addText('FY2025実績752.9百万円の82.5%\nFY2026見込708.2百万円の87.7%',{x:8.6,y:5.36,w:3.8,h:0.7,fontFace:BF,fontSize:11,color:WHT,align:'center',margin:0});
+  s.addText('566.2百万円',{x:8.6,y:4.7,w:3.8,h:0.6,fontFace:HF,fontSize:28,bold:true,color:CREAM,align:'center',margin:0});
+  s.addText('FY2025実績752.9百万円の75.2%\nFY2026見込708.2百万円の80.0%',{x:8.6,y:5.36,w:3.8,h:0.7,fontFace:BF,fontSize:11,color:WHT,align:'center',margin:0});
   foot(s,'出典：事業計画202608（銀行様）全社シート月次実績、決算報告書 第54期、2026年7月度 取締役会資料');
-  s.addNotes('Dプランは、ワイン仕入を落とさずに資金繰りが回る売上水準。必要売上621.1百万円は過去2期の実績を下回る。');
+  s.addNotes('Dプランは、ワイン仕入を落とさずに資金繰りが回る売上水準。必要売上566.2百万円は過去2期の実績を下回る。');
 }
 
 /* 3 2期の赤字の性質 */
@@ -107,13 +107,44 @@ function table(s,x0,y0,cols,rows,opt){
     s.addText(c[2],{x:x+0.35,y:2.75,w:5.3,h:0.68,fontFace:BF,fontSize:11,color:INK,margin:0});
     c[3].forEach((rw,j)=>{
       const y=3.55+j*0.6, last=j===c[3].length-1;
-      s.addShape(p.ShapeType.rect,{x:x+0.35,y,w:5.3,h:0.5,fill:{color:last?CREAM:'FAFAF8'},line:{color:LINE,width:0.5}});
+      s.addShape(p.ShapeType.rect,{x:x+0.35,y,w:5.3,h:0.5,fill:{color:last?CREAM:'FBFAF8'},line:{color:LINE,width:0.5}});
       s.addText(rw[0],{x:x+0.5,y,w:3.3,h:0.5,fontFace:BF,fontSize:10.5,bold:last,color:INK,valign:'middle',margin:0});
       s.addText(rw[1],{x:x+3.6,y,w:1.9,h:0.5,fontFace:BF,fontSize:11.5,bold:true,color:last?BERRY:INK,align:'right',valign:'middle',margin:0});
     });
   });
   foot(s,'出典：決算報告書 第54期（2025年9月期）、事業計画202608（銀行様）全社シート');
   s.addNotes('FY2025は経常段階ではほぼ均衡。損失は組織再編の特別損失。FY2026は飲食撤退という構造改革の費用。');
+}
+
+/* 3.5 今期の反省と来期の方針 */
+{
+  const s=base('今期の反省と来期の方針','数字が悪かった原因を切り分け、来期の打ち手に落としています。');
+  s.addText('今期（FY2026）の反省',{x:0.65,y:1.6,w:5.85,h:0.36,fontFace:HF,fontSize:17,bold:true,color:INK,margin:0});
+  s.addShape(p.ShapeType.rect,{x:0.65,y:2.02,w:1.4,h:0.025,fill:{color:GOLD}});
+  const han=[
+    ['前期合併により引き継いだ飲食店','上期の収益を圧迫。不採算3店舗は2026年3月に撤退完了。'],
+    ['SBI証券との公募ファンドが大幅に遅延','当期の計画未達の最大要因。組成の主導権が当社側になかった。'],
+    ['挽回策が後手に回った','私募ファンドで3億円程度を巻き返すにとどまり、遅延分を吸収できなかった。']
+  ];
+  han.forEach((t,i)=>{
+    const y=2.28+i*1.38;
+    card(s,0.65,y,5.85,1.22);
+    numDot(s,0.95,y+0.42,i+1);
+    s.addText(t[0],{x:1.45,y:y+0.18,w:4.85,h:0.4,fontFace:BF,fontSize:12.5,bold:true,color:INK,margin:0});
+    s.addText(t[1],{x:1.45,y:y+0.6,w:4.85,h:0.52,fontFace:BF,fontSize:10.5,color:'4A4A4A',margin:0});
+  });
+  s.addText('来期（FY2027）の方針',{x:6.8,y:1.6,w:5.85,h:0.36,fontFace:HF,fontSize:17,bold:true,color:INK,margin:0});
+  s.addShape(p.ShapeType.rect,{x:6.8,y:2.02,w:1.4,h:0.025,fill:{color:GOLD}});
+  card(s,6.8,2.28,5.85,2.05,INK);
+  s.addText('公募ファンドは優先しない',{x:7.15,y:2.5,w:5.15,h:0.4,fontFace:HF,fontSize:19,bold:true,color:GOLD,margin:0});
+  s.addText('外部要因で組成時期が動く公募は、当期の収益計画の柱に置きません。遅延が全体計画を崩す構造から離れます。',
+    {x:7.15,y:2.98,w:5.15,h:1.1,fontFace:BF,fontSize:11.5,color:WHT,valign:'top',margin:0});
+  card(s,6.8,4.5,5.85,2.05,CREAM);
+  s.addText('私募ファンドを毎年組成する',{x:7.15,y:4.72,w:5.15,h:0.4,fontFace:HF,fontSize:19,bold:true,color:INK,margin:0});
+  s.addText('自社で時期をコントロールでき、実績もある私募を主軸に切り替えます。毎年の定例組成として体制化し、単年度の振れを抑えます。',
+    {x:7.15,y:5.2,w:5.15,h:1.1,fontFace:BF,fontSize:11.5,color:INK,valign:'top',margin:0});
+  foot(s,'私募ファンドはFY2026に約3億円の実績。公募の遅延を補う位置づけから、来期は主軸へ転換します。');
+  s.addNotes('公募の遅延という外部要因を、来期は計画の柱から外す。自社でコントロールできる私募を毎年回す体制に変える、という方針転換を明示する。');
 }
 
 /* 4 飲食撤退による固定費削減 */
@@ -127,7 +158,7 @@ function table(s,x0,y0,cols,rows,opt){
     {t:'② 26/4-6 月平均',w:1.65,a:'right'},{t:'差 ②-①',w:1.5,a:'right'}],data,{rh:0.5,hi:[7]});
   card(s,9.45,1.72,3.2,2.35,BERRY);
   s.addText('年間削減額',{x:9.65,y:2.0,w:2.8,h:0.3,fontFace:BF,fontSize:11,color:CREAM,align:'center',margin:0});
-  s.addText('▲103',{x:9.65,y:2.32,w:2.8,h:0.8,fontFace:HF,fontSize:40,bold:true,color:WHT,align:'center',margin:0});
+  s.addText('▲103',{x:9.65,y:2.32,w:2.8,h:0.8,fontFace:HF,fontSize:40,bold:true,color:GOLD,align:'center',margin:0});
   s.addText('百万円',{x:9.65,y:3.12,w:2.8,h:0.3,fontFace:BF,fontSize:12,color:CREAM,align:'center',margin:0});
   s.addText('月▲8.58百万円 × 12か月',{x:9.65,y:3.5,w:2.8,h:0.3,fontFace:BF,fontSize:9.5,color:CREAM,align:'center',margin:0});
   card(s,9.45,4.25,3.2,2.1);
@@ -148,16 +179,16 @@ function table(s,x0,y0,cols,rows,opt){
   const val=[25374892,30963282,38572456,33761779,34133901,38737868,25883967,24529013,24627286].map(v=>v/1e6);
   s.addChart(p.ChartType.bar,[{name:'販管費（百万円）',labels:lab,values:val}],{
     x:0.65,y:1.62,w:8.5,h:4.5,barDir:'col',
-    chartColors:['595959','595959','595959','595959','595959','1A1A1A','C4C2BE','C4C2BE','C4C2BE'],varyColors:true,
+    chartColors:['B8B5AF','B8B5AF','B8B5AF','B8B5AF','B8B5AF','1A1A1A','A98442','A98442','A98442'],varyColors:true,
     showTitle:false,showLegend:false,showValue:true,dataLabelPosition:'outEnd',dataLabelFormatCode:'0.0',
     dataLabelFontSize:9.5,dataLabelColor:INK,dataLabelFontFace:BF,
     catAxisLabelColor:MUT,catAxisLabelFontSize:10,catAxisLabelFontFace:BF,
     valAxisLabelColor:MUT,valAxisLabelFontSize:9.5,valAxisLabelFontFace:BF,
-    valAxisMaxVal:45,valAxisMinVal:0,valGridLine:{color:'E8E6E2',size:1},catGridLine:{style:'none'},
+    valAxisMaxVal:45,valAxisMinVal:0,valGridLine:{color:'ECEAE5',size:1},catGridLine:{style:'none'},
     plotArea:{fill:{color:WHT}}});
   card(s,9.5,1.62,3.15,2.1,BERRY);
   s.addText('ピーク → 直近',{x:9.7,y:1.85,w:2.75,h:0.3,fontFace:BF,fontSize:11,color:CREAM,align:'center',margin:0});
-  s.addText('▲36.4%',{x:9.7,y:2.15,w:2.75,h:0.75,fontFace:HF,fontSize:36,bold:true,color:WHT,align:'center',margin:0});
+  s.addText('▲36.4%',{x:9.7,y:2.15,w:2.75,h:0.75,fontFace:HF,fontSize:36,bold:true,color:GOLD,align:'center',margin:0});
   s.addText('38.7百万円（26/3）\n→ 24.6百万円（26/6）',{x:9.7,y:2.92,w:2.75,h:0.6,fontFace:BF,fontSize:10.5,color:CREAM,align:'center',margin:0});
   card(s,9.5,3.9,3.15,2.22);
   s.addText('計画の前提',{x:9.7,y:4.1,w:2.75,h:0.3,fontFace:BF,fontSize:11,bold:true,color:BERRY,margin:0});
@@ -195,41 +226,42 @@ function table(s,x0,y0,cols,rows,opt){
 /* 7 上乗せ案件 */
 {
   const s=base('FY2027の収益上乗せ － 132.5百万円','経営指導料を中心としたストック型収益。全額を営業収益に計上します。');
-  const rows=[['経営指導料','Value table',10000000,'グループ'],['経営指導料','Prime',60000000,'グループ'],
-              ['経営指導料','Apicius',10000000,'グループ'],['経営指導料','Thierry Marx（2026年4月開業）',2500000,'グループ'],
-              ['経営指導料','ito＋Aqua＋Hokkaido',10000000,'外部'],['インセンティブ','Apicius2 shot（外部株主売却）',20000000,'外部'],
-              ['クルーザー事業利益','2027/03・09に各10百万円',20000000,'外部']];
+  const rows=[['経営指導料','間接グループ5社',80000000,'中野出資'],
+              ['経営指導料','Thierry Marx（2026年4月開業）',2500000,'Apiciusグループ'],
+              ['経営指導料','Apicius',10000000,'中野出資'],
+              ['M&A仲介','Apicius既存株主売却仲介',20000000,'外部'],
+              ['新規事業利益','新規クルーザー事業',20000000,'外部']];
   const y0=1.66, rh=0.53;
   s.addShape(p.ShapeType.rect,{x:0.65,y:y0,w:7.9,h:0.44,fill:{color:BERRY}});
-  [['区分',0.85,1.8,'left'],['案件',2.65,2.6,'left'],['金額',5.35,1.6,'right'],['取引先',7.05,1.3,'center']]
+  [['区分',0.85,1.9,'left'],['案件',2.75,2.5,'left'],['金額',5.3,1.55,'right'],['取引先',6.95,1.55,'center']]
     .forEach(hd=>s.addText(hd[0],{x:hd[1],y:y0,w:hd[2],h:0.44,fontFace:BF,fontSize:9.5,bold:true,color:WHT,align:hd[3],valign:'middle',margin:0}));
   rows.forEach((r,i)=>{
     const y=y0+0.44+i*rh;
-    s.addShape(p.ShapeType.rect,{x:0.65,y,w:7.9,h:rh,fill:{color:i%2?'FAFAF8':WHT},line:{color:LINE,width:0.5}});
-    s.addText(r[0],{x:0.85,y,w:1.8,h:rh,fontFace:BF,fontSize:9,color:MUT,valign:'middle',margin:0});
-    s.addText(r[1],{x:2.65,y,w:2.6,h:rh,fontFace:BF,fontSize:9.5,bold:true,color:INK,valign:'middle',margin:0});
-    s.addText('¥'+yen(r[2]),{x:5.35,y,w:1.6,h:rh,fontFace:BF,fontSize:11.5,bold:true,color:BERRY,align:'right',valign:'middle',margin:0});
-    const grp=r[3]==='グループ';
-    s.addShape(p.ShapeType.roundRect,{x:7.25,y:y+0.13,w:1.0,h:0.28,rectRadius:0.05,
+    s.addShape(p.ShapeType.rect,{x:0.65,y,w:7.9,h:rh,fill:{color:i%2?'FBFAF8':WHT},line:{color:LINE,width:0.5}});
+    s.addText(r[0],{x:0.85,y,w:1.9,h:rh,fontFace:BF,fontSize:9,color:MUT,valign:'middle',margin:0});
+    s.addText(r[1],{x:2.75,y,w:2.5,h:rh,fontFace:BF,fontSize:10,bold:true,color:INK,valign:'middle',margin:0});
+    s.addText('¥'+yen(r[2]),{x:5.3,y,w:1.55,h:rh,fontFace:BF,fontSize:11.5,bold:true,color:BERRY,align:'right',valign:'middle',margin:0});
+    const grp=r[3]!=='外部';
+    s.addShape(p.ShapeType.roundRect,{x:6.95,y:y+0.11,w:1.55,h:0.31,rectRadius:0.05,
       fill:{color:grp?INK:WHT},line:{color:grp?INK:'8C8C8C',width:0.75}});
-    s.addText(r[3],{x:7.25,y:y+0.13,w:1.0,h:0.28,fontFace:BF,fontSize:8.5,color:grp?WHT:INK,align:'center',valign:'middle',margin:0});
+    s.addText(r[3],{x:6.95,y:y+0.11,w:1.55,h:0.31,fontFace:BF,fontSize:8,color:grp?WHT:INK,align:'center',valign:'middle',margin:0});
   });
   const yt=y0+0.44+rows.length*rh;
   s.addShape(p.ShapeType.rect,{x:0.65,y:yt,w:7.9,h:0.52,fill:{color:CREAM},line:{color:BERRY,width:1}});
   s.addText('合計',{x:0.85,y:yt,w:2,h:0.52,fontFace:BF,fontSize:11.5,bold:true,color:INK,valign:'middle',margin:0});
-  s.addText('¥'+yen(132500000),{x:5.35,y:yt,w:1.6,h:0.52,fontFace:BF,fontSize:12.5,bold:true,color:BERRY,align:'right',valign:'middle',margin:0});
+  s.addText('¥'+yen(132500000),{x:5.3,y:yt,w:1.55,h:0.52,fontFace:BF,fontSize:12.5,bold:true,color:BERRY,align:'right',valign:'middle',margin:0});
   card(s,8.95,1.66,3.7,1.7);
   s.addText('全額を営業収益に計上',{x:9.2,y:1.84,w:3.2,h:0.3,fontFace:BF,fontSize:10.5,bold:true,color:BERRY,margin:0});
-  s.addText('クルーザー事業利益は投資損益ではなく事業利益のため、営業外収益ではなく営業収益として計上しています。',
+  s.addText('新規クルーザー事業の利益は投資損益ではなく事業利益のため、営業外収益ではなく営業収益として計上しています。',
     {x:9.2,y:2.18,w:3.2,h:1.0,fontFace:BF,fontSize:10.5,color:INK,valign:'top',margin:0});
   card(s,8.95,3.5,3.7,1.4);
   s.addText('取引先の内訳',{x:9.2,y:3.66,w:3.2,h:0.3,fontFace:BF,fontSize:10.5,bold:true,color:BERRY,margin:0});
-  s.addText('グループ内　82.5百万円\n外部　50.0百万円',{x:9.2,y:4.0,w:3.2,h:0.8,fontFace:BF,fontSize:11.5,color:INK,lineSpacing:18,margin:0});
+  s.addText('中野出資　90.0百万円\nApiciusグループ　2.5百万円\n外部　40.0百万円',{x:9.2,y:3.98,w:3.2,h:0.9,fontFace:BF,fontSize:11,color:INK,lineSpacing:17,margin:0});
   card(s,8.95,5.04,3.7,1.26,CREAM);
   s.addText('グループ内取引については、支払側の支払能力と対価の算定根拠を整備のうえご説明します。',
     {x:9.2,y:5.2,w:3.2,h:0.95,fontFace:BF,fontSize:10,color:INK,margin:0});
   foot(s,'期間表記は2026/09-2027/08。決算期（2026/10-2027/09）と1か月ズレるため、全額をFY2027帰属として試算。');
-  s.addNotes('ティエリーマルクスは2026年4月開業のグループ店で、アピシウスに次ぐ主力店。Apicius2 shotは外部株主への売却インセンティブのため外部取引。グループ内82.5百万円は先に開示する。');
+  s.addNotes('ティエリーマルクスは2026年4月開業のApiciusグループ店で、アピシウスに次ぐ主力店。Apicius既存株主売却仲介は外部取引。グループ内92.5百万円は先に開示する。');
 }
 
 /* 8 営業利益ブリッジ */
@@ -245,12 +277,12 @@ function table(s,x0,y0,cols,rows,opt){
   let cum=0;
   steps.forEach((st,i)=>{
     const x=cx+i*(cw+gap); let y,h,col;
-    if(st.t==='total'){ y=Math.min(yOf(0),yOf(st.v)); h=Math.abs(yOf(st.v)-yOf(0)); col='4A4A4A'; cum=st.v; }
+    if(st.t==='total'){ y=Math.min(yOf(0),yOf(st.v)); h=Math.abs(yOf(st.v)-yOf(0)); col='6E6E6E'; cum=st.v; }
     else { const f=cum,t2=cum+st.v; y=Math.min(yOf(f),yOf(t2)); h=Math.abs(yOf(t2)-yOf(f)); col=st.t==='up'?BERRY:ROSE; cum=t2; }
     if(h<0.06) h=0.06;
     s.addShape(p.ShapeType.rect,{x,y,w:cw,h,fill:{color:col}});
     s.addText((st.v>0?'+':'')+M(st.v),{x,y:st.v>=0?y-0.36:y+h+0.04,w:cw,h:0.32,fontFace:HF,fontSize:13,bold:true,
-      color:col==='4A4A4A'?'4A4A4A':col,align:'center',margin:0});
+      color:col==='6E6E6E'?'6E6E6E':col,align:'center',margin:0});
     s.addText(st.l,{x:x-0.15,y:top+ph+0.3,w:cw+0.3,h:0.7,fontFace:BF,fontSize:10,color:INK,align:'center',margin:0});
   });
   s.addText('単位：百万円',{x:0.65,y:1.42,w:2,h:0.26,fontFace:BF,fontSize:9,color:MUT,margin:0});
@@ -265,22 +297,22 @@ function table(s,x0,y0,cols,rows,opt){
 {
   const s=base('4つのプラン － 資金繰りが成立するのはDのみ','ワイン仕入を落とさない前提では、経常利益1億円（プランC）でも資金が回りません。');
   const data=[
-    ['売上高','389.1','389.1','548.3','621.1'],
-    ['売上総利益 合計','200.6','333.1','415.2','452.7'],
+    ['売上高','389.1','389.1','548.3','566.2'],
+    ['売上総利益 合計','200.6','333.1','415.2','424.4'],
     ['販管費','300.2','300.2','300.2','300.2'],
-    ['営業利益','▲99.6','＋32.9','＋115.0','＋152.5'],
-    ['経常利益','▲114.6','＋17.9','＋100.0','＋137.5'],
-    ['期中 最低現預金','－','－','▲43.3','0.0']
+    ['営業利益','▲99.6','＋32.9','＋115.0','＋124.2'],
+    ['経常利益','▲114.6','＋17.9','＋100.0','＋109.2'],
+    ['期中 最低現預金','－','－','▲6.6','0.0']
   ];
   table(s,0.65,1.66,[{t:'（百万円）',w:3.3},{t:'A. 横ばいのみ',w:2.15,a:'right'},{t:'B. ＋上乗せ132.5',w:2.15,a:'right'},
     {t:'C. 経常利益1億円',w:2.15,a:'right'},{t:'D. CFが回る水準',w:2.25,a:'right'}],data,{rh:0.56,hi:[3,4,5],hs:9.5});
   card(s,0.65,5.5,5.85,1.4,BERRY);
   s.addText('プランC の問題',{x:0.95,y:5.68,w:5.25,h:0.3,fontFace:BF,fontSize:11,bold:true,color:CREAM,margin:0});
-  s.addText('経常利益1億円を達成しても、ワイン仕入を維持すると2026年11月に資金ショート。期末▲38.7百万円。',
+  s.addText('経常利益1億円では期中に現預金がマイナスに転じます。仕入を維持する前提では、あと17.9百万円の売上が必要です。',
     {x:0.95,y:6.0,w:5.25,h:0.8,fontFace:BF,fontSize:11,color:WHT,valign:'top',margin:0});
   card(s,6.8,5.5,5.85,1.4,CREAM);
   s.addText('プランD が本線',{x:7.1,y:5.68,w:5.25,h:0.3,fontFace:BF,fontSize:11,bold:true,color:BERRY,margin:0});
-  s.addText('売上621.1百万円で、仕入を落とさずに期中一度も現預金がマイナスにならない水準。',
+  s.addText('売上566.2百万円で、仕入を落とさずに期中一度も現預金がマイナスにならない水準。経常利益は109.2百万円。',
     {x:7.1,y:6.0,w:5.25,h:0.8,fontFace:BF,fontSize:11,color:INK,valign:'top',margin:0});
   foot(s,'いずれも上場関連コストは計上せず、期首現預金30百万円（2026/09末のみずほ銀行200百万円返済後）を前提。');
   s.addNotes('Cは損益だけ見れば十分だが資金が回らない。損益と資金は別物であることを明示する。');
@@ -296,7 +328,7 @@ function table(s,x0,y0,cols,rows,opt){
   const byBase=3.82, bmax=1.42;
   hist.forEach((h,i)=>{
     const hh=bmax*h[1]/6.5, x=1.0+i*1.05;
-    s.addShape(p.ShapeType.rect,{x,y:byBase-hh,w:0.68,h:hh,fill:{color:i>=2?BERRY:'C4C2BE'}});
+    s.addShape(p.ShapeType.rect,{x,y:byBase-hh,w:0.68,h:hh,fill:{color:i>=2?BERRY:'D6D4D0'}});
     s.addText(h[1].toFixed(1),{x:x-0.1,y:byBase-hh-0.3,w:0.88,h:0.28,fontFace:BF,fontSize:10,bold:true,color:BERRY,align:'center',margin:0});
     s.addText(h[0],{x:x-0.14,y:byBase+0.04,w:0.96,h:0.26,fontFace:BF,fontSize:8.5,color:MUT,align:'center',margin:0});
   });
@@ -306,7 +338,7 @@ function table(s,x0,y0,cols,rows,opt){
   s.addText('FY2026と同水準を維持。仕入を絞ると優良銘柄の割当が減り、一度失った枠を戻すには数年を要します。目先の資金のために将来の成長を削らない、という判断です。',
     {x:7.15,y:2.9,w:5.15,h:1.15,fontFace:BF,fontSize:11.5,color:CREAM,valign:'top',margin:0});
   const cards=[['期首在庫（2026/09末）','420.0百万円',INK],['FY2027 仕入','419.1百万円',BERRY],
-               ['FY2027 売上原価（出庫）','300.9百万円',INK],['期末在庫','538.2百万円',GOLD]];
+               ['FY2027 売上原価（出庫）','274.3百万円',INK],['期末在庫','564.7百万円',GOLD]];
   cards.forEach((c,i)=>{
     const x=0.65+i*3.09;
     card(s,x,4.45,2.85,1.15);
@@ -314,7 +346,7 @@ function table(s,x0,y0,cols,rows,opt){
     s.addText(c[1],{x:x+0.2,y:4.92,w:2.45,h:0.5,fontFace:HF,fontSize:18,bold:true,color:c[2],margin:0});
   });
   card(s,0.65,5.85,11.99,0.8,CREAM);
-  s.addText('在庫は118.2百万円積み上がりますが、時価1.37倍の換価可能資産です。運転資金としてのご理解をお願いしたい部分です。',
+  s.addText('在庫は145.7百万円積み上がりますが、時価1.37倍の換価可能資産です。運転資金としてのご理解をお願いしたい部分です。',
     {x:1.0,y:5.85,w:11.3,h:0.8,fontFace:BF,fontSize:12,bold:true,color:BERRY,valign:'middle',margin:0});
   foot(s,'出典：2026年7月度 取締役会資料「ワイン預かり残高推移KPI」（税抜・簿価）。FY2026仕入額は売上原価479.1百万円＋在庫増減▲60.0百万円から逆算。');
   s.addNotes('在庫積み増しは資金を食うが、それは成長投資であり担保余力でもある、という整理。');
@@ -324,11 +356,11 @@ function table(s,x0,y0,cols,rows,opt){
 {
   const s=base('FY2027 月次推移表 － プランD','2026年4-6月の実力値をベースに、追加売上と上乗せ案件を計上したもの。単位：百万円');
   const MO=['26/10','26/11','26/12','27/01','27/02','27/03','27/04','27/05','27/06','27/07','27/08','27/09'];
-  const gEx=16716827, gAdd=231928458*0.5155029/12, adv=92500000/12, sga=25013422, noe=1250000;
+  const gEx=16716827, gAdd=177106957*0.5155029/12, adv=92500000/12, sga=25013422, noe=1250000;
   const inc=i=>i===5?20000000:0, cr=i=>(i===5||i===11)?10000000:0;
   const defs=[
-    ['売上高',i=>621069226/12],['売上総利益（事業）',i=>gEx+gAdd],['＋経営指導料',i=>adv],
-    ['＋インセンティブ',inc],['＋クルーザー事業利益',cr],
+    ['売上高',i=>566247725/12],['売上総利益（事業）',i=>gEx+gAdd],['＋経営指導料',i=>adv],
+    ['＋M&A仲介',inc],['＋新規事業利益（クルーザー）',cr],
     ['売上総利益 合計',i=>gEx+gAdd+adv+inc(i)+cr(i),true],['販管費',i=>-sga],
     ['営業利益',i=>gEx+gAdd+adv+inc(i)+cr(i)-sga,true],['営業外費用',i=>-noe],
     ['経常利益',i=>gEx+gAdd+adv+inc(i)+cr(i)-sga-noe,true]];
@@ -340,7 +372,7 @@ function table(s,x0,y0,cols,rows,opt){
   defs.forEach((d,r)=>{
     const y=y0+0.42+r*rh, tot=[...Array(12)].reduce((a,_,i)=>a+d[1](i),0), b=d[2];
     s.addShape(p.ShapeType.rect,{x:x0,y,w:lw+cwd*12+0.95,h:rh,
-      fill:{color:d[0]==='経常利益'?CREAM:(b?'EEEDEA':(r%2?'FAFAF8':WHT))},line:{color:LINE,width:0.5}});
+      fill:{color:d[0]==='経常利益'?CREAM:(b?'F5F3EE':(r%2?'FBFAF8':WHT))},line:{color:LINE,width:0.5}});
     s.addText(d[0],{x:x0+0.12,y,w:lw,h:rh,fontFace:BF,fontSize:9,bold:b,color:INK,valign:'middle',margin:0});
     for(let i=0;i<12;i++){ const v=d[1](i);
       s.addText(M(v),{x:x0+lw+i*cwd,y,w:cwd,h:rh,fontFace:BF,fontSize:8.5,bold:b,color:v<0?RED:(b?BERRY:INK),align:'center',valign:'middle',margin:0}); }
@@ -348,14 +380,14 @@ function table(s,x0,y0,cols,rows,opt){
   });
   const yb=y0+0.42+defs.length*rh+0.24;
   card(s,0.65,yb,11.99,0.92,CREAM);
-  [['通期 売上高','621.1百万円'],['通期 営業利益','＋152.5百万円'],['通期 経常利益','＋137.5百万円']].forEach((c,i)=>{
+  [['通期 売上高','566.2百万円'],['通期 営業利益','＋124.2百万円'],['通期 経常利益','＋109.2百万円']].forEach((c,i)=>{
     const x=1.0+i*3.95;
     s.addText(c[0],{x,y:yb+0.08,w:3.6,h:0.26,fontFace:BF,fontSize:9.5,color:MUT,margin:0});
     s.addText(c[1],{x,y:yb+0.30,w:3.6,h:0.34,fontFace:HF,fontSize:16,bold:true,color:BERRY,margin:0});
   });
-  s.addText('経営指導料は12か月按分。インセンティブは2027/03、クルーザー事業利益は2027/03と2027/09に各10百万円を計上。',
+  s.addText('経営指導料は12か月按分。M&A仲介は2027/03、新規クルーザー事業は2027/03と2027/09に各10百万円を計上。',
     {x:1.0,y:yb+0.64,w:11.3,h:0.24,fontFace:BF,fontSize:8.5,color:MUT,margin:0});
-  s.addNotes('2027年3月はインセンティブとクルーザーが重なり単月経常利益が大きく出る。');
+  s.addNotes('2027年3月はM&A仲介と新規クルーザー事業が重なり単月経常利益が大きく出る。');
 }
 
 /* 12 月次資金繰り */
@@ -371,29 +403,29 @@ function table(s,x0,y0,cols,rows,opt){
   defs.forEach((d,r)=>{
     const y=y0+0.42+r*rh, isBal=d[0]==='月末 現預金残高';
     s.addShape(p.ShapeType.rect,{x:x0,y,w:lw+cwd*12,h:rh,
-      fill:{color:isBal?CREAM:(d[2]?'EEEDEA':(r%2?'FAFAF8':WHT))},line:{color:LINE,width:0.5}});
+      fill:{color:isBal?CREAM:(d[2]?'F5F3EE':(r%2?'FBFAF8':WHT))},line:{color:LINE,width:0.5}});
     s.addText(d[0],{x:x0+0.12,y,w:lw,h:rh,fontFace:BF,fontSize:9.5,bold:d[2],color:INK,valign:'middle',margin:0});
     d[1].forEach((v,i)=>s.addText(M(v),{x:x0+lw+i*cwd,y,w:cwd,h:rh,fontFace:BF,fontSize:9,bold:d[2]||isBal,
       color:v<0?RED:(d[2]||isBal?BERRY:INK),align:'center',valign:'middle',margin:0}));
   });
   const yb=y0+0.42+defs.length*rh+0.28;
   card(s,0.65,yb,5.85,1.5,BERRY);
-  s.addText('ボトルネックは2026年11月',{x:0.95,y:yb+0.18,w:5.25,h:0.32,fontFace:BF,fontSize:12,bold:true,color:CREAM,margin:0});
-  s.addText('FY2026分の消費税30百万円（うち20百万円は9月の在庫販売200百万円に係るもの）の納付月。売上が2か月分しか回収できていない時期に重なるため、ここが必要売上高を決めています。',
+  s.addText('ボトルネックは2027年2月',{x:0.95,y:yb+0.18,w:5.25,h:0.32,fontFace:BF,fontSize:12,bold:true,color:GOLD,margin:0});
+  s.addText('11月にFY2026分の消費税確定納付3.6百万円、2月に当期の中間納付2.0百万円。売上の回収が進む前に納税が重なる時期で、ここが必要売上高を決めています。',
     {x:0.95,y:yb+0.55,w:5.25,h:0.9,fontFace:BF,fontSize:10.5,color:WHT,valign:'top',margin:0});
-  const cs=[['A. プランD（本線）','＋41.3','0.0'],['B. 仕入を在庫横ばいにした場合','＋171.3','＋130.0'],
-            ['C. 一時収益44百万円が未入金','▲2.7','▲44.0'],['D. 追加売上が未達','▲213.8','▲255.1']];
+  const cs=[['A. プランD（本線）','＋6.4','0.0'],['B. 仕入を在庫横ばいにした場合','＋165.6','＋159.2'],
+            ['C. 一時収益44百万円が未入金','▲37.6','▲44.0'],['D. 追加売上が未達','▲188.4','▲194.8']];
   s.addShape(p.ShapeType.rect,{x:6.8,y:yb,w:5.85,h:0.36,fill:{color:BERRY}});
   [['感応度',6.95,2.6,'left'],['期末残高',9.55,1.4,'right'],['期中最低',11.05,1.45,'right']]
     .forEach(h=>s.addText(h[0],{x:h[1],y:yb,w:h[2],h:0.36,fontFace:BF,fontSize:9,bold:true,color:WHT,align:h[3],valign:'middle',margin:0}));
   cs.forEach((c,i)=>{
     const y=yb+0.36+i*0.285;
-    s.addShape(p.ShapeType.rect,{x:6.8,y,w:5.85,h:0.285,fill:{color:i===0?CREAM:(i%2?'FAFAF8':WHT)},line:{color:LINE,width:0.5}});
+    s.addShape(p.ShapeType.rect,{x:6.8,y,w:5.85,h:0.285,fill:{color:i===0?CREAM:(i%2?'FBFAF8':WHT)},line:{color:LINE,width:0.5}});
     s.addText(c[0],{x:6.95,y,w:2.6,h:0.285,fontFace:BF,fontSize:8.5,bold:i===0,color:INK,valign:'middle',margin:0});
     [[c[1],9.55,1.4],[c[2],11.05,1.45]].forEach(v=>s.addText(v[0],{x:v[1],y,w:v[2],h:0.285,fontFace:BF,fontSize:8.5,bold:i===0,
       color:String(v[0]).startsWith('▲')?RED:BERRY,align:'right',valign:'middle',margin:0}));
   });
-  foot(s,'期首現預金30百万円（2026/09末にみずほ銀行へ200百万円返済後）。長期借入223.6百万円を7年均等返済と仮定。');
+  foot(s,'期首現預金30百万円（2026/09末にみずほ銀行へ200百万円返済後）。消費税はFY2026実績から算定（確定3.6＋中間2.0×3回＝年9.6百万円）。');
   s.addNotes('11月の消費税だけを短期でつなげば、必要売上のハードルは大きく下がる。銀行への具体的な依頼事項になる。');
 }
 
@@ -404,7 +436,7 @@ function table(s,x0,y0,cols,rows,opt){
               ['＋ 商品の含み益（時価1.37倍）',186716373,BERRY]];
   rows.forEach((r,i)=>{
     const y=1.72+i*0.8;
-    s.addShape(p.ShapeType.rect,{x:0.65,y,w:7.0,h:0.68,fill:{color:i%2?'FAFAF8':WHT},line:{color:LINE,width:0.5}});
+    s.addShape(p.ShapeType.rect,{x:0.65,y,w:7.0,h:0.68,fill:{color:i%2?'FBFAF8':WHT},line:{color:LINE,width:0.5}});
     s.addText(r[0],{x:0.9,y,w:4.3,h:0.68,fontFace:BF,fontSize:11.5,color:INK,valign:'middle',margin:0});
     s.addText(yen(r[1]),{x:5.2,y,w:2.2,h:0.68,fontFace:BF,fontSize:13,bold:true,color:r[2],align:'right',valign:'middle',margin:0});
   });
@@ -431,7 +463,7 @@ function table(s,x0,y0,cols,rows,opt){
 {
   const s=base('想定されるご指摘と当社の対応','先に論点を開示し、対応方針をあわせてご説明します。');
   const items=[
-    ['グループ内取引 82.5百万円','上乗せ案件132.5百万円のうち82.5百万円はグループ会社からの経営指導料。','支払側各社の支払能力と、対価の算定根拠（業務内容・工数）を文書化してご提出します。'],
+    ['グループ内取引 92.5百万円','上乗せ案件132.5百万円のうち92.5百万円はグループ会社からの経営指導料。','支払側各社の支払能力と、対価の算定根拠（業務内容・工数）を文書化してご提出します。'],
     ['在庫積み増し 118百万円','仕入を維持するため、在庫が420→538百万円に増加します。','時価1.37倍の換価可能資産です。在庫見合いの運転資金枠をご相談させてください。'],
     ['2026年11月の資金需要','消費税30百万円の納付が、売上回収が進む前の時期に重なります。','短期のつなぎ資金でこの一点を越えられれば、通期の資金繰りは成立します。'],
     ['追加売上の未達リスク','仕入を固定するため、売上未達時の資金影響が大きくなります。','月次で進捗をご報告し、未達が見込まれる場合は仕入計画を機動的に見直します。']
@@ -451,25 +483,25 @@ function table(s,x0,y0,cols,rows,opt){
 
 /* 15 蓋然性 ★ */
 {
-  const s=base('プランDの蓋然性 － 過去実績が裏付けています','必要売上621.1百万円は、直近2期の実績をいずれも下回る水準です。');
+  const s=base('プランDの蓋然性 － 過去実績が裏付けています','必要売上566.2百万円は、直近2期の実績をいずれも下回る水準です。');
   const data=[
     ['FY2024 実績','512.5','203.7','39.8%','－'],
-    ['FY2025 実績','752.9','201.9','26.8%','82.5%'],
-    ['FY2026 見込','708.2','229.1','32.4%','87.7%'],
-    ['プランD（FY2027）','621.1','320.2','51.5%','－']
+    ['FY2025 実績','752.9','201.9','26.8%','75.2%'],
+    ['FY2026 見込','708.2','229.1','32.4%','80.0%'],
+    ['プランD（FY2027）','566.2','291.9','51.5%','－']
   ];
   table(s,0.65,1.66,[{t:'期',w:2.9},{t:'売上高（百万円）',w:2.2,a:'right'},{t:'事業粗利（百万円）',w:2.3,a:'right'},
     {t:'粗利率',w:1.6,a:'right'},{t:'プランD/実績',w:2.0,a:'right'}],data,{rh:0.52,hi:[3]});
   card(s,0.65,4.15,5.85,1.55,BERRY);
   s.addText('売上のハードルは低い',{x:0.95,y:4.33,w:5.25,h:0.32,fontFace:BF,fontSize:12,bold:true,color:CREAM,margin:0});
-  s.addText('プランDの621.1百万円は、FY2025実績の82.5%、FY2026見込の87.7%。2期平均730.5百万円に対しては85.0%です。過去に到達した売上規模を下回ります。',
+  s.addText('プランDの566.2百万円は、FY2025実績の75.2%、FY2026見込の80.0%。2期平均730.5百万円に対しては77.5%です。過去に到達した売上規模を下回ります。',
     {x:0.95,y:4.7,w:5.25,h:0.95,fontFace:BF,fontSize:11,color:WHT,valign:'top',margin:0});
   card(s,6.8,4.15,5.85,1.55,CREAM);
   s.addText('鍵は粗利率の構造変化',{x:7.1,y:4.33,w:5.25,h:0.32,fontFace:BF,fontSize:12,bold:true,color:BERRY,margin:0});
   s.addText('低採算の飲食が抜けたことで、粗利率は26.8%（FY2025）→32.4%（FY2026）→51.5%（撤退後実績）へ改善。同じ売上でも残る利益が大きく変わります。',
     {x:7.1,y:4.7,w:5.25,h:0.95,fontFace:BF,fontSize:11,color:INK,valign:'top',margin:0});
   card(s,0.65,5.9,11.99,0.85,CREAM);
-  s.addText('過去2期の売上水準（708〜753百万円）を撤退後の粗利率で回した場合、経常利益は182〜205百万円。プランDの137.5百万円は上振れ余地を残した保守的な計画です。',
+  s.addText('過去2期の売上水準（708〜753百万円）を撤退後の粗利率で回した場合、経常利益は182〜205百万円。プランDの109.2百万円は上振れ余地を残した保守的な計画です。',
     {x:1.0,y:5.9,w:11.3,h:0.85,fontFace:BF,fontSize:12,bold:true,color:BERRY,valign:'middle',margin:0});
   foot(s,'事業粗利＝売上総利益から上乗せ案件132.5百万円を除いた本業ベース。粗利率51.5%は2026年4-6月実績。出典：事業計画202608（銀行様）、決算報告書 第54期。');
   s.addNotes('売上7億円は過去2期の実績値。プランDはそれを下回る6.2億円で成立する。粗利率改善の分だけ上振れ余地がある。');
@@ -477,31 +509,32 @@ function table(s,x0,y0,cols,rows,opt){
 
 /* 16 まとめ */
 {
-  const s=p.addSlide(); s.background={color:BERRY};
-  s.addShape(p.ShapeType.ellipse,{x:-1.6,y:5.0,w:4.6,h:4.6,fill:{color:'111111'}});
-  s.addText('まとめ',{x:0.9,y:0.75,w:8,h:0.7,fontFace:HF,fontSize:34,bold:true,color:WHT,margin:0});
+  const s=p.addSlide(); s.background={color:WHT};
+  s.addShape(p.ShapeType.rect,{x:0,y:0,w:0.16,h:H,fill:{color:INK}});
+  s.addText('まとめ',{x:0.9,y:0.75,w:8,h:0.7,fontFace:HF,fontSize:34,bold:true,color:INK,margin:0});
+  s.addShape(p.ShapeType.rect,{x:0.9,y:1.5,w:1.6,h:0.025,fill:{color:GOLD}});
   const pts=[
     ['FY2026の赤字は構造改革の費用','不採算3店舗の撤退は2026年3月に完了。年103百万円の固定費削減は実績です。'],
     ['上乗せ案件だけで営業損益は黒字転換','132.5百万円の計上により、FY2026比147.7百万円の改善。'],
     ['ワイン仕入は落としません','割当を守り2〜3年先の成長を確保。在庫は時価1.37倍の換価可能資産です。'],
-    ['必要売上621.1百万円は過去2期を下回る','FY2025の82.5%、FY2026見込の87.7%。経常利益137.5百万円は保守的な計画です。']
+    ['必要売上566.2百万円は過去2期を下回る','FY2025の75.2%、FY2026見込の80.0%。経常利益109.2百万円は保守的な計画です。']
   ];
   pts.forEach((t,i)=>{
     const y=1.75+i*1.12;
-    s.addShape(p.ShapeType.ellipse,{x:0.9,y:y+0.06,w:0.4,h:0.4,fill:{color:CREAM}});
-    s.addText(String(i+1),{x:0.9,y:y+0.06,w:0.4,h:0.4,fontFace:BF,fontSize:14,bold:true,color:BERRY,align:'center',valign:'middle',margin:0});
-    s.addText(t[0],{x:1.55,y,w:7.4,h:0.4,fontFace:BF,fontSize:15.5,bold:true,color:WHT,margin:0});
-    s.addText(t[1],{x:1.55,y:y+0.42,w:7.4,h:0.44,fontFace:BF,fontSize:11.5,color:'C9C7C3',margin:0});
+    s.addShape(p.ShapeType.ellipse,{x:0.9,y:y+0.06,w:0.4,h:0.4,fill:{color:INK}});
+    s.addText(String(i+1),{x:0.9,y:y+0.06,w:0.4,h:0.4,fontFace:BF,fontSize:14,bold:true,color:WHT,align:'center',valign:'middle',margin:0});
+    s.addText(t[0],{x:1.55,y,w:7.4,h:0.4,fontFace:BF,fontSize:15.5,bold:true,color:INK,margin:0});
+    s.addText(t[1],{x:1.55,y:y+0.42,w:7.4,h:0.44,fontFace:BF,fontSize:11.5,color:'6E6E6E',margin:0});
   });
-  card(s,9.4,1.75,3.25,4.25,'111111');
-  s.addText('ご相談事項',{x:9.65,y:2.0,w:2.75,h:0.34,fontFace:BF,fontSize:12,bold:true,color:CREAM,margin:0});
+  card(s,9.4,1.75,3.25,4.25,INK);
+  s.addText('ご相談事項',{x:9.65,y:2.0,w:2.75,h:0.34,fontFace:BF,fontSize:12,bold:true,color:GOLD,margin:0});
   s.addText([
     {text:'2026年11月のつなぎ資金',options:{bullet:true,breakLine:true}},
     {text:'在庫見合いの運転資金枠',options:{bullet:true,breakLine:true}},
     {text:'財務制限条項の事前確認',options:{bullet:true,breakLine:true}},
     {text:'月次資金繰り表のご報告',options:{bullet:true}}
   ],{x:9.65,y:2.45,w:2.75,h:2.0,fontFace:BF,fontSize:11,color:WHT,paraSpaceAfter:9,margin:0});
-  s.addText('株式会社WineBank',{x:0.9,y:6.55,w:6,h:0.34,fontFace:BF,fontSize:11,color:'A8A6A2',margin:0});
+  s.addText('株式会社WineBank',{x:0.9,y:6.55,w:6,h:0.34,fontFace:BF,fontSize:11,color:MUT,margin:0});
   s.addNotes('依頼事項を明確にして締める。11月のつなぎと在庫見合い枠の2点が具体的な依頼。');
 }
 
