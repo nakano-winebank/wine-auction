@@ -7,8 +7,12 @@
 
   v3：**保有期間だけで投資家の取り分を固定する。**
       WineBankの実際の販売利益や人件費は投資家のリターンに影響しない。
-      簿価に対して +7.5% / +12.5% / +30%（2年目は25%案もあり）。
+      簿価に対して +10%（12ヶ月以内） / +20%（13〜24ヶ月） / +30%（24ヶ月超＝残存）。
       WineBankがそれ以上で売れた部分はWineBankの収益となる。
+
+      本線の10% / 20% は倉持氏 8/21 18:21 の提示（1年目+10%・2年目+20%）に、
+      24ヶ月超の残存引き取り 30% を段階として加えたもの。対比として、同日 19:37 に
+      ご提示いただいた 7.5% / 12.5% / 30% 案も併記する。
 
 基本構造：
   ・投資額 1億円。投資家がワイン現物を直接所有
@@ -31,11 +35,18 @@ v1・v2で用いた「定常年間利回り」とは別物であるため、両�
 CAPITAL = 100_000_000          # 投資額（＝投資家の取得簿価）
 
 # 保有期間に応じた投資家の取り分（簿価に対する上乗せ率）
-TIERS_30 = ((6, 0.075), (12, 0.125), (24, 0.30))   # 2年目30%案
-TIERS_25 = ((6, 0.075), (12, 0.125), (24, 0.25))   # 2年目25%案
+#
+#   本線：12ヶ月以内 +10% ／ 13〜24ヶ月 +20% ／ 24ヶ月超 +30%
+#         24ヶ月超は契約期間満了時に残存した在庫をWineBankが引き取る際の率であり、
+#         「30%もしくは要協議」とする。
+#   対比：8/21 19:37 にご提示いただいた 7.5% / 12.5% / 30% 案
+TIERS_MAIN = ((12, 0.10), (24, 0.20), (999, 0.30))
+TIERS_ALT  = ((6, 0.075), (12, 0.125), (24, 0.30))
+
+RESIDUAL_RATE = 0.30      # 24ヶ月時点で残存した在庫の引き取り率（もしくは要協議）
 
 
-def inv_rate(month, tiers=TIERS_30):
+def inv_rate(month, tiers=TIERS_MAIN):
     """取得からの保有月数に対する投資家の上乗せ率。"""
     for lim, r in tiers:
         if month <= lim:
@@ -98,7 +109,7 @@ def annualize(rm):
 
 
 # ───────────────────────────────────────── 投資家サイド
-def investor(sale, tiers=TIERS_30, capital=CAPITAL,
+def investor(sale, tiers=TIERS_MAIN, capital=CAPITAL,
              carry_y1=CARRY_Y1, carry_y2=CARRY_Y2, carry_actual=False):
     """投資家の月次キャッシュフローとIRR。
 
@@ -140,7 +151,7 @@ def investor(sale, tiers=TIERS_30, capital=CAPITAL,
 
 
 # ───────────────────────────────────────── WineBankサイド
-def winebank(sale, tiers=TIERS_30, capital=CAPITAL, appreciation=APPRECIATION,
+def winebank(sale, tiers=TIERS_MAIN, capital=CAPITAL, appreciation=APPRECIATION,
              discount=0.0, var_rate=VAR_RATE, labor_rate=LABOR_RATE):
     """WineBank側の損益。投資家への支払を差し引いた後の粗利。"""
     months = len(sale) - 1
@@ -174,11 +185,11 @@ if __name__ == "__main__":
     print("=" * W)
     print("【倉持案 v3】固定リターン型　投資額1億円・契約期間 最長2年")
     print("=" * W)
-    print(f"  投資家の取り分   6ヶ月以内 +7.5% ／ 7〜12ヶ月 +12.5% ／ 13〜24ヶ月 +30%（25%案あり）")
+    print(f"  投資家の取り分   12ヶ月以内 +10% ／ 13〜24ヶ月 +20% ／ 24ヶ月超（残存）+30%")
     print(f"  倉庫費・保険料   投資家負担。1年目 {CARRY_Y1/1e4:,.0f}万円 ／ 2年目 {CARRY_Y2/1e4:,.0f}万円")
     print(f"  投資家の指標     IRR（月次キャッシュフローから算出・年率換算）")
 
-    for label, tiers in (("2年目30%案", TIERS_30), ("2年目25%案", TIERS_25)):
+    for label, tiers in (("本線 10/20/30案", TIERS_MAIN), ("対比 7.5/12.5/30案", TIERS_ALT)):
         print()
         print("=" * W)
         print(f"【投資家IRR】{label}　倉庫費は倉持氏提示の年額固定")
@@ -191,30 +202,30 @@ if __name__ == "__main__":
 
     print()
     print("=" * W)
-    print("【投資家IRR】倉庫費を残存在庫に比例させた場合（2年目30%案）")
+    print("【投資家IRR】倉庫費を残存在庫に比例させた場合（本線 10/20/30案）")
     print("=" * W)
     print(" 売却ペース                 倉庫費（実態）  純利益     IRR（年率）  年額固定との差")
     for name, s in PACES.items():
-        a = investor(s, TIERS_30, carry_actual=True)
-        b = investor(s, TIERS_30)
+        a = investor(s, TIERS_MAIN, carry_actual=True)
+        b = investor(s, TIERS_MAIN)
         print(f" {name:24s} {man(a['carry']):>11s}円 {man(a['profit']):>8s}円 "
               f"{pct(a['irr']):>10s} {(a['irr']-b['irr'])*100:+9.2f}pt")
 
     print()
     print("=" * W)
-    print("【WineBank側の損益】2年目30%案・ニュートラル（上昇6%・値引きなし）")
+    print("【WineBank側の損益】本線 10/20/30案・ニュートラル（上昇6%・値引きなし）")
     print("=" * W)
     print(" 売却ペース                 顧客への売上  投資家への支払  変動販売費   人件費   "
           "WB粗利   取得マージン  WB合計")
     for name, s in PACES.items():
-        w = winebank(s, TIERS_30)
+        w = winebank(s, TIERS_MAIN)
         print(f" {name:24s} {oku(w['sales']):>9s}円 {oku(w['pay']):>11s}円 "
               f"{man(w['var']):>9s}円 {man(w['labor']):>7s}円 {man(w['gross']):>8s}円 "
               f"{man(w['margin']):>9s}円 {man(w['total']):>8s}円")
 
     print()
     print("=" * W)
-    print("【WineBank側の下振れ耐性】2年目30%案・WB合計（取得マージン込み）")
+    print("【WineBank側の下振れ耐性】本線 10/20/30案・WB合計（取得マージン込み）")
     print("=" * W)
     cases = [("上昇6%・値引きなし", 0.06, 0.00),
              ("上昇0%・値引きなし", 0.00, 0.00),
@@ -222,28 +233,28 @@ if __name__ == "__main__":
              ("上昇0%・値引き5%",   0.00, 0.05)]
     print(" 売却ペース              " + "".join(f"{c[0]:>20s}" for c in cases))
     for name, s in PACES.items():
-        row = "".join(f"{man(winebank(s, TIERS_30, appreciation=a, discount=d)['total'])+'円':>20s}"
+        row = "".join(f"{man(winebank(s, TIERS_MAIN, appreciation=a, discount=d)['total'])+'円':>20s}"
                       for _, a, d in cases)
         print(f" {name:22s}{row}")
 
     print()
     print("=" * W)
-    print("【WineBank側の下振れ耐性】2年目25%案・WB合計（取得マージン込み）")
+    print("【WineBank側の下振れ耐性】対比 7.5/12.5/30案・WB合計（取得マージン込み）")
     print("=" * W)
     print(" 売却ペース              " + "".join(f"{c[0]:>20s}" for c in cases))
     for name, s in PACES.items():
-        row = "".join(f"{man(winebank(s, TIERS_25, appreciation=a, discount=d)['total'])+'円':>20s}"
+        row = "".join(f"{man(winebank(s, TIERS_ALT, appreciation=a, discount=d)['total'])+'円':>20s}"
                       for _, a, d in cases)
         print(f" {name:22s}{row}")
 
     print()
     print("=" * W)
-    print("【投資家とWineBankの取り分】2年目30%案・ニュートラル")
+    print("【投資家とWineBankの取り分】本線 10/20/30案・ニュートラル")
     print("=" * W)
     print(" 売却ペース                 投資家 純利益   WineBank 合計   投資家:WB")
     for name, s in PACES.items():
-        v = investor(s, TIERS_30)
-        w = winebank(s, TIERS_30)
+        v = investor(s, TIERS_MAIN)
+        w = winebank(s, TIERS_MAIN)
         tot = v["profit"] + w["total"]
         print(f" {name:24s} {man(v['profit']):>9s}円 {man(w['total']):>11s}円 "
               f"{v['profit']/tot*100:>7.0f}:{w['total']/tot*100:.0f}")
@@ -252,8 +263,8 @@ if __name__ == "__main__":
     print("=" * W)
     print("【参考】v2（利益配分型・在庫回転12ヶ月）との比較")
     print("=" * W)
-    v = investor(PACES["1年以内に100%売却"], TIERS_30)
-    w = winebank(PACES["1年以内に100%売却"], TIERS_30)
+    v = investor(PACES["1年以内に100%売却"], TIERS_MAIN)
+    w = winebank(PACES["1年以内に100%売却"], TIERS_MAIN)
     print(f"  v3 1年以内に100%売却  投資家 純利益 {man(v['profit'])}円（IRR {pct(v['irr'])}）"
           f"  WineBank {man(w['total'])}円")
     print(f"  v2 在庫回転12ヶ月      投資家 取分   1,434万円（年率 14.3%）  WineBank 3,046万円")
@@ -272,7 +283,7 @@ def residual_pace(y1, y2, months=24):
     return s, 1.0 - y1 - y2
 
 
-def wb_breakeven_y2(tiers=TIERS_30, appreciation=APPRECIATION, discount=0.0):
+def wb_breakeven_y2(tiers=TIERS_MAIN, appreciation=APPRECIATION, discount=0.0):
     """1年目の売却比率を振り、WineBank合計がゼロになる2年目の比率を探す。
     （1年目 + 2年目 = 100% を前提とする）"""
     out = []
@@ -285,14 +296,14 @@ def wb_breakeven_y2(tiers=TIERS_30, appreciation=APPRECIATION, discount=0.0):
 def _extra():
     print()
     print("=" * W)
-    print("【投資家から見たIRRと実額の対比】2年目30%案・ニュートラル")
+    print("【投資家から見たIRRと実額の対比】本線 10/20/30案・ニュートラル")
     print("=" * W)
     print("  IRRは「戻った資金を同じ利回りで再投資できる」前提の指標。契約期間は最長2年で")
     print("  再投資先が用意されないため、実際の手取りは下の純利益の欄になる。")
     print()
     print(" 売却ペース                 平均保有  IRR（年率）  純利益（2年通算）  1億円に対する単純利回り")
     for name, s in PACES.items():
-        v = investor(s, TIERS_30)
+        v = investor(s, TIERS_MAIN)
         yrs = max(v["avg_hold"] / 12.0, 1e-9)
         print(f" {name:24s} {v['avg_hold']:5.1f}ヶ月 {pct(v['irr']):>10s} "
               f"{man(v['profit']):>14s}円 {pct(v['profit']/CAPITAL):>18s}")
@@ -301,7 +312,7 @@ def _extra():
     print("=" * W)
     print("【WineBankの損益分岐点】2年目の売却比率をどこまで許容できるか（WB合計＝0）")
     print("=" * W)
-    for label, tiers in (("2年目30%案", TIERS_30), ("2年目25%案", TIERS_25)):
+    for label, tiers in (("本線 10/20/30案", TIERS_MAIN), ("対比 7.5/12.5/30案", TIERS_ALT)):
         print(f"\n  --- {label} ---")
         for cname, a, d in (("上昇6%・値引きなし", 0.06, 0.0),
                             ("上昇0%・値引きなし", 0.00, 0.0),
@@ -368,7 +379,7 @@ def export_json(path="kuramochi_fixed.json"):
            ("1年目30%・2年目70%", 0.30, 0.70))
 
     s_main = pace(0.80, 0.20)
-    v_main = investor(s_main, TIERS_30)
+    v_main = investor(s_main, TIERS_MAIN)
     sched = [dict(m=d["m"], book=d["book"], rate=d["rate"],
                   recv=d["recv"], carry=d["carry"])
              for d in v_main["detail"] if d["book"] > 0]
@@ -389,27 +400,27 @@ def export_json(path="kuramochi_fixed.json"):
 
     data = dict(
         capital=CAPITAL, carry_y1=CARRY_Y1, carry_y2=CARRY_Y2, term_months=24,
-        tiers30=[dict(lim=l, rate=r) for l, r in TIERS_30],
-        tiers25=[dict(lim=l, rate=r) for l, r in TIERS_25],
+        tiers_main=[dict(lim=l, rate=r) for l, r in TIERS_MAIN],
+        tiers_alt=[dict(lim=l, rate=r) for l, r in TIERS_ALT],
         acq_markup=ACQ_MARKUP, appreciation=APPRECIATION,
         var_rate=VAR_RATE, labor_rate=LABOR_RATE,
         cost_ratio=INVESTOR_COST_RATIO * 100, sell_ratio=SELL_RATIO * 100,
         rrp_total=CAPITAL / INVESTOR_COST_RATIO,
-        paces30=[pace_block(n, a, b, TIERS_30) for n, a, b in SET],
-        paces25=[pace_block(n, a, b, TIERS_25) for n, a, b in SET],
+        paces_main=[pace_block(n, a, b, TIERS_MAIN) for n, a, b in SET],
+        paces_alt=[pace_block(n, a, b, TIERS_ALT) for n, a, b in SET],
         schedule=sched,
         carry_actual=[dict(name=n,
-                           carry=investor(pace(a, b), TIERS_30, carry_actual=True)["carry"],
-                           irr=investor(pace(a, b), TIERS_30, carry_actual=True)["irr"])
+                           carry=investor(pace(a, b), TIERS_MAIN, carry_actual=True)["carry"],
+                           irr=investor(pace(a, b), TIERS_MAIN, carry_actual=True)["irr"])
                       for n, a, b in SET],
-        downside30=[dict(name=n, vals=[winebank(pace(a, b), TIERS_30,
+        downside_main=[dict(name=n, vals=[winebank(pace(a, b), TIERS_MAIN,
                                                 appreciation=ap, discount=di)["total"]
                                        for _, ap, di in cases]) for n, a, b in SET],
-        downside25=[dict(name=n, vals=[winebank(pace(a, b), TIERS_25,
+        downside_alt=[dict(name=n, vals=[winebank(pace(a, b), TIERS_ALT,
                                                 appreciation=ap, discount=di)["total"]
                                        for _, ap, di in cases]) for n, a, b in SET],
         case_labels=[c[0] for c in cases],
-        residual30=residual(0.30), residual25=residual(0.25),
+        residual_main=residual(0.30), residual_alt=residual(0.25),
         residual_cost=[dict(res=r, book=CAPITAL * r,
                             pay30=CAPITAL * r * 1.30, pay25=CAPITAL * r * 1.25)
                        for r in (0.05, 0.10, 0.20)],

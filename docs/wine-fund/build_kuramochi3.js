@@ -47,13 +47,15 @@ const yen  = (x) => Math.round(x).toLocaleString() + "円";
 const pct  = (x, n = 1) => (x * 100).toFixed(n) + "%";
 const num  = (x, n = 2) => x.toFixed(n);
 
-const P30 = (name) => D.paces30.find((p) => p.name === name);
-const P25 = (name) => D.paces25.find((p) => p.name === name);
+const PM = (name) => D.paces_main.find((p) => p.name === name);   // 本案
+const PA = (name) => D.paces_alt.find((p) => p.name === name);    // 対比案
 const MAIN = "1年目80%・2年目20%";          // 主線
-const PACE_NAMES = D.paces30.map((p) => p.name);
+const PACE_NAMES = D.paces_main.map((p) => p.name);
 
 // 固定リターンの段（6ヶ月以内 / 7〜12ヶ月 / 13〜24ヶ月）
-const TIER_LABELS = ["取得から6ヶ月以内", "7〜12ヶ月", "13〜24ヶ月"];
+const TIER_LABELS = ["取得から12ヶ月以内", "13〜24ヶ月", "24ヶ月超（残存）"];
+const TIER_NOTES = ["1年目に売却が成立した場合", "2年目に売却が成立した場合",
+                    "契約期間の満了時に残っていた場合"];
 
 // ─────────────────────────────────────────── helpers
 function base() {
@@ -170,7 +172,7 @@ const CHART_BASE = {
   showTitle: true, titleColor: IVORY, titleFontFace: SANS, titleFontSize: 11, titleBold: true,
 };
 
-const TIER_TXT = D.tiers30.map((t, i) => TIER_LABELS[i] + " 簿価＋" + pct(t.rate, 1)).join(" ／ ");
+const TIER_TXT = D.tiers_main.map((t, i) => TIER_LABELS[i] + " 簿価＋" + pct(t.rate, 1)).join(" ／ ");
 
 // ═══════════════════════════════════════════════════════════ 01 表紙
 {
@@ -237,7 +239,7 @@ const TIER_TXT = D.tiers30.map((t, i) => TIER_LABELS[i] + " 簿価＋" + pct(t.r
 
 // ═══════════════════════════════════════════════════════ 02 骨子
 {
-  const m = P30(MAIN);
+  const m = PM(MAIN);
   const s = chrome(base(), "EXECUTIVE SUMMARY", "本ご提案の骨子",
     "ワイン現物をご自身で直接ご所有いただき、保有期間に応じた固定のリターンをお支払いする。");
 
@@ -245,8 +247,8 @@ const TIER_TXT = D.tiers30.map((t, i) => TIER_LABELS[i] + " 簿価＋" + pct(t.r
   const tiles = [
     ["1.0", "億円", "ご投資額", "現物を貴社名義で直接ご所有。SPC・匿名組合を組成しないため、その維持費は発生しない。", false],
     ["2", "年", "契約期間（最長）", "1年で多くを売り切ることを前提とし、残りは2年目に精算する設計。", false],
-    [pct(m.irr).replace("%", ""), "%", "想定IRR（年率）", "1年目80%・2年目20%で売却した場合。売却ペースが変わっても15〜16%に収まる設計。", true],
-    [pct(D.tiers30[2].rate, 0).replace("%", ""), "%", "13〜24ヶ月の固定リターン", "簿価に対する上乗せ率。6ヶ月以内は" + pct(D.tiers30[0].rate, 1) + "、7〜12ヶ月は" + pct(D.tiers30[1].rate, 1) + "。", false],
+    [pct(m.irr).replace("%", ""), "%", "想定IRR（年率）", "1年目80%・2年目20%で売却した場合。倉庫費・保険料を控除した後の数値。", true],
+    ["＋" + pct(D.tiers_main[0].rate, 0).replace("%", ""), "%", "1年目の固定リターン", "簿価に対する上乗せ率。2年目は＋" + pct(D.tiers_main[1].rate, 0) + "、24ヶ月超の残存は＋" + pct(D.tiers_main[2].rate, 0) + "（もしくは要協議）。", false],
   ];
   tiles.forEach((t, i) => {
     stat(s, M + (sw + 0.30) * i, 1.78, sw, 1.56, t[0], t[1], t[2], t[3],
@@ -347,7 +349,7 @@ const TIER_TXT = D.tiers30.map((t, i) => TIER_LABELS[i] + " 簿価＋" + pct(t.r
     "簿価に対する上乗せ率を保有期間で固定する。WineBankの販売実績は一切影響しない。");
 
   const tw = (CW - 0.30 * 2) / 3;
-  D.tiers30.forEach((t, i) => {
+  D.tiers_main.forEach((t, i) => {
     const x = M + (tw + 0.30) * i;
     const hl = i === 1;
     card(s, x, 1.80, tw, 1.86, { fill: hl ? CARD2 : CARD, line: hl ? GOLD_D : LINE });
@@ -355,17 +357,17 @@ const TIER_TXT = D.tiers30.map((t, i) => TIER_LABELS[i] + " 簿価＋" + pct(t.r
       x: x + 0.22, y: 1.96, w: tw - 0.44, h: 0.26, margin: 0, align: "center",
       fontFace: SANS, fontSize: 11.5, bold: true, color: hl ? GOLD_L : IVORY,
     });
-    s.addText("簿価に対して", {
-      x: x + 0.22, y: 2.28, w: tw - 0.44, h: 0.22, margin: 0, align: "center",
-      fontFace: SANS, fontSize: 9, color: MUTED,
+    s.addText(TIER_NOTES[i], {
+      x: x + 0.22, y: 2.26, w: tw - 0.44, h: 0.22, margin: 0, align: "center",
+      fontFace: SANS, fontSize: 8.5, color: MUTED,
     });
     s.addText("＋" + pct(t.rate, 1), {
       x: x + 0.22, y: 2.48, w: tw - 0.44, h: 0.56, margin: 0, align: "center",
       fontFace: LATIN, fontSize: 34, bold: true, color: hl ? GOLD_L : IVORY,
     });
-    s.addText("簿価1,000万円なら " + man(1e7 * (1 + t.rate)) + "円のお支払い", {
+    s.addText(i === 2 ? "もしくは要協議" : "簿価1,000万円なら " + man(1e7 * (1 + t.rate)) + "円のお支払い", {
       x: x + 0.22, y: 3.12, w: tw - 0.44, h: 0.24, margin: 0, align: "center",
-      fontFace: SANS, fontSize: 9, color: MUTED,
+      fontFace: SANS, fontSize: 9, color: i === 2 ? GOLD : MUTED,
     });
   });
 
@@ -385,40 +387,43 @@ const TIER_TXT = D.tiers30.map((t, i) => TIER_LABELS[i] + " 簿価＋" + pct(t.r
   });
 
   card(s, M + hw + 0.30, 3.86, hw, 2.30);
-  s.addText("2年目の水準について", {
+  s.addText("段階の置き方について", {
     x: M + hw + 0.58, y: 4.00, w: hw - 0.56, h: 0.26, margin: 0,
     fontFace: SANS, fontSize: 11, bold: true, color: IVORY,
   });
-  s.addText("13〜24ヶ月を" + pct(D.tiers30[2].rate, 0) + "と厚くしているのは、単なる高配当ではなく資金拘束期間が長くなることへの補償という位置づけによる。これにより、早く売れても2年近くかかっても、貴社のIRRが概ね15〜16%に揃う。", {
-    x: M + hw + 0.58, y: 4.30, w: hw - 0.56, h: 0.76, margin: 0,
-    fontFace: SANS, fontSize: 10, color: MUTED, lineSpacingMultiple: 1.3,
+  s.addText("1年目" + pct(D.tiers_main[0].rate, 0) + "・2年目" + pct(D.tiers_main[1].rate, 0) + "は、資金拘束が1年延びることへの上乗せを10ポイントとした水準。24ヶ月超の" + pct(D.tiers_main[2].rate, 0) + "は、契約期間の満了時に残っていた在庫をWineBankが引き取る際の率とする。ご参考までに、上乗せをより緩やかにした案との対比は次のとおり。", {
+    x: M + hw + 0.58, y: 4.30, w: hw - 0.56, h: 0.80, margin: 0,
+    fontFace: SANS, fontSize: 9.5, color: MUTED, lineSpacingMultiple: 1.3,
   });
   const alt = [
-    ["13〜24ヶ月を" + pct(D.tiers30[2].rate, 0) + "とする場合", pct(P30(MAIN).irr), pct(P30("1年目50%・2年目50%").irr)],
-    ["13〜24ヶ月を" + pct(D.tiers25[2].rate, 0) + "とする場合", pct(P25(MAIN).irr), pct(P25("1年目50%・2年目50%").irr)],
+    ["本案　" + D.tiers_main.map((t) => pct(t.rate, 0)).join(" / "),
+     pct(PM("1年以内に100%売却").irr), pct(PM(MAIN).irr), pct(PM("1年目50%・2年目50%").irr)],
+    ["対比　" + D.tiers_alt.map((t) => pct(t.rate, 1)).join(" / "),
+     pct(PA("1年以内に100%売却").irr), pct(PA(MAIN).irr), pct(PA("1年目50%・2年目50%").irr)],
   ];
   table(s, [
-    [th(""), th("1年目80%・2年目20%"), th("1年目50%・2年目50%")],
+    [th("13〜24ヶ月の水準"), th("1年で100%"), th("80%→20%"), th("50%→50%")],
     ...alt.map((a, i) => [
       td(a[0], { align: "left", bold: i === 0, color: i === 0 ? GOLD_L : IVORY }),
       td(a[1], { bold: i === 0, color: i === 0 ? GOLD_L : IVORY }),
       td(a[2], { bold: i === 0, color: i === 0 ? GOLD_L : IVORY }),
+      td(a[3], { bold: i === 0, color: i === 0 ? GOLD_L : IVORY }),
     ]),
-  ], M + hw + 0.58, 5.20, hw - 0.56, [2.40, 1.50, 1.34], { rowH: 0.30, fontSize: 9 });
+  ], M + hw + 0.58, 5.20, hw - 0.56, [2.18, 1.02, 1.02, 1.02], { rowH: 0.30, fontSize: 8.5 });
 
-  note(s, "※ 簿価とは、貴社がWineBankから現物を取得された価格（市中原価＋" + pct(D.acq_markup, 0) + "）。上乗せ率は保有期間、すなわち取得から売却成立までの月数で判定する。ご投資額" + oku(D.capital) + "円は定価換算で約" + oku(D.rrp_total) + "円相当のワインにあたる。", 6.32);
+  note(s, "※ 簿価とは、貴社がWineBankから現物を取得された価格（市中原価＋" + pct(D.acq_markup, 0) + "）。上乗せ率は保有期間、すなわち取得から売却成立までの月数で判定する。24ヶ月超の" + pct(D.tiers_main[2].rate, 0) + "は契約期間の満了時に残存した在庫の引き取り率であり、水準は要協議とする（後掲）。ご投資額" + oku(D.capital) + "円は定価換算で約" + oku(D.rrp_total) + "円相当のワインにあたる。", 6.32);
   s.addNotes("固定リターン7.5/12.5/30%。25%案との対比も掲載。");
 }
 
 // ═══════════════════════════════════════════ 05 想定IRR
 {
-  const s = chrome(base(), "EXPECTED IRR", "想定IRR：売却ペースが変わっても15〜16%",
-    "ご投資額1億円。各期間内で概ね均等に売却される前提。倉庫費・保険料を控除した後の数値。");
+  const s = chrome(base(), "EXPECTED IRR", "想定IRR：早く売り切るほど高くなります",
+    "ご投資額1億円。各期間内で毎月フラットに売却される前提。倉庫費・保険料を控除した後の数値。");
 
   const rows = [
     [th("売却ペース"), th("平均保有期間"), th("受取総額"), th("倉庫費・保険料"),
      th("純利益"), th("想定IRR（年率）")],
-    ...D.paces30.map((p) => {
+    ...D.paces_main.map((p) => {
       const hl = p.name === MAIN;
       return [
         td(p.name + (hl ? "（主線）" : ""), { bold: hl, color: hl ? GOLD_L : IVORY }),
@@ -433,30 +438,30 @@ const TIER_TXT = D.tiers30.map((t, i) => TIER_LABELS[i] + " 簿価＋" + pct(t.r
   table(s, rows, M, 1.78, CW, [2.60, 1.70, 1.90, 2.00, 1.80, 1.89], { rowH: 0.40, fontSize: 9.5 });
 
   card(s, M, 3.92, CW, 1.10, { fill: CARD2, line: GOLD_D });
-  s.addText("早く売れても、2年近くかかっても、IRRは概ね15〜16%に揃います。", {
+  s.addText("1年で売り切れれば " + pct(PM("1年以内に100%売却").irr) + "、2年目にずれ込むほど下がります。", {
     x: M + 0.30, y: 4.02, w: CW - 0.60, h: 0.28, margin: 0,
     fontFace: SANS, fontSize: 12, bold: true, color: GOLD_L,
   });
-  s.addText("13〜24ヶ月の上乗せ率を" + pct(D.tiers30[2].rate, 0) + "と厚くしていることで、売却が2年目にずれ込んだ場合でもIRRが落ちない。売れ行きの巧拙にかかわらず、貴社のリターンが安定する設計としている。", {
-    x: M + 0.30, y: 4.34, w: CW - 0.60, h: 0.56, margin: 0,
+  s.addText("上乗せ率が1年目" + pct(D.tiers_main[0].rate, 0) + "・2年目" + pct(D.tiers_main[1].rate, 0) + "であるのに対し、資金の拘束期間は倍になるため、売却が2年目にずれ込むほどIRRは低下する。したがって本設計では、1年で多くを売り切ることが前提となる。なお2年目の上乗せをさらに厚くすれば売却ペースによらずIRRを揃えることもできるが、その分WineBank側の下振れ耐性は下がる（後掲の対比）。", {
+    x: M + 0.30, y: 4.34, w: CW - 0.60, h: 0.60, margin: 0,
     fontFace: SANS, fontSize: 9.5, color: MUTED, lineSpacingMultiple: 1.25,
   });
 
   s.addChart(pres.ChartType.bar,
-    [{ name: "想定IRR", labels: D.paces30.map((p) => p.name.replace("・", "\n")),
-       values: D.paces30.map((p) => +(p.irr * 100).toFixed(1)) }],
+    [{ name: "想定IRR", labels: D.paces_main.map((p) => p.name.replace("・", "\n")),
+       values: D.paces_main.map((p) => +(p.irr * 100).toFixed(1)) }],
     Object.assign({}, CHART_BASE, {
       x: M, y: 5.10, w: CW, h: 1.50,
       title: "売却ペース別の想定IRR（年率・%）", valAxisMaxVal: 20, valAxisMinVal: 0,
     }));
 
-  note(s, "※ IRRは月次のキャッシュフロー（毎月の精算入金から倉庫費・保険料を控除したもの）から算出し、年率に換算したもの。倉庫費・保険料は在庫の残存にかかわらず年額固定で計上する保守的な置き方としている。", 6.66);
+  note(s, "※ IRRは月次のキャッシュフロー（毎月の精算入金から倉庫費・保険料を控除したもの）から算出し、年率に換算したもの。倉庫費・保険料は在庫の残存にかかわらず年額固定で計上する保守的な置き方としている。倉持様よりご提示いただいた19.5%・16%・14.4%は倉庫費・保険料の控除前の数値であり、本表は控除後の数値である。", 6.66);
   s.addNotes("IRR 16.1/15.7/16.4/16.7%。倉持氏の試算15.8%・15〜16%とほぼ一致。");
 }
 
 // ═══════════════════════════════════════════ 06 月次の資金の流れ
 {
-  const m = P30(MAIN);
+  const m = PM(MAIN);
   const s = chrome(base(), "CASH FLOW", "毎月の資金の流れ",
     "主線（1年目80%・2年目20%）の場合。毎月、売却が成立したぶんを精算しお振込みする。");
 
@@ -515,7 +520,7 @@ const TIER_TXT = D.tiers30.map((t, i) => TIER_LABELS[i] + " 簿価＋" + pct(t.r
   const rows = [
     [th("売却ペース"), th("平均保有期間"), th("想定IRR（年率）"),
      th("純利益（2年通算の実額）"), th("ご投資額1億円に対する実利回り")],
-    ...D.paces30.map((p) => {
+    ...D.paces_main.map((p) => {
       const hl = p.name === MAIN;
       return [
         td(p.name + (hl ? "（主線）" : ""), { bold: hl, color: hl ? GOLD_L : IVORY }),
@@ -534,7 +539,7 @@ const TIER_TXT = D.tiers30.map((t, i) => TIER_LABELS[i] + " 簿価＋" + pct(t.r
     x: M + 0.28, y: 4.26, w: hw - 0.56, h: 0.26, margin: 0,
     fontFace: SANS, fontSize: 11, bold: true, color: GOLD_L,
   });
-  s.addText("IRRは「戻った資金を同じ利回りで再投資できる」前提の指標である。1年以内に売り切れた場合、IRRは " + pct(P30("1年以内に100%売却").irr) + " となるが、実際にお手元に残るのは " + man(P30("1年以内に100%売却").profit) + "円（ご投資額に対して " + pct(P30("1年以内に100%売却").simple) + "）にとどまる。資金が早く戻るぶん拘束期間が短く、そのぶん受取額も小さくなるためである。", {
+  s.addText("IRRは「戻った資金を同じ利回りで再投資できる」前提の指標である。1年以内に売り切れた場合、IRRは " + pct(PM("1年以内に100%売却").irr) + " となるが、実際にお手元に残るのは " + man(PM("1年以内に100%売却").profit) + "円（ご投資額に対して " + pct(PM("1年以内に100%売却").simple) + "）にとどまる。資金が早く戻るぶん拘束期間が短く、そのぶん受取額も小さくなるためである。", {
     x: M + 0.28, y: 4.58, w: hw - 0.56, h: 1.10, margin: 0,
     fontFace: SANS, fontSize: 9.5, color: MUTED, lineSpacingMultiple: 1.3,
   });
@@ -614,7 +619,7 @@ const TIER_TXT = D.tiers30.map((t, i) => TIER_LABELS[i] + " 簿価＋" + pct(t.r
     x: M + 0.30, y: 5.88, w: 3.60, h: 0.26, margin: 0,
     fontFace: SANS, fontSize: 11.5, bold: true, color: GOLD_L,
   });
-  s.addText("貴社が受け取る金額（簿価＋" + D.tiers30.map((t) => pct(t.rate, 1)).join("／") + "）も、精算のタイミング（毎月）も、AとBで変わらない。2案を所轄税務署の酒類指導官にご提示し、貴社側に酒類販売業免許が不要と整理できるほうを採用する。", {
+  s.addText("貴社が受け取る金額（簿価＋" + D.tiers_main.map((t) => pct(t.rate, 1)).join("／") + "）も、精算のタイミング（毎月）も、AとBで変わらない。2案を所轄税務署の酒類指導官にご提示し、貴社側に酒類販売業免許が不要と整理できるほうを採用する。", {
     x: M + 4.00, y: 5.86, w: CW - 4.30, h: 0.60, margin: 0,
     fontFace: SANS, fontSize: 9.5, color: MUTED, lineSpacingMultiple: 1.25,
   });
@@ -715,14 +720,14 @@ const TIER_TXT = D.tiers30.map((t, i) => TIER_LABELS[i] + " 簿価＋" + pct(t.r
 
 // ═══════════════════════════════════════════ 10 WineBank側
 {
-  const m = P30(MAIN);
+  const m = PM(MAIN);
   const s = chrome(base(), "WINEBANK SIDE", "WineBank側の収益構造",
     "貴社のリターンに影響しない部分ではあるが、事業として成立していることをご確認いただきたい。");
 
   const rows = [
     [th("売却ペース"), th("顧客への売上"), th("貴社へのお支払い"), th("変動販売費"),
      th("人件費"), th("WineBank粗利"), th("取得マージン"), th("WineBank合計")],
-    ...D.paces30.map((p) => {
+    ...D.paces_main.map((p) => {
       const hl = p.name === MAIN;
       return [
         td(p.name + (hl ? "（主線）" : ""), { bold: hl, color: hl ? GOLD_L : IVORY }),
@@ -744,7 +749,7 @@ const TIER_TXT = D.tiers30.map((t, i) => TIER_LABELS[i] + " 簿価＋" + pct(t.r
     x: M + 0.28, y: 4.18, w: hw - 0.56, h: 0.26, margin: 0,
     fontFace: SANS, fontSize: 11, bold: true, color: GOLD_L,
   });
-  s.addText("1年以内に売り切れた場合の " + man(P30("1年以内に100%売却").wb_total) + "円に対し、2年目にずれ込むほどWineBankの取り分は縮み、1年目30%・2年目70%では " + man(P30("1年目30%・2年目70%").wb_total) + "円まで下がる。貴社へのお支払いが保有期間とともに増える一方、WineBankの売上はさほど増えないためである。早期に売り切る動機がWineBank側に強く働く構造としている。", {
+  s.addText("1年以内に売り切れた場合の " + man(PM("1年以内に100%売却").wb_total) + "円に対し、2年目にずれ込むほどWineBankの取り分は縮み、1年目30%・2年目70%では " + man(PM("1年目30%・2年目70%").wb_total) + "円まで下がる。貴社へのお支払いが保有期間とともに増える一方、WineBankの売上はさほど増えないためである。早期に売り切る動機がWineBank側に強く働く構造としている。", {
     x: M + 0.28, y: 4.50, w: hw - 0.56, h: 1.46, margin: 0,
     fontFace: SANS, fontSize: 9.5, color: MUTED, lineSpacingMultiple: 1.3,
   });
@@ -756,7 +761,7 @@ const TIER_TXT = D.tiers30.map((t, i) => TIER_LABELS[i] + " 簿価＋" + pct(t.r
   });
   table(s, [
     [th("売却ペース"), th("貴社 純利益"), th("WineBank"), th("比率")],
-    ...D.paces30.map((p) => {
+    ...D.paces_main.map((p) => {
       const tot = p.profit + p.wb_total;
       const hl = p.name === MAIN;
       return [
@@ -779,7 +784,7 @@ const TIER_TXT = D.tiers30.map((t, i) => TIER_LABELS[i] + " 簿価＋" + pct(t.r
 
   const rows = [
     [th("売却ペース"), ...D.case_labels.map((c) => th(c))],
-    ...D.downside30.map((r) => {
+    ...D.downside_main.map((r) => {
       const hl = r.name === MAIN;
       return [
         td(r.name + (hl ? "（主線）" : ""), { bold: hl, color: hl ? GOLD_L : IVORY }),
@@ -788,19 +793,19 @@ const TIER_TXT = D.tiers30.map((t, i) => TIER_LABELS[i] + " 簿価＋" + pct(t.r
       ];
     }),
   ];
-  s.addText("13〜24ヶ月を" + pct(D.tiers30[2].rate, 0) + "とした場合のWineBank合計", {
+  s.addText("本案（" + D.tiers_main.map((t) => pct(t.rate, 0)).join(" / ") + "）の場合のWineBank合計", {
     x: M, y: 1.74, w: CW, h: 0.22, margin: 0,
     fontFace: SANS, fontSize: 9.5, bold: true, color: GOLD,
   });
   table(s, rows, M, 2.00, CW, [2.90, 2.25, 2.25, 2.25, 2.24], { rowH: 0.34, fontSize: 9 });
 
-  s.addText("13〜24ヶ月を" + pct(D.tiers25[2].rate, 0) + "とした場合のWineBank合計", {
+  s.addText("対比案（" + D.tiers_alt.map((t) => pct(t.rate, 1)).join(" / ") + "）の場合のWineBank合計", {
     x: M, y: 3.78, w: CW, h: 0.22, margin: 0,
     fontFace: SANS, fontSize: 9.5, bold: true, color: GOLD,
   });
   const rows25 = [
     [th("売却ペース"), ...D.case_labels.map((c) => th(c))],
-    ...D.downside25.map((r) => {
+    ...D.downside_alt.map((r) => {
       const hl = r.name === MAIN;
       return [
         td(r.name + (hl ? "（主線）" : ""), { bold: hl, color: hl ? GOLD_L : IVORY }),
@@ -816,7 +821,7 @@ const TIER_TXT = D.tiers30.map((t, i) => TIER_LABELS[i] + " 簿価＋" + pct(t.r
     x: M + 0.30, y: 5.96, w: 5.20, h: 0.26, margin: 0,
     fontFace: SANS, fontSize: 11.5, bold: true, color: GOLD_L,
   });
-  s.addText("ワイン市況が横ばいにとどまっても、値引き販売が必要になっても、貴社への精算額は簿価＋所定率のまま変わらない。ただし売れ行きが2年目に大きくずれ込み、かつ価格が下振れした場合はWineBank側が赤字となる。この点は" + pct(D.tiers25[2].rate, 0) + "案のほうが耐性が高く、両案をご検討いただきたい。", {
+  s.addText("ワイン市況が横ばいにとどまっても、値引き販売が必要になっても、貴社への精算額は簿価＋所定率のまま変わらない。本案では売れ行きが2年目にずれ込んでもWineBank側は黒字を確保できるが、2年目の上乗せを厚くした対比案では下振れ時に赤字となる。事業の継続性という観点からは本案のほうが安定している。", {
     x: M + 5.70, y: 5.94, w: CW - 6.00, h: 0.66, margin: 0,
     fontFace: SANS, fontSize: 9, color: MUTED, lineSpacingMultiple: 1.25,
   });
@@ -830,21 +835,21 @@ const TIER_TXT = D.tiers30.map((t, i) => TIER_LABELS[i] + " 簿価＋" + pct(t.r
 
   const hw = (CW - 0.30) / 2;
   card(s, M, 1.78, hw, 2.40, { fill: CARD2, line: GOLD_D });
-  s.addText("WineBankが引き取る（ご提案）", {
+  s.addText("WineBankが引き取る", {
     x: M + 0.28, y: 1.92, w: hw - 0.56, h: 0.28, margin: 0,
     fontFace: SANS, fontSize: 13, bold: true, color: GOLD_L,
   });
-  s.addText("24ヶ月時点で残っている在庫を、WineBankが簿価＋" + pct(D.tiers30[2].rate, 0) + "で引き取る。これにより、貴社は売れ残りリスクを負わず、想定IRRが確定する。", {
+  s.addText("24ヶ月時点で残っている在庫を、WineBankが簿価＋" + pct(D.tiers_main[2].rate, 0) + "、もしくはその時点での市況を踏まえた協議により引き取る。これにより、貴社は売れ残りリスクを負わない。", {
     x: M + 0.28, y: 2.28, w: hw - 0.56, h: 0.60, margin: 0,
     fontFace: SANS, fontSize: 10, color: MUTED, lineSpacingMultiple: 1.3,
   });
   table(s, [
-    [th("残存比率"), th("簿価"), th("＋" + pct(D.tiers30[2].rate, 0) + "での引き取り額"), th("＋" + pct(D.tiers25[2].rate, 0) + "の場合")],
+    [th("24ヶ月時点の残存"), th("簿価"), th("＋" + pct(D.tiers_main[2].rate, 0) + "での引き取り額")],
     ...D.residual_cost.map((r) => [
       td(pct(r.res, 0)), td(man(r.book) + "円"),
-      td(man(r.pay30) + "円", { bold: true, color: GOLD_L }), td(man(r.pay25) + "円"),
+      td(man(r.pay30) + "円", { bold: true, color: GOLD_L }),
     ]),
-  ], M + 0.28, 2.92, hw - 0.56, [1.30, 1.30, 1.60, 1.04], { rowH: 0.30, fontSize: 9 });
+  ], M + 0.28, 2.92, hw - 0.56, [1.74, 1.60, 1.90], { rowH: 0.30, fontSize: 9 });
 
   card(s, M + hw + 0.30, 1.78, hw, 2.40);
   s.addText("引き取り後のWineBankの採算", {
@@ -857,25 +862,24 @@ const TIER_TXT = D.tiers30.map((t, i) => TIER_LABELS[i] + " 簿価＋" + pct(t.r
   });
   table(s, [
     [th("引き取り率"), th("前提"), th("取得原価"), th("2年後の手取り"), th("単位粗利")],
-    ...[[D.tiers30[2].rate, D.residual30], [D.tiers25[2].rate, D.residual25]].flatMap(([rate, arr]) =>
-      arr.map((r) => [
-        td("＋" + pct(rate, 0)), td(r.tag), td(num(r.cost)), td(num(r.net)),
-        td((r.gross >= 0 ? "＋" : "▲") + num(Math.abs(r.gross)),
-           { bold: true, color: r.gross < 0 ? RED : GOLD_L }),
-      ])),
-  ], M + hw + 0.58, 2.78, hw - 0.56, [1.16, 1.02, 1.02, 1.30, 0.74], { rowH: 0.26, fontSize: 8.5 });
+    ...D.residual_main.map((r) => [
+      td("＋" + pct(D.tiers_main[2].rate, 0)), td(r.tag), td(num(r.cost)), td(num(r.net)),
+      td((r.gross >= 0 ? "＋" : "▲") + num(Math.abs(r.gross)),
+         { bold: true, color: r.gross < 0 ? RED : GOLD_L }),
+    ]),
+  ], M + hw + 0.58, 2.90, hw - 0.56, [1.16, 1.02, 1.02, 1.30, 0.74], { rowH: 0.32, fontSize: 8.5 });
 
   card(s, M, 4.34, CW, 1.90, { fill: CARD2, line: GOLD_D });
-  s.addText("引き取りの上限を設けることをご提案します。", {
+  s.addText("引き取り条件は「＋" + pct(D.tiers_main[2].rate, 0) + "もしくは要協議」とし、上限を設けることをご提案します。", {
     x: M + 0.30, y: 4.46, w: 6.60, h: 0.28, margin: 0,
     fontFace: SANS, fontSize: 12, bold: true, color: GOLD_L,
   });
-  s.addText("ワイン価格が上昇していれば引き取り後も薄いながら黒字だが、横ばいだと引き取った時点で逆ざやとなる（上表）。WineBankが無条件に全量を引き取る建て付けとすると、売れ残りが大きい局面でWineBankが立ち行かなくなり、かえって貴社のリスクとなる。そこで、引き取り義務に上限（例：ご投資額の20%まで）を設け、それを超える部分については①契約期間を延長して販売を継続する、②貴社に現物をお引き渡しする、のいずれかを選択いただく建て付けとしたい。上限の水準と超過分の扱いは、ご相談のうえ確定させたい。", {
+  s.addText("ワイン価格が上昇していれば引き取り後も薄いながら黒字だが、横ばいだと引き取った時点で逆ざやとなる（上表）。WineBankが無条件に全量を＋" + pct(D.tiers_main[2].rate, 0) + "で引き取る建て付けとすると、売れ残りが大きい局面でWineBankが立ち行かなくなり、かえって貴社のリスクとなる。そこで、引き取りは「＋" + pct(D.tiers_main[2].rate, 0) + "もしくはその時点の市況を踏まえた協議」とし、あわせて無条件の引き取り義務に上限（例：ご投資額の20%まで）を設けることをご提案したい。上限を超える部分については①契約期間を延長して販売を継続する、②貴社に現物をお引き渡しする、のいずれかを選択いただく建て付けとする。", {
     x: M + 0.30, y: 4.84, w: CW - 0.60, h: 1.24, margin: 0,
     fontFace: SANS, fontSize: 10, color: MUTED, lineSpacingMultiple: 1.35,
   });
 
-  note(s, "※ 本頁はWineBank側からのご提案であり、倉持様よりご提示いただいた内容には含まれていない。引き取りを「義務」とするか「WineBankのオプション」とするかで、貴社の想定IRRが確定するか否かが変わるため、契約書作成前に確定させたい。", 6.36);
+  note(s, "※ 引き取り率「＋" + pct(D.tiers_main[2].rate, 0) + "もしくは要協議」は倉持様よりご提示いただいた条件。上限を設ける点はWineBank側からのご提案であり、ご提示内容には含まれていない。引き取りを「義務」とするか「WineBankのオプション」とするかで、貴社の想定IRRが確定するか否かが変わるため、契約書作成前に確定させたい。", 6.36);
   s.addNotes("残存の扱いは未確定。義務か上限つきか。WB側の提案として明示。");
 }
 
@@ -1031,7 +1035,7 @@ const TIER_TXT = D.tiers30.map((t, i) => TIER_LABELS[i] + " 簿価＋" + pct(t.r
 
 // ═══════════════════════════════════════════ 16 ご投資条件
 {
-  const m = P30(MAIN);
+  const m = PM(MAIN);
   const s = chrome(base(), "TERMS", "ご投資条件（ドラフト）",
     "取得・所有・販売の枠組み（左）と、リターン・費用・報告（右）に分けて記載する。");
 
@@ -1045,7 +1049,7 @@ const TIER_TXT = D.tiers30.map((t, i) => TIER_LABELS[i] + " 簿価＋" + pct(t.r
     [td("販売"), td("A 委託販売型 または B 再買取型。いずれも貴社は営業・価格交渉・受注・請求・回収を行わない", { align: "left" })],
     [td("販売チャネル"), td("酒販店卸（B2B）と自社EC・オークション（B2C）", { align: "left" })],
     [td("中途解約"), td("契約期間中の中途解約には応じられない", { align: "left" })],
-    [td("期間満了時"), td("残存在庫はWineBankが簿価＋" + pct(D.tiers30[2].rate, 0) + "で引き取る（上限は要協議）", { align: "left" })],
+    [td("期間満了時"), td("残存在庫はWineBankが簿価＋" + pct(D.tiers_main[2].rate, 0) + "、もしくは要協議で引き取る（上限は要協議）", { align: "left" })],
   ];
   table(s, left, M, 1.78, hw, [1.55, 4.25], { rowH: 0.42, fontSize: 8.5 });
 
@@ -1080,7 +1084,7 @@ const TIER_TXT = D.tiers30.map((t, i) => TIER_LABELS[i] + " 簿価＋" + pct(t.r
 
   const cw5 = (CW - 0.26 * 4) / 5;
   const steps = [
-    ["01", "前提条件のすり合わせ", "上乗せ率（13〜24ヶ月を" + pct(D.tiers30[2].rate, 0) + "とするか" + pct(D.tiers25[2].rate, 0) + "とするか）、契約期間、期間満了時の引き取り上限についてご意見をいただく。", true],
+    ["01", "前提条件のすり合わせ", "上乗せ率（1年目" + pct(D.tiers_main[0].rate, 0) + "・2年目" + pct(D.tiers_main[1].rate, 0) + "）、契約期間、期間満了時の引き取り条件と上限についてご意見をいただく。", true],
     ["02", "免許・税務の確定", "委託販売型・再買取型の2案を所轄税務署の酒類指導官および顧問弁護士に提示し、採用する方式を確定する。消費税の取扱いもあわせて確認する。", true],
     ["03", "調達枠の確保", "インポーター・酒販店との年間調達枠を締結する。組入銘柄はLiv-ex掲載の流動性上位銘柄を中心に選定する。", false],
     ["04", "契約書の作成", "売買契約・委託販売契約（または再買取契約）・別紙（保有リストと精算／在庫配分／情報開示／期間満了時の扱い）を作成する。", false],
@@ -1107,8 +1111,8 @@ const TIER_TXT = D.tiers30.map((t, i) => TIER_LABELS[i] + " 簿価＋" + pct(t.r
     fontFace: SANS, fontSize: 10.5, bold: true, color: GOLD_L,
   });
   const asks = [
-    ["13〜24ヶ月の上乗せ率", pct(D.tiers30[2].rate, 0) + "とすればIRRが15〜16%に揃う。" + pct(D.tiers25[2].rate, 0) + "とすると下振れ時のWineBankの耐性が高まる。"],
-    ["期間満了時の引き取り", "WineBankの義務とするか、オプションとするか。義務とする場合の上限をどこに置くか。"],
+    ["2年目の上乗せ率", "本案の" + pct(D.tiers_main[1].rate, 0) + "では売却が2年目にずれ込むほどIRRが下がる。厚くすればIRRは揃うが、WineBankの下振れ耐性は下がる。"],
+    ["期間満了時の引き取り", "＋" + pct(D.tiers_main[2].rate, 0) + "とするか要協議とするか。WineBankの義務とするかオプションとするか。義務とする場合の上限をどこに置くか。"],
     ["ご投資の継続性", "1回限りとされるか、償還資金を次の仕入に充ててローリングで継続されるか。"],
   ];
   asks.forEach((a, i) => {
@@ -1129,7 +1133,7 @@ const TIER_TXT = D.tiers30.map((t, i) => TIER_LABELS[i] + " 簿価＋" + pct(t.r
 
 // ═══════════════════════════════════════════ 18 まとめ
 {
-  const m = P30(MAIN);
+  const m = PM(MAIN);
   const s = chrome(base(), "CONCLUSION", "まとめ：本ご提案の意義", null);
 
   const hw = CW * 0.56;
@@ -1138,8 +1142,8 @@ const TIER_TXT = D.tiers30.map((t, i) => TIER_LABELS[i] + " 簿価＋" + pct(t.r
      "簿価に保有期間に応じた率を掛けるだけ。販売価格からの逆算も、販売費や人件費の按分も、利益配分の計算も発生しない。ご確認いただくのは毎月の保有リストと精算明細のみ。"],
     ["02", "価格変動リスクを負いません",
      "ワイン市況が下落しても、値引き販売が必要になっても、貴社への精算額は変わらない。影響を受けるのはWineBank側の取り分のみとなる。"],
-    ["03", "売却ペースが変わってもIRRが揃います",
-     "1年以内に売り切れても2年近くかかっても、想定IRRは概ね15〜16%。13〜24ヶ月の上乗せ率を厚くすることで、資金拘束が長引くことへの補償としている。"],
+    ["03", "1年で売り切るほどリターンが高くなります",
+     "1年以内に売り切れれば想定IRR " + pct(PM("1年以内に100%売却").irr) + "。上乗せ率は1年目" + pct(D.tiers_main[0].rate, 0) + "・2年目" + pct(D.tiers_main[1].rate, 0) + "の2段階で、早期の売却がそのままリターンにつながる。"],
     ["04", "所有権が貴社に完全に残ります",
      "現物は貴社名義で保有され、倉庫も貴社が直接ご契約いただく。WineBankの他の資産と混同されることがなく、器を介する場合より倒産隔離は強固。"],
     ["05", "他社が再現できない調達力",
@@ -1171,7 +1175,7 @@ const TIER_TXT = D.tiers30.map((t, i) => TIER_LABELS[i] + " 簿価＋" + pct(t.r
     ["ご投資額", oku(D.capital) + "円", "現物を貴社名義で直接ご所有"],
     ["想定IRR（年率）", pct(m.irr), "1年目80%・2年目20%で売却の場合"],
     ["純利益（2年通算）", man(m.profit) + "円", "受取総額 " + man(m.recv) + "円 − 元本 − 倉庫費 " + man(m.carry) + "円"],
-    ["上乗せ率", D.tiers30.map((t) => pct(t.rate, 1)).join(" ／ "), "6ヶ月以内 ／ 7〜12ヶ月 ／ 13〜24ヶ月"],
+    ["上乗せ率", D.tiers_main.map((t) => "＋" + pct(t.rate, 0)).join(" ／ "), "12ヶ月以内 ／ 13〜24ヶ月 ／ 24ヶ月超（残存）"],
   ];
   let cy = 2.10;
   facts.forEach((c) => {
