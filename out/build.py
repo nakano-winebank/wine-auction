@@ -130,9 +130,9 @@ oth=[('営業外費用（支払利息等・年額）',15000000,YEN,'事業計画
      ('M&A仲介 計上月（1〜12）',6,'0','6＝2027年3月'),
      ('新規クルーザー事業 1回目 計上月',6,'0','6＝2027年3月'),
      ('新規クルーザー事業 2回目 計上月',12,'0','12＝2027年9月（期末までに計上）'),
-     ('目標経常利益',100000000,YEN,'シナリオCの目標。営業利益ではなく経常利益で設定。'),
+     ('（未使用）',0,YEN,'—'),
      ('新規顧客売上 計画額（FY2027）',1066000000,YEN,'事業計画のワイン投資 新規顧客計画 合計'),
-     ('シナリオ選択（1＝B 上乗せのみ／2＝C 経常利益1億円／3＝D CFが回る売上）',3,'0','③月次推移・⑦資金繰り表に反映'),
+     ('シナリオ選択（1＝B 上乗せのみ／2＝C 差額売上を加算）',2,'0','③月次推移・⑦資金繰り表に反映'),
      ('ワイン仕入 方針（1＝在庫横ばい／2＝FY2026と同額）',2,'0','⑥仕入・在庫計画に反映'),
      ('FY2026 年間仕入額',419066414,YEN,'売上原価479,066,414＋在庫増減▲60,000,000（480→420百万円）')]
 for i,(t,v,fmt,nt) in enumerate(oth):
@@ -179,16 +179,16 @@ for r2 in (CT_BUY,CT_UKE,CT_HARAI,CT_FIX,CT_FIN,CT_MID):
 p.cell(CT_FIX,3).fill=OR_
 p.cell(CT_FIX+4,6,'※ワイン仕入が課税売上−課税販管費（約499.6百万円）を超えると還付に転じる。FY2026の仕入419.1百万円では納付側。').font=RD
 
-# 【7】プランD（保守シナリオ）の前提
+# 【7】プランCの前提（B＋差額売上×粗利率30%）
 D0=CT_MID+3
-bar(p,D0,'【7】プランD（保守シナリオ）の前提　売上は前期・今期と同程度、粗利率は保守的に設定')
-dpl=[('売上高（前期・今期と同程度）',730535360,YEN,True,'FY2025実績752,864,901とFY2026見込708,205,820の平均'),
-     ('　うち 上乗せ案件（原価なし）',None,YEN,False,'経営指導料等。粗利率100%'),
-     ('　うち 既存事業 売上',None,YEN,False,'売上高−上乗せ案件。上乗せ分を差し引くことで保守的に置く'),
-     ('既存事業の粗利率（保守）',0.295,PCT,True,'FY2025 26.8%とFY2026 32.4%の加重平均。4-6月実績の51.5%は用いない'),
-     ('　既存事業 売上総利益',None,YEN,False,''),
-     ('売上総利益 合計',None,YEN,False,'既存事業＋上乗せ案件'),
-     ('総合粗利率',None,PCT,False,'上乗せ案件が原価なしのため、既存29.5%に対し全体では40%前後になる')]
+bar(p,D0,'【7】プランCの前提　Bプランに、前期・今期の売上平均までの差額売上を粗利率30%で加算')
+dpl=[('前期・今期の売上平均',730535360,YEN,True,'FY2025実績752,864,901とFY2026見込708,205,820の平均'),
+     ('Bプランの売上高（上乗せ含む）',None,YEN,False,'既存事業389,140,768＋上乗せ案件132,500,000'),
+     ('差額売上',None,YEN,False,'前期・今期の平均−Bプランの売上高'),
+     ('差額売上の粗利率',0.30,PCT,True,'既存事業の実績（FY2025 26.8%・FY2026 32.4%）を踏まえ保守的に30%'),
+     ('差額売上の粗利',None,YEN,False,''),
+     ('売上総利益 合計',None,YEN,False,'既存200.6＋差額分62.7＋上乗せ132.5'),
+     ('総合粗利率',None,PCT,False,'')]
 for i,(t,v,fmt,inp,nt) in enumerate(dpl):
     r3=D0+1+i
     p.cell(r3,2,t).font=BK
@@ -196,16 +196,16 @@ for i,(t,v,fmt,inp,nt) in enumerate(dpl):
     if inp: c.font=BL; c.fill=YL
     else: c.font=SB; c.fill=TF
     p.cell(r3,6,nt).font=SM
-D_SALES,D_ADV,D_EX,D_GM,D_EXG,D_GT,D_GMT=D0+1,D0+2,D0+3,D0+4,D0+5,D0+6,D0+7
-p.cell(D_ADV,3,f'=C{ADV}').number_format=YEN
-p.cell(D_EX,3,f'=C{D_SALES}-C{D_ADV}').number_format=YEN
-p.cell(D_EXG,3,f'=C{D_EX}*C{D_GM}').number_format=YEN
-p.cell(D_GT,3,f'=C{D_EXG}+C{D_ADV}').number_format=YEN
-p.cell(D_GMT,3,f'=C{D_GT}/C{D_SALES}').number_format=PCT
-for r3 in (D_ADV,D_EX,D_EXG,D_GT,D_GMT):
+C_SALES,C_B,C_DIFF,C_GM,C_DGP,C_GT,C_GMT=D0+1,D0+2,D0+3,D0+4,D0+5,D0+6,D0+7
+p.cell(C_B,3,f'=C{S_M}*12+C{ADV}').number_format=YEN
+p.cell(C_DIFF,3,f'=C{C_SALES}-C{C_B}').number_format=YEN
+p.cell(C_DGP,3,f'=C{C_DIFF}*C{C_GM}').number_format=YEN
+p.cell(C_GT,3,f'=C{G_M}*12+C{ADV}+C{C_DGP}').number_format=YEN
+p.cell(C_GMT,3,f'=C{C_GT}/C{C_SALES}').number_format=PCT
+for r3 in (C_B,C_DIFF,C_DGP,C_GT,C_GMT):
     p.cell(r3,3).font=SB; p.cell(r3,3).fill=TF
-p.cell(D_GT,3).fill=OR_
-p.cell(D_GMT+2,6,'※仕入をFY2026と同額419.1百万円に固定すると売上原価421.6百万円となり在庫はほぼ横ばい。資金繰りは粗利率ではなく売上高で決まる。').font=RD
+p.cell(C_GT,3).fill=OR_
+p.cell(C_GMT+2,6,'※差額売上208.9百万円は新規顧客売上計画1,066百万円の19.6%。既存事業の粗利率51.5%（4-6月実績）ではなく30%で置くことで保守性を確保。').font=RD
 Q=lambda r: f"'②前提'!$C${r}"
 
 # ============ ③FY2027月次推移 ============
@@ -244,7 +244,7 @@ r=5
 m.cell(r,2,'【収益】').font=SB; m.cell(r,2).fill=GRP
 for c in range(3,17): m.cell(r,c).fill=GRP
 R_S=r+1;  mrow(R_S,'既存事業 売上',f'={Q(S_M)}')
-R_AS=r+2; mrow(R_AS,'追加売上（シナリオC／D）',f"=IF({Q(SCN)}=2,'①サマリー'!$C$23/12,0)")
+R_AS=r+2; mrow(R_AS,'差額売上（シナリオC）',f"=0")
 R_TS=r+3; mrow(R_TS,'売上 合計',f'=C{R_S}+C{R_AS}',lambda i,c:f'={c}{R_S}+{c}{R_AS}',bold=True,fill=TF)
 R_C=r+4;  mrow(R_C,'　売上原価',f'=C{R_TS}-C{R_TS+2}-C{R_TS+3}',lambda i,c:f'={c}{R_TS}-{c}{R_TS+2}-{c}{R_TS+3}',font=BK)
 R_G=r+5;  mrow(R_G,'既存事業 売上総利益',f'={Q(G_M)}')
@@ -292,50 +292,47 @@ m.freeze_panes='D5'
 # ============ ①サマリー ============
 s=wb.create_sheet('①サマリー',0)
 s.column_dimensions['A'].width=3; s.column_dimensions['B'].width=38
-for col in 'CDEFG': s.column_dimensions[col].width=18
-s.column_dimensions['H'].width=42
+for col in 'CDEF': s.column_dimensions[col].width=19
+s.column_dimensions['G'].width=48
 s['B1']='FY2027（2027年9月期）利益予測　シナリオ比較'; s['B1'].font=Font(name=F,bold=True,size=15)
 s['B2']='ベース：再編後の実力値（2026/04-06 実績3か月平均）を横ばい延伸'; s['B2'].font=Font(name=F,size=10,color='8C8C8C')
 s['B3']='単位：円（税別）　出典：事業計画202608（銀行様）月次／決算報告書 第54期'; s['B3'].font=SM
-heads=['科目','FY2026 見込','A. 再編後実力値\n横ばいのみ','B. A＋上乗せ\n132.5百万円','C. 経常利益\n1億円','D. 保守シナリオ\n売上前期並み・粗利率42%','コメント']
+heads=['科目','FY2026 見込','A. 再編後実力値\n横ばいのみ','B. A＋上乗せ\n132.5百万円','C. B＋差額売上\n（粗利率30%）','コメント']
 for j,t in enumerate(heads):
     c=s.cell(5,2+j,t); c.font=HD; c.fill=HF; c.alignment=Alignment(horizontal='center',wrap_text=True,vertical='center')
 s.row_dimensions[5].height=44
 b=lambda rr: f"{Q(rr)}*12"
 spec=[
- ('既存事業 売上',      708205820, f'={b(S_M)}', f'={b(S_M)}', f'=E6+F9/{Q(GM)}',f'={Q(D_EX)}','Dは売上高730.5百万円−上乗せ132.5百万円'),
- ('売上総利益（既存事業）', 229139405, f'={b(G_M)}', f'={b(G_M)}', '=E7',f'={Q(D_EXG)}','Dは粗利率29.5%（FY2025・FY2026の加重平均）'),
- ('＋上乗せ案件（営業収益）',0,        0,            f'={Q(ADV)}',  f'={Q(ADV)}',f'={Q(ADV)}','経営指導料92.5＋M&A仲介20＋新規事業利益20'),
- ('＋追加で必要な粗利',    None,      None,         None,          f'={Q(TGT)}+F14-F13+F11-F7-F8',None,'Cのみ：経常利益1億円に必要な粗利の上積み'),
- ('売上総利益 合計',       229139405, '=D7+D8',     '=E7+E8',      '=F7+F8+F9',f'={Q(D_GT)}','Dの総合粗利率は42.3%'),
- ('販管費',              343932836, f'={b(P_M)}', f'={b(P_M)}',  '=E11','=E11','2026/04-06実績の月平均×12'),
- ('営業利益',             -114793431,'=D10-D11',   '=E10-E11',    '=F10-F11','=G10-G11',''),
- ('営業外収益',           0,         0,            0,             0,0,'新規クルーザー事業利益は営業収益に計上'),
- ('営業外費用',           10000000,  f'={Q(NOE)}', f'={Q(NOE)}',  f'={Q(NOE)}',f'={Q(NOE)}',''),
- ('経常利益',             -124793431,'=D12+D13-D14','=E12+E13-E14','=F12+F13-F14','=G12+G13-G14','Cは目標経常利益から逆算・Dは前提から算出'),
- ('法人税等',             0,0,0,0,0,'繰越欠損金 約252百万円により実質非課税'),
- ('当期純利益',           -124793431,'=D15-D16',   '=E15-E16',    '=F15-F16','=G15-G16',''),
+ ('既存事業 売上',      708205820, f'={b(S_M)}', f'={b(S_M)}', f'=E6+{Q(C_DIFF)}','Cは差額売上208.9百万円を上積み'),
+ ('売上総利益（既存事業）', 229139405, f'={b(G_M)}', f'={b(G_M)}', f'=E7+{Q(C_DGP)}','Cは差額売上の粗利62.7百万円（粗利率30%）を加算'),
+ ('＋上乗せ案件（営業収益）',0,        0,            f'={Q(ADV)}',  f'={Q(ADV)}','経営指導料92.5＋M&A仲介20＋新規事業利益20'),
+ ('売上総利益 合計',       229139405, '=D7',        '=E7+E8',      '=F7+F8','Cの総合粗利率は54.2%'),
+ ('販管費',              343932836, f'={b(P_M)}', f'={b(P_M)}',  '=E10','2026/04-06実績の月平均×12'),
+ ('営業利益',             -114793431,'=D9-D10',    '=E9-E10',     '=F9-F10',''),
+ ('営業外収益',           0,         0,            0,             0,'新規クルーザー事業利益は営業収益に計上'),
+ ('営業外費用',           10000000,  f'={Q(NOE)}', f'={Q(NOE)}',  f'={Q(NOE)}',''),
+ ('経常利益',             -124793431,'=D11+D12-D13','=E11+E12-E13','=F11+F12-F13',''),
+ ('法人税等',             0,0,0,0,'繰越欠損金 約252百万円により実質非課税'),
+ ('当期純利益',           -124793431,'=D14-D15',   '=E14-E15',    '=F14-F15',''),
 ]
-bold={10,12,15,17}
+bold={9,11,14,16}
 for i,(lab,*v) in enumerate(spec):
     rr=6+i; note=v[-1]
     c=s.cell(rr,2,lab); c.font=SB if rr in bold else BK
     for j,val in enumerate(v[:-1]):
         cc=s.cell(rr,3+j,val); cc.number_format=YEN
         cc.font=SB if rr in bold else (BL if j==0 and isinstance(val,int) else BK)
-    s.cell(rr,8,note).font=SM
+    s.cell(rr,7,note).font=SM
     if rr in bold:
-        for c2 in range(2,9): s.cell(rr,c2).fill=TF; s.cell(rr,c2).border=TB
-    if rr==12:
-        for c2 in range(2,9): s.cell(rr,c2).fill=OP
-    if rr==15:
-        for c2 in range(2,9): s.cell(rr,c2).fill=OR_
-    if rr==9:
-        s.cell(rr,6).fill=YL; s.cell(rr,7).fill=YL
+        for c2 in range(2,8): s.cell(rr,c2).fill=TF; s.cell(rr,c2).border=TB
+    if rr==11:
+        for c2 in range(2,8): s.cell(rr,c2).fill=OP
+    if rr==14:
+        for c2 in range(2,8): s.cell(rr,c2).fill=OR_
+
 r=21
-s.cell(r,2,'【参考：必要となる売上水準】').font=Font(name=F,bold=True,size=12)
-add=[('C：経常利益1億円に必要な追加売上（粗利率51.5%前提）','=F9/'+Q(GM),'=C23/'+Q(PLAN)),
-     ('資金繰りが回る最低売上高（仕入固定のため粗利率に依存しない）','=0','')]
+s.cell(r,2,'【プランCの差額売上】').font=Font(name=F,bold=True,size=12)
+add=[('Bプランからの差額売上（粗利率30%で加算）','='+Q(C_DIFF),'=C23/'+Q(PLAN))]
 s.cell(22,3,'追加売上').font=SB; s.cell(22,4,'新規顧客売上計画\n1,066百万円に対する比率').font=SB
 s.cell(22,4).alignment=Alignment(wrap_text=True,horizontal='center'); s.row_dimensions[22].height=30
 for c2 in (3,4): s.cell(22,c2).fill=SF
@@ -346,17 +343,17 @@ for i,(lab,f1,f2) in enumerate(add):
     c=s.cell(rr,4,f2); c.number_format=PCT; c.font=SB; c.fill=YL
 notes=['','【判定】',
  'A：再編後の実力値を横ばいで延ばすだけでは営業利益▲99.6百万円・経常利益▲114.6百万円。',
- 'B：上乗せ案件132.5百万円を全額営業収益に計上すると営業利益＋32.9百万円・経常利益＋17.9百万円。',
- 'C：粗利率を4-6月実績51.5%のまま置いた場合、経常利益1億円には追加売上1億5,918万円が必要。',
- 'D（本線）：売上を前期・今期と同程度730.5百万円に置き、粗利率を保守的に落とした前提。',
- '　　既存事業の粗利率は29.5%（FY2025 26.8%・FY2026 32.4%の加重平均）。上乗せ案件は原価なしのため総合42.3%。',
- '　　営業利益＋8.8百万円・経常利益▲6.2百万円。損益はほぼ均衡だが、減価償却43.7百万円があるため資金は回る。',
+ 'B：上乗せ案件132.5百万円を全額営業収益に計上すると営業利益＋32.9百万円・経常利益＋17.9百万円で黒字化する。',
+ 'C（本線）：Bに、前期・今期の売上平均730.5百万円までの差額208.9百万円を粗利率30%で加算。',
+ '　　売上高730.5百万円・営業利益＋95.6百万円・経常利益＋80.6百万円。',
  '',
- '※ワイン仕入をFY2026と同額419.1百万円に固定した場合、売上原価421.6百万円で在庫はほぼ横ばい。',
- '※資金繰りは粗利率ではなく売上高で決まる（仕入を固定額で置くため）。詳細は⑦資金繰り表を参照。']
+ '※差額売上の粗利率30%は、既存事業の実績（FY2025 26.8%・FY2026 32.4%）を踏まえた保守値。',
+ '　　4-6月実績の51.5%は用いていない。',
+ '※差額売上208.9百万円は新規顧客売上計画1,066百万円の19.6%。',
+ '※上乗せ案件のうち92.5百万円はグループ内取引（中野出資90.0＋Apiciusグループ2.5）。']
 for i,n in enumerate(notes):
     c=s.cell(26+i,2,n); c.font=Font(name=F,bold=True,size=12) if n=='【判定】' else Font(name=F,size=10)
-    s.merge_cells(start_row=26+i,start_column=2,end_row=26+i,end_column=8)
+    s.merge_cells(start_row=26+i,start_column=2,end_row=26+i,end_column=7)
 
 # ============ ⑤利益ブリッジ ============
 br=wb.create_sheet('⑤利益ブリッジ')
@@ -384,8 +381,8 @@ for i,(lab,val,note) in enumerate(steps):
     else:
         c=br.cell(rr,4,f'=D{rr-1}'); c.number_format=YEN; c.font=SB; c.fill=OP
         br.cell(rr,2).fill=OP; br.cell(rr,4).border=TB
-br.cell(12,2,'【経常利益1億円に必要な追加売上】').font=Font(name=F,bold=True,size=12)
-br.cell(13,2,'経常利益 1億円').font=BK
+br.cell(12,2,'【プランCの差額売上】').font=Font(name=F,bold=True,size=12)
+br.cell(13,2,'Bからの差額売上（粗利率30%）').font=BK
 br.cell(13,3,"='①サマリー'!C23").number_format=YEN; br.cell(13,3).font=SB; br.cell(13,3).fill=YL
 c=br.cell(13,5,"='①サマリー'!D23"); c.number_format=PCT; c.font=SB
 br.cell(13,6,'新規顧客売上計画1,066百万円に対する比率').font=SM
@@ -674,20 +671,14 @@ cf.cell(RQ+5,2,'※本算定はワイン仕入方針2（FY2026と同額の固定
 cf.cell(RQ+6,2,'※追加売上に係る消費税は翌期（2027/11）の納付となるため、FY2027の資金繰りには現れません。').font=RD
 
 # ③の追加売上をシナリオ3対応に書き戻す（RQ確定後）
-_as=f"=IF({Q(SCN)}=3,({Q(D_EX)}-{Q(S_M)}*12)/12,IF({Q(SCN)}=2,'①サマリー'!$C$23/12,0))"
-_s1=wb['①サマリー']
-c=_s1.cell(24,3,f"='⑦FY2027資金繰り表'!$C${RQ}"); c.number_format=YEN; c.font=SB; c.fill=YL
+_as=f"=IF({Q(SCN)}=2,{Q(C_DIFF)}/12,0)"
 _m3=wb['③FY2027月次推移']
 c=_m3.cell(R_AS,3,_as); c.number_format=YEN; c.font=GR
-for _i in range(12):
-    c=_m3.cell(R_AS,4+_i,_as); c.number_format=YEN; c.font=GR
-# 保守シナリオでは既存事業の粗利率を差し替え、追加売上の粗利は0にする
-x=_m3.cell(R_G,3,f'=IF({Q(SCN)}=3,(C{R_S}+C{R_AS})*{Q(D_GM)},{Q(G_M)})'); x.number_format=YEN; x.font=GR
-x=_m3.cell(R_AG,3,f'=IF({Q(SCN)}=3,0,C{R_AS}*{Q(GM)})'); x.number_format=YEN; x.font=GR
+x=_m3.cell(R_AG,3,f'=C{R_AS}*{Q(C_GM)}'); x.number_format=YEN; x.font=GR
 for _i in range(12):
     _c=get_column_letter(4+_i)
-    x=_m3.cell(R_G,4+_i,f'=IF({Q(SCN)}=3,({_c}{R_S}+{_c}{R_AS})*{Q(D_GM)},{Q(G_M)})'); x.number_format=YEN; x.font=GR
-    x=_m3.cell(R_AG,4+_i,f'=IF({Q(SCN)}=3,0,{_c}{R_AS}*{Q(GM)})'); x.number_format=YEN; x.font=GR
+    c=_m3.cell(R_AS,4+_i,_as); c.number_format=YEN; c.font=GR
+    x=_m3.cell(R_AG,4+_i,f'={_c}{R_AS}*{Q(C_GM)}'); x.number_format=YEN; x.font=GR
 
 
 
