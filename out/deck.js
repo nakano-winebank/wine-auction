@@ -7,10 +7,11 @@ p.author = '株式会社WineBank';
 p.title  = 'WineBank 事業再生計画 FY2027';
 
 const W=13.3, H=7.5;
-const BERRY='6D2E46', ROSE='A26769', CREAM='ECE2D0', SAND='F7F3EF';
-const INK='2B2B2B', MUT='7A6A64', WHT='FFFFFF', GOLD='9A7B4F', LINE='DED5CE', RED='C0392B';
-const HF='Cambria', BF='Arial';
-const sh=()=>({type:'outer',color:'000000',blur:10,offset:2,angle:90,opacity:0.10});
+// WineBank ハウススタイル：無彩色モノトーン ＋ メイリオ
+const BERRY='1A1A1A', ROSE='595959', CREAM='F0EFEC', SAND='F7F6F3';
+const INK='1A1A1A', MUT='8C8C8C', WHT='FFFFFF', GOLD='333333', LINE='DCDAD6', RED='595959';
+const HF='メイリオ', BF='メイリオ';
+const sh=()=>({type:'outer',color:'000000',blur:9,offset:2,angle:90,opacity:0.08});
 const M=v=>(v<0?'▲':'')+(Math.abs(v)/1e6).toFixed(1);
 const yen=v=>(v<0?'▲':'')+Math.abs(v).toLocaleString('en-US');
 
@@ -21,7 +22,7 @@ function base(t,sub){
   return s;
 }
 const foot=(s,t)=>s.addText(t,{x:0.65,y:H-0.52,w:W-1.3,h:0.3,fontFace:BF,fontSize:8.5,color:MUT,margin:0});
-const card=(s,x,y,w,h,fill)=>s.addShape(p.ShapeType.roundRect,{x,y,w,h,fill:{color:fill||WHT},rectRadius:0.06,line:{color:LINE,width:0.75},shadow:sh()});
+const card=(s,x,y,w,h,fill)=>s.addShape(p.ShapeType.roundRect,{x,y,w,h,fill:{color:fill||WHT},rectRadius:0.05,line:{color:LINE,width:0.75},shadow:sh()});
 function numDot(s,x,y,n){
   s.addShape(p.ShapeType.ellipse,{x,y,w:0.34,h:0.34,fill:{color:BERRY}});
   s.addText(String(n),{x,y,w:0.34,h:0.34,fontFace:BF,fontSize:13,bold:true,color:WHT,align:'center',valign:'middle',margin:0});
@@ -34,7 +35,7 @@ function table(s,x0,y0,cols,rows,opt){
   cols.forEach(c=>{ s.addText(c.t,{x:cx+0.12,y:y0,w:c.w-0.24,h:hh,fontFace:BF,fontSize:o.hs||9.5,bold:true,color:WHT,align:c.a||'left',valign:'middle',margin:0}); cx+=c.w; });
   rows.forEach((r,i)=>{
     const y=y0+hh+i*rh, hl=o.hi&&o.hi.includes(i);
-    s.addShape(p.ShapeType.rect,{x:x0,y,w:tw,h:rh,fill:{color:hl?CREAM:(i%2?'FBF9F7':WHT)},line:{color:LINE,width:0.5}});
+    s.addShape(p.ShapeType.rect,{x:x0,y,w:tw,h:rh,fill:{color:hl?CREAM:(i%2?'FAFAF8':WHT)},line:{color:LINE,width:0.5}});
     let x=x0;
     cols.forEach((c,j)=>{
       const v=r[j], neg=String(v).startsWith('▲');
@@ -49,22 +50,22 @@ function table(s,x0,y0,cols,rows,opt){
 /* 1 表紙 */
 {
   const s=p.addSlide(); s.background={color:BERRY};
-  s.addShape(p.ShapeType.ellipse,{x:10.4,y:-1.5,w:5.2,h:5.2,fill:{color:'7E3B54'}});
-  s.addShape(p.ShapeType.ellipse,{x:11.6,y:4.6,w:3.4,h:3.4,fill:{color:'5C2439'}});
+  s.addShape(p.ShapeType.ellipse,{x:10.4,y:-1.5,w:5.2,h:5.2,fill:{color:'2E2E2E'}});
+  s.addShape(p.ShapeType.ellipse,{x:11.6,y:4.6,w:3.4,h:3.4,fill:{color:'111111'}});
   s.addText('株式会社WineBank',{x:0.9,y:1.75,w:9,h:0.4,fontFace:BF,fontSize:14,color:CREAM,charSpacing:2,margin:0});
   s.addText('事業再生計画',{x:0.9,y:2.25,w:10,h:0.9,fontFace:HF,fontSize:46,bold:true,color:WHT,margin:0});
   s.addText('2027年9月期 － V字回復の根拠と資金計画',{x:0.9,y:3.2,w:10.5,h:0.6,fontFace:HF,fontSize:24,color:CREAM,margin:0});
   s.addText('金融機関・株主各位',{x:0.9,y:4.5,w:6,h:0.34,fontFace:BF,fontSize:13,color:CREAM,margin:0});
   s.addText('2026年8月',{x:0.9,y:4.9,w:6,h:0.34,fontFace:BF,fontSize:13,color:CREAM,margin:0});
-  s.addText('本資料は2026年6月までの月次実績にもとづく計画です。',{x:0.9,y:6.5,w:11,h:0.34,fontFace:BF,fontSize:9.5,color:'C9A9B6',margin:0});
-  s.addNotes('FY2026の赤字の主因である飲食事業の撤退は2026年3月で完了。4月以降が撤退後の実力値であり、ここを起点に組み立てている。');
+  s.addText('本資料は2026年6月までの月次実績にもとづく計画です。',{x:0.9,y:6.5,w:11,h:0.34,fontFace:BF,fontSize:9.5,color:'A8A6A2',margin:0});
+  s.addNotes('FY2026の赤字の主因である不採算3店舗の撤退は2026年3月で完了。WineBankテラスはWineBank CLUBのフラッグシップ店として改善のうえ継続。4月以降が再編後の実力値。');
 }
 
 /* 2 エグゼクティブサマリー */
 {
   const s=base('エグゼクティブサマリー','FY2026の赤字は構造改革の費用。改革は実行済みで、効果は2026年4月以降の実績に表れています。');
   const items=[
-    ['飲食事業の撤退は完了','2026年3月で撤退完了。4-6月が撤退後の実力値。'],
+    ['不採算3店舗の撤退は完了','2026年3月で完了。1店舗はフラッグシップ店として継続。'],
     ['固定費は年103百万円削減済み','月次販管費 38.7百万円（26/3）→ 24.6百万円（26/6）。'],
     ['FY2027に132.5百万円の収益上乗せ','経営指導料を中心としたストック型収益。'],
     ['ワイン仕入は落とさない','仕入を絞ると割当が戻らず2〜3年先の成長を削るため。']
@@ -81,7 +82,7 @@ function table(s,x0,y0,cols,rows,opt){
   s.addText('＋137.5',{x:8.6,y:2.2,w:3.8,h:0.85,fontFace:HF,fontSize:42,bold:true,color:WHT,align:'center',margin:0});
   s.addText('百万円',{x:8.6,y:3.03,w:3.8,h:0.3,fontFace:BF,fontSize:11,color:CREAM,align:'center',margin:0});
   s.addText('FY2026 ▲124.8百万円から\n＋262.3百万円の改善',{x:8.6,y:3.42,w:3.8,h:0.62,fontFace:BF,fontSize:11.5,color:WHT,align:'center',margin:0});
-  s.addShape(p.ShapeType.line,{x:8.85,y:4.24,w:3.3,h:0,line:{color:'8E5470',width:1}});
+  s.addShape(p.ShapeType.line,{x:8.85,y:4.24,w:3.3,h:0,line:{color:'4A4A4A',width:1}});
   s.addText('必要な売上高',{x:8.6,y:4.4,w:3.8,h:0.3,fontFace:BF,fontSize:11,color:CREAM,align:'center',margin:0});
   s.addText('621.1百万円',{x:8.6,y:4.7,w:3.8,h:0.6,fontFace:HF,fontSize:28,bold:true,color:CREAM,align:'center',margin:0});
   s.addText('FY2025実績752.9百万円の82.5%\nFY2026見込708.2百万円の87.7%',{x:8.6,y:5.36,w:3.8,h:0.7,fontFace:BF,fontSize:11,color:WHT,align:'center',margin:0});
@@ -95,7 +96,7 @@ function table(s,x0,y0,cols,rows,opt){
   const cols=[
     ['FY2025（2025年9月期）実績','当期純損失 ▲127.8百万円','経常損失は▲5.8百万円にとどまる。損失の大半は組織再編に伴う特別損失。',
       [['事業譲渡損','59.8百万円'],['固定資産除却損','18.1百万円'],['抱合せ株式消滅差損','45.4百万円'],['特別損失 計','123.4百万円']]],
-    ['FY2026（2026年9月期）見込','経常損失 ▲124.8百万円','飲食事業の撤退と、撤退に伴う一時費用・先行投資が主因。撤退は2026年3月で完了。',
+    ['FY2026（2026年9月期）見込','経常損失 ▲124.8百万円','不採算3店舗の撤退と、それに伴う一時費用・先行投資が主因。撤退は2026年3月で完了。',
       [['上期(10-3月) 販管費 月平均','33.6百万円'],['下期(4-6月) 販管費 月平均','25.0百万円'],['削減額','月 ▲8.6百万円'],['年換算','▲103百万円']]]
   ];
   cols.forEach((c,i)=>{
@@ -106,7 +107,7 @@ function table(s,x0,y0,cols,rows,opt){
     s.addText(c[2],{x:x+0.35,y:2.75,w:5.3,h:0.68,fontFace:BF,fontSize:11,color:INK,margin:0});
     c[3].forEach((rw,j)=>{
       const y=3.55+j*0.6, last=j===c[3].length-1;
-      s.addShape(p.ShapeType.rect,{x:x+0.35,y,w:5.3,h:0.5,fill:{color:last?CREAM:'FBF9F7'},line:{color:LINE,width:0.5}});
+      s.addShape(p.ShapeType.rect,{x:x+0.35,y,w:5.3,h:0.5,fill:{color:last?CREAM:'FAFAF8'},line:{color:LINE,width:0.5}});
       s.addText(rw[0],{x:x+0.5,y,w:3.3,h:0.5,fontFace:BF,fontSize:10.5,bold:last,color:INK,valign:'middle',margin:0});
       s.addText(rw[1],{x:x+3.6,y,w:1.9,h:0.5,fontFace:BF,fontSize:11.5,bold:true,color:last?BERRY:INK,align:'right',valign:'middle',margin:0});
     });
@@ -117,7 +118,7 @@ function table(s,x0,y0,cols,rows,opt){
 
 /* 4 飲食撤退による固定費削減 */
 {
-  const s=base('転換点 － 飲食事業の撤退による固定費削減','撤退に紐づく費用科目が実際に減少しています。削減は計画ではなく実績です。');
+  const s=base('転換点 － 飲食事業の再編による固定費削減','不採算3店舗を撤退。撤退に紐づく費用科目が実際に減少しています。削減は計画ではなく実績です。');
   const rows=[['雑給（店舗人件費）',1976720,198075],['従業員給与',4877779,2844602],['倉庫＆保管・移設代',2578077,272484],
               ['地代家賃（店舗賃料）',5000985,3721703],['支払手数料',4121789,3258950],['水道光熱費',974234,687496],['清掃費',182516,0]];
   const data=rows.map(r=>[r[0],yen(r[1]),yen(r[2]),yen(r[2]-r[1])]);
@@ -130,12 +131,14 @@ function table(s,x0,y0,cols,rows,opt){
   s.addText('百万円',{x:9.65,y:3.12,w:2.8,h:0.3,fontFace:BF,fontSize:12,color:CREAM,align:'center',margin:0});
   s.addText('月▲8.58百万円 × 12か月',{x:9.65,y:3.5,w:2.8,h:0.3,fontFace:BF,fontSize:9.5,color:CREAM,align:'center',margin:0});
   card(s,9.45,4.25,3.2,2.1);
-  s.addText('撤退が確認できる点',{x:9.65,y:4.45,w:2.8,h:0.3,fontFace:BF,fontSize:11,bold:true,color:BERRY,margin:0});
-  s.addText([{text:'清掃費が完全にゼロ',options:{bullet:true,breakLine:true}},{text:'雑給が90%減',options:{bullet:true,breakLine:true}},
-             {text:'店舗賃料の減少',options:{bullet:true,breakLine:true}},{text:'倉庫移設の完了',options:{bullet:true}}],
-    {x:9.65,y:4.78,w:2.8,h:1.4,fontFace:BF,fontSize:10.5,color:INK,paraSpaceAfter:4,margin:0});
+  s.addText('飲食事業の再編',{x:9.65,y:4.45,w:2.8,h:0.3,fontFace:BF,fontSize:11,bold:true,color:BERRY,margin:0});
+  s.addText([{text:'不採算3店舗を撤退',options:{bullet:true,breakLine:true}},
+             {text:'WineBankテラスは改善のうえ継続',options:{bullet:true,breakLine:true}},
+             {text:'　→ WineBank CLUBのフラッグシップ店',options:{breakLine:true}},
+             {text:'清掃費ゼロ・雑給90%減が撤退完了の裏付け',options:{bullet:true}}],
+    {x:9.65,y:4.75,w:2.8,h:1.5,fontFace:BF,fontSize:10,color:INK,paraSpaceAfter:3,margin:0});
   foot(s,'出典：事業計画202608（銀行様）全社シート 販管費内訳（全23科目の月次実績）');
-  s.addNotes('清掃費ゼロ・雑給90%減が、飲食店舗の撤退が実際に完了したことの裏付け。');
+  s.addNotes('主題は不採算店の撤退。WineBankテラスは残してフラッグシップ化しており、飲食から全面撤退したわけではない点を補足する。');
 }
 
 /* 5 販管費 月次推移 */
@@ -145,12 +148,12 @@ function table(s,x0,y0,cols,rows,opt){
   const val=[25374892,30963282,38572456,33761779,34133901,38737868,25883967,24529013,24627286].map(v=>v/1e6);
   s.addChart(p.ChartType.bar,[{name:'販管費（百万円）',labels:lab,values:val}],{
     x:0.65,y:1.62,w:8.5,h:4.5,barDir:'col',
-    chartColors:[ROSE,ROSE,ROSE,ROSE,ROSE,BERRY,'C4A79B','C4A79B','C4A79B'],varyColors:true,
+    chartColors:['595959','595959','595959','595959','595959','1A1A1A','C4C2BE','C4C2BE','C4C2BE'],varyColors:true,
     showTitle:false,showLegend:false,showValue:true,dataLabelPosition:'outEnd',dataLabelFormatCode:'0.0',
     dataLabelFontSize:9.5,dataLabelColor:INK,dataLabelFontFace:BF,
     catAxisLabelColor:MUT,catAxisLabelFontSize:10,catAxisLabelFontFace:BF,
     valAxisLabelColor:MUT,valAxisLabelFontSize:9.5,valAxisLabelFontFace:BF,
-    valAxisMaxVal:45,valAxisMinVal:0,valGridLine:{color:'E8E0DA',size:1},catGridLine:{style:'none'},
+    valAxisMaxVal:45,valAxisMinVal:0,valGridLine:{color:'E8E6E2',size:1},catGridLine:{style:'none'},
     plotArea:{fill:{color:WHT}}});
   card(s,9.5,1.62,3.15,2.1,BERRY);
   s.addText('ピーク → 直近',{x:9.7,y:1.85,w:2.75,h:0.3,fontFace:BF,fontSize:11,color:CREAM,align:'center',margin:0});
@@ -166,7 +169,7 @@ function table(s,x0,y0,cols,rows,opt){
 
 /* 6 撤退後の実力値 */
 {
-  const s=base('撤退後の実力値 － 2026年4-6月の月次平均','この3か月が、飲食撤退後のWineBank単体の実力です。FY2027はここを起点にしています。（単位：円）');
+  const s=base('撤退後の実力値 － 2026年4-6月の月次平均','この3か月が、再編後のWineBank単体の実力です。FY2027はここを起点にしています。（単位：円）');
   const rows=[['売上',32428397,''],['売上原価',-15711570,''],['売上総利益',16716827,'粗利率 51.5%'],
               ['販管費',-25013422,'全23科目'],['営業利益',-8296595,'月次']];
   rows.forEach((r,i)=>{
@@ -180,10 +183,10 @@ function table(s,x0,y0,cols,rows,opt){
   card(s,7.5,1.7,5.15,4.6);
   s.addText('なぜ4月以降なのか',{x:7.85,y:1.95,w:4.45,h:0.36,fontFace:HF,fontSize:17,bold:true,color:BERRY,margin:0});
   s.addText([
-    {text:'2025年10月〜2026年3月の数値には、撤退した飲食店舗の売上と費用が含まれています。',options:{breakLine:true}},{text:'',options:{breakLine:true}},
+    {text:'2025年10月〜2026年3月の数値には、撤退した不採算3店舗の売上と費用が含まれています。',options:{breakLine:true}},{text:'',options:{breakLine:true}},
     {text:'このため同期間を基準にすると、すでに存在しない事業の損益を将来計画に持ち込むことになります。',options:{breakLine:true}},{text:'',options:{breakLine:true}},
     {text:'撤退が完了した2026年4月以降の3か月を基準とすることで、現在の事業構造をそのまま反映した計画になります。',options:{breakLine:true}},{text:'',options:{breakLine:true}},
-    {text:'粗利率が51.5%と高いのは、低採算の飲食が抜け、ワイン投資販売中心の構成になったためです。',options:{}}
+    {text:'粗利率が51.5%と高いのは、低採算店が抜け、ワイン投資販売中心の構成になったためです。',options:{}}
   ],{x:7.85,y:2.45,w:4.45,h:3.5,fontFace:BF,fontSize:11.5,color:INK,lineSpacing:17,margin:0});
   foot(s,'出典：事業計画202608（銀行様）全社シート 2026/04・05・06 実績の単純平均');
   s.addNotes('4月起点とする理由は飲食撤退店舗の損益を除くため。粗利率51.5%は事業構成の変化による。');
@@ -193,22 +196,23 @@ function table(s,x0,y0,cols,rows,opt){
 {
   const s=base('FY2027の収益上乗せ － 132.5百万円','経営指導料を中心としたストック型収益。全額を営業収益に計上します。');
   const rows=[['経営指導料','Value table',10000000,'グループ'],['経営指導料','Prime',60000000,'グループ'],
-              ['経営指導料','Apicius',10000000,'グループ'],['経営指導料','Thierry Marx',2500000,'外部'],
-              ['経営指導料','ito＋Aqua＋Hokkaido',10000000,'外部'],['インセンティブ','Apicius2 shot',20000000,'グループ'],
+              ['経営指導料','Apicius',10000000,'グループ'],['経営指導料','Thierry Marx（2026年4月開業）',2500000,'グループ'],
+              ['経営指導料','ito＋Aqua＋Hokkaido',10000000,'外部'],['インセンティブ','Apicius2 shot（外部株主売却）',20000000,'外部'],
               ['クルーザー事業利益','2027/03・09に各10百万円',20000000,'外部']];
   const y0=1.66, rh=0.53;
   s.addShape(p.ShapeType.rect,{x:0.65,y:y0,w:7.9,h:0.44,fill:{color:BERRY}});
-  [['区分',0.85,1.9,'left'],['案件',2.75,2.5,'left'],['金額',5.35,1.6,'right'],['取引先',7.05,1.3,'center']]
+  [['区分',0.85,1.8,'left'],['案件',2.65,2.6,'left'],['金額',5.35,1.6,'right'],['取引先',7.05,1.3,'center']]
     .forEach(hd=>s.addText(hd[0],{x:hd[1],y:y0,w:hd[2],h:0.44,fontFace:BF,fontSize:9.5,bold:true,color:WHT,align:hd[3],valign:'middle',margin:0}));
   rows.forEach((r,i)=>{
     const y=y0+0.44+i*rh;
-    s.addShape(p.ShapeType.rect,{x:0.65,y,w:7.9,h:rh,fill:{color:i%2?'FBF9F7':WHT},line:{color:LINE,width:0.5}});
-    s.addText(r[0],{x:0.85,y,w:1.9,h:rh,fontFace:BF,fontSize:9.5,color:MUT,valign:'middle',margin:0});
-    s.addText(r[1],{x:2.75,y,w:2.5,h:rh,fontFace:BF,fontSize:10.5,bold:true,color:INK,valign:'middle',margin:0});
+    s.addShape(p.ShapeType.rect,{x:0.65,y,w:7.9,h:rh,fill:{color:i%2?'FAFAF8':WHT},line:{color:LINE,width:0.5}});
+    s.addText(r[0],{x:0.85,y,w:1.8,h:rh,fontFace:BF,fontSize:9,color:MUT,valign:'middle',margin:0});
+    s.addText(r[1],{x:2.65,y,w:2.6,h:rh,fontFace:BF,fontSize:9.5,bold:true,color:INK,valign:'middle',margin:0});
     s.addText('¥'+yen(r[2]),{x:5.35,y,w:1.6,h:rh,fontFace:BF,fontSize:11.5,bold:true,color:BERRY,align:'right',valign:'middle',margin:0});
-    s.addShape(p.ShapeType.roundRect,{x:7.25,y:y+0.13,w:1.0,h:0.28,rectRadius:0.12,
-      fill:{color:r[3]==='グループ'?CREAM:'E4EAE6'},line:{color:r[3]==='グループ'?ROSE:'8FA89B',width:0.5}});
-    s.addText(r[3],{x:7.25,y:y+0.13,w:1.0,h:0.28,fontFace:BF,fontSize:8.5,color:INK,align:'center',valign:'middle',margin:0});
+    const grp=r[3]==='グループ';
+    s.addShape(p.ShapeType.roundRect,{x:7.25,y:y+0.13,w:1.0,h:0.28,rectRadius:0.05,
+      fill:{color:grp?INK:WHT},line:{color:grp?INK:'8C8C8C',width:0.75}});
+    s.addText(r[3],{x:7.25,y:y+0.13,w:1.0,h:0.28,fontFace:BF,fontSize:8.5,color:grp?WHT:INK,align:'center',valign:'middle',margin:0});
   });
   const yt=y0+0.44+rows.length*rh;
   s.addShape(p.ShapeType.rect,{x:0.65,y:yt,w:7.9,h:0.52,fill:{color:CREAM},line:{color:BERRY,width:1}});
@@ -220,12 +224,12 @@ function table(s,x0,y0,cols,rows,opt){
     {x:9.2,y:2.18,w:3.2,h:1.0,fontFace:BF,fontSize:10.5,color:INK,valign:'top',margin:0});
   card(s,8.95,3.5,3.7,1.4);
   s.addText('取引先の内訳',{x:9.2,y:3.66,w:3.2,h:0.3,fontFace:BF,fontSize:10.5,bold:true,color:BERRY,margin:0});
-  s.addText('グループ内　100.0百万円\n外部　32.5百万円',{x:9.2,y:4.0,w:3.2,h:0.8,fontFace:BF,fontSize:11.5,color:INK,lineSpacing:18,margin:0});
+  s.addText('グループ内　82.5百万円\n外部　50.0百万円',{x:9.2,y:4.0,w:3.2,h:0.8,fontFace:BF,fontSize:11.5,color:INK,lineSpacing:18,margin:0});
   card(s,8.95,5.04,3.7,1.26,CREAM);
   s.addText('グループ内取引については、支払側の支払能力と対価の算定根拠を整備のうえご説明します。',
     {x:9.2,y:5.2,w:3.2,h:0.95,fontFace:BF,fontSize:10,color:INK,margin:0});
   foot(s,'期間表記は2026/09-2027/08。決算期（2026/10-2027/09）と1か月ズレるため、全額をFY2027帰属として試算。');
-  s.addNotes('グループ内取引100百万円は先に開示する。銀行の正常化調整で控除される可能性を織り込んでおく。');
+  s.addNotes('ティエリーマルクスは2026年4月開業のグループ店で、アピシウスに次ぐ主力店。Apicius2 shotは外部株主への売却インセンティブのため外部取引。グループ内82.5百万円は先に開示する。');
 }
 
 /* 8 営業利益ブリッジ */
@@ -292,7 +296,7 @@ function table(s,x0,y0,cols,rows,opt){
   const byBase=3.82, bmax=1.42;
   hist.forEach((h,i)=>{
     const hh=bmax*h[1]/6.5, x=1.0+i*1.05;
-    s.addShape(p.ShapeType.rect,{x,y:byBase-hh,w:0.68,h:hh,fill:{color:i>=2?BERRY:'C9AEB8'}});
+    s.addShape(p.ShapeType.rect,{x,y:byBase-hh,w:0.68,h:hh,fill:{color:i>=2?BERRY:'C4C2BE'}});
     s.addText(h[1].toFixed(1),{x:x-0.1,y:byBase-hh-0.3,w:0.88,h:0.28,fontFace:BF,fontSize:10,bold:true,color:BERRY,align:'center',margin:0});
     s.addText(h[0],{x:x-0.14,y:byBase+0.04,w:0.96,h:0.26,fontFace:BF,fontSize:8.5,color:MUT,align:'center',margin:0});
   });
@@ -336,7 +340,7 @@ function table(s,x0,y0,cols,rows,opt){
   defs.forEach((d,r)=>{
     const y=y0+0.42+r*rh, tot=[...Array(12)].reduce((a,_,i)=>a+d[1](i),0), b=d[2];
     s.addShape(p.ShapeType.rect,{x:x0,y,w:lw+cwd*12+0.95,h:rh,
-      fill:{color:d[0]==='経常利益'?CREAM:(b?'F3EDE9':(r%2?'FBF9F7':WHT))},line:{color:LINE,width:0.5}});
+      fill:{color:d[0]==='経常利益'?CREAM:(b?'EEEDEA':(r%2?'FAFAF8':WHT))},line:{color:LINE,width:0.5}});
     s.addText(d[0],{x:x0+0.12,y,w:lw,h:rh,fontFace:BF,fontSize:9,bold:b,color:INK,valign:'middle',margin:0});
     for(let i=0;i<12;i++){ const v=d[1](i);
       s.addText(M(v),{x:x0+lw+i*cwd,y,w:cwd,h:rh,fontFace:BF,fontSize:8.5,bold:b,color:v<0?RED:(b?BERRY:INK),align:'center',valign:'middle',margin:0}); }
@@ -367,7 +371,7 @@ function table(s,x0,y0,cols,rows,opt){
   defs.forEach((d,r)=>{
     const y=y0+0.42+r*rh, isBal=d[0]==='月末 現預金残高';
     s.addShape(p.ShapeType.rect,{x:x0,y,w:lw+cwd*12,h:rh,
-      fill:{color:isBal?CREAM:(d[2]?'F3EDE9':(r%2?'FBF9F7':WHT))},line:{color:LINE,width:0.5}});
+      fill:{color:isBal?CREAM:(d[2]?'EEEDEA':(r%2?'FAFAF8':WHT))},line:{color:LINE,width:0.5}});
     s.addText(d[0],{x:x0+0.12,y,w:lw,h:rh,fontFace:BF,fontSize:9.5,bold:d[2],color:INK,valign:'middle',margin:0});
     d[1].forEach((v,i)=>s.addText(M(v),{x:x0+lw+i*cwd,y,w:cwd,h:rh,fontFace:BF,fontSize:9,bold:d[2]||isBal,
       color:v<0?RED:(d[2]||isBal?BERRY:INK),align:'center',valign:'middle',margin:0}));
@@ -384,7 +388,7 @@ function table(s,x0,y0,cols,rows,opt){
     .forEach(h=>s.addText(h[0],{x:h[1],y:yb,w:h[2],h:0.36,fontFace:BF,fontSize:9,bold:true,color:WHT,align:h[3],valign:'middle',margin:0}));
   cs.forEach((c,i)=>{
     const y=yb+0.36+i*0.285;
-    s.addShape(p.ShapeType.rect,{x:6.8,y,w:5.85,h:0.285,fill:{color:i===0?CREAM:(i%2?'FBF9F7':WHT)},line:{color:LINE,width:0.5}});
+    s.addShape(p.ShapeType.rect,{x:6.8,y,w:5.85,h:0.285,fill:{color:i===0?CREAM:(i%2?'FAFAF8':WHT)},line:{color:LINE,width:0.5}});
     s.addText(c[0],{x:6.95,y,w:2.6,h:0.285,fontFace:BF,fontSize:8.5,bold:i===0,color:INK,valign:'middle',margin:0});
     [[c[1],9.55,1.4],[c[2],11.05,1.45]].forEach(v=>s.addText(v[0],{x:v[1],y,w:v[2],h:0.285,fontFace:BF,fontSize:8.5,bold:i===0,
       color:String(v[0]).startsWith('▲')?RED:BERRY,align:'right',valign:'middle',margin:0}));
@@ -400,7 +404,7 @@ function table(s,x0,y0,cols,rows,opt){
               ['＋ 商品の含み益（時価1.37倍）',186716373,BERRY]];
   rows.forEach((r,i)=>{
     const y=1.72+i*0.8;
-    s.addShape(p.ShapeType.rect,{x:0.65,y,w:7.0,h:0.68,fill:{color:i%2?'FBF9F7':WHT},line:{color:LINE,width:0.5}});
+    s.addShape(p.ShapeType.rect,{x:0.65,y,w:7.0,h:0.68,fill:{color:i%2?'FAFAF8':WHT},line:{color:LINE,width:0.5}});
     s.addText(r[0],{x:0.9,y,w:4.3,h:0.68,fontFace:BF,fontSize:11.5,color:INK,valign:'middle',margin:0});
     s.addText(yen(r[1]),{x:5.2,y,w:2.2,h:0.68,fontFace:BF,fontSize:13,bold:true,color:r[2],align:'right',valign:'middle',margin:0});
   });
@@ -427,7 +431,7 @@ function table(s,x0,y0,cols,rows,opt){
 {
   const s=base('想定されるご指摘と当社の対応','先に論点を開示し、対応方針をあわせてご説明します。');
   const items=[
-    ['グループ内取引 100百万円','上乗せ案件132.5百万円のうち約100百万円はグループ会社からの経営指導料。','支払側各社の支払能力と、対価の算定根拠（業務内容・工数）を文書化してご提出します。'],
+    ['グループ内取引 82.5百万円','上乗せ案件132.5百万円のうち82.5百万円はグループ会社からの経営指導料。','支払側各社の支払能力と、対価の算定根拠（業務内容・工数）を文書化してご提出します。'],
     ['在庫積み増し 118百万円','仕入を維持するため、在庫が420→538百万円に増加します。','時価1.37倍の換価可能資産です。在庫見合いの運転資金枠をご相談させてください。'],
     ['2026年11月の資金需要','消費税30百万円の納付が、売上回収が進む前の時期に重なります。','短期のつなぎ資金でこの一点を越えられれば、通期の資金繰りは成立します。'],
     ['追加売上の未達リスク','仕入を固定するため、売上未達時の資金影響が大きくなります。','月次で進捗をご報告し、未達が見込まれる場合は仕入計画を機動的に見直します。']
@@ -474,10 +478,10 @@ function table(s,x0,y0,cols,rows,opt){
 /* 16 まとめ */
 {
   const s=p.addSlide(); s.background={color:BERRY};
-  s.addShape(p.ShapeType.ellipse,{x:-1.6,y:5.0,w:4.6,h:4.6,fill:{color:'5C2439'}});
+  s.addShape(p.ShapeType.ellipse,{x:-1.6,y:5.0,w:4.6,h:4.6,fill:{color:'111111'}});
   s.addText('まとめ',{x:0.9,y:0.75,w:8,h:0.7,fontFace:HF,fontSize:34,bold:true,color:WHT,margin:0});
   const pts=[
-    ['FY2026の赤字は構造改革の費用','飲食事業の撤退は2026年3月に完了。年103百万円の固定費削減は実績です。'],
+    ['FY2026の赤字は構造改革の費用','不採算3店舗の撤退は2026年3月に完了。年103百万円の固定費削減は実績です。'],
     ['上乗せ案件だけで営業損益は黒字転換','132.5百万円の計上により、FY2026比147.7百万円の改善。'],
     ['ワイン仕入は落としません','割当を守り2〜3年先の成長を確保。在庫は時価1.37倍の換価可能資産です。'],
     ['必要売上621.1百万円は過去2期を下回る','FY2025の82.5%、FY2026見込の87.7%。経常利益137.5百万円は保守的な計画です。']
@@ -487,9 +491,9 @@ function table(s,x0,y0,cols,rows,opt){
     s.addShape(p.ShapeType.ellipse,{x:0.9,y:y+0.06,w:0.4,h:0.4,fill:{color:CREAM}});
     s.addText(String(i+1),{x:0.9,y:y+0.06,w:0.4,h:0.4,fontFace:BF,fontSize:14,bold:true,color:BERRY,align:'center',valign:'middle',margin:0});
     s.addText(t[0],{x:1.55,y,w:7.4,h:0.4,fontFace:BF,fontSize:15.5,bold:true,color:WHT,margin:0});
-    s.addText(t[1],{x:1.55,y:y+0.42,w:7.4,h:0.44,fontFace:BF,fontSize:11.5,color:'E4CBD6',margin:0});
+    s.addText(t[1],{x:1.55,y:y+0.42,w:7.4,h:0.44,fontFace:BF,fontSize:11.5,color:'C9C7C3',margin:0});
   });
-  card(s,9.4,1.75,3.25,4.25,'5C2439');
+  card(s,9.4,1.75,3.25,4.25,'111111');
   s.addText('ご相談事項',{x:9.65,y:2.0,w:2.75,h:0.34,fontFace:BF,fontSize:12,bold:true,color:CREAM,margin:0});
   s.addText([
     {text:'2026年11月のつなぎ資金',options:{bullet:true,breakLine:true}},
@@ -497,7 +501,7 @@ function table(s,x0,y0,cols,rows,opt){
     {text:'財務制限条項の事前確認',options:{bullet:true,breakLine:true}},
     {text:'月次資金繰り表のご報告',options:{bullet:true}}
   ],{x:9.65,y:2.45,w:2.75,h:2.0,fontFace:BF,fontSize:11,color:WHT,paraSpaceAfter:9,margin:0});
-  s.addText('株式会社WineBank',{x:0.9,y:6.55,w:6,h:0.34,fontFace:BF,fontSize:11,color:'C9A9B6',margin:0});
+  s.addText('株式会社WineBank',{x:0.9,y:6.55,w:6,h:0.34,fontFace:BF,fontSize:11,color:'A8A6A2',margin:0});
   s.addNotes('依頼事項を明確にして締める。11月のつなぎと在庫見合い枠の2点が具体的な依頼。');
 }
 

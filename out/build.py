@@ -6,17 +6,18 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 
-F='Arial'
-BK=Font(name=F); BL=Font(name=F,color='0000FF'); GR=Font(name=F,color='008000')
+F='メイリオ'
+# WineBank ハウススタイル：無彩色モノトーン ＋ メイリオ
+BK=Font(name=F); BL=Font(name=F,color='1A1A1A',bold=True); GR=Font(name=F,color='595959')
 SB=Font(name=F,bold=True); HD=Font(name=F,bold=True,color='FFFFFF')
-SM=Font(name=F,size=9,color='595959'); RD=Font(name=F,size=9,color='C00000')
-GY=Font(name=F,color='808080',italic=True)
-HF=PatternFill('solid',fgColor='1F3864'); SF=PatternFill('solid',fgColor='D9E2F3')
-YL=PatternFill('solid',fgColor='FFFF00'); TF=PatternFill('solid',fgColor='F2F2F2')
-OP=PatternFill('solid',fgColor='FFF2CC'); OR_=PatternFill('solid',fgColor='C6E0B4')
-GRP=PatternFill('solid',fgColor='E7E6E6')
-CREAMFILL=PatternFill('solid',fgColor='FDF6E3')
-TB=Border(top=Side(style='thin',color='000000'))
+SM=Font(name=F,size=9,color='8C8C8C'); RD=Font(name=F,size=9,color='333333')
+GY=Font(name=F,color='8C8C8C',italic=True)
+HF=PatternFill('solid',fgColor='1A1A1A'); SF=PatternFill('solid',fgColor='EEEDEA')
+YL=PatternFill('solid',fgColor='E6E4E0'); TF=PatternFill('solid',fgColor='F0EFEC')
+OP=PatternFill('solid',fgColor='EEEDEA'); OR_=PatternFill('solid',fgColor='E0DEDA')
+GRP=PatternFill('solid',fgColor='E8E6E2')
+CREAMFILL=PatternFill('solid',fgColor='F5F4F1')
+TB=Border(top=Side(style='thin',color='1A1A1A'))
 YEN='¥#,##0;(¥#,##0);-'; PCT='0.0%'
 SGA=json.load(open('sga_monthly.json'))
 FM=['2025/10','2025/11','2025/12','2026/01','2026/02','2026/03','2026/04','2026/05','2026/06','2026/07','2026/08','2026/09']
@@ -39,7 +40,7 @@ h.column_dimensions['O'].width=15; h.column_dimensions['P'].width=15
 h.column_dimensions['Q'].width=15; h.column_dimensions['R'].width=14
 h['B1']='FY2026（2025年10月-2026年9月）月次　実績／見込'; h['B1'].font=Font(name=F,bold=True,size=13)
 h['B2']='青字＝実績（2026/06まで）　灰字斜体＝見込（2026/07以降・同一値が並ぶプラグ）　出典：事業計画202608（銀行様）全社シート'; h['B2'].font=SM
-h['B3']='飲食事業の撤退により、2026/04以降が撤退後の実力値。2025/10-2026/03には撤退店舗の費用が含まれる。'; h['B3'].font=RD
+h['B3']='不採算3店舗の撤退により、2026/04以降が再編後の実力値。WineBankテラスはWineBank CLUBのフラッグシップ店として改善のうえ継続。'; h['B3'].font=RD
 r=5
 h.cell(r,2,'科目').font=SB; h.cell(r,2).fill=SF
 for i,m in enumerate(FM):
@@ -74,7 +75,7 @@ for i in range(12):
     col=get_column_letter(3+i)
     c=h.cell(OPR,3+i,f'={col}{GR_}-{col}{SGT}'); c.number_format=YEN; c.font=SB; c.fill=OP; c.border=TB
 c=h.cell(OPR,15,f'=SUM(C{OPR}:N{OPR})'); c.number_format=YEN; c.font=SB; c.fill=OP; c.border=TB
-h.cell(OPR+2,2,'※「差 ②-①」がマイナスの科目＝飲食撤退および固定費削減により減少した費用。合計で月▲8.58百万円（年▲103百万円）。').font=RD
+h.cell(OPR+2,2,'※「差 ②-①」がマイナスの科目＝不採算3店舗の撤退および固定費削減により減少した費用。合計で月▲8.58百万円（年▲103百万円）。').font=RD
 h.freeze_panes='C6'
 
 # ============ ②前提 ============
@@ -84,7 +85,7 @@ for c in 'CDE': p.column_dimensions[c].width=17
 p.column_dimensions['F'].width=66
 p['B1']='FY2027（2027年9月期）利益予測モデル　－　前提条件'; p['B1'].font=Font(name=F,bold=True,size=14)
 p['B2']='青字＝入力セル／黄色＝主要前提／黒字＝計算式　単位：円（税別）　作成日 2026/08/21'; p['B2'].font=SM
-bar(p,4,'【1】ベース：飲食撤退後の実力値（2026/04-06 実績3か月平均）')
+bar(p,4,'【1】ベース：再編後の実力値（2026/04-06 実績3か月平均）')
 p.cell(5,2,'項目').font=SB; p.cell(5,3,'月次平均').font=SB; p.cell(5,3).alignment=Alignment(horizontal='center')
 for c in (2,3): p.cell(5,c).fill=SF
 base=[('売上',f"=AVERAGE('④FY2026月次実績'!I{SR}:K{SR})"),
@@ -95,7 +96,7 @@ for i,(t,f_) in enumerate(base):
     c=p.cell(6+i,3,f_); c.number_format=YEN; c.font=GR; c.fill=TF
 p.cell(9,2,'売上総利益率').font=BK
 c=p.cell(9,3,'=C7/C6'); c.number_format=PCT; c.font=BK
-p.cell(6,6,'2026/03以前は飲食撤退店舗の売上・費用を含むため基準から除外（貴社ご指摘）。').font=RD
+p.cell(6,6,'2026/03以前は撤退した不採算3店舗の売上・費用を含むため基準から除外（貴社ご指摘）。').font=RD
 S_M,G_M,P_M,GM=6,7,8,9
 bar(p,11,'【2】上乗せ案件（2026/09-2027/08）')
 for j,t in enumerate(['区分','金額','','損益計上区分']):
@@ -103,9 +104,9 @@ for j,t in enumerate(['区分','金額','','損益計上区分']):
 items=[('経営指導料　Value table',10000000,'営業収益（12か月按分）'),
        ('経営指導料　Prime',60000000,'営業収益（12か月按分）'),
        ('経営指導料　Apicius',10000000,'営業収益（12か月按分）'),
-       ('経営指導料　Thierry Marx',2500000,'営業収益（12か月按分）'),
+       ('経営指導料　Thierry Marx【グループ／2026年4月開業】',2500000,'営業収益（12か月按分）'),
        ('経営指導料　ito＋Aqua＋Hokkaido',10000000,'営業収益（12か月按分）'),
-       ('インセンティブ　Apicius2 shot',20000000,'営業収益（成功報酬・一時）'),
+       ('インセンティブ　Apicius2 shot【外部／株主売却】',20000000,'営業収益（成功報酬・一時）'),
        ('クルーザー事業利益　1回目',10000000,'営業収益（2027/03）'),
        ('クルーザー事業利益　2回目',10000000,'営業収益（2027/09）')]
 I0=13
@@ -120,9 +121,9 @@ for lab,f_,rr in [('合計',f'=SUM(C{I0}:C{I1})',TT),('　うち 営業収益',f
     c=p.cell(rr,3,f_); c.number_format=YEN; c.font=SB if rr==TT else BK
     if rr==TT: c.fill=TF
 ADV,INV=TT+1,TT+2
-p.cell(TT+2,6,'クルーザー事業利益は投資損益ではなく事業利益のため、全額を営業収益に計上。営業外収益は0。').font=RD
+p.cell(TT+2,6,'※外部50.0百万円＝ito＋Aqua＋Hokkaido／Apicius2 shot（外部株主売却）／クルーザー事業利益。クルーザーは事業利益のため全額営業収益に計上し、営業外収益は0。').font=RD
 p.cell(TT,6,'※期間表記は2026/09-2027/08。決算期(2026/10-2027/09)と1か月ズレるため全額FY2027帰属で試算。').font=RD
-p.cell(TT+1,6,'※うち約100百万円はグループ内取引（Value table・Prime・Apicius・Apicius2）。').font=RD
+p.cell(TT+1,6,'※うち82.5百万円はグループ内取引（Value table・Prime・Apicius・Thierry Marx）。Thierry Marxは2026年4月開業のグループ店。').font=RD
 O0=TT+4
 bar(p,O0,'【3】その他前提')
 oth=[('営業外費用（支払利息等・年額）',15000000,YEN,'事業計画FY2027計画値'),
@@ -233,9 +234,9 @@ s.column_dimensions['A'].width=3; s.column_dimensions['B'].width=38
 for col in 'CDEFG': s.column_dimensions[col].width=18
 s.column_dimensions['H'].width=42
 s['B1']='FY2027（2027年9月期）利益予測　シナリオ比較'; s['B1'].font=Font(name=F,bold=True,size=15)
-s['B2']='ベース：飲食撤退後の実力値（2026/04-06 実績3か月平均）を横ばい延伸'; s['B2'].font=Font(name=F,size=10,color='595959')
+s['B2']='ベース：再編後の実力値（2026/04-06 実績3か月平均）を横ばい延伸'; s['B2'].font=Font(name=F,size=10,color='8C8C8C')
 s['B3']='単位：円（税別）　出典：事業計画202608（銀行様）月次／決算報告書 第54期'; s['B3'].font=SM
-heads=['科目','FY2026 見込','A. 撤退後実力値\n横ばいのみ','B. A＋上乗せ\n132.5百万円','C. 経常利益\n1億円','D. CFが回る\n売上水準','コメント']
+heads=['科目','FY2026 見込','A. 再編後実力値\n横ばいのみ','B. A＋上乗せ\n132.5百万円','C. 経常利益\n1億円','D. CFが回る\n売上水準','コメント']
 for j,t in enumerate(heads):
     c=s.cell(5,2+j,t); c.font=HD; c.fill=HF; c.alignment=Alignment(horizontal='center',wrap_text=True,vertical='center')
 s.row_dimensions[5].height=44
@@ -283,7 +284,7 @@ for i,(lab,f1,f2) in enumerate(add):
     c=s.cell(rr,3,f1); c.number_format=YEN; c.font=SB; c.fill=YL
     c=s.cell(rr,4,f2); c.number_format=PCT; c.font=SB; c.fill=YL
 notes=['','【判定】',
- 'A：撤退後の実力値を横ばいで延ばすだけでは営業利益▲99.6百万円・経常利益▲114.6百万円。',
+ 'A：再編後の実力値を横ばいで延ばすだけでは営業利益▲99.6百万円・経常利益▲114.6百万円。',
  'B：上乗せ案件132.5百万円を全額営業収益に計上すると営業利益＋32.9百万円・経常利益＋17.9百万円で黒字化する。',
  'C：経常利益1億円には追加売上1億5,918万円が必要（新規顧客売上計画の14.9%）。ただしこの水準では資金が回らない。',
  'D：ワイン仕入をFY2026と同水準（419.1百万円）に維持したまま資金を回すには、追加売上2億3,193万円が必要。',
@@ -305,7 +306,7 @@ for j,t in enumerate(['項目','増減','累計','内容']):
     c=br.cell(4,2+j,t); c.font=HD; c.fill=HF
 steps=[('FY2026 営業利益（見込）',-114793431,'現行計画の今期着地見込'),
        ('① 既存事業 粗利の減少',f'={Q(G_M)}*12-229139405','FY2026は2025/11・2026/09の大口を含む。撤退後実力値ベースでは減少'),
-       ('② 販管費の削減',f'=343932836-{Q(P_M)}*12','飲食撤退＋固定費削減。10-3月平均比で月▲8.58百万円'),
+       ('② 販管費の削減',f'=343932836-{Q(P_M)}*12','不採算3店舗の撤退＋固定費削減。10-3月平均比で月▲8.58百万円'),
        ('③ 上乗せ案件（営業収益）',f'={Q(ADV)}','経営指導料92.5＋インセンティブ20＋クルーザー事業利益20'),
        ('FY2027 営業利益（保守シナリオB）',None,'①〜③の合計')]
 for i,(lab,val,note) in enumerate(steps):
@@ -505,9 +506,9 @@ CF_NET=FI_T+2; CF_BEG=CF_NET+1; CF_END=CF_NET+2; CF_SHORT=CF_NET+3
 crow(CF_NET,'当月収支',lambda i,c:f'={c}{CF_ORD}+{c}{FI_T}',bold=True,fill=TF,top=True)
 crow(CF_BEG,'前月繰越 現預金',lambda i,c:(f'={Y(CF_CASH)}' if i==0 else f'={get_column_letter(3+i)}{CF_END}'),tot=False)
 crow(CF_END,'翌月繰越 現預金',lambda i,c:f'={c}{CF_BEG}+{c}{CF_NET}',bold=True,fill=OR_,top=True,tot=False)
-crow(CF_SHORT,'資金不足額（マイナス時）',lambda i,c:f'=IF({c}{CF_END}<0,{c}{CF_END},0)',bold=True,fill=PatternFill('solid',fgColor='F8CBAD'),tot=False)
+crow(CF_SHORT,'資金不足額（マイナス時）',lambda i,c:f'=IF({c}{CF_END}<0,{c}{CF_END},0)',bold=True,fill=PatternFill('solid',fgColor='E0DEDA'),tot=False)
 c=cf.cell(CF_END,16,f'=O{CF_END}'); c.number_format=YEN; c.font=SB; c.fill=OR_
-c=cf.cell(CF_SHORT,16,f'=MIN(D{CF_SHORT}:O{CF_SHORT})'); c.number_format=YEN; c.font=SB; c.fill=PatternFill('solid',fgColor='F8CBAD')
+c=cf.cell(CF_SHORT,16,f'=MIN(D{CF_SHORT}:O{CF_SHORT})'); c.number_format=YEN; c.font=SB; c.fill=PatternFill('solid',fgColor='E0DEDA')
 cf.cell(CF_SHORT,17,'通期列＝最大不足額（必要調達額の下限）').font=RD
 
 n=CF_SHORT+2
@@ -543,7 +544,7 @@ for i,(lab,fe,fm,nt) in enumerate(cases):
     cf.cell(r,2,lab).font=SB if i==0 else BK
     for j,f_ in enumerate([fe,fm]):
         c=cf.cell(r,3+j,f_); c.number_format=YEN; c.font=SB
-        c.fill=TF if i==0 else PatternFill('solid',fgColor='F8CBAD')
+        c.fill=TF if i==0 else PatternFill('solid',fgColor='E0DEDA')
     c=cf.cell(r,5,f'=IF(C{r+0}<0,-MIN(C{r},D{r})+$C${BUF},MAX(0,-D{r}+$C${BUF}))')
     c.number_format=YEN; c.font=SB; c.fill=YL
     cf.cell(r,6,nt).font=SM
@@ -562,7 +563,7 @@ cats=Reference(cf,min_col=4,max_col=15,min_row=r0,max_row=r0)
 ch.add_data(data,from_rows=True,titles_from_data=False)
 ch.set_categories(cats)
 ch.series[0].graphicalProperties.line.width=28000
-ch.series[0].graphicalProperties.line.solidFill='6D2E46'
+ch.series[0].graphicalProperties.line.solidFill='1A1A1A'
 ch.legend=None
 cf.add_chart(ch,f'B{BUF+5}')
 
