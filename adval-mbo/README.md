@@ -14,6 +14,7 @@
 | `valuation.py` | 適正株価の算定（EV/EBITDA・EV/売上・年買法・DCF） |
 | `val_impact.py` | 評価額がMBO資金と持分比率に与える影響 |
 | `scenario_ab.py` | ①15億／20億 × 営業利益2億／3億の四象限、DSCR判定 |
+| `base2oku.py` | **基準確定版** 出向費ゼロで営業利益2億を起点とした適正株価・調達・持分 |
 
 ## 基礎データ
 
@@ -41,9 +42,21 @@
 9. 営業利益2億が報告ベースだとDSCR0.96倍で返済不能。報告ベース2.29億が最低ライン
 10. ②を満額11億入れると15億評価で中野陣営31.5%。パートナー出資は7.83億が上限
 
+## 基準確定版（base2oku.py）
+
+2026年5月期の正常化営業利益を2.00億（出向費0.72億控除後）と確定した場合:
+
+- 正常化EBITDA 2.65億、Net Debt/EBITDA 4.2倍
+- 理論適正株式価値 4.73〜10.03億（EV/EBITDA 6〜8倍、中心7.38億）
+- ①15億=9.9倍、①'20億=11.8倍
+- みずほのタームローン上限 5.35億（DSCR1.2倍基準）→ 申込5.0億が妥当
+- ①15億・パートナー6.37億・中野ファンド2.72億・TL5.0億 → 中野陣営55%、DSCR1.25倍
+- 15億が適正になるのは正常化営業利益2.57億から、20億は3.20億から（8倍前提）
+- 報告値1.58億から正常化2.00億への差額1.14億の説明資料が全ての前提
+
 ## 実行方法
 
 ```
 python3 calc.py && python3 su.py && python3 solve.py && python3 levers.py \
-  && python3 valuation.py && python3 val_impact.py && python3 scenario_ab.py
+  && python3 valuation.py && python3 val_impact.py && python3 scenario_ab.py && python3 base2oku.py
 ```
