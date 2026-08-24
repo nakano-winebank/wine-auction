@@ -1,0 +1,651 @@
+<title>クルージング事業 リターン検証</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+:root{
+  --paper:#F2F3F6;
+  --panel:#FFFFFF;
+  --panel-2:#EAECF1;
+  --ink:#171A21;
+  --ink-2:#454C5C;
+  --ink-3:#727A8C;
+  --rule:#CFD4DE;
+  --rule-2:#E2E5EC;
+  --indigo:#22406B;
+  --indigo-soft:#D8E0EC;
+  --wine:#7B2B3B;
+  --wine-soft:#F0DCE0;
+  --amber:#8A6110;
+  --amber-soft:#F2E6CC;
+  --moss:#2C5C4F;
+  --moss-soft:#D8E7E1;
+  --pos:#2C5C4F;
+  --neg:#7B2B3B;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#11141B;
+    --panel:#181C25;
+    --panel-2:#20252F;
+    --ink:#E7E9EE;
+    --ink-2:#AEB5C4;
+    --ink-3:#7C8497;
+    --rule:#2C323E;
+    --rule-2:#232833;
+    --indigo:#8FB0DC;
+    --indigo-soft:#1E2A3D;
+    --wine:#E5A0AC;
+    --wine-soft:#332025;
+    --amber:#DDB35C;
+    --amber-soft:#2C2617;
+    --moss:#7FC0AC;
+    --moss-soft:#182C27;
+    --pos:#7FC0AC;
+    --neg:#E5A0AC;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#11141B;
+  --panel:#181C25;
+  --panel-2:#20252F;
+  --ink:#E7E9EE;
+  --ink-2:#AEB5C4;
+  --ink-3:#7C8497;
+  --rule:#2C323E;
+  --rule-2:#232833;
+  --indigo:#8FB0DC;
+  --indigo-soft:#1E2A3D;
+  --wine:#E5A0AC;
+  --wine-soft:#332025;
+  --amber:#DDB35C;
+  --amber-soft:#2C2617;
+  --moss:#7FC0AC;
+  --moss-soft:#182C27;
+  --pos:#7FC0AC;
+  --neg:#E5A0AC;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:"Zen Kaku Gothic New",-apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+  font-size:15px;
+  line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+  font-feature-settings:"palt" 1;
+}
+.wrap{max-width:1120px;margin:0 auto;padding:0 28px 96px}
+.prose{max-width:74ch}
+
+/* ---------- masthead ---------- */
+.mast{
+  border-bottom:2px solid var(--ink);
+  padding:56px 0 22px;
+  margin-bottom:44px;
+}
+.eyebrow{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--indigo);font-weight:600;
+  display:flex;gap:14px;flex-wrap:wrap;align-items:baseline;
+}
+h1{
+  font-family:"Shippori Mincho","Yu Mincho",serif;
+  font-weight:700;
+  font-size:clamp(30px,4.4vw,46px);
+  line-height:1.28;letter-spacing:.01em;
+  margin:16px 0 10px;text-wrap:balance;
+}
+.dek{color:var(--ink-2);font-size:15.5px;margin:0;max-width:70ch}
+.srcline{
+  margin-top:22px;padding-top:14px;border-top:1px solid var(--rule-2);
+  font-size:12.5px;color:var(--ink-3);
+  display:flex;gap:8px 22px;flex-wrap:wrap;
+}
+.srcline b{color:var(--ink-2);font-weight:500}
+
+/* ---------- verdict ---------- */
+.verdict{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+  gap:1px;background:var(--rule);border:1px solid var(--rule);
+  margin-bottom:52px;
+}
+.vcell{background:var(--panel);padding:26px 26px 24px;display:flex;flex-direction:column;gap:10px}
+.vtag{
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.16em;
+  text-transform:uppercase;font-weight:600;
+  display:inline-flex;align-items:center;gap:8px;
+}
+.vtag::before{content:"";width:9px;height:9px;flex:none}
+.vtag.go{color:var(--moss)} .vtag.go::before{background:var(--moss)}
+.vtag.hold{color:var(--wine)} .vtag.hold::before{background:var(--wine)}
+.vhead{font-family:"Shippori Mincho",serif;font-size:21px;font-weight:700;line-height:1.4;margin:0}
+.vnum{
+  font-family:"IBM Plex Mono",monospace;font-weight:600;
+  font-size:30px;line-height:1.15;letter-spacing:-.02em;
+  font-variant-numeric:tabular-nums;
+}
+.vnum small{font-size:14px;font-weight:500;color:var(--ink-3);letter-spacing:0;margin-left:6px}
+.vbody{font-size:13.5px;color:var(--ink-2);margin:0;line-height:1.7}
+
+/* ---------- sections ---------- */
+section{margin-bottom:62px;scroll-margin-top:20px}
+.shead{
+  display:flex;align-items:baseline;gap:14px;
+  border-bottom:1px solid var(--ink);padding-bottom:9px;margin-bottom:26px;
+}
+.snum{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:600;
+  color:var(--indigo);letter-spacing:.1em;flex:none;
+}
+h2{font-family:"Shippori Mincho",serif;font-size:24px;font-weight:700;margin:0;line-height:1.35}
+.shead .note{margin-left:auto;font-size:12px;color:var(--ink-3);font-family:"IBM Plex Mono",monospace}
+h3{
+  font-size:15px;font-weight:700;margin:38px 0 12px;color:var(--ink);
+  padding-left:11px;border-left:3px solid var(--indigo);line-height:1.5;
+}
+h3:first-of-type{margin-top:0}
+p{margin:0 0 14px}
+.lede{font-size:15.5px;color:var(--ink-2);margin-bottom:24px;max-width:74ch}
+
+/* ---------- tables ---------- */
+.scroll{overflow-x:auto;border:1px solid var(--rule);background:var(--panel);margin-bottom:8px}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:520px}
+th,td{padding:9px 14px;text-align:right;border-bottom:1px solid var(--rule-2);white-space:nowrap}
+th:first-child,td:first-child{text-align:left;white-space:normal;min-width:180px}
+thead th{
+  background:var(--panel-2);font-weight:700;font-size:11.5px;
+  letter-spacing:.06em;color:var(--ink-2);border-bottom:1px solid var(--rule);
+  position:sticky;top:0;
+}
+tbody td:not(:first-child){font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;font-weight:500}
+tbody tr:last-child td{border-bottom:none}
+tr.total td{background:var(--panel-2);font-weight:700;border-top:1px solid var(--rule)}
+tr.sub td{color:var(--ink-2)}
+tr.sub td:first-child{padding-left:26px;font-size:12.5px}
+.pos{color:var(--pos)} .neg{color:var(--neg)}
+.dim{color:var(--ink-3)}
+caption{
+  caption-side:bottom;text-align:left;font-size:12px;color:var(--ink-3);
+  padding:9px 14px;border-top:1px solid var(--rule-2);
+}
+.cap{font-size:12px;color:var(--ink-3);margin:0 0 26px;line-height:1.65;max-width:80ch}
+.cap b{color:var(--ink-2);font-weight:500}
+
+/* break-even matrix */
+table.matrix{min-width:640px;font-size:12.5px}
+table.matrix th,table.matrix td{padding:7px 10px;text-align:right}
+table.matrix td:first-child,table.matrix th:first-child{
+  text-align:right;min-width:70px;background:var(--panel-2);font-weight:700;
+  font-family:"IBM Plex Mono",monospace;
+}
+td.be-neg{background:var(--wine-soft);color:var(--wine)}
+td.be-pos{background:var(--moss-soft);color:var(--moss)}
+
+/* ---------- findings ---------- */
+.finds{border:1px solid var(--rule);background:var(--panel)}
+.find{display:grid;grid-template-columns:52px 1fr;border-bottom:1px solid var(--rule-2)}
+.find:last-child{border-bottom:none}
+.sev{
+  display:flex;align-items:flex-start;justify-content:center;padding:18px 0 0;
+  border-right:1px solid var(--rule-2);
+}
+.sevchip{
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:600;
+  letter-spacing:.08em;padding:3px 7px;border:1px solid currentColor;line-height:1.3;
+}
+.sev-h .sevchip{color:var(--wine);background:var(--wine-soft)}
+.sev-m .sevchip{color:var(--amber);background:var(--amber-soft)}
+.sev-l .sevchip{color:var(--ink-3)}
+.fbody{padding:16px 22px 18px}
+.ftop{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;margin-bottom:6px}
+.ftitle{font-weight:700;font-size:14.5px;line-height:1.5}
+.fref{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-3);
+  letter-spacing:.04em;
+}
+.ftext{font-size:13.5px;color:var(--ink-2);margin:0 0 9px;line-height:1.72}
+.faction{
+  font-size:12.5px;color:var(--ink);margin:0;padding:8px 12px;
+  background:var(--indigo-soft);border-left:3px solid var(--indigo);line-height:1.65;
+}
+.faction b{font-weight:700}
+
+/* ---------- checked-ok list ---------- */
+.okgrid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:1px;background:var(--rule);border:1px solid var(--rule);
+}
+.okcell{background:var(--panel);padding:13px 16px;font-size:13px;display:flex;gap:11px;align-items:flex-start}
+.okcell::before{
+  content:"✓";color:var(--moss);font-weight:700;font-family:"IBM Plex Mono",monospace;
+  font-size:13px;flex:none;line-height:1.7;
+}
+.okcell span{color:var(--ink-2)}
+.okcell b{color:var(--ink);font-weight:500;font-family:"IBM Plex Mono",monospace;font-size:12.5px}
+
+/* ---------- callout ---------- */
+.callout{
+  border:1px solid var(--rule);border-left:3px solid var(--wine);
+  background:var(--panel);padding:16px 20px;margin:22px 0;
+}
+.callout .ct{font-weight:700;font-size:13.5px;margin-bottom:5px;color:var(--wine)}
+.callout p{font-size:13.5px;color:var(--ink-2);margin:0;line-height:1.72}
+
+/* ---------- actions ---------- */
+ol.acts{list-style:none;counter-reset:a;padding:0;margin:0;border:1px solid var(--rule)}
+ol.acts li{
+  counter-increment:a;background:var(--panel);padding:15px 20px 15px 58px;
+  position:relative;border-bottom:1px solid var(--rule-2);font-size:13.5px;line-height:1.7;
+}
+ol.acts li:last-child{border-bottom:none}
+ol.acts li::before{
+  content:counter(a);position:absolute;left:20px;top:15px;
+  font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:12px;
+  color:var(--indigo);border:1px solid var(--indigo);width:21px;height:21px;
+  display:flex;align-items:center;justify-content:center;
+}
+ol.acts b{font-weight:700}
+ol.acts .who{
+  display:block;margin-top:4px;font-size:11.5px;color:var(--ink-3);
+  font-family:"IBM Plex Mono",monospace;letter-spacing:.03em;
+}
+
+footer{
+  border-top:1px solid var(--rule);margin-top:70px;padding-top:18px;
+  font-size:12px;color:var(--ink-3);line-height:1.7;
+}
+a{color:var(--indigo)}
+:focus-visible{outline:2px solid var(--indigo);outline-offset:2px}
+@media (max-width:640px){
+  .wrap{padding:0 16px 64px}
+  .find{grid-template-columns:1fr}
+  .sev{justify-content:flex-start;padding:14px 22px 0;border-right:none}
+  .fbody{padding-top:10px}
+}
+</style>
+
+<div class="wrap">
+
+<header class="mast">
+  <div class="eyebrow">
+    <span>WineBank — 事業参入検討</span>
+    <span>2026.08.24</span>
+  </div>
+  <h1>クルージング事業　投資リターンと営業リターンの検証</h1>
+  <p class="dek">WineBank はグループ4（F&amp;B協業）としての参入に加え、匿名組合への出資も選択肢になります。両者を分けて算出し、資料の数値を全件検算しました。結論は分かれます。</p>
+  <div class="srcline">
+    <span><b>検証対象</b>　0824事業計画（43p）／クルーザーデザインPJ 基本図面2点／V2_0810 契約進行表</span>
+    <span><b>単位</b>　万円・税別</span>
+  </div>
+</header>
+
+<div class="verdict">
+  <div class="vcell">
+    <span class="vtag go">営業リターン ─ 参入すべき</span>
+    <h2 class="vhead">F&amp;B事業（グループ4）</h2>
+    <div class="vnum pos">+4,428<small>万円／年 営業利益</small></div>
+    <p class="vbody">基本ケース。税後 2,922万円、初期投資1,500万円に対しROI 295%（回収4.1か月）。船舶・造船・会員権販売のいずれのリスクも負わないアセットライト構造で、既存の仕入力とシェフ網がそのまま効きます。</p>
+  </div>
+  <div class="vcell">
+    <span class="vtag hold">投資リターン ─ 現時点では保留</span>
+    <h2 class="vhead">匿名組合（TK①／TK②）への出資</h2>
+    <div class="vnum">14.2<span class="dim">〜</span>26.9<small>% 税後IRR（TK①）</small></div>
+    <p class="vbody">数字自体は魅力的ですが、按分の定義・AM報酬・維持費がいずれも未開示のため、算出値はすべて「上限値」です。重要度<b>高</b>の指摘7件が解消されるまで出資判断はできません。</p>
+  </div>
+</div>
+
+<section>
+  <div class="shead">
+    <span class="snum">01</span>
+    <h2>営業リターン ─ WineBank の F&amp;B 事業</h2>
+    <span class="note">グループ4</span>
+  </div>
+  <p class="lede">資料 p28 の定義：収益は「F&amp;Bの売上高」＋「コーディネーションフィー（売上高の10%）」、責任は食中毒リスク・品質管理・顧客満足度の維持。まず1運航あたりの採算から積み上げます。</p>
+
+  <h3>1運航あたりのユニットエコノミクス（基本ケース：10名 × 客単価3.0万円）</h3>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>項目</th><th>金額（万円）</th><th>対売上</th><th>根拠</th></tr></thead>
+      <tbody>
+        <tr><td>F&amp;B売上</td><td>30.0</td><td>100.0%</td><td class="dim">10名 × 3.0万円</td></tr>
+        <tr class="sub"><td>食材・飲料原価</td><td class="neg">−9.9</td><td>33.0%</td><td class="dim">料理30%・ワイン40%の加重</td></tr>
+        <tr class="sub"><td>調理・サービス人件費</td><td class="neg">−8.0</td><td>26.7%</td><td class="dim">招聘シェフ5万＋サービス2名×1.5万</td></tr>
+        <tr class="sub"><td>物流・消耗品</td><td class="neg">−1.5</td><td>5.0%</td><td class="dim">食材輸送・リネン・消耗品</td></tr>
+        <tr class="total"><td>限界利益</td><td class="pos">10.6</td><td>35.3%</td><td></td></tr>
+        <tr><td>コーディネーションフィー</td><td class="pos">+3.0</td><td>10.0%</td><td class="dim">p28。母数の定義は要確認</td></tr>
+        <tr class="total"><td>1運航あたり貢献利益</td><td class="pos">13.6</td><td>45.3%</td><td></td></tr>
+      </tbody>
+      <caption>損益分岐となる1運航あたり売上 ＝（人件費8.0＋物流1.5）÷（1−0.33＋0.10）＝ <b>12.34万円</b>。10名なら客単価12,338円、8名なら15,422円。</caption>
+    </table>
+  </div>
+  <p class="cap">クルーズは90分と短く、これが客単価の上限を規定します。延長料金は30分あたり2万円（船側・p18）なので、120分枠に広げてコース構成を厚くすれば単価は上げられます。<b>単価交渉より先に、枠の長さを交渉する価値があります。</b></p>
+
+  <h3>シナリオ別の年間P/L</h3>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>項目</th><th>保守</th><th>基本</th><th>強気</th></tr></thead>
+      <tbody>
+        <tr class="sub"><td>年間総運航回数</td><td>360</td><td>600</td><td>900</td></tr>
+        <tr class="sub"><td>F&amp;B実施率</td><td>70%</td><td>80%</td><td>90%</td></tr>
+        <tr class="sub"><td>乗船人数 / 客単価</td><td>8名 / 2.0万</td><td>10名 / 3.0万</td><td>12名 / 4.0万</td></tr>
+        <tr><td>F&amp;B実施運航回数</td><td>252</td><td>480</td><td>810</td></tr>
+        <tr><td>F&amp;B売上</td><td>4,032</td><td>14,400</td><td>38,880</td></tr>
+        <tr class="sub"><td>食材・飲料原価</td><td class="neg">−1,331</td><td class="neg">−4,752</td><td class="neg">−12,830</td></tr>
+        <tr class="sub"><td>調理・サービス人件費</td><td class="neg">−2,016</td><td class="neg">−3,840</td><td class="neg">−6,480</td></tr>
+        <tr class="sub"><td>物流・消耗品</td><td class="neg">−378</td><td class="neg">−720</td><td class="neg">−1,215</td></tr>
+        <tr><td>限界利益（率）</td><td>307 <span class="dim">7.6%</span></td><td>5,088 <span class="dim">35.3%</span></td><td>18,355 <span class="dim">47.2%</span></td></tr>
+        <tr><td>コーディネーションフィー</td><td>403</td><td>1,440</td><td>3,888</td></tr>
+        <tr><td>固定費</td><td class="neg">−2,100</td><td class="neg">−2,100</td><td class="neg">−2,100</td></tr>
+        <tr class="total"><td>営業利益</td><td class="neg">−1,389</td><td class="pos">4,428</td><td class="pos">20,143</td></tr>
+        <tr><td>営業利益率</td><td class="neg">−31.3%</td><td class="pos">28.0%</td><td class="pos">47.1%</td></tr>
+        <tr><td>税後利益（実効34%）</td><td class="neg">−917</td><td class="pos">2,922</td><td class="pos">13,294</td></tr>
+        <tr><td>初期投資1,500万に対するROI</td><td class="neg">−93%</td><td class="pos">295%</td><td class="pos">1,343%</td></tr>
+        <tr><td>損益分岐 F&amp;B運航回数</td><td>745回</td><td>154回</td><td>76回</td></tr>
+      </tbody>
+      <caption>固定費の内訳：統括マネージャー900＋事務按分300＋什器償却300＋在庫金利100＋保険・許認可200＋本部按分300。</caption>
+    </table>
+  </div>
+
+  <div class="callout">
+    <div class="ct">保守ケースが赤字になる理由 ─ ここが営業リターンの生命線です</div>
+    <p>招聘シェフ体制の人件費 8万円／運航は<b>運航回数に比例</b>してかかります。8名×2万円＝16万円／運航では貢献利益が2.8万円しか出ず、固定費2,100万円を賄うには年745回必要（供給上限1,500枠に対し非現実的）。<br>
+    → 契約交渉では<b>「最低乗船人数」または「1運航あたり最低保証額」を必ず取ること</b>。低単価帯に落ちる可能性があるなら、「招聘シェフの都度手配」ではなく「常駐1名＋陸上での仕込み集中」へ体制を切り替える必要があります。</p>
+  </div>
+
+  <h3>損益分岐マトリクス ─ 年間営業利益（万円）</h3>
+  <div class="scroll">
+    <table class="matrix">
+      <thead><tr><th>回数＼売上</th><th>10万</th><th>15万</th><th>20万</th><th>25万</th><th>30万</th><th>35万</th><th>40万</th><th>45万</th></tr></thead>
+      <tbody>
+        <tr><td>150回</td><td class="be-neg">−2,370</td><td class="be-neg">−1,792</td><td class="be-neg">−1,215</td><td class="be-neg">−638</td><td class="be-neg">−60</td><td class="be-pos">518</td><td class="be-pos">1,095</td><td class="be-pos">1,672</td></tr>
+        <tr><td>250回</td><td class="be-neg">−2,550</td><td class="be-neg">−1,588</td><td class="be-neg">−625</td><td class="be-pos">337</td><td class="be-pos">1,300</td><td class="be-pos">2,262</td><td class="be-pos">3,225</td><td class="be-pos">4,188</td></tr>
+        <tr><td>350回</td><td class="be-neg">−2,730</td><td class="be-neg">−1,382</td><td class="be-neg">−35</td><td class="be-pos">1,312</td><td class="be-pos">2,660</td><td class="be-pos">4,008</td><td class="be-pos">5,355</td><td class="be-pos">6,702</td></tr>
+        <tr><td>480回</td><td class="be-neg">−2,964</td><td class="be-neg">−1,116</td><td class="be-pos">732</td><td class="be-pos">2,580</td><td class="be-pos">4,428</td><td class="be-pos">6,276</td><td class="be-pos">8,124</td><td class="be-pos">9,972</td></tr>
+        <tr><td>600回</td><td class="be-neg">−3,180</td><td class="be-neg">−870</td><td class="be-pos">1,440</td><td class="be-pos">3,750</td><td class="be-pos">6,060</td><td class="be-pos">8,370</td><td class="be-pos">10,680</td><td class="be-pos">12,990</td></tr>
+        <tr><td>750回</td><td class="be-neg">−3,450</td><td class="be-neg">−563</td><td class="be-pos">2,325</td><td class="be-pos">5,212</td><td class="be-pos">8,100</td><td class="be-pos">10,988</td><td class="be-pos">13,875</td><td class="be-pos">16,762</td></tr>
+      </tbody>
+      <caption>縦＝年間F&amp;B実施運航回数、横＝1運航あたりF&amp;B売上。1運航15万円を下回ると、年750回運航しても赤字から抜けません。</caption>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="shead">
+    <span class="snum">02</span>
+    <h2>投資リターン ─ 匿名組合への出資</h2>
+    <span class="note">グループ1／グループ2</span>
+  </div>
+  <p class="lede">入口は2つあります。TK①（造船匿名組合）は2年で完結するキャピタルゲイン型、TK②（会員権発行匿名組合・船主）は20年の償却＋前受金型で、性格がまったく異なります。</p>
+
+  <h3>TK① 造船匿名組合 ─ 2億円で造船し4億円で売却</h3>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>項目</th><th>ケースA：按分なし</th><th>ケースB：50:50按分</th><th>根拠</th></tr></thead>
+      <tbody>
+        <tr class="sub"><td>船舶取得・改装原価</td><td>20,000</td><td>20,000</td><td class="dim">p34</td></tr>
+        <tr class="sub"><td>TK②への売却価格</td><td>40,000</td><td>40,000</td><td class="dim">p34</td></tr>
+        <tr><td>船舶譲渡益</td><td class="pos">20,000</td><td class="pos">20,000</td><td class="dim">p34</td></tr>
+        <tr class="sub"><td>AM報酬・組成費用</td><td class="neg">−1,500</td><td class="neg">−1,500</td><td class="dim">★推計。資料に金額記載なし</td></tr>
+        <tr><td>投資家取分</td><td>18,500</td><td>9,250</td><td class="dim">p16の按分がTK①譲渡益に及ぶか</td></tr>
+        <tr class="total"><td>倍率（税前 MOIC）</td><td class="pos">1.93x</td><td class="pos">1.46x</td><td></td></tr>
+        <tr class="total"><td>IRR（税前・2年）</td><td class="pos">38.7%</td><td class="pos">20.9%</td><td></td></tr>
+        <tr class="total"><td>IRR（税後・実効34%）</td><td class="pos">26.9%</td><td class="pos">14.2%</td><td></td></tr>
+      </tbody>
+      <caption>投資期間は造船24か月（p8）。中間キャッシュフローがないため IRR ＝ MOIC^(1/2)−1。</caption>
+    </table>
+  </div>
+  <p class="cap">p16 の「1号船は収益を50%(UMITO)：50%(投資家)で按分」の<b>「収益」がTK①の譲渡益を含むかどうかで、税後IRRが14.2%と26.9%の間で倍半分違います</b>。さらにAM報酬の実額が未開示のため、上記はいずれも上限値です。</p>
+
+  <h3>TK② 会員権発行匿名組合（船主）─ 4億円で船を取得、会員権ネット6億円</h3>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>ケース</th><th>20年累計CF</th><th>出資倍率</th><th>IRR</th><th>回収年</th></tr></thead>
+      <tbody>
+        <tr><td>完売まで1年</td><td class="pos">+16,000</td><td>1.40x</td><td class="pos">48.5%</td><td>1年</td></tr>
+        <tr><td>完売まで2年</td><td class="pos">+16,000</td><td>1.40x</td><td class="pos">30.4%</td><td>2年</td></tr>
+        <tr><td>完売まで3年</td><td class="pos">+16,000</td><td>1.40x</td><td class="pos">21.9%</td><td>3年</td></tr>
+        <tr><td>70口止まり</td><td class="neg">−2,000</td><td>0.95x</td><td class="dim">算定不能</td><td class="dim">一旦回収後に逆転</td></tr>
+        <tr><td>50口止まり</td><td class="neg">−14,000</td><td>0.65x</td><td class="dim">算定不能</td><td class="neg">未回収</td></tr>
+      </tbody>
+      <caption>年間維持費800万円（★推計）、一般売り修繕積立 2万円×年300回＝600万円を前提。</caption>
+    </table>
+  </div>
+
+  <div class="callout">
+    <div class="ct">IRR 30% は見かけです ─ この案件は累計CFで判断してください</div>
+    <p>IRRが高く出るのは「4億円払って1〜2年で6億円回収」という<b>前倒し構造</b>によるもので、20年通算の絶対リターンは1.40倍＝<b>単純年率2.0%</b>にすぎません。しかも下の感応度のとおり、資料に記載のない年間維持費が1,600万円を超えると20年累計CFはゼロになります。</p>
+  </div>
+
+  <div class="scroll">
+    <table>
+      <thead><tr><th>年間維持費（★資料に記載なし）</th><th>0</th><th>400</th><th>800</th><th>1,200</th><th>1,600</th><th>2,000</th></tr></thead>
+      <tbody>
+        <tr><td>20年累計CF</td><td class="pos">32,000</td><td class="pos">24,000</td><td class="pos">16,000</td><td class="pos">8,000</td><td>0</td><td class="neg">−8,000</td></tr>
+        <tr><td>出資倍率</td><td>1.80x</td><td>1.60x</td><td>1.40x</td><td>1.20x</td><td>1.00x</td><td class="neg">0.80x</td></tr>
+        <tr><td>IRR</td><td>35.9%</td><td>33.3%</td><td>30.4%</td><td>27.0%</td><td>22.8%</td><td>9.0%</td></tr>
+      </tbody>
+      <caption>維持費に含めるべき項目：係留料、船舶保険、JCI船舶検査、定期整備、船外機交換（YAMAHA 225PS×2、概ね8〜12年で更新）、GK／TKの維持コスト（役員派遣・税務・会計）。</caption>
+    </table>
+  </div>
+
+  <p class="cap">なお p26 が挙げる「減価償却費の計上」というメリットは<b>永久節税ではなく課税の繰延</b>です。中古船・耐用2年・初年度100%償却なら初年度に約3.78億円の損失を取り込め、当期のタックスシールドは約1.29億円になりますが、2年目以降に3,000万円×19年＝5.7億円が益金として戻ります。20年通算の課税所得は約1.6億円で変わりません。</p>
+</section>
+
+<section>
+  <div class="shead">
+    <span class="snum">03</span>
+    <h2>整合性の検証 ─ 発行口数・供給枠・関係者インセンティブ</h2>
+  </div>
+  <p class="lede">リターンの前に、事業が物理的に成立するかを確認しました。ここに構造的な問題が3つあります。</p>
+
+  <h3>会員需要は供給枠の55〜77%を占有する</h3>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>年間稼働可能日数</th><th>365日</th><th>330日</th><th>300日</th><th>260日</th></tr></thead>
+      <tbody>
+        <tr><td>供給枠（5枠／日）</td><td>1,825</td><td>1,650</td><td>1,500</td><td>1,300</td></tr>
+        <tr><td>会員需要（100口×年10回）</td><td>1,000</td><td>1,000</td><td>1,000</td><td>1,000</td></tr>
+        <tr class="total"><td>会員による占有率</td><td>55%</td><td>61%</td><td class="neg">67%</td><td class="neg">77%</td></tr>
+        <tr><td>一般売りに回せる枠</td><td>825</td><td>650</td><td>500</td><td>300</td></tr>
+      </tbody>
+      <caption>荒天・強風・JCI船検・整備・年末年始による停止を控除すると、実務的には300日前後が上限です。</caption>
+    </table>
+  </div>
+  <p class="cap">しかも需要は<b>花火大会7イベント（5/30足立・7/25隅田川・8/1江戸川・8/11江東・10/24東京湾・12/24・12/25）、桜シーズン、週末の18時／20時枠に集中</b>します（p6）。ピーク日の予約充足は構造的に不可能で、これが会員クレームと解約の主因になります。1隻あたり発行口数の上限根拠が資料に示されておらず、100口は検証されていません。</p>
+
+  <h3>東京ウォータウェイズは一般売りを優先する経済合理性を持つ</h3>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>1運航あたり</th><th>会員運航</th><th>一般売り</th><th>出典</th></tr></thead>
+      <tbody>
+        <tr><td>収入</td><td>13.0</td><td>30.0</td><td class="dim">p36 / p37</td></tr>
+        <tr class="sub"><td>運航原価</td><td class="neg">−10.0</td><td class="neg">−10.0</td><td class="dim">p17 小計</td></tr>
+        <tr class="sub"><td>TK②への修繕積立</td><td>0</td><td class="neg">−2.0</td><td class="dim">p37。一般売り時のみ</td></tr>
+        <tr class="total"><td>TWWの1運航利益</td><td>3.0</td><td class="pos">18.0</td><td class="neg">6倍</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="cap">会員が繁忙日に予約できない構造的な利益相反です。<b>「再運航委託契約（UMITO⇒東京ウォータウェイズ）」に会員優先予約のSLA</b>（○日前まで会員優先／繁忙日は会員枠を○枠確保／未達時のペナルティ）を明記しないと機能しません。V2_0810 の契約一覧17番がこれに当たります。</p>
+
+  <h3>年会費 年1.5億円の帰属が図に存在しない</h3>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>項目</th><th>金額</th><th>備考</th></tr></thead>
+      <tbody>
+        <tr><td>年会費相当額（1口）</td><td>150</td><td class="dim">p39。販売価格1,000万円に対し15%</td></tr>
+        <tr><td>年会費 年間総額（100口）</td><td class="pos">15,000</td><td class="dim">TK②の年間売上振替3,000万円の5倍</td></tr>
+        <tr class="total"><td>20年累計</td><td class="pos">300,000</td><td class="dim">30億円</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="cap">p27／p28 の図では年会費の徴収者はUMITOと図示されるのみ、p36 は「会員から徴収する年会費と外注費にプラスの差額が生じる場合は利益として計上」とするだけで、<b>TK②（投資家）への配分が定義されていません</b>。年1.5億円×20年＝30億円が p16 の 50:50 按分の対象外だとすれば、投資家リターンの前提が根本から変わります。本スキーム最大のリカーリング収益であり、最優先の確認事項です。</p>
+
+  <h3>会員1人あたりの20年総負担 ─ 会員権は売れるのか</h3>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>費目</th><th>金額</th><th>内訳</th></tr></thead>
+      <tbody>
+        <tr><td>会員権 取得価格</td><td>1,000</td><td class="dim">p21</td></tr>
+        <tr><td>年会費 20年分</td><td>3,000</td><td class="dim">150万×20年</td></tr>
+        <tr><td>都度利用料 20年分</td><td>2,600</td><td class="dim">13万×10回×20年</td></tr>
+        <tr><td>F&amp;B 20年分</td><td>6,000</td><td class="dim">10名×3万×10回×20年</td></tr>
+        <tr class="total"><td>20年総負担</td><td>12,600</td><td class="dim">1億2,600万円</td></tr>
+        <tr class="total"><td>1回（90分）あたり実質負担</td><td>63</td><td class="dim">10名で割ると1人6.3万円</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="cap">90分のクルーズ1回あたり実質63万円。<b>この価格で100口を売り切れるかが、全関係者のリターンを決める唯一の変数です。</b>WineBankのF&amp;B（営業リターン）も、運航回数を通じてこの1点に依存します。</p>
+</section>
+
+<section>
+  <div class="shead">
+    <span class="snum">04</span>
+    <h2>ダブルチェック ─ 指摘事項</h2>
+    <span class="note">高7件 / 中5件 / 低3件</span>
+  </div>
+
+  <div class="finds">
+
+    <div class="find sev-h"><div class="sev"><span class="sevchip">高</span></div><div class="fbody">
+      <div class="ftop"><span class="ftitle">移転価格 ─ 原価2億円の船を関連者間で4億円で売却</span><span class="fref">p21 / p26 / p34</span></div>
+      <p class="ftext">100%マークアップです。TK②の減価償却基礎額4億円はこの価格に依存しており、時価が否認されると譲渡益課税・寄附金認定に加えて<b>償却額も縮み、スキームの核が崩れます</b>。</p>
+      <p class="faction"><b>対応：</b>第三者による船舶鑑定評価書を必須要件に。TMI総合法律事務所・れいわ税理士法人の書面意見を取得。</p>
+    </div></div>
+
+    <div class="find sev-h"><div class="sev"><span class="sevchip">高</span></div><div class="fbody">
+      <div class="ftop"><span class="ftitle">償却前提の二重記載 ─ 新造か中古改装か未確定</span><span class="fref">p8 / p12 / p13 vs 図面</span></div>
+      <p class="ftext">p8・p12は「新築造船4億円・24か月・耐用4年（50/25/12.5/12.5%）」、p13は「築2年中古・耐用2年・初年度100%」。一方、実際の図面（ELMO作成 2024/06/19）は既存船 WATERWAYSⅢ の<b>「改造工事」</b>です。どれが本件の前提かで償却スピードが2倍違います。</p>
+      <p class="faction"><b>対応：</b>新造か中古改装かを確定させ、投資家向け資料を一本化。</p>
+    </div></div>
+
+    <div class="find sev-h"><div class="sev"><span class="sevchip">高</span></div><div class="fbody">
+      <div class="ftop"><span class="ftitle">リース区分の自己矛盾 ─「償却は速く、リースはオペレーティング」は両立しない</span><span class="fref">p31 vs p12 / p13</span></div>
+      <p class="ftext">p31は「リース期間が経済的耐用年数の75%以上ならファイナンスリース」とする一方、p12・p13は耐用年数を4年／2年としています。20年（10年更新）のリースは4年の500%。<b>ファイナンスリース判定を受けるとTK②で償却できず、スキームの前提が消滅します。</b></p>
+      <p class="faction"><b>対応：</b>経済的耐用年数の主張と税務上の耐用年数の整合について、書面意見が必須。</p>
+    </div></div>
+
+    <div class="find sev-h"><div class="sev"><span class="sevchip">高</span></div><div class="fbody">
+      <div class="ftop"><span class="ftitle">消費税が全面的に欠落 ─ 初年度に約6,000万円の納税キャッシュアウト</span><span class="fref">p32</span></div>
+      <p class="ftext">p32が「消費税は加味せず」と明記。会員権（施設利用権）の販売は課税資産の譲渡等で、10億円の販売なら仮受消費税1億円が<b>原則として販売時に</b>発生します。法人税の20年按分と消費税の課税時期は別物です。船4億円の仮払4,000万円を控除しても差引約6,000万円。</p>
+      <p class="faction"><b>対応：</b>TK②の資金繰り表に消費税を反映。前受金処理と課税時期の税務見解を取得。</p>
+    </div></div>
+
+    <div class="find sev-h"><div class="sev"><span class="sevchip">高</span></div><div class="fbody">
+      <div class="ftop"><span class="ftitle">TK②の維持費が一切計上されていない</span><span class="fref">資料全体</span></div>
+      <p class="ftext">係留料・船舶保険・JCI船舶検査・定期整備・船外機交換（YAMAHA 225PS×2）・GK／TK維持コストが資料にありません。<b>年1,600万円を超えると20年累計CFはゼロ</b>になります（上記感応度）。一般売りの修繕積立2万円／回だけでは足りません。</p>
+      <p class="faction"><b>対応：</b>20年の維持費・大規模修繕計画を織り込んだDCFの提出を求める。</p>
+    </div></div>
+
+    <div class="find sev-h"><div class="sev"><span class="sevchip">高</span></div><div class="fbody">
+      <div class="ftop"><span class="ftitle">年会費 年1.5億円の帰属が未定義</span><span class="fref">p27 / p28 / p36 / p39</span></div>
+      <p class="ftext">20年で30億円という本スキーム最大のリカーリング収益が、誰の収益になるのか図と本文のどちらにも定義がありません。p16の50:50按分の対象外なら、投資家リターンの前提が根本から変わります。</p>
+      <p class="faction"><b>対応：</b>按分対象に含まれるかを最優先で確認。</p>
+    </div></div>
+
+    <div class="find sev-h"><div class="sev"><span class="sevchip">高</span></div><div class="fbody">
+      <div class="ftop"><span class="ftitle">発行口数100口と供給キャパシティの不整合</span><span class="fref">p21 / p18 / p6</span></div>
+      <p class="ftext">100口×年10回＝年1,000運航の権利に対し、供給は5枠／日×稼働300日＝1,500枠。会員需要だけで67%を占有し、需要はイベント日・週末夜に集中します。</p>
+      <p class="faction"><b>対応：</b>1隻あたり発行口数の上限根拠（ピーク日の充足シミュレーション）を要求。</p>
+    </div></div>
+
+    <div class="find sev-m"><div class="sev"><span class="sevchip">中</span></div><div class="fbody">
+      <div class="ftop"><span class="ftitle">東京ウォータウェイズの利益相反</span><span class="fref">p17 / p37</span></div>
+      <p class="ftext">会員運航の利益は3万円／運航、一般売りは18万円／運航で6倍。一般売りを優先する経済合理性があります。</p>
+      <p class="faction"><b>対応：</b>「再運航委託契約」に会員優先予約のSLAとペナルティを明記（契約一覧17番）。</p>
+    </div></div>
+
+    <div class="find sev-m"><div class="sev"><span class="sevchip">中</span></div><div class="fbody">
+      <div class="ftop"><span class="ftitle">按分の対象が不明確 ─ 投資家IRRが倍半分違う</span><span class="fref">p16</span></div>
+      <p class="ftext">「1号船は収益を50%(UMITO)：50%(投資家)で按分」の「収益」が、TK①の譲渡益なのかTK②の会員権利益なのか、両方なのかが定義されていません。TK①の税前IRRで20.9%と38.7%の差になります。</p>
+      <p class="faction"><b>対応：</b>按分対象・計算基礎・控除項目を匿名組合契約で定義（契約一覧4番・5番）。</p>
+    </div></div>
+
+    <div class="find sev-m"><div class="sev"><span class="sevchip">中</span></div><div class="fbody">
+      <div class="ftop"><span class="ftitle">AM報酬・組成費用が全面未開示</span><span class="fref">V2_0810 契約一覧</span></div>
+      <p class="ftext">YN&amp;C（ストラクチャリングAM）、東京ウォータウェイズ（造船AM）、れいわ税理士法人（役員派遣・出納）、UMITO子会社（AM②）、サブAM（TBD）、TMI（リーガル）、三井デザインテック（デザイン監修）。<b>契約23本の報酬総額がゼロ記載です。</b>本試算の投資リターンはすべて上限値になります。</p>
+      <p class="faction"><b>対応：</b>フィーテーブルの開示を要求。これなしに出資判断はできません。</p>
+    </div></div>
+
+    <div class="find sev-m"><div class="sev"><span class="sevchip">中</span></div><div class="fbody">
+      <div class="ftop"><span class="ftitle">UMITO手数料40%（4億円）の水準と前受収益リスク</span><span class="fref">p36</span></div>
+      <p class="ftext">会員権販売の受託手数料としては極めて高く、p36自身が「一部を前受収益として20年按分するよう指導される可能性」を認めています。按分となればUMITOの資金繰りとTK②への6億円送金タイミングが連動します。</p>
+      <p class="faction"><b>対応：</b>送金条件（エスクロー／分割送金の可否）を会員権販売委託契約で確認（契約一覧18番）。</p>
+    </div></div>
+
+    <div class="find sev-m"><div class="sev"><span class="sevchip">中</span></div><div class="fbody">
+      <div class="ftop"><span class="ftitle">コーディネーションフィーの母数が未定義 ─ WineBank直結</span><span class="fref">p28</span></div>
+      <p class="ftext">「コーディネーションフィー（売上高の10%)」の「売上高」がF&amp;B売上か運航売上かで、WineBankの収益が変わります（基本ケースでF&amp;B売上基準なら1,440万円）。</p>
+      <p class="faction"><b>対応：</b>F&amp;B業務委託契約（東京ウォータウェイズ⇒WineBank）で母数を明文化（契約一覧19番）。<b>当社が最初に詰めるべき条項です。</b></p>
+    </div></div>
+
+    <div class="find sev-m"><div class="sev"><span class="sevchip">中</span></div><div class="fbody">
+      <div class="ftop"><span class="ftitle">初年度100%償却は期首取得でなければ成立しない</span><span class="fref">p13</span></div>
+      <p class="ftext">定率法は月割償却です。12月決算で8月取得なら 5/12＝41.7% しか償却できません。資料の「初年度100%」は期首取得を暗黙の前提にしています。</p>
+      <p class="faction"><b>対応：</b>船舶引渡日と決算期の関係を確定し、償却額を再計算。</p>
+    </div></div>
+
+    <div class="find sev-l"><div class="sev"><span class="sevchip">低</span></div><div class="fbody">
+      <div class="ftop"><span class="ftitle">p13の日付が本件と不整合</span><span class="fref">p13</span></div>
+      <p class="ftext">「事業開始日：2024年7月31日」は本件（2026年8月資料）と合いません。他案件の記載が残存している可能性があります。</p>
+      <p class="faction"><b>対応：</b>投資家配布前に修正。</p>
+    </div></div>
+
+    <div class="find sev-l"><div class="sev"><span class="sevchip">低</span></div><div class="fbody">
+      <div class="ftop"><span class="ftitle">燃料費の丸め差と実勢との乖離</span><span class="fref">p17</span></div>
+      <p class="ftext">15ℓ/h×5h×230円＝17,250円に対し記載は17,000円（△250円）。なお twin 225PS の90分運航で75ℓは低めで、実勢と乖離があればTWWの原価が過小になります。</p>
+      <p class="faction"><b>対応：</b>影響は軽微。ただし燃料費は変動費なので、価格改定条項の有無を確認。</p>
+    </div></div>
+
+    <div class="find sev-l"><div class="sev"><span class="sevchip">低</span></div><div class="fbody">
+      <div class="ftop"><span class="ftitle">p8の「新築造船費用4億円」が誤読を招く</span><span class="fref">p8</span></div>
+      <p class="ftext">4億円はTK②への売却価格であって造船原価ではありません（原価は2億円）。参考事例（野村不動産×ヤンマー×Fairmont）と自社原価が同一ページ上で混在しています。</p>
+      <p class="faction"><b>対応：</b>投資家向け資料で明確に区分。</p>
+    </div></div>
+
+  </div>
+</section>
+
+<section>
+  <div class="shead">
+    <span class="snum">05</span>
+    <h2>検算して資料どおりだった項目</h2>
+  </div>
+  <p class="lede">資料の算術そのものに誤りはほとんどありませんでした。以下は再計算して一致を確認したものです。</p>
+  <div class="okgrid">
+    <div class="okcell"><span><b>100口 × 1,000万円 ＝ 10億円</b><br>UMITO手数料40%＝4億円／TK②ネット6億円</span></div>
+    <div class="okcell"><span><b>6億円 ÷ 20年 ＝ 3,000万円</b><br>年間の前受金取崩（売上振替）</span></div>
+    <div class="okcell"><span><b>1,000万 ÷ 20年 ＝ 50万／回あたり5万</b><br>会員側の償却額（p21・p39）</span></div>
+    <div class="okcell"><span><b>5＋3＋0.3＋1.7 ＝ 10万円</b><br>運航原価小計。＋TWW利益3万＝都度利用料13万円</span></div>
+    <div class="okcell"><span><b>200%定率法 50/25/12.5/12.5%</b><br>償却率0.500・保証率0.12499で再計算して一致</span></div>
+    <div class="okcell"><span><b>(4年−2年)＋2年×20% ＝ 2.4年→2年</b><br>中古資産の簡便法。切捨処理も一致</span></div>
+    <div class="okcell"><span><b>4億 − 2億 ＝ 2億円</b><br>造船TKの船舶譲渡益</span></div>
+    <div class="okcell"><span><b>150万÷1,000万＝15% / 100万÷2,000万＝5%</b><br>販売価格に対する年会費比率（p39）</span></div>
+  </div>
+</section>
+
+<section>
+  <div class="shead">
+    <span class="snum">06</span>
+    <h2>次のアクション</h2>
+  </div>
+  <ol class="acts">
+    <li><b>年会費 年1.5億円の帰属を確認する。</b>按分対象に含まれるか否かで投資判断が反転します。20年で30億円が誰に落ちるのかを、図ではなく契約で確認してください。<span class="who">確認先：UMITO ／ 関連契約：会員権発行匿名組合契約・UMITO相互利用プラットホーム契約</span></li>
+    <li><b>船舶4億円の第三者鑑定評価書を必須要件にする。</b>これが取れなければ、TK②の償却基礎額もTK①の譲渡益も前提が崩れます。<span class="who">確認先：TMI総合法律事務所・れいわ税理士法人</span></li>
+    <li><b>AM報酬・組成費用のフィーテーブルの開示を求める。</b>契約23本分の報酬総額が不明なままでは、投資リターンは上限値しか出せません。<span class="who">確認先：YN&amp;C</span></li>
+    <li><b>F&amp;B業務委託契約で3点を明文化する。</b>①コーディネーションフィーの母数、②最低乗船人数または1運航あたり最低保証額、③クルーズ枠の長さ（90分か120分か）。<b>当社の営業リターンはこの3条項でほぼ決まります。</b><span class="who">相手方：東京ウォータウェイズ ／ 契約一覧19番</span></li>
+    <li><b>会員優先予約のSLAを再運航委託契約に入れるよう働きかける。</b>会員が繁忙日に乗れない構造は、当社のF&amp;B売上と顧客満足の双方を直撃します。<span class="who">契約一覧17番</span></li>
+    <li><b>営業（F&amp;B）と投資（TK出資）の意思決定を分離する。</b>F&amp;Bは低リスク・高ROIなので先行して進め、出資は上記1〜3が揃うまで保留する、という二段構えを推奨します。<span class="who">社内決裁</span></li>
+  </ol>
+</section>
+
+<footer>
+  添付の Excel モデル「WineBank_クルージング事業_投資・営業リターン試算.xlsx」に本ページのすべての数値を数式で収録しています（前提条件シートの黄色セルを変更すると全シートが再計算されます）。赤字セルは資料に記載がなく当方で推計した項目です。<br>
+  全数式は LibreOffice で再計算し、エラー0件・独立に組んだ Python モデルと全項目一致を確認済み。
+</footer>
+
+</div>
