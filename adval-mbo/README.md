@@ -11,6 +11,8 @@
 | `su.py` | Sources & Uses のシナリオ比較 |
 | `solve.py` | 中野ファンド所要額のパラメトリック解 |
 | `levers.py` | 取得株数・ビジョン再出資・BS流動化の各レバー |
+| `valuation.py` | 適正株価の算定（EV/EBITDA・EV/売上・年買法・DCF） |
+| `val_impact.py` | 評価額がMBO資金と持分比率に与える影響 |
 
 ## 基礎データ
 
@@ -32,9 +34,11 @@
 3. ご提案のままでは資金使途18.97億に対し調達15.00億で3.97億不足
 4. 正常化EBITDAベースではLBOローンの新規調達余力がほぼゼロ
 5. 債権割引取得＋DES、現物出資、ビジョン再出資の組み合わせで③の所要額は2.1〜2.6億まで圧縮できる
+6. 適正株式価値は現状水準で4〜5億、進行期織込みで10〜12億（5手法が収束）。20億はFY2028計画達成前提の値段
 
 ## 実行方法
 
 ```
-python3 calc.py && python3 su.py && python3 solve.py && python3 levers.py
+python3 calc.py && python3 su.py && python3 solve.py && python3 levers.py \
+  && python3 valuation.py && python3 val_impact.py
 ```
