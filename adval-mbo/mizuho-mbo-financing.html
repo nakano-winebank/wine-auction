@@ -1,0 +1,678 @@
+<title>あどばるMBO 資金調達設計</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+:root{
+  --paper:#F5F7F9; --surface:#FFFFFF; --surface-2:#EDF1F5;
+  --ink:#121822; --ink-2:#45566A; --ink-3:#6E7E90;
+  --rule:#DBE2EA; --rule-strong:#BFCAD6;
+  --accent:#6E2639; --accent-soft:#F4E7EB; --accent-ink:#6E2639;
+  --navy:#1D3557; --navy-soft:#E6ECF4;
+  --good:#2C6A4E; --good-soft:#E4F0EA;
+  --warn:#8F5510; --warn-soft:#F8EEDF;
+  --bad:#8A2E26;  --bad-soft:#F8E7E4;
+  --shadow:0 1px 2px rgba(18,24,34,.05), 0 8px 24px rgba(18,24,34,.05);
+  --display:"Zen Old Mincho",'Hiragino Mincho ProN','Yu Mincho',serif;
+  --body:"Noto Sans JP",'Hiragino Sans','Yu Gothic',system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,'SFMono-Regular',monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0F141B; --surface:#161D26; --surface-2:#1D2530;
+    --ink:#E9EEF4; --ink-2:#A6B4C2; --ink-3:#788593;
+    --rule:#293341; --rule-strong:#3A4655;
+    --accent:#D98BA0; --accent-soft:#2B1A20; --accent-ink:#E7A7B8;
+    --navy:#8FB3D9; --navy-soft:#182231;
+    --good:#6FBF95; --good-soft:#152520;
+    --warn:#D9A45B; --warn-soft:#262014;
+    --bad:#E08B80;  --bad-soft:#271816;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.28);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0F141B; --surface:#161D26; --surface-2:#1D2530;
+  --ink:#E9EEF4; --ink-2:#A6B4C2; --ink-3:#788593;
+  --rule:#293341; --rule-strong:#3A4655;
+  --accent:#D98BA0; --accent-soft:#2B1A20; --accent-ink:#E7A7B8;
+  --navy:#8FB3D9; --navy-soft:#182231;
+  --good:#6FBF95; --good-soft:#152520;
+  --warn:#D9A45B; --warn-soft:#262014;
+  --bad:#E08B80;  --bad-soft:#271816;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.28);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:var(--body); font-size:15px; line-height:1.85;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1060px; margin:0 auto; padding:0 24px 96px}
+
+/* ---------- masthead ---------- */
+.masthead{padding:56px 0 32px; border-bottom:2px solid var(--ink); margin-bottom:8px}
+.kicker{
+  font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--accent-ink); font-weight:600; margin:0 0 14px;
+}
+h1{
+  font-family:var(--display); font-weight:900; font-size:clamp(30px,5vw,46px);
+  line-height:1.25; letter-spacing:.01em; margin:0 0 16px; text-wrap:balance;
+}
+.standfirst{font-size:16px; color:var(--ink-2); margin:0 0 22px; max-width:62ch; line-height:1.9}
+.meta{
+  display:flex; flex-wrap:wrap; gap:8px 28px; font-family:var(--mono);
+  font-size:11.5px; color:var(--ink-3); letter-spacing:.03em; padding-bottom:4px;
+}
+.meta b{color:var(--ink-2); font-weight:500}
+
+/* ---------- sections ---------- */
+section{padding-top:52px}
+.sec-head{display:flex; align-items:baseline; gap:14px; margin-bottom:6px}
+.sec-num{
+  font-family:var(--mono); font-size:12px; font-weight:600; color:var(--accent-ink);
+  letter-spacing:.1em; flex:none; padding-top:2px;
+}
+h2{
+  font-family:var(--display); font-weight:700; font-size:clamp(21px,3vw,27px);
+  line-height:1.4; margin:0; letter-spacing:.01em; text-wrap:balance;
+}
+.sec-sub{color:var(--ink-2); font-size:14.5px; margin:4px 0 24px 34px; max-width:64ch}
+h3{
+  font-family:var(--body); font-weight:700; font-size:16px; margin:34px 0 12px;
+  letter-spacing:.01em; padding-left:11px; border-left:3px solid var(--accent);
+}
+h4{font-family:var(--body); font-weight:700; font-size:14px; margin:22px 0 8px; color:var(--ink-2)}
+p{margin:0 0 14px; max-width:66ch}
+strong{font-weight:700}
+em{font-style:normal; background:var(--accent-soft); color:var(--accent-ink); padding:1px 5px; border-radius:3px; font-weight:500}
+a{color:var(--accent-ink)}
+
+/* ---------- callouts ---------- */
+.call{
+  background:var(--surface); border:1px solid var(--rule); border-left:4px solid var(--accent);
+  border-radius:4px; padding:18px 22px; margin:22px 0; box-shadow:var(--shadow);
+}
+.call.warn{border-left-color:var(--warn); background:var(--warn-soft)}
+.call.good{border-left-color:var(--good); background:var(--good-soft)}
+.call.bad{border-left-color:var(--bad); background:var(--bad-soft)}
+.call p:last-child{margin-bottom:0}
+.call-label{
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase;
+  font-weight:600; color:var(--ink-3); display:block; margin-bottom:7px;
+}
+
+/* ---------- key figures ---------- */
+.figs{display:grid; grid-template-columns:repeat(auto-fit,minmax(158px,1fr)); gap:1px; background:var(--rule);
+  border:1px solid var(--rule); border-radius:4px; overflow:hidden; margin:26px 0}
+.fig{background:var(--surface); padding:16px 18px}
+.fig-l{font-size:11.5px; color:var(--ink-3); letter-spacing:.04em; margin-bottom:5px; line-height:1.5}
+.fig-v{font-family:var(--mono); font-size:22px; font-weight:600; letter-spacing:-.02em; line-height:1.25;
+  font-variant-numeric:tabular-nums}
+.fig-n{font-size:11.5px; color:var(--ink-3); margin-top:3px; line-height:1.5}
+.up{color:var(--good)} .down{color:var(--bad)} .neu{color:var(--ink)}
+
+/* ---------- tables ---------- */
+.scroll{overflow-x:auto; margin:22px 0; border:1px solid var(--rule); border-radius:4px; background:var(--surface)}
+table{border-collapse:collapse; width:100%; min-width:560px; font-size:13.5px}
+th,td{padding:10px 14px; text-align:left; border-bottom:1px solid var(--rule); vertical-align:top}
+thead th{
+  background:var(--surface-2); font-size:11px; letter-spacing:.07em; font-weight:700;
+  color:var(--ink-2); white-space:nowrap; border-bottom:1px solid var(--rule-strong);
+}
+tbody tr:last-child td{border-bottom:none}
+td.n,th.n{text-align:right; font-family:var(--mono); font-variant-numeric:tabular-nums; white-space:nowrap}
+tr.total td{font-weight:700; background:var(--surface-2); border-top:1px solid var(--rule-strong)}
+tr.hi td{background:var(--accent-soft)}
+caption{caption-side:top; text-align:left; padding:12px 14px 10px; font-size:12px; color:var(--ink-3);
+  border-bottom:1px solid var(--rule); background:var(--surface-2)}
+
+/* ---------- pills ---------- */
+.pill{display:inline-block; font-family:var(--mono); font-size:10.5px; font-weight:600; letter-spacing:.06em;
+  padding:2px 8px; border-radius:99px; white-space:nowrap; line-height:1.7}
+.p-good{background:var(--good-soft); color:var(--good)}
+.p-warn{background:var(--warn-soft); color:var(--warn)}
+.p-bad{background:var(--bad-soft); color:var(--bad)}
+.p-neu{background:var(--navy-soft); color:var(--navy)}
+
+/* ---------- idea cards ---------- */
+.ideas{display:grid; gap:12px; margin:20px 0}
+.idea{background:var(--surface); border:1px solid var(--rule); border-radius:4px; padding:16px 20px;
+  display:grid; grid-template-columns:auto 1fr; gap:4px 16px; align-items:start}
+.idea-tag{font-family:var(--mono); font-size:11px; font-weight:600; color:var(--accent-ink);
+  background:var(--accent-soft); border-radius:3px; padding:3px 8px; white-space:nowrap; grid-row:span 2}
+.idea-t{font-weight:700; font-size:14.5px; line-height:1.6}
+.idea-d{font-size:13.5px; color:var(--ink-2); line-height:1.8}
+.idea-d .amt{font-family:var(--mono); font-weight:600; color:var(--ink)}
+
+/* ---------- scheme diagram ---------- */
+.scheme{background:var(--surface); border:1px solid var(--rule); border-radius:4px; padding:26px 22px; margin:24px 0}
+.flow{display:grid; gap:14px}
+.flow-row{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px}
+.node{border:1px solid var(--rule-strong); border-radius:4px; padding:12px 14px; background:var(--paper)}
+.node.spc{border-color:var(--accent); border-width:2px; background:var(--accent-soft)}
+.node.tgt{border-color:var(--navy); border-width:2px; background:var(--navy-soft)}
+.node-t{font-weight:700; font-size:13px; margin-bottom:3px; line-height:1.5}
+.node-d{font-size:11.5px; color:var(--ink-2); line-height:1.65}
+.node-n{font-family:var(--mono); font-size:12.5px; font-weight:600; margin-top:5px; display:block}
+.arrow{text-align:center; color:var(--ink-3); font-size:15px; line-height:1; margin:-4px 0}
+
+/* ---------- checklist ---------- */
+ul.check{list-style:none; padding:0; margin:16px 0; display:grid; gap:10px}
+ul.check li{padding-left:26px; position:relative; font-size:14px; line-height:1.8; color:var(--ink-2)}
+ul.check li::before{content:"□"; position:absolute; left:2px; top:0; color:var(--accent); font-size:15px}
+ul.check li b{color:var(--ink); font-weight:700}
+ol.steps{padding-left:0; list-style:none; counter-reset:s; display:grid; gap:14px; margin:18px 0}
+ol.steps li{counter-increment:s; padding-left:38px; position:relative; font-size:14px; line-height:1.8}
+ol.steps li::before{
+  content:counter(s); position:absolute; left:0; top:2px; width:24px; height:24px; border-radius:50%;
+  background:var(--accent); color:#fff; font-family:var(--mono); font-size:11.5px; font-weight:600;
+  display:grid; place-items:center;
+}
+:root[data-theme="dark"] ol.steps li::before,
+:root:not([data-theme="light"]) ol.steps li::before{color:#1A1014}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]) ol.steps li::before{color:#fff}}
+ul.plain{padding-left:20px; margin:12px 0; display:grid; gap:7px}
+ul.plain li{font-size:14px; line-height:1.8; color:var(--ink-2)}
+ul.plain li b{color:var(--ink)}
+
+hr{border:none; border-top:1px solid var(--rule); margin:44px 0}
+footer{margin-top:64px; padding-top:22px; border-top:2px solid var(--ink); font-size:12.5px; color:var(--ink-3);
+  line-height:1.85}
+footer p{max-width:none}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+@media (max-width:560px){
+  .idea{grid-template-columns:1fr} .idea-tag{grid-row:auto; justify-self:start}
+  .wrap{padding:0 16px 72px}
+}
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <p class="kicker">みずほ銀行役員会食 ／ 事前分析メモ</p>
+  <h1>あどばるMBO<br>資金調達の設計と交渉余地</h1>
+  <p class="standfirst">
+    第10期（2026年5月期）計算書類の確定値をもとに、①ビジョン社からの50.1%取得を所与とした上で、
+    ③のデット／エクイティ調達をどう組むかを検証しました。結論として、<strong>③は「3〜5億をどこから借りるか」の問題ではなく、
+    ①②の設計を変えて必要額そのものを下げる問題</strong>です。
+  </p>
+  <div class="meta">
+    <span><b>対象</b> 株式会社あどばる（第10期／2026年5月期）</span>
+    <span><b>基礎資料</b> 第10回定時株主総会資料・株主名簿</span>
+    <span><b>作成</b> 2026年8月24日</span>
+  </div>
+</header>
+
+<!-- ============================================================ -->
+<section>
+  <div class="sec-head"><span class="sec-num">01</span><h2>先に結論</h2></div>
+
+  <div class="call">
+    <span class="call-label">結論</span>
+    <p><strong>1. ③で3〜5億を追加調達する前に、①②の組み方で必要額が6億円下がります。</strong>
+    ビジョン借入7.9億を「現金で全額返済」せず債権を割り引いて譲り受けDESに回すこと、
+    そして中野様の65,000株を現金化せずSPCへ現物出資（ロールオーバー）することの2点だけで、
+    Day1の現金需要は18.97億→13.09億になります。</p>
+    <p><strong>2. 一方で、20億円評価は現時点の実績では銀行審査を通りません。</strong>
+    第10期の営業利益は1.58億（前期1.77億から減益／自社計画2.18億に対し▲27.5%）。
+    ここからビジョンへの出向コスト付替え年1.0〜1.5億を正常化すると、EBITDAは1.2億前後まで落ちます。
+    株式価値20億はEV31.2億＝正常化EBITDAの25倍で、LBOローンの前提になりません。</p>
+    <p><strong>3. みずほには「3〜5億貸してください」ではなく、3つの機能を頼むのが正解です。</strong>
+    ①みずほキャピタルパートナーズ等グループのエクイティ機能の紹介、②経営者保証ガイドラインに基づく現在の連帯保証の解除、
+    ③債務超過解消を停止条件としたLBOの与信感の提示。融資単体では出せる金額が構造的に足りません。</p>
+  </div>
+
+  <div class="figs">
+    <div class="fig"><div class="fig-l">第10期 売上高</div><div class="fig-v up">21.80<span style="font-size:13px">億</span></div><div class="fig-n">前期比 +18.8%</div></div>
+    <div class="fig"><div class="fig-l">営業利益</div><div class="fig-v down">1.58<span style="font-size:13px">億</span></div><div class="fig-n">前期1.77億から減益</div></div>
+    <div class="fig"><div class="fig-l">EBITDA（実績）</div><div class="fig-v neu">2.23<span style="font-size:13px">億</span></div><div class="fig-n">減価償却 約0.65億</div></div>
+    <div class="fig"><div class="fig-l">純資産</div><div class="fig-v down">△4.09<span style="font-size:13px">億</span></div><div class="fig-n">債務超過</div></div>
+    <div class="fig"><div class="fig-l">有利子負債</div><div class="fig-v down">11.57<span style="font-size:13px">億</span></div><div class="fig-n">うちビジョン 7.90億</div></div>
+    <div class="fig"><div class="fig-l">現預金</div><div class="fig-v down">0.40<span style="font-size:13px">億</span></div><div class="fig-n">Net Debt/EBITDA 5.0倍</div></div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section>
+  <div class="sec-head"><span class="sec-num">02</span><h2>まず、前提の数字を3つ訂正させてください</h2></div>
+  <p class="sec-sub">いただいた前提と、第10期の確定計算書類との間に差があります。交渉前に握り直しておくべき点です。</p>
+
+  <h3>① ビジョン借入は「約6億」ではなく 7.90億</h3>
+  <p>第10期事業報告の主要な借入先に <strong>株式会社ビジョン 790百万円</strong> と明記されています。
+  お考えの約6億との差 <em>1.9億</em> は、そのまま調達計画の穴になります。
+  期中に一部返済された、あるいは劣後部分を除いた数字を見ておられる可能性があるので、
+  ビジョン側と<strong>基準日を決めて残高を書面で確認</strong>してください。</p>
+
+  <div class="scroll">
+    <table>
+      <caption>第10期末（2026年5月31日）有利子負債の内訳</caption>
+      <thead><tr><th>借入先</th><th class="n">残高</th><th>位置づけ</th></tr></thead>
+      <tbody>
+        <tr class="hi"><td>株式会社ビジョン</td><td class="n">7.90億</td><td>親会社ローン。MBOで処理が必要な本丸</td></tr>
+        <tr><td>日本政策金融公庫</td><td class="n">2.24億</td><td>据置交渉・資本性劣後ローンへの転換余地あり</td></tr>
+        <tr><td>武蔵野銀行 武蔵浦和支店</td><td class="n">1.36億</td><td>協調融資の相手候補</td></tr>
+        <tr><td>十六銀行 大垣支店</td><td class="n">0.06億</td><td>—</td></tr>
+        <tr><td>大垣共立銀行 東京支店</td><td class="n">0.01億</td><td>—</td></tr>
+        <tr class="total"><td>合計</td><td class="n">11.57億</td><td>現預金0.40億控除後のネットデット 11.17億</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>② 「50.1%」の正体は ビジョン94,500株 + BOS 2,000株</h3>
+  <p>ビジョン単独では49.06%で、過半に届きません。BOS（ビジョン系）の2,000株を合わせて
+  <strong>96,500株ちょうど＝50.10%</strong>。ご提案①の数字はここに一致します。
+  つまり①は<strong>2社から買う取引</strong>であり、BOS分の売主同意も停止条件に入れる必要があります。</p>
+
+  <div class="scroll">
+    <table>
+      <caption>株主構成（潜在前・発行済192,616株）／ 20億円評価＝10,383円/株</caption>
+      <thead><tr><th>株主</th><th class="n">株数</th><th class="n">比率</th><th class="n">20億評価額</th><th>本件での位置</th></tr></thead>
+      <tbody>
+        <tr class="hi"><td>株式会社ビジョン（佐野健一）</td><td class="n">94,500</td><td class="n">49.06%</td><td class="n">9.81億</td><td>①の売主</td></tr>
+        <tr class="hi"><td>株式会社BOS</td><td class="n">2,000</td><td class="n">1.04%</td><td class="n">0.21億</td><td>①の売主（50.1%到達に必須）</td></tr>
+        <tr><td>中野 邦人</td><td class="n">65,000</td><td class="n">33.75%</td><td class="n">6.75億</td><td>現物出資の原資（＋SO 9,000株）</td></tr>
+        <tr><td>株式会社エアトリ</td><td class="n">16,116</td><td class="n">8.37%</td><td class="n">1.67億</td><td>買取 or ロール選択制</td></tr>
+        <tr><td>KUMAアセットマネジメント</td><td class="n">6,300</td><td class="n">3.27%</td><td class="n">0.65億</td><td>同上</td></tr>
+        <tr><td>フィル・カンパニー</td><td class="n">3,000</td><td class="n">1.56%</td><td class="n">0.31億</td><td>同上</td></tr>
+        <tr><td>ベクトル</td><td class="n">3,000</td><td class="n">1.56%</td><td class="n">0.31億</td><td>同上</td></tr>
+        <tr><td>アンビション・ベンチャーズ</td><td class="n">2,700</td><td class="n">1.40%</td><td class="n">0.28億</td><td>同上</td></tr>
+        <tr class="total"><td>合計</td><td class="n">192,616</td><td class="n">100.0%</td><td class="n">20.00億</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>③ 第10期は自社計画に対して未達。ここが銀行審査の争点になります</h3>
+  <p>2026年3月のMBO資料でFY2026計画は売上24.10億・営業利益2.18億でした。
+  実績は<strong>売上21.80億（▲9.5%）・営業利益1.58億（▲27.5%）</strong>。
+  売上は前期比+18.8%と伸びている一方、営業利益は前期1.77億から下がっています。
+  銀行は「直近期に自社計画を2割以上外した会社の3か年計画」をそのままは見ません。
+  FY2027以降の計画は<strong>作り直して持ち込む</strong>ことを強くお勧めします。</p>
+
+  <div class="call warn">
+    <span class="call-label">正常収益力の論点</span>
+    <p>ビジョンへの出向によるコスト付替え（年1.0〜1.5億）はMBO後に消えます。これを戻した正常収益力は次の通りです。
+    スペースマーケットのLOIは付替え継続を織り込んでいたとのことですが、<strong>MBOでは織り込めません</strong>。買い手が親会社ではなくなるからです。</p>
+  </div>
+
+  <div class="scroll">
+    <table>
+      <thead><tr><th>前提</th><th class="n">営業利益</th><th class="n">EBITDA</th><th class="n">Net Debt/EBITDA</th><th class="n">EV31.2億の倍率</th></tr></thead>
+      <tbody>
+        <tr><td>第10期 実績のまま</td><td class="n">1.58億</td><td class="n">2.23億</td><td class="n">5.0倍</td><td class="n">14.0倍</td></tr>
+        <tr><td>付替え 1.00億を戻す</td><td class="n">0.58億</td><td class="n">1.23億</td><td class="n">9.1倍</td><td class="n">25.3倍</td></tr>
+        <tr><td>付替え 1.50億を戻す</td><td class="n">0.08億</td><td class="n">0.73億</td><td class="n">15.3倍</td><td class="n">42.6倍</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section>
+  <div class="sec-head"><span class="sec-num">03</span><h2>ご提案のままだと、3.97億足りません</h2></div>
+  <p class="sec-sub">①②③をいただいた条件どおりに積むと、資金使途18.97億に対して調達15.00億。差額はほぼ「ビジョン借入が6億ではなく7.9億だった」分と諸費用です。</p>
+
+  <div class="scroll">
+    <table>
+      <caption>シナリオA ─ ご提案のまま（20億評価・ビジョン借入全額現金返済）</caption>
+      <thead><tr><th>区分</th><th>項目</th><th class="n">金額</th></tr></thead>
+      <tbody>
+        <tr><td>資金使途</td><td>ビジョン+BOS株式 96,500株 @10,383円</td><td class="n">10.02億</td></tr>
+        <tr><td>資金使途</td><td>ビジョン借入 全額返済</td><td class="n">7.90億</td></tr>
+        <tr><td>資金使途</td><td>諸費用（DD・法務・税務・登録免許・アレンジ）</td><td class="n">0.45億</td></tr>
+        <tr><td>資金使途</td><td>運転資金バッファ（現預金0.40億では薄すぎ）</td><td class="n">0.60億</td></tr>
+        <tr class="total"><td></td><td>使途 合計</td><td class="n">18.97億</td></tr>
+        <tr><td>調達</td><td>② パートナー：ビジョン株買取資金</td><td class="n">6.00億</td></tr>
+        <tr><td>調達</td><td>② パートナー：第三者割当増資</td><td class="n">5.00億</td></tr>
+        <tr><td>調達</td><td>③ みずほ融資 or 中野ファンド</td><td class="n">4.00億</td></tr>
+        <tr class="total"><td></td><td>調達 合計</td><td class="n">15.00億</td></tr>
+        <tr class="hi"><td></td><td><strong>不足額</strong></td><td class="n"><strong>△3.97億</strong></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="call bad">
+    <span class="call-label">もっと大きな制約</span>
+    <p>不足3.97億以上に効くのが<strong>デットの天井</strong>です。LBOローンは実務上 総有利子負債／EBITDA で3.0〜4.0倍が上限。
+    既存銀行借入3.67億を引くと、みずほが新規で出せる金額は以下の通りで、<strong>正常化ベースだとほぼゼロ</strong>になります。</p>
+  </div>
+
+  <div class="scroll">
+    <table>
+      <caption>みずほが出せる新規デットの上限</caption>
+      <thead><tr><th>EBITDA前提</th><th class="n">3.0倍</th><th class="n">3.5倍</th><th class="n">4.0倍</th></tr></thead>
+      <tbody>
+        <tr><td>実績 2.23億</td><td class="n">3.02億</td><td class="n">4.13億</td><td class="n">5.25億</td></tr>
+        <tr><td>正常化 1.23億（付替え1.0億戻し）</td><td class="n">0.02億</td><td class="n">0.63億</td><td class="n">1.25億</td></tr>
+        <tr><td>正常化 0.73億（付替え1.5億戻し）</td><td class="n">—</td><td class="n">—</td><td class="n">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>つまり<strong>③を「みずほからの融資」で埋めきる設計は成立しません</strong>。
+  ③は「エクイティに近い資金をどう作るか」と読み替える必要があります。次章がその答えです。</p>
+</section>
+
+<!-- ============================================================ -->
+<section>
+  <div class="sec-head"><span class="sec-num">04</span><h2>③の代替アイデア ─ 12案</h2></div>
+  <p class="sec-sub">効果の大きい順に並べています。A群（必要額を減らす）だけで5.9億の圧縮が効き、これが最も確実です。</p>
+
+  <h3>A群｜必要額そのものを減らす ─ 最も効く</h3>
+  <div class="ideas">
+    <div class="idea">
+      <span class="idea-tag">A-1</span>
+      <div class="idea-t">ビジョン債権7.90億を「額面返済」ではなく「割引取得＋DES」に振り替える</div>
+      <div class="idea-d">SPCがビジョンの貸付債権を額面の70%＝<span class="amt">5.53億</span>で譲り受け、あどばるへDES（現物出資）。
+      現金支出が<span class="amt">2.37億</span>減り、同時に純資産が△4.09億→<span class="amt">+1.44億</span>となって<strong>債務超過が解消</strong>します。
+      有利子負債は11.57億→3.67億。ビジョンは「不良化しかねない子会社債権を確実に現金化できる」ので、額面固執より受け入れ余地があります。
+      債務消滅益2.37億は繰越利益剰余金△10.62億で吸収され、課税は生じない見込みです（要税理士確認）。</div>
+    </div>
+    <div class="idea">
+      <span class="idea-tag">A-2</span>
+      <div class="idea-t">株式代金の一部をセラーズノート（ビジョンへの分割払い）にする</div>
+      <div class="idea-d">10.02億のうち35%＝<span class="amt">3.51億</span>を3年・金利2%の売主ファイナンスに。Day1現金が同額減ります。
+      ビジョンにとっては「一括で安く」より「分割で高く」の方が総額が上がるので交渉しやすい。
+      あどばる株式への質権設定とエスクローで保全します。<strong>ただしノートは有利子負債として残るので、銀行のレバレッジ計算には効きません</strong>（下の注意参照）。</div>
+    </div>
+    <div class="idea">
+      <span class="idea-tag">A-3</span>
+      <div class="idea-t">買う株数を50.1%ではなく、支配に必要な最小限に絞る</div>
+      <div class="idea-d">中野様は既に33.75%をお持ちです。<strong>16.4%（31,501株）＝<span class="amt">3.27億</span>を買うだけで50.1%に到達</strong>します。
+      10.02億かけて買うのは、支配権ではなく「ビジョンをゼロにすること」への対価です。
+      佐野会長の「50億評価まで売りも買いもしない」という立場とも整合し、面子を保ったまま降りてもらえます。</div>
+    </div>
+    <div class="idea">
+      <span class="idea-tag">A-4</span>
+      <div class="idea-t">アーンアウトで「今の20億」を「将来の20億」に変える</div>
+      <div class="idea-d">前渡しは15億評価（<span class="amt">7.51億</span>）、FY2029に営業利益3.5億達成で追加<span class="amt">+2.50億</span>。
+      ビジョンの「50億の夢」を否定せず、達成時に報いる形にできます。Day1負担は2.51億圧縮。</div>
+    </div>
+    <div class="idea">
+      <span class="idea-tag">A-5</span>
+      <div class="idea-t">ビジョンにSPCへ再出資（ロールオーバー）してもらう</div>
+      <div class="idea-d">受取代金のうち<span class="amt">3.0億</span>をSPCに戻してもらうと、③で作るべき額が5.60億→<span class="amt">2.60億</span>に。
+      ビジョンは16.3%の株主としてアップサイドを持ち続けられ、「安く売らされた」という不満が消えます。
+      <strong>佐野会長の面子を立てながら支配権だけ移す、政治的に最も通しやすいカード</strong>です。</div>
+    </div>
+    <div class="idea">
+      <span class="idea-tag">A-6</span>
+      <div class="idea-t">既存少数株主16.15%は「現金Exit or ロール」の選択制にする</div>
+      <div class="idea-d">エアトリ等を全員現金で買うと3.23億必要ですが、半数がロールを選べば<span class="amt">1.6億</span>浮きます。
+      同一条件を全員に提示する形にしておけば、後から「安く仕組まれた」と言われる火種も潰せます。</div>
+    </div>
+  </div>
+
+  <h3>B群｜中野様側の自己資金を、現金を使わずに作る</h3>
+  <div class="ideas">
+    <div class="idea">
+      <span class="idea-tag">B-1</span>
+      <div class="idea-t">65,000株をSPCへ現物出資（ロールオーバー）── 最大の武器</div>
+      <div class="idea-d">20億評価なら<span class="amt">6.75億</span>相当の出資を、現金1円も使わずに実行できます。
+      ご提案のシナリオAではこれを使っていないため、持分を確保するために外部から余計に集める構造になっていました。
+      <strong>税務は要注意</strong>：SPCへの現物出資は原則として時価譲渡課税（現金が入らないのに課税）。
+      適格株式交換・株式移転など課税繰延スキームが使えるか、着手前に税理士の確認が必須です。</div>
+    </div>
+    <div class="idea">
+      <span class="idea-tag">B-2</span>
+      <div class="idea-t">WineBankは売らず、一部売却か株式担保ローンで</div>
+      <div class="idea-d">複数の上場企業から評価を得ている成長資産を全部手放すのは、資産の逆転取引です。
+      20〜30%のマイナー売却、または株式を担保にした個人融資で<span class="amt">2〜3億</span>を作る方が合理的。
+      ライフワークを守りながら原資が作れます。</div>
+    </div>
+    <div class="idea">
+      <span class="idea-tag">B-3</span>
+      <div class="idea-t">中野様保有のストックオプション9,000株の扱いを整理</div>
+      <div class="idea-d">潜在込みでは36.70%。行使して現物出資に乗せるか、SO放棄を交渉の「土産」に使うかで、
+      持分比率と交渉カードの両方が動きます。<strong>放棄は無償で渡さず、必ず何かと交換</strong>してください。</div>
+    </div>
+  </div>
+
+  <h3>C群｜あどばる自身のバランスシートから作る</h3>
+  <p>買収前の会社資産は買収資金に直接使えません（財源規制・利益相反）。
+  みずほにブリッジで出してもらい、<strong>クロージング後に下記で返済する</strong>設計にします。</p>
+  <div class="ideas">
+    <div class="idea">
+      <span class="idea-tag">C-1</span>
+      <div class="idea-t">差入保証金2.20億の流動化</div>
+      <div class="idea-d">敷金返還請求権の譲渡・信託で <span class="amt">1.32〜1.65億</span>。貸会議室業は保証金が積み上がる業態で、ここが一番眠っています。</div>
+    </div>
+    <div class="idea">
+      <span class="idea-tag">C-2</span>
+      <div class="idea-t">売掛金1.72億のABL／ファクタリング</div>
+      <div class="idea-d"><span class="amt">0.86〜1.20億</span>。法人向け貸会議室の売掛は質が良く、担保適格性が高い。</div>
+    </div>
+    <div class="idea">
+      <span class="idea-tag">C-3</span>
+      <div class="idea-t">販売用不動産1.13億の売却</div>
+      <div class="idea-d"><span class="amt">0.90〜1.13億</span>。不動産／M&A事業部の在庫であり、MBO直前の現金化と相性が良い。</div>
+    </div>
+    <div class="idea">
+      <span class="idea-tag">C-4</span>
+      <div class="idea-t">造作設備のセール&リースバック</div>
+      <div class="idea-d">建物附属設備 簿価4.75億の30〜50%で <span class="amt">1.43〜2.38億</span>。
+      グレイドパーク渋谷・表参道の造作が対象。<strong>ただし固定費が増えEBITDAを圧迫する</strong>ので、レバレッジ制約下では最後の手段。</div>
+    </div>
+  </div>
+  <p><strong>C群合計 4.51〜6.36億</strong>。③でお考えの3〜5億は、外部から借りずにここで作れます。</p>
+
+  <h3>D群｜調達先を増やす</h3>
+  <div class="ideas">
+    <div class="idea">
+      <span class="idea-tag">D-1</span>
+      <div class="idea-t">みずほキャピタルパートナーズ／みずほ成長支援ファンド</div>
+      <div class="idea-d"><strong>会食で最も価値がある依頼</strong>。銀行の融資枠は上で見たとおり天井がありますが、
+      グループのPE・ファンド機能なら優先株やメザニンで<span class="amt">3〜5億</span>のリスクマネーが出せます。
+      加えてみずほ証券のM&Aアドバイザリー、みずほ信託の株価算定まで並べれば、
+      <strong>グループ全体で落ちるフィーが大きい案件</strong>になり、銀行側が動く理由ができます。</div>
+    </div>
+    <div class="idea">
+      <span class="idea-tag">D-2</span>
+      <div class="idea-t">日本政策金融公庫の資本性劣後ローン</div>
+      <div class="idea-d">公庫は既に2.24億の債権者です。資本性ローンは金融検査上「資本」とみなされるため、
+      債務超過解消と民間行の融資判断の両方に効きます。<strong>MBO資金への充当可否は制度要件次第</strong>なので、
+      「既存借入の借換＋事業展開資金」として早めに相談してください。</div>
+    </div>
+    <div class="idea">
+      <span class="idea-tag">D-3</span>
+      <div class="idea-t">メザニンファンド（優先株・劣後ローン）</div>
+      <div class="idea-d">シニアで届かない部分を <span class="amt">2〜4億</span> 埋める層。金利は高い（8〜12%目線）ものの、
+      <strong>議決権を渡さずに資金だけ取れる</strong>ので、40%枠を守ったまま調達できます。</div>
+    </div>
+    <div class="idea">
+      <span class="idea-tag">D-4</span>
+      <div class="idea-t">武蔵野銀行との協調融資</div>
+      <div class="idea-d">既に1.36億の取引があり、みずほ単独より与信枠を広げられます。みずほをアレンジャーに立てる形が自然。</div>
+    </div>
+  </div>
+
+  <h3>E群｜「中野ファンド」の器をどう作るか</h3>
+  <div class="call">
+    <span class="call-label">実務上の推奨</span>
+    <p><strong>適格機関投資家等特例業務（金商法63条）</strong>で組成するのが最も速く安価です。
+    投資運用業・第二種金商業の登録が不要で、届出のみ。適格機関投資家1名以上＋一般投資家49名以下という枠に収まります。
+    ただし2016年改正で出資者要件が厳格化されており、<strong>上場会社・資本金5,000万円超の法人・投資性金融資産1億円以上の個人</strong>等に限られます。
+    エアトリ、KUMA、ベクトル、フィル・カンパニーといった既存株主、WineBank／アピシウス／フジタコーポレーションの関係者は、
+    多くがこの要件を満たすはずです。</p>
+    <p style="margin-top:10px"><strong>設計の肝は議決権です。</strong>GP（中野様の資産管理会社）に議決権を集約する契約にしておけば、
+    出資額が2億でもSPCに対する影響力は出資比率以上になります。ここを設計しないと、
+    「ファンドに入ってもらったが意思決定が遅くなる」という、今と同じ問題を作ります。</p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section>
+  <div class="sec-head"><span class="sec-num">05</span><h2>推奨スキーム</h2></div>
+  <p class="sec-sub">①の20億円評価を所与としたまま成立する形を、A-1・A-2・B-1・C群・D-1の組み合わせで作ります。</p>
+
+  <div class="scheme">
+    <div class="flow">
+      <div class="flow-row">
+        <div class="node"><div class="node-t">中野 邦人</div><div class="node-d">あどばる65,000株を現物出資</div><span class="node-n">6.75億相当</span></div>
+        <div class="node"><div class="node-t">パートナー</div><div class="node-d">ヒューリック／東京建物等　現金出資</div><span class="node-n">6.00億</span></div>
+        <div class="node"><div class="node-t">中野ファンド</div><div class="node-d">金商法63条特例業務・GPに議決権集約</div><span class="node-n">2.10億</span></div>
+        <div class="node"><div class="node-t">みずほ銀行</div><div class="node-d">LBOタームローン＋ブリッジ</div><span class="node-n">3.50億＋1.50億</span></div>
+      </div>
+      <div class="arrow">▼</div>
+      <div class="flow-row">
+        <div class="node spc"><div class="node-t">買収SPC（中野HD）</div>
+          <div class="node-d">Day1所要 13.09億 ／ 出資構成：中野45.5%・パートナー40.4%・ファンド14.1%</div>
+          <span class="node-n">中野陣営 59.6%</span></div>
+      </div>
+      <div class="arrow">▼</div>
+      <div class="flow-row">
+        <div class="node"><div class="node-t">ビジョン＋BOSへ</div><div class="node-d">株式96,500株の代金（現金6.51億＋セラーズノート3.51億）</div><span class="node-n">10.02億</span></div>
+        <div class="node"><div class="node-t">ビジョンへ</div><div class="node-d">貸付債権7.90億を額面70%で譲受</div><span class="node-n">5.53億</span></div>
+      </div>
+      <div class="arrow">▼</div>
+      <div class="flow-row">
+        <div class="node tgt"><div class="node-t">株式会社あどばる</div>
+          <div class="node-d">譲受債権をDES → 純資産 △4.09億 → +1.44億（債務超過解消）。ビジョン借入7.90億が消滅</div>
+          <span class="node-n">SPC持分 83.85%</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scroll">
+    <table>
+      <caption>案の比較 ─ パートナー6.0億・みずほTL3.5億・ブリッジ1.5億を所与としたとき、③で作るべき額</caption>
+      <thead>
+        <tr><th>案</th><th class="n">Day1所要</th><th class="n">③ファンド</th><th class="n">中野</th><th class="n">パートナー</th><th class="n">中野陣営計</th><th class="n">Post負債</th><th class="n">正常化倍率</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>20億・債権額面・ノートなし</td><td class="n">18.97億</td><td class="n">7.97億</td><td class="n">32.6%</td><td class="n">29.0%</td><td class="n">71.0%</td><td class="n">7.17億</td><td class="n">5.8倍</td></tr>
+        <tr class="hi"><td><strong>20億・債権70%・ノート35%</strong></td><td class="n">13.09億</td><td class="n">2.09億</td><td class="n">45.5%</td><td class="n">40.4%</td><td class="n">59.6%</td><td class="n">10.68億</td><td class="n">8.7倍</td></tr>
+        <tr><td>20億・債権70%・ノートなし</td><td class="n">16.60億</td><td class="n">5.60億</td><td class="n">36.8%</td><td class="n">32.7%</td><td class="n">67.3%</td><td class="n">7.17億</td><td class="n">5.8倍</td></tr>
+        <tr><td>18億・債権70%・ノート35%</td><td class="n">12.44億</td><td class="n">1.44億</td><td class="n">44.9%</td><td class="n">44.4%</td><td class="n">55.6%</td><td class="n">10.33億</td><td class="n">8.4倍</td></tr>
+        <tr><td>15億・債権70%・ノートなし</td><td class="n">14.09億</td><td class="n">3.09億</td><td class="n">35.8%</td><td class="n">42.4%</td><td class="n">57.6%</td><td class="n">7.17億</td><td class="n">5.8倍</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="call good">
+    <span class="call-label">ご希望との一致</span>
+    <p>ハイライト行が<strong>ご希望（パートナー40%程度、中野＋ファンドで45〜55%）にほぼ完全に一致</strong>します。
+    中野様単独45.5%、パートナー40.4%、ファンド14.1%、中野陣営合計59.6%。
+    そしてこのとき③で作るべき額は<strong>4億でも5億でもなく2.09億</strong>です。</p>
+  </div>
+
+  <div class="call warn">
+    <span class="call-label">ただし、ここにトレードオフがあります</span>
+    <p>セラーズノート3.51億は<strong>有利子負債として残ります</strong>。だからDay1の現金は楽になっても、
+    Post-MBOの総負債は10.68億＝正常化EBITDA比8.7倍になり、<strong>みずほのコベナンツには収まりません</strong>。
+    表の「ノートなし」行は負債7.17億＝5.8倍まで下がりますが、その分③で5.60億を作る必要があります。</p>
+    <p style="margin-top:10px"><strong>この二律背反を解く鍵がA-5（ビジョンの再出資）です。</strong>
+    ノートを使わず、代わりにビジョンに3.0億をSPCへ再出資してもらえば、
+    ③は2.60億で済み、Post負債は7.17億に留まります。ビジョンは16.3%の株主として残り、中野陣営は51.0%。
+    <strong>ビジョン交渉・銀行審査・持分比率の3つが同時に成立する唯一の組み合わせ</strong>です。</p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section>
+  <div class="sec-head"><span class="sec-num">06</span><h2>デット／エクイティの条件設計</h2></div>
+
+  <h3>みずほに求めるLBOローンの想定ターム</h3>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>項目</th><th>条件</th><th>備考</th></tr></thead>
+      <tbody>
+        <tr><td>金額</td><td>タームローン 3.5億 ＋ ブリッジ 1.5億</td><td>ブリッジはC群の資産流動化で12か月以内に返済</td></tr>
+        <tr><td>期間</td><td>TL 7年（元金均等）／ ブリッジ 1年</td><td>据置6か月</td></tr>
+        <tr><td>金利</td><td>TIBOR + 2.0〜3.0%</td><td>債務超過解消前提。解消未達なら+1.0%のステップアップ</td></tr>
+        <tr><td>担保</td><td>SPC保有のあどばる株式全株質権／あどばる資産の根抵当・ABL／預金担保</td><td>—</td></tr>
+        <tr><td>保証</td><td>SPCの連帯保証。<strong>中野様個人保証は経営者保証GLに基づき解除を要求</strong></td><td>下記参照</td></tr>
+        <tr><td>財務コベナンツ</td><td>Net Debt/EBITDA 初年度4.5倍以下 → 毎年0.5倍ステップダウン／DSCR 1.2倍以上／純資産維持</td><td>正常化EBITDAで組むこと</td></tr>
+        <tr><td>期中弁済</td><td>キャッシュスイープ（余剰FCFの50〜75%）</td><td>—</td></tr>
+        <tr><td>停止条件</td><td>DES実行による債務超過解消／ビジョン借入の消滅／BOS株の取得</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="call">
+    <span class="call-label">最重要 ─ 連帯保証</span>
+    <p>現在、中野様は会社債務の連帯保証人であり、8月の株主総会以降も代表取締役会長として残られます。
+    <strong>ダウンサイドは個人で負い続け、アップサイドの支配権はない</strong>という状態です。
+    経営者保証ガイドラインおよび2023年以降の経営者保証改革プログラムでは、
+    事業承継時の二重保証は原則禁止とされています。
+    <strong>「MBOで保証を外す（またはSPC／パートナー保証へ切り替える）」ことをクロージング条件に明記してください。</strong>
+    これは本件で最も見落とされがちな、しかし最大の実利です。</p>
+  </div>
+
+  <h3>パートナー（ヒューリック／東京建物等）へのエクイティ条件</h3>
+  <ul class="plain">
+    <li><b>種類株式で入ってもらう。</b>配当優先・残余財産優先を付ける代わりに、議決権は制限する。経済持分40%・議決権20%台に抑えるのが理想です。</li>
+    <li><b>業績連動ラチェット。</b>計画達成時に中野様の持分が増える条項を入れる。パートナーのダウンサイドを守りつつ、経営者のインセンティブを担保します。</li>
+    <li><b>コンソーシアムを組まない。</b>初期の相見積もりまでは複数社を当てて構いませんが、組成は1社に絞ってください。3社連合は意思決定が遅く、ディールが死にます。</li>
+    <li><b>順番はヒューリック → 東京建物 → 野村不動産。</b>野村不動産はH1T等で自前のフレキシブルオフィス事業を持つため、パートナーではなく競合買い手になり得ます。当てるなら最後に。</li>
+    <li><b>TKP・スペースマーケットは今回のパートナーには不適です。</b>「100%買って自分で経営する」買い手であり、経営権を取り戻すという目的と逆を向きます。</li>
+  </ul>
+</section>
+
+<!-- ============================================================ -->
+<section>
+  <div class="sec-head"><span class="sec-num">07</span><h2>会食で何を頼むか</h2></div>
+  <p class="sec-sub">銀行役員との会食は融資の申込の場ではありません。<strong>何を持ち帰ってもらうか</strong>を設計してください。3つに絞ることをお勧めします。</p>
+
+  <ol class="steps">
+    <li><strong>グループのエクイティ機能につないでもらう。</strong>
+    「融資でいくら出ますか」ではなく「みずほキャピタルパートナーズさん、みずほ証券のM&Aチームをご紹介いただけませんか」。
+    銀行員にとって、審査を通す話より紹介する話の方がはるかに動きやすく、しかもグループ収益は大きくなります。</li>
+
+    <li><strong>連帯保証の扱いを確認する。</strong>
+    「現在、私が個人保証をしています。MBOで資本構成を正常化した場合、経営者保証ガイドラインに沿って外していただけますか」。
+    これは融資条件の話であると同時に、<strong>中野様がこの案件を進める理由そのもの</strong>です。</li>
+
+    <li><strong>与信感をレンジで聞く。</strong>
+    「DESで債務超過を解消し、ビジョン借入を消した後のBSであれば、どのくらいの水準までお考えいただけますか」。
+    具体的な数字を持ち帰らせるのではなく、<strong>倍率の感覚</strong>を引き出す。ここで返ってくる倍率が、ビジョンとの価格交渉の上限を決めます。</li>
+  </ol>
+
+  <div class="call">
+    <span class="call-label">持っていく資料</span>
+    <p>第10期の確定計算書類（債務超過であることを隠さない）、株主名簿、そして<strong>DES後のプロフォーマBS 1枚</strong>。
+    「今は債務超過ですが、このスキームで純資産+1.44億になります」という1枚があるかないかで、会話の質がまったく変わります。
+    事業計画は、第10期が未達だった事実を踏まえて作り直したものを。前の計画のまま持っていくと信用を落とします。</p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section>
+  <div class="sec-head"><span class="sec-num">08</span><h2>着手前に潰すべき論点</h2></div>
+
+  <ul class="check">
+    <li><b>ビジョン借入の正確な残高</b>を基準日付きで書面確認する（7.90億 vs ご認識の約6億／差1.9億）。</li>
+    <li><b>出向コスト付替えの金額と、MBO後の人員の帰趨</b>を確定する。正常収益力の計算がここで決まり、銀行の与信枠も決まります。</li>
+    <li><b>繰越欠損金10.62億が使えるか</b>を税理士に確認する。MBOで支配関係が変わると欠損金の使用制限（法人税法57条の2）に触れ、DESの債務消滅益2.37億が課税される恐れがあります。<strong>スキームの成否を左右する最重要論点です。</strong></li>
+    <li><b>現物出資の課税繰延</b>が使えるか確認する。現金が入らないのに譲渡益課税が発生すると、B-1が成立しません。</li>
+    <li><b>BOS 2,000株の売主同意</b>を取る。これがないと50.1%に届きません。</li>
+    <li><b>独立した株価算定書</b>を取得する（みずほ信託等）。会長として売り手側に立ちながら買い手側SPCを組成するのは利益相反の典型です。</li>
+    <li><b>少数株主全員への同一条件提示</b>を手続きとして踏む。エアトリ等から「安く仕組まれた」と言われる火種を先に消しておきます。</li>
+    <li><b>スペースマーケットのLOIが Equity Value か EV か</b>を再確認する。EV基準なら、ネットデット11.17億を引いた株式価値は7〜9億にしかならず、20億の根拠が崩れます。<strong>ここは交渉の最強のカードにも、最大の弱点にもなります。</strong></li>
+  </ul>
+
+  <div class="call warn">
+    <span class="call-label">率直に申し上げると</span>
+    <p>①の20億円評価は、第10期の実績が出た今、<strong>市場価格としては説明が難しい水準</strong>です。
+    EV31.2億は実績EBITDAの14.0倍、正常化EBITDAの25.3倍。同業のマルチプルからも、銀行の融資判断からも外れます。
+    それでも20億で進めるのであれば、<strong>本メモの推奨どおり「現金で払う額」と「評価額」を分離する</strong>——
+    債権割引・セラーズノート・アーンアウト・ビジョン再出資を組み合わせ、
+    ビジョンの帳簿上の売却益は20億評価で確保しつつ、こちらのDay1現金は13億に抑える——のが唯一の道です。
+    ビジョンに「20億という数字」を渡し、こちらは「支配権とキャッシュフロー」を取る。
+    交渉としては、それで十分に勝ちだと思います。</p>
+  </div>
+</section>
+
+<footer>
+  <p><strong>出典</strong>｜株式会社あどばる 第10回定時株主総会招集ご通知・第10期事業報告及び計算書類（2025年6月1日〜2026年5月31日）、
+  株式会社あどばる株主名簿（潜在前・発行済192,616株）、ADVAL_MBO_Equity_Pitch（2026年3月・減価償却費および FY2026-28 計画値）。</p>
+  <p style="margin-top:10px">EBITDAは営業利益＋減価償却費0.65億で算出。正常化EBITDAはビジョンへの出向コスト付替え年1.0億を戻した値。
+  1株価格は潜在株式を考慮しない192,616株ベース。金額は特記なき限り円。</p>
+  <p style="margin-top:10px">本メモは社内検討用の分析であり、法務・税務・会計上の助言ではありません。
+  特にDESに伴う債務消滅益の課税、繰越欠損金の使用制限、現物出資の課税繰延については、実行前に税理士・弁護士の確認を要します。</p>
+</footer>
+
+</div>
