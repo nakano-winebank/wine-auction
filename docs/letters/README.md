@@ -1,33 +1,27 @@
 # 書面（レター）
 
-## succession-letter-akarenga-ptitsale
-【赤れんが テラス】「P'tit sale'」に係る契約上の地位承継（株式会社ワイン・ラ・ターブル → 株式会社バリューキッチン）を
-三井不動産商業マネジメント株式会社へ申し入れる書面。A4 1枚、下部にグループ関係図を掲載。
+## ファイル名の規則
 
-- `succession-letter-akarenga-ptitsale.html` … 原稿（編集用）
-- `succession-letter-akarenga-ptitsale.pdf` … 提出用PDF
+納品用PDFは `YYYYMMDD_宛先_内容.pdf`（日付＝書面の発信日）で保存する。
+改訂したら新しい日付で書き出し、同日中の作り直しは `_r2` を付ける。
+編集用のHTML原稿は日付なしの固定名のままとし、版は git 履歴で管理する。
+詳細は `.claude/skills/deliverable-naming/SKILL.md` を参照。
 
-### PDFの再生成
+## 納品物と原稿の対応
+
+| 納品PDF | 原稿HTML | 内容 |
+| --- | --- | --- |
+| `20260825_三井不動産商業マネジメント様_赤れんがテラス_地位承継依頼書.pdf` | `succession-letter-akarenga-ptitsale.html` | 赤れんが テラス「P'tit sale'」の営業と出店に関する契約について、賃借人たる地位をワイン・ラ・ターブル → バリューキッチンへ承継する申入れ |
+| `20260825_北海道エアポート様_新千歳空港_店舗運営承継依頼書.pdf` | `operation-change-letter-shinchitose-gears.html` | 新千歳空港「ジアス ルーク＆タリー」について、賃借人はWineBankのまま、店舗運営会社をワイン・ラ・ターブル → バリューキッチンへ承継する報告・承認依頼（2026年6月1日以降の委託の遡及承認を含む） |
+| `20260825_大江戸ホールディングス様_日本橋大江戸ビル_地位承継依頼書.pdf` | `succession-letter-ohedo-chronos.html` | 日本橋大江戸ビル屋上の賃貸借契約について、賃借人たる地位をクロノス → エルネットへ承継する承諾依頼 |
+
+いずれもA4 1枚、下部にグループ関係図（中野邦人を主要株主とする兄弟会社の関係）を掲載。
+
+## PDFの再生成
+
 ```
 chromium --headless --disable-gpu --no-sandbox --no-pdf-header-footer \
-  --print-to-pdf=succession-letter-akarenga-ptitsale.pdf \
-  succession-letter-akarenga-ptitsale.html
+  --print-to-pdf="20260825_宛先_内容.pdf" 原稿ファイル.html
 ```
 
-## operation-change-letter-shinchitose-gears
-新千歳空港「ジアス ルーク＆タリー」（賃貸人：北海道エアポート株式会社）宛。
-賃借人は株式会社WineBankのまま、店舗運営を担うグループ会社をワイン・ラ・ターブル →
-バリューキッチンへ承継することの報告・承認依頼。A4 1枚、下部にグループ関係図を掲載。
-
-- `operation-change-letter-shinchitose-gears.html` … 原稿（編集用）
-- `operation-change-letter-shinchitose-gears.pdf` … 提出用PDF
-
-PDFの再生成方法は上記と同じ（ファイル名を置き換え）。
-
-## succession-letter-ohedo-chronos
-日本橋大江戸ビル 屋上（賃貸人：株式会社大江戸ホールディングス）宛。
-賃借人たる地位を株式会社クロノス → 株式会社エルネットへ承継することの承諾依頼。
-A4 1枚、下部にグループ関係図を掲載。
-
-- `succession-letter-ohedo-chronos.html` … 原稿（編集用）
-- `succession-letter-ohedo-chronos.pdf` … 提出用PDF
+このリポジトリでは `/opt/pw-browsers/chromium-1194/chrome-linux/chrome` を使用。
