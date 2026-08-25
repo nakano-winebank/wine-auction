@@ -23,3 +23,11 @@ chromium --headless --disable-gpu --no-sandbox --no-pdf-header-footer \
 - `operation-change-letter-shinchitose-gears.pdf` … 提出用PDF
 
 PDFの再生成方法は上記と同じ（ファイル名を置き換え）。
+
+## succession-letter-ohedo-chronos
+日本橋大江戸ビル 屋上（賃貸人：株式会社大江戸ホールディングス）宛。
+賃借人たる地位を株式会社クロノス → 株式会社エルネットへ承継することの承諾依頼。
+A4 1枚、下部にグループ関係図を掲載。
+
+- `succession-letter-ohedo-chronos.html` … 原稿（編集用）
+- `succession-letter-ohedo-chronos.pdf` … 提出用PDF
