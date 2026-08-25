@@ -13,3 +13,13 @@ chromium --headless --disable-gpu --no-sandbox --no-pdf-header-footer \
   --print-to-pdf=succession-letter-akarenga-ptitsale.pdf \
   succession-letter-akarenga-ptitsale.html
 ```
+
+## operation-change-letter-shinchitose-gears
+新千歳空港「ジアス ルーク＆タリー」（賃貸人：北海道エアポート株式会社）宛。
+賃借人は株式会社WineBankのまま、店舗運営を担うグループ会社をワイン・ラ・ターブル →
+バリューキッチンへ承継することの報告・承認依頼。A4 1枚、下部にグループ関係図を掲載。
+
+- `operation-change-letter-shinchitose-gears.html` … 原稿（編集用）
+- `operation-change-letter-shinchitose-gears.pdf` … 提出用PDF
+
+PDFの再生成方法は上記と同じ（ファイル名を置き換え）。
