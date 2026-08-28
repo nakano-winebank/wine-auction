@@ -5,6 +5,12 @@
  *
  * 数字や日程が動いたらこのファイルを直して再実行する。
  * ハウススタイルとガント描画は .claude/skills/winebank-deck/ 側に置いてある。
+ *
+ * 典拠は2つ。混ぜないように出所をコメントで残しておく。
+ *  (A) 営業と出店に関する契約書（定期建物賃貸借契約書）（案）契約番号 90238-2047-000
+ *  (B) ノーツデザインオフィス「[B-0105・0106] THIERRY MARX 新装工事 工程表」2026年8月28日修正
+ * (B)のバー日付は工程表の作図位置から読み取った値で、±2〜3日の誤差を含む。
+ * ヘッダーに明記された着工2/10・竣工4/15のみ確定値として扱う。
  */
 
 const pptxgen = require("pptxgenjs");
@@ -27,8 +33,11 @@ const C = {
   plum: "6B4A72",
 };
 const F = { jp: "Yu Gothic", mincho: "Yu Mincho", num: "Arial" };
-const SRC =
-  "出典：営業と出店に関する契約書（定期建物賃貸借契約書）（案）契約番号 90238-2047-000／賃貸人 三井不動産株式会社・賃借人 株式会社WineBank";
+const TODAY = D(2026, 8, 28);
+
+const SRC_A = "出典①：営業と出店に関する契約書（定期建物賃貸借契約書）（案）契約番号 90238-2047-000／賃貸人 三井不動産株式会社・賃借人 株式会社WineBank";
+const SRC_B = "出典②：ノーツデザインオフィス「[B-0105・0106] THIERRY MARX 新装工事 工程表」2026年8月28日修正";
+const SRC_AB = SRC_A + "　　" + SRC_B;
 
 const pres = new pptxgen();
 pres.layout = "LAYOUT_WIDE"; // 13.33" x 7.5" — スライド追加前に設定する
@@ -47,6 +56,13 @@ function titleSlide(s, text, kicker) {
   s.addText(text, {
     x: 0.5, y: 0.6, w: 12.33, h: 0.55,
     fontSize: 25, bold: true, fontFace: F.jp, color: C.ink, margin: 0,
+  });
+}
+
+function lede(s, text) {
+  s.addText(text, {
+    x: 0.5, y: 1.18, w: 12.33, h: 0.26,
+    fontSize: 10.5, fontFace: F.jp, color: C.grey, margin: 0,
   });
 }
 
@@ -73,26 +89,30 @@ function darkSlide() {
     fontSize: 11, fontFace: F.jp, color: C.white, charSpacing: 5, margin: 0,
   });
   s.addText("（仮称）THIERRY MARX BISTRO", {
-    x: 0.9, y: 2.5, w: 11.5, h: 0.75,
+    x: 0.9, y: 2.4, w: 11.5, h: 0.75,
     fontSize: 38, fontFace: F.mincho, color: C.white, margin: 0,
   });
-  s.addText("開業までの工程", {
-    x: 0.9, y: 3.3, w: 11.5, h: 0.62,
+  s.addText("竣工・開業までの工程", {
+    x: 0.9, y: 3.2, w: 11.5, h: 0.62,
     fontSize: 30, fontFace: F.mincho, color: C.white, margin: 0,
   });
   s.addText("東京ミッドタウン　B0105号室・B0106号室　／　183.59㎡（55.53坪）", {
-    x: 0.92, y: 4.25, w: 11.5, h: 0.3,
+    x: 0.92, y: 4.15, w: 11.5, h: 0.3,
     fontSize: 13, fontFace: F.jp, color: "E8D5DA", margin: 0,
   });
-  s.addText("2026年8月 ▸ 2027年4月30日 開業", {
-    x: 0.92, y: 4.62, w: 11.5, h: 0.3,
+  s.addText("着工 2027年2月10日 ▸ 竣工 2027年4月15日 ▸ 開業 2027年4月30日", {
+    x: 0.92, y: 4.52, w: 11.5, h: 0.3,
     fontSize: 13, fontFace: F.num, color: "E8D5DA", margin: 0,
   });
-  s.addText("2026年8月18日　株式会社WineBank", {
+  s.addText("ノーツデザインオフィス工程表（2026年8月28日修正）反映版", {
+    x: 0.92, y: 4.95, w: 11.5, h: 0.3,
+    fontSize: 11, fontFace: F.jp, color: "D7AEBA", margin: 0,
+  });
+  s.addText("2026年8月28日　株式会社WineBank", {
     x: 7.4, y: 6.55, w: 5, h: 0.3,
     fontSize: 10, fontFace: F.jp, color: "E8D5DA", align: "right", margin: 0,
   });
-  s.addNotes("契約書（案）の確定日程をもとに作成した開業工程。現在は設計プラン決めと幹部採用のフェーズ。");
+  s.addNotes("設計会社（ノーツデザインオフィス）の新装工事工程表を、契約書ベースの開業工程にマージした版。");
 }
 
 // ==========================================================================
@@ -100,12 +120,12 @@ function darkSlide() {
 // ==========================================================================
 {
   const s = pres.addSlide();
-  titleSlide(s, "工期は実質2ヶ月。設計フェーズの前倒しが唯一の余地", "サマリー");
+  titleSlide(s, "設計は約3ヶ月前倒し。ただしB工事とC工事は並走ではなく直列", "サマリー");
 
   const lead = [
-    "引渡（2027年2月15日）から完成（4月中旬）まで実質2ヶ月しかなく、重飲食・厨房付き183.59㎡としては極めてタイト。",
-    "着工を1日も遅らせないため、賃貸人の2つの承認（デザインクライテリア／工事等承認申請）を引渡前に取り切る。",
-    "現在地は設計プラン決めと幹部採用。プラン確定を9月末に置き、そこから基本設計・実施設計を逆算している。",
+    "設計会社工程では基本設計は8/20完了済み、実施設計10/19完了、B工事金額合意10/31。前回想定より約3ヶ月早い。",
+    "一方でB工事（2/1〜2/17）とC工事（2/18〜4/18）は直列。B工事の遅延はそのままC工事と竣工に波及する。",
+    "工程表の着工日2/10が、契約上の引渡日2/15より5日早い。着工の前提を設計会社・TMMに確認する必要がある。",
   ];
   s.addText(lead.map((t, i) => ({
     text: t, options: { bullet: { indent: 14 }, breakLine: i < lead.length - 1, paraSpaceAfter: 6 },
@@ -115,12 +135,12 @@ function darkSlide() {
   });
 
   const cards = [
-    { l: "契約締結", v: "2026.09.01", n: "第1回敷金 ¥11,105,988" },
-    { l: "物件 引渡", v: "2027.02.15", n: "第2回敷金は前日 2/14" },
-    { l: "工事 完成", v: "2027.04.15", n: "B工事・C工事 並走" },
-    { l: "営業開始日", v: "2027.04.30", n: "出店料等の起算日" },
-    { l: "出店期間 満了", v: "2037.01.31", n: "定期借家・更新なし" },
-    { l: "賃貸人負担", v: "¥100,000,000", n: "B・C工事の上限額" },
+    { l: "実施設計 完了", v: "2026.10.19", n: "ノーツデザインオフィス" },
+    { l: "B工事 金額合意", v: "2026.10.31", n: "TMM（ビル側）と合意" },
+    { l: "着工", v: "2027.02.10", n: "工程表ヘッダー記載" },
+    { l: "物件 引渡", v: "2027.02.15", n: "契約書（予定）" },
+    { l: "竣工", v: "2027.04.15", n: "工程表ヘッダー記載" },
+    { l: "営業開始日", v: "2027.04.30", n: "契約書（予定）" },
   ];
   const cw = (12.33 - 5 * 0.18) / 6;
   cards.forEach((c, i) => {
@@ -143,14 +163,14 @@ function darkSlide() {
     });
   });
 
-  s.addText("いま押さえるべき3つの論点", {
+  s.addText("いま確認・決定すべき3点", {
     x: 0.5, y: 4.72, w: 12.33, h: 0.3,
     fontSize: 13, bold: true, fontFace: F.jp, color: C.ink, margin: 0,
   });
   const pts = [
-    { h: "承認を先行させる", b: "デザインクライテリアの事前協議を基本設計段階（10〜11月）から開始し、工事等承認は2/14までに取得。" },
-    { h: "負担区分を発注前に固める", b: "賃貸人負担1億円の内訳は覚書待ち。厨房機器・什器・備品は対象外のため自社負担額を2月上旬までに確定。" },
-    { h: "トレーニングをバッファにしない", b: "4/16〜4/28は訓練期間。工事完成を4/10目標で管理し、是正の予備日を5日確保する。" },
+    { h: "着工日2/10の前提を確認", b: "契約上の引渡は2/15。引渡前のB工事着手が可能か、三井不動産・TMM・ディコンの3者で確認する。" },
+    { h: "B工事金額合意を10/31で固める", b: "賃貸人負担1億円の覚書を前倒しで締結でき、自社負担額を年内に確定できる。" },
+    { h: "長納期品のリードタイム管理", b: "分電盤は10/20発注・2/8設置。厨房機器も同様に実施設計完了（10/19）直後に発注を確定させる。" },
   ];
   const pw = (12.33 - 2 * 0.24) / 3;
   pts.forEach((p, i) => {
@@ -172,161 +192,226 @@ function darkSlide() {
       fontSize: 9.5, fontFace: F.jp, color: C.grey, margin: 0, valign: "top",
     });
   });
-  footnote(s, SRC);
+  footnote(s, SRC_AB);
 }
 
 // ==========================================================================
-// 3. 全体工程
+// 3. 体制
 // ==========================================================================
 {
   const s = pres.addSlide();
-  titleSlide(s, "全体工程", "2026年8月 – 2027年5月");
-  s.addText("5つの領域を並走させ、引渡（2/15）で工事に合流させる。ひし形は契約書で確定した動かせない期日。", {
-    x: 0.5, y: 1.18, w: 12.33, h: 0.26,
-    fontSize: 10.5, fontFace: F.jp, color: C.grey, margin: 0,
+  titleSlide(s, "プロジェクト体制", "関係会社と担当");
+  lede(s, "現場名：[B-0105・0106] THIERRY MARX 新装工事　／　建設地：東京都港区赤坂9-7-1　東京ミッドタウン1F");
+
+  const orgs = [
+    { role: "発注者", name: "株式会社WineBank", note: "賃借人。契約締結後、代表者が代表を務める新会社へ地位承継予定（特記事項 第11条）。" },
+    { role: "賃貸人", name: "三井不動産株式会社", note: "定期建物賃貸借契約の相手方。デザインクライテリアおよび工事等承認の承認権者。" },
+    { role: "施設管理", name: "東京ミッドタウンマネジメント株式会社", note: "ビル側窓口。基本設計の内容確認、B工事の見積作成・金額合意、TMM書類の受付。" },
+    { role: "設計管理", name: "ノーツデザインオフィス", note: "基本設計・実施設計・官公庁申請・竣工図提出を担当。総合監修は藤原氏。" },
+    { role: "工事請負施工", name: "株式会社ディコン", note: "C工事の施工。B工事は賃貸人指定業者が施工（契約第22条）。" },
+  ];
+  const rowH = 0.66;
+  orgs.forEach((o, i) => {
+    const y = 1.62 + i * (rowH + 0.12);
+    s.addShape(pres.ShapeType.rect, {
+      x: 0.5, y: y, w: 7.5, h: rowH,
+      fill: { color: i === 0 ? "F7EBEE" : C.white }, line: { color: C.line, width: 0.75 },
+    });
+    s.addText(o.role, {
+      x: 0.68, y: y + 0.08, w: 1.5, h: 0.28,
+      fontSize: 9, fontFace: F.jp, color: C.grey, margin: 0,
+    });
+    s.addText(o.name, {
+      x: 0.68, y: y + 0.31, w: 6.9, h: 0.3,
+      fontSize: 14, bold: true, fontFace: F.jp,
+      color: i === 0 ? C.bordeaux : C.ink, margin: 0,
+    });
+    s.addText(o.note, {
+      x: 8.2, y: y + 0.06, w: 4.63, h: rowH - 0.1,
+      fontSize: 9, fontFace: F.jp, color: C.grey, margin: 0, valign: "middle",
+    });
   });
 
+  const y2 = 1.62 + 5 * (rowH + 0.12) + 0.18;
+  s.addText("工程表に記載の担当", {
+    x: 0.5, y: y2, w: 12.33, h: 0.28,
+    fontSize: 11, bold: true, fontFace: F.jp, color: C.ink, margin: 0,
+  });
+  const people = [
+    { r: "総合監修", n: "NDO 藤原" },
+    { r: "実施設計", n: "坂本" },
+    { r: "管理", n: "瀬崎" },
+    { r: "調整", n: "野上" },
+  ];
+  const pwd = 2.2;
+  people.forEach((p, i) => {
+    const px = 0.5 + i * (pwd + 0.2);
+    s.addShape(pres.ShapeType.rect, {
+      x: px, y: y2 + 0.34, w: pwd, h: 0.66,
+      fill: { color: C.band }, line: { color: C.line, width: 0.75 },
+    });
+    s.addText(p.r, {
+      x: px + 0.14, y: y2 + 0.4, w: pwd - 0.28, h: 0.2,
+      fontSize: 8.5, fontFace: F.jp, color: C.grey, margin: 0,
+    });
+    s.addText(p.n, {
+      x: px + 0.14, y: y2 + 0.62, w: pwd - 0.28, h: 0.3,
+      fontSize: 13, bold: true, fontFace: F.jp, color: C.ink, margin: 0,
+    });
+  });
+  s.addText("所属が明記されているのは藤原氏（NDO）のみ。坂本・瀬崎・野上の各氏は工程表上に所属の記載がなく、要確認。", {
+    x: 10.1, y: y2 + 0.44, w: 2.73, h: 0.6,
+    fontSize: 8.5, fontFace: F.jp, color: C.bordeaux, margin: 0, valign: "middle",
+  });
+
+  footnote(s, SRC_B + "　　建設地の表記は工程表の住居表示。契約書上の地番は「東京都港区赤坂九丁目142番1他」。");
+}
+
+// ==========================================================================
+// 4. 全体工程
+// ==========================================================================
+{
+  const s = pres.addSlide();
+  titleSlide(s, "全体工程", "2026年7月 – 2027年5月");
+  lede(s, "設計会社工程（設計・申請・B工事・C工事）に、契約・採用・開業準備を重ねた全体像。ひし形は期日が動かせない項目。");
+
   addGantt(s, pres, {
-    x: 0.5, y: 1.55, w: 12.33, h: 4.65, labelW: 2.5,
-    start: D(2026, 8, 1), end: D(2027, 5, 31), today: D(2026, 8, 18),
-    rowFont: 10,
+    x: 0.5, y: 1.55, w: 12.33, h: 4.6, labelW: 2.75,
+    start: D(2026, 7, 1), end: D(2027, 5, 20), today: TODAY,
+    rowFont: 9.5,
     rows: [
       { type: "group", name: "領域", color: C.ink },
-      { type: "task", name: "契約・法務", s: D(2026, 8, 1), e: D(2027, 4, 30), color: C.navy, live: true },
-      { type: "task", name: "設計", s: D(2026, 8, 1), e: D(2027, 2, 14), color: C.brass, live: true },
-      { type: "task", name: "工事", s: D(2026, 12, 1), e: D(2027, 4, 22), color: C.bordeaux },
+      { type: "task", name: "設計（ノーツデザインオフィス）", s: D(2026, 7, 3), e: D(2026, 10, 19), color: C.brass, live: true },
+      { type: "task", name: "ビル側確認・B工事見積（TMM）", s: D(2026, 8, 20), e: D(2026, 10, 31), color: C.navy, live: true },
+      { type: "task", name: "申請・届出", s: D(2026, 11, 4), e: D(2027, 1, 7), color: C.brass },
+      { type: "task", name: "分電盤（長納期品）", s: D(2026, 9, 19), e: D(2027, 2, 8), color: C.bordeaux },
+      { type: "task", name: "B工事（準備〜施工）", s: D(2026, 12, 19), e: D(2027, 2, 17), color: C.bordeaux },
+      { type: "task", name: "C工事（株式会社ディコン）", s: D(2027, 2, 18), e: D(2027, 4, 18), color: C.bordeaux },
       { type: "task", name: "採用・組織", s: D(2026, 8, 1), e: D(2027, 3, 31), color: C.sage, live: true },
       { type: "task", name: "開業準備", s: D(2026, 11, 1), e: D(2027, 4, 30), color: C.plum },
       { type: "group", name: "マイルストーン", color: C.bordeaux },
       { type: "ms", name: "定期建物賃貸借契約 締結", date: D(2026, 9, 1), color: C.navy },
-      { type: "ms", name: "設計プラン 確定", date: D(2026, 9, 30), color: C.brass },
-      { type: "ms", name: "工事等承認申請 承認取得", date: D(2027, 2, 14), color: C.brass },
-      { type: "ms", name: "物件 引渡", date: D(2027, 2, 15), color: C.bordeaux },
-      { type: "ms", name: "工事 完成・引渡検査", date: D(2027, 4, 15), color: C.bordeaux },
+      { type: "ms", name: "B工事 見積・金額合意", date: D(2026, 10, 31), color: C.navy },
+      { type: "ms", name: "着工（工程表ヘッダー）", date: D(2027, 2, 10), color: C.bordeaux },
+      { type: "ms", name: "物件 引渡（契約書）", date: D(2027, 2, 15), color: C.bordeaux },
+      { type: "ms", name: "竣工", date: D(2027, 4, 15), color: C.bordeaux },
       { type: "ms", name: "グランドオープン", date: D(2027, 4, 30), color: C.plum },
     ],
   });
 
   addLegend(s, pres, {
-    x: 0.5, y: 6.35, gap: 1.45,
+    x: 0.5, y: 6.32, gap: 1.6,
     items: [
-      { label: "契約・法務", color: C.navy },
-      { label: "設計", color: C.brass },
+      { label: "設計・申請", color: C.brass },
+      { label: "ビル側協議", color: C.navy },
       { label: "工事", color: C.bordeaux },
       { label: "採用・組織", color: C.sage },
       { label: "開業準備", color: C.plum },
       { label: "確定期日", color: C.ink, shape: "diamond" },
     ],
   });
-  footnote(s, SRC);
+  footnote(s, SRC_AB);
 }
 
 // ==========================================================================
-// 4. フェーズ① 設計・契約
+// 5. フェーズ① 設計・申請・契約
 // ==========================================================================
 {
   const s = pres.addSlide();
-  titleSlide(s, "フェーズ① 設計・契約 ─ 引渡前にすべての承認を取り切る", "2026年8月 – 2027年2月14日");
-  s.addText("プラン確定（9/30）を起点に、基本設計・実施設計・賃貸人承認を直列でつなぐ。ここが遅れると着工がそのまま遅れる。", {
-    x: 0.5, y: 1.18, w: 12.33, h: 0.26,
-    fontSize: 10.5, fontFace: F.jp, color: C.grey, margin: 0,
-  });
+  titleSlide(s, "フェーズ① 設計・申請・契約 ─ 年内にB工事の金額と負担区分を確定させる", "2026年7月 – 2027年2月");
+  lede(s, "上2ブロックは設計会社工程からの転記。B工事の金額合意が10/31に前倒しされたことで、賃貸人負担額の覚書も年内に締結できる。");
 
   addGantt(s, pres, {
-    x: 0.5, y: 1.55, w: 12.33, h: 5.1, labelW: 3.1,
-    start: D(2026, 8, 1), end: D(2027, 3, 10), today: D(2026, 8, 18),
+    x: 0.5, y: 1.55, w: 12.33, h: 5.1, labelW: 3.35,
+    start: D(2026, 7, 1), end: D(2027, 2, 28), today: TODAY,
     rowFont: 9.5,
     rows: [
-      { type: "group", name: "契約・法務", color: C.navy },
-      { type: "task", name: "契約条件精査・社内決裁", s: D(2026, 8, 1), e: D(2026, 8, 31), color: C.navy, live: true },
-      { type: "ms", name: "定期建物賃貸借契約 締結／第1回敷金", date: D(2026, 9, 1), color: C.navy },
-      { type: "task", name: "施設設置契約書（共用部客席）締結", s: D(2026, 9, 1), e: D(2026, 10, 31), color: C.navy },
-      { type: "task", name: "新会社 設立", s: D(2026, 9, 15), e: D(2026, 11, 30), color: C.navy },
-      { type: "task", name: "地位承継 覚書（3者）締結", s: D(2026, 12, 1), e: D(2026, 12, 25), color: C.navy },
-      { type: "task", name: "B・C工事 賃貸人負担額 覚書", s: D(2027, 1, 15), e: D(2027, 2, 28), color: C.navy },
-      { type: "ms", name: "第2回敷金・開店前準備期間負担金ほか", date: D(2027, 2, 14), color: C.navy },
-      { type: "group", name: "設計", color: C.brass },
-      { type: "task", name: "コンセプト・プラン決め", s: D(2026, 8, 1), e: D(2026, 9, 30), color: C.brass, live: true },
-      { type: "ms", name: "プラン 確定", date: D(2026, 9, 30), color: C.brass },
-      { type: "task", name: "デザインクライテリア 事前協議", s: D(2026, 9, 15), e: D(2026, 11, 30), color: C.brass },
-      { type: "task", name: "基本設計", s: D(2026, 10, 1), e: D(2026, 11, 30), color: C.brass },
-      { type: "task", name: "厨房計画・機器仕様確定", s: D(2026, 11, 1), e: D(2027, 1, 31), color: C.brass },
-      { type: "task", name: "実施設計", s: D(2026, 12, 1), e: D(2027, 1, 31), color: C.brass },
-      { type: "task", name: "保健所・消防 事前協議", s: D(2027, 1, 5), e: D(2027, 2, 28), color: C.brass },
-      { type: "task", name: "工事等承認申請 → 賃貸人承認", s: D(2027, 1, 15), e: D(2027, 2, 14), color: C.brass },
+      { type: "group", name: "設計（ノーツデザインオフィス）", color: C.brass },
+      { type: "task", name: "基本設計", s: D(2026, 7, 3), e: D(2026, 8, 20), color: C.brass },
+      { type: "task", name: "実施設計", s: D(2026, 9, 19), e: D(2026, 10, 19), color: C.brass },
+      { type: "task", name: "防火防災管理者の選任", s: D(2026, 11, 4), e: D(2026, 12, 4), color: C.brass },
+      { type: "task", name: "TMM書類提出", s: D(2026, 12, 2), e: D(2026, 12, 18), color: C.brass },
+      { type: "task", name: "官公庁書類提出", s: D(2026, 12, 22), e: D(2027, 1, 7), color: C.brass },
+      { type: "group", name: "東京ミッドタウンマネジメント", color: C.navy },
+      { type: "task", name: "基本設計 ビル側内容確認", s: D(2026, 8, 20), e: D(2026, 9, 18), color: C.navy, live: true },
+      { type: "task", name: "B工事 見積作成・金額合意", s: D(2026, 9, 19), e: D(2026, 10, 31), color: C.navy },
+      { type: "group", name: "契約・法務（WineBank）", color: C.sage },
+      { type: "task", name: "契約条件精査・社内決裁", s: D(2026, 8, 1), e: D(2026, 8, 31), color: C.sage, live: true },
+      { type: "ms", name: "定期建物賃貸借契約 締結／第1回敷金", date: D(2026, 9, 1), color: C.sage },
+      { type: "task", name: "新会社 設立", s: D(2026, 9, 15), e: D(2026, 11, 30), color: C.sage },
+      { type: "task", name: "B・C工事 賃貸人負担額 覚書", s: D(2026, 11, 1), e: D(2026, 12, 25), color: C.sage },
+      { type: "task", name: "地位承継 覚書（3者）締結", s: D(2026, 12, 1), e: D(2026, 12, 25), color: C.sage },
+      { type: "ms", name: "第2回敷金・開店前準備期間負担金ほか", date: D(2027, 2, 14), color: C.sage },
     ],
   });
-  footnote(s, "第23条1項により、賃貸人の承認前は着工できない。承認取得を2/14に置き、引渡日（2/15）から即着工する前提。");
+  footnote(s, "設計会社工程では実施設計が10/19完了。前回版（12/1〜1/31）から約3ヶ月前倒しとなり、承認・見積・発注の各工程に余裕が生まれる。");
 }
 
 // ==========================================================================
-// 5. フェーズ② 工事
+// 6. フェーズ② 工事・竣工
 // ==========================================================================
 {
   const s = pres.addSlide();
-  titleSlide(s, "フェーズ② 工事 ─ B工事とC工事を並走させて2ヶ月で仕上げる", "2026年12月 – 2027年4月22日");
-  s.addText("引渡と同時にB工事着手、5日遅れでC工事を重ねる。騒音・振動・臭気を伴う工種は時間制限を受ける前提で組む。", {
-    x: 0.5, y: 1.18, w: 12.33, h: 0.26,
-    fontSize: 10.5, fontFace: F.jp, color: C.grey, margin: 0,
-  });
+  titleSlide(s, "フェーズ② 工事・竣工 ─ B工事完了を待ってC工事に入る直列工程", "2026年9月 – 2027年4月30日");
+  lede(s, "B工事は2/1〜2/17の約2.5週間、C工事は2/18〜4/18の2ヶ月。並走しないため、B工事の遅延はそのまま竣工日に跳ね返る。");
 
   addGantt(s, pres, {
-    x: 0.5, y: 1.55, w: 12.33, h: 3.5, labelW: 3.1,
-    start: D(2026, 12, 1), end: D(2027, 5, 8),
-    rowFont: 10,
+    x: 0.5, y: 1.55, w: 12.33, h: 3.55, labelW: 3.35,
+    start: D(2026, 9, 1), end: D(2027, 5, 5),
+    rowFont: 9.5,
     rows: [
-      { type: "group", name: "発注準備", color: C.bordeaux },
-      { type: "task", name: "B工事 見積・発注（賃貸人指定業者）", s: D(2026, 12, 1), e: D(2027, 1, 31), color: C.bordeaux },
-      { type: "task", name: "C工事 施工者選定・見積", s: D(2026, 12, 1), e: D(2027, 1, 31), color: C.bordeaux },
-      { type: "ms", name: "C工事発注先 書面提出", date: D(2027, 2, 5), color: C.bordeaux },
-      { type: "group", name: "施工", color: C.bordeaux },
-      { type: "ms", name: "物件 引渡", date: D(2027, 2, 15), color: C.bordeaux },
-      { type: "task", name: "B工事 施工", s: D(2027, 2, 15), e: D(2027, 4, 10), color: C.bordeaux },
-      { type: "task", name: "C工事 施工（内装）", s: D(2027, 2, 20), e: D(2027, 4, 12), color: C.bordeaux },
-      { type: "task", name: "厨房機器・什器・備品 搬入設置", s: D(2027, 4, 1), e: D(2027, 4, 15), color: C.bordeaux },
-      { type: "task", name: "完成検査・是正", s: D(2027, 4, 13), e: D(2027, 4, 17), color: C.bordeaux },
-      { type: "task", name: "消防・保健所検査／営業許可", s: D(2027, 4, 15), e: D(2027, 4, 22), color: C.bordeaux },
+      { type: "group", name: "長納期品（工程表 特記）", color: C.brass },
+      { type: "task", name: "分電盤 発注準備", s: D(2026, 9, 19), e: D(2026, 10, 18), color: C.brass },
+      { type: "task", name: "分電盤 発注〜設置", s: D(2026, 10, 20), e: D(2027, 2, 8), color: C.brass },
+      { type: "group", name: "B工事（賃貸人指定業者）", color: C.bordeaux },
+      { type: "task", name: "B工事準備", s: D(2026, 12, 19), e: D(2027, 1, 31), color: C.bordeaux },
+      { type: "ms", name: "着工（工程表ヘッダー 2/10）", date: D(2027, 2, 10), color: C.bordeaux },
+      { type: "task", name: "B工事 施工", s: D(2027, 2, 1), e: D(2027, 2, 17), color: C.bordeaux },
+      { type: "group", name: "C工事・竣工（株式会社ディコン）", color: C.bordeaux },
+      { type: "ms", name: "物件 引渡（契約書 2/15）", date: D(2027, 2, 15), color: C.navy },
+      { type: "task", name: "C工事 施工", s: D(2027, 2, 18), e: D(2027, 4, 18), color: C.bordeaux },
+      { type: "task", name: "官公庁検査", s: D(2027, 4, 9), e: D(2027, 4, 17), color: C.navy },
+      { type: "ms", name: "竣工", date: D(2027, 4, 15), color: C.bordeaux },
+      { type: "task", name: "開店準備", s: D(2027, 4, 17), e: D(2027, 4, 25), color: C.plum },
+      { type: "ms", name: "グランドオープン", date: D(2027, 4, 30), color: C.plum },
     ],
   });
 
   const notes = [
-    { h: "工事区分", b: "A工事＝賃貸人負担／B工事＝賃借人負担・賃貸人施工／C工事＝賃借人負担・賃貸人承認の業者が施工。" },
-    { h: "賃貸人負担 1億円", b: "B・C工事につき上限1億円を賃貸人が負担。ただし厨房機器・什器・備品は対象外。" },
-    { h: "工事時間の制限", b: "事務所・住宅・美術館に近接するため、騒音・振動・臭気を伴う工事は実施時間の制限を受ける。" },
+    { h: "着工日と引渡日が逆転", b: "工程表の着工は2/10、契約上の引渡は2/15。引渡前のB工事着手が可能か、三井不動産・TMM・ディコンに確認が必要。" },
+    { h: "B工事とC工事は直列", b: "前回想定の並走ではなくB工事完了後にC工事着手。B工事2/17完了が守れないと竣工4/15が崩れる。" },
+    { h: "竣工図提出は開業後", b: "ノーツデザインオフィスによる竣工図提出は4月末〜5月。開業とは切り離して管理する。" },
   ];
   const nw = (12.33 - 2 * 0.24) / 3;
   notes.forEach((n, i) => {
     const nx = 0.5 + i * (nw + 0.24);
     s.addShape(pres.ShapeType.rect, {
-      x: nx, y: 5.3, w: nw, h: 1.32,
+      x: nx, y: 5.32, w: nw, h: 1.32,
       fill: { color: C.band }, line: { color: C.line, width: 0.75 },
     });
     s.addText(n.h, {
-      x: nx + 0.16, y: 5.42, w: nw - 0.32, h: 0.28,
+      x: nx + 0.16, y: 5.44, w: nw - 0.32, h: 0.28,
       fontSize: 11, bold: true, fontFace: F.jp, color: C.bordeaux, margin: 0,
     });
     s.addText(n.b, {
-      x: nx + 0.16, y: 5.72, w: nw - 0.32, h: 0.78,
+      x: nx + 0.16, y: 5.74, w: nw - 0.32, h: 0.78,
       fontSize: 9.5, fontFace: F.jp, color: C.ink, margin: 0, valign: "top",
     });
   });
-  footnote(s, "本契約第22条・第23条および特記事項 第4条・第6条による。");
+  footnote(s, SRC_B + "　　バーの日付は工程表の作図位置から読み取った値で±2〜3日の誤差を含む。着工2/10・竣工4/15はヘッダー記載の確定値。");
 }
 
 // ==========================================================================
-// 6. フェーズ③ 採用・開業準備
+// 7. フェーズ③ 採用・開業準備
 // ==========================================================================
 {
   const s = pres.addSlide();
   titleSlide(s, "フェーズ③ 採用・開業準備 ─ 工事と独立して先行できる", "2026年8月 – 2027年4月30日");
-  s.addText("採用とメニュー開発は工事の進捗に依存しない。ここを前倒しできれば、4月のトレーニング期間に余裕が生まれる。", {
-    x: 0.5, y: 1.18, w: 12.33, h: 0.26,
-    fontSize: 10.5, fontFace: F.jp, color: C.grey, margin: 0,
-  });
+  lede(s, "設計会社工程には含まれないWineBank側の準備。竣工4/15から開業4/30までの実働は約2週間で、ここがトレーニング枠になる。");
 
   addGantt(s, pres, {
-    x: 0.5, y: 1.55, w: 12.33, h: 5.1, labelW: 3.1,
-    start: D(2026, 8, 1), end: D(2027, 5, 10), today: D(2026, 8, 18),
+    x: 0.5, y: 1.55, w: 12.33, h: 5.1, labelW: 3.35,
+    start: D(2026, 8, 1), end: D(2027, 5, 10), today: TODAY,
     rowFont: 9.5,
     rows: [
       { type: "group", name: "採用・組織", color: C.sage },
@@ -337,81 +422,126 @@ function darkSlide() {
       { type: "task", name: "アルバイト採用", s: D(2027, 1, 5), e: D(2027, 3, 31), color: C.sage },
       { type: "group", name: "開業準備", color: C.plum },
       { type: "task", name: "メニュー開発・監修", s: D(2026, 11, 1), e: D(2027, 2, 28), color: C.plum },
+      { type: "task", name: "厨房機器 発注〜搬入設置", s: D(2026, 10, 20), e: D(2027, 4, 10), color: C.plum },
       { type: "task", name: "ワイン・食材 仕入先契約", s: D(2026, 12, 1), e: D(2027, 3, 15), color: C.plum },
       { type: "task", name: "原価設計・事業計画確定", s: D(2027, 1, 5), e: D(2027, 2, 28), color: C.plum },
       { type: "task", name: "POS・予約システム導入", s: D(2027, 1, 5), e: D(2027, 3, 31), color: C.plum },
       { type: "task", name: "販促・PR／メディア対応", s: D(2027, 1, 15), e: D(2027, 4, 29), color: C.plum },
       { type: "ms", name: "予約受付 開始", date: D(2027, 3, 16), color: C.plum },
-      { type: "task", name: "スタッフトレーニング（1〜2週間）", s: D(2027, 4, 16), e: D(2027, 4, 28), color: C.plum },
-      { type: "task", name: "プレオープン・レセプション", s: D(2027, 4, 27), e: D(2027, 4, 29), color: C.plum },
+      { type: "task", name: "スタッフトレーニング（約2週間）", s: D(2027, 4, 16), e: D(2027, 4, 28), color: C.plum },
       { type: "ms", name: "グランドオープン", date: D(2027, 4, 30), color: C.plum },
     ],
   });
-  footnote(s, "営業時間は11:00〜23:00、終日全席禁煙（特記事項 第1条・第10条）。");
+  footnote(s, "厨房機器は分電盤と同じ長納期品として、実施設計完了（10/19）直後に発注を確定させる前提で置いている。営業時間は11:00〜23:00、終日全席禁煙。");
 }
 
 // ==========================================================================
-// 7. マイルストーン一覧
+// 8. 前回工程からの変更点
 // ==========================================================================
 {
   const s = pres.addSlide();
-  titleSlide(s, "マイルストーン一覧", "確定事項と社内目標値");
-  s.addText("網掛けは契約書で日付・金額が確定している事項。それ以外は確定事項から逆算した社内目標値。", {
-    x: 0.5, y: 1.18, w: 12.33, h: 0.26,
-    fontSize: 10.5, fontFace: F.jp, color: C.grey, margin: 0,
-  });
+  titleSlide(s, "前回工程からの変更点", "設計会社工程の反映による差分");
+  lede(s, "前回（8月18日版）は契約書の確定日程からの逆算のみ。今回は設計会社工程を典拠として置き換えた。");
 
-  const head = ["期日", "マイルストーン", "根拠・備考"];
   const data = [
-    ["2026.09.01", "定期建物賃貸借契約 締結", "第1回敷金 ¥11,105,988 預託／内装管理費 ¥1,285,130 一括払い", 1],
-    ["2026.09.30", "設計プラン 確定", "基本設計着手の前提。以降のクリティカルパスの起点", 0],
-    ["2026.11.30", "基本設計 完了・賃貸人事前協議 完了", "デザインクライテリア（特記事項 第6条2項）適合の確認", 0],
-    ["2027.01.31", "実施設計 完了", "B工事・C工事の見積確定に必要", 0],
-    ["2027.02.05", "C工事発注先の書面提出", "特記事項 第4条2項「C工事着手前、賃貸人の指定する期日まで」", 0],
-    ["2027.02.14", "工事等承認申請 承認取得", "第23条1項。承認前は着工不可", 0],
-    ["2027.02.14", "第2回敷金ほか 支払", "敷金 ¥462,780／開店前準備期間負担金 ¥550,770／契約時販促負担金 ¥1,000,000", 1],
-    ["2027.02.15", "物件 引渡", "要目表(4)。出店期間の起算日。以降 B工事・C工事に着手", 1],
-    ["2027.04.15", "工事 完成・引渡検査", "厨房機器・什器・備品の搬入設置を含む", 0],
-    ["2027.04.22", "消防・保健所検査／飲食店営業許可 取得", "申請者名義は新会社への地位承継と整合させる", 0],
-    ["2027.04.28", "スタッフトレーニング 完了", "1〜2週間（4/16〜4/28）", 0],
-    ["2027.04.30", "グランドオープン（営業開始日）", "要目表(4)。同日から出店料・共益費・販促費の起算", 1],
+    ["基本設計", "2026.10.01 – 11.30", "2026.07.03 – 08.20（完了）", "約3ヶ月前倒し", 1],
+    ["実施設計", "2026.12.01 – 2027.01.31", "2026.09.19 – 10.19", "約3ヶ月前倒し", 1],
+    ["B工事 見積・金額合意", "2027.01.31", "2026.10.31", "3ヶ月前倒し。負担額覚書も年内に締結可能", 1],
+    ["申請・届出", "2027.01 – 02（保健所・消防）", "2026.11.04 – 2027.01.07", "防火防災管理者選任・TMM書類・官公庁書類に細分化", 1],
+    ["B工事・C工事の関係", "2/15〜4/12 を並走", "B工事 2/1–2/17 → C工事 2/18–4/18 の直列", "並走前提が崩れる。工程リスクは増加", 2],
+    ["着工日", "2027.02.15（引渡日と同日）", "2027.02.10", "引渡日より5日早い。前提の確認が必要", 2],
+    ["竣工", "2027.04.15", "2027.04.15", "一致", 0],
+    ["分電盤（長納期品）", "計上なし", "2026.10.20 発注 – 2027.02.08 設置", "新規計上。厨房機器も同様の管理が必要", 2],
+    ["竣工図提出", "計上なし", "2027.04月末 – 05月", "新規計上。開業後の設計会社業務", 0],
   ];
 
-  const rows = [head.map((h) => ({
+  const rows = [["項目", "前回（8/18版）", "今回（設計会社工程反映）", "影響"].map((h) => ({
     text: h,
-    options: { bold: false, color: C.grey, fontSize: 9, fill: { color: C.band }, fontFace: F.jp },
+    options: { color: C.grey, fontSize: 9, fill: { color: C.band }, fontFace: F.jp },
   }))];
-  for (const [dt, name, note, fixed] of data) {
-    const bg = fixed ? "F7EBEE" : C.white;
+  for (const [item, before, after, impact, kind] of data) {
+    // kind 1=前倒し（good） 2=要注意 0=変更なし・軽微
+    const bg = kind === 2 ? "F7EBEE" : C.white;
+    const ic = kind === 2 ? C.bordeaux : kind === 1 ? C.sage : C.grey;
     rows.push([
-      { text: dt, options: { fontFace: F.num, bold: !!fixed, color: fixed ? C.bordeaux : C.ink, fill: { color: bg } } },
-      { text: name, options: { fontFace: F.jp, bold: !!fixed, color: fixed ? C.bordeaux : C.ink, fill: { color: bg } } },
-      { text: note, options: { fontFace: F.jp, color: C.grey, fill: { color: bg } } },
+      { text: item, options: { fontFace: F.jp, bold: true, color: C.ink, fill: { color: bg } } },
+      { text: before, options: { fontFace: F.jp, color: C.grey, fill: { color: bg } } },
+      { text: after, options: { fontFace: F.jp, color: C.ink, fill: { color: bg } } },
+      { text: impact, options: { fontFace: F.jp, bold: kind === 2, color: ic, fill: { color: bg } } },
     ]);
   }
 
   s.addTable(rows, {
-    x: 0.5, y: 1.6, w: 12.33, colW: [1.5, 4.1, 6.73],
+    x: 0.5, y: 1.6, w: 12.33, colW: [2.45, 2.95, 3.15, 3.78],
     fontSize: 9.5, color: C.ink, valign: "middle",
     border: [
       { type: "none" }, { type: "none" },
       { type: "solid", color: C.line, pt: 0.5 }, { type: "none" },
     ],
-    rowH: 0.36, margin: [3, 6, 3, 6],
+    rowH: 0.44, margin: [3, 6, 3, 6],
   });
-  footnote(s, SRC);
+  footnote(s, "網掛けは対応が必要な変更。" + "　　" + SRC_B);
 }
 
 // ==========================================================================
-// 8. 資金・支払スケジュール
+// 9. マイルストーン一覧
+// ==========================================================================
+{
+  const s = pres.addSlide();
+  titleSlide(s, "マイルストーン一覧", "確定事項と社内目標値");
+  lede(s, "網掛けは契約書または設計会社工程表に日付が明記されている事項。それ以外は逆算による社内目標値。");
+
+  const data = [
+    ["2026.08.20", "基本設計 完了", "ノーツデザインオフィス", "設計会社工程", 1],
+    ["2026.09.01", "定期建物賃貸借契約 締結", "第1回敷金 ¥11,105,988／内装管理費 ¥1,285,130", "契約書", 1],
+    ["2026.09.18", "基本設計 ビル側内容確認 完了", "東京ミッドタウンマネジメント", "設計会社工程", 1],
+    ["2026.10.19", "実施設計 完了", "ノーツデザインオフィス。厨房機器の発注確定はこの直後", "設計会社工程", 1],
+    ["2026.10.31", "B工事 見積作成・金額合意", "賃貸人負担1億円の内訳を確定し、覚書の締結につなげる", "設計会社工程", 1],
+    ["2026.12.04", "防火防災管理者の選任", "新会社への地位承継と名義を整合させる", "設計会社工程", 1],
+    ["2027.01.07", "官公庁書類提出 完了", "TMM書類提出は12/18まで", "設計会社工程", 1],
+    ["2027.02.08", "分電盤 設置完了", "10/20発注の長納期品", "設計会社工程", 1],
+    ["2027.02.10", "着工", "工程表ヘッダー記載。契約上の引渡日より5日早い", "設計会社工程", 2],
+    ["2027.02.14", "第2回敷金ほか 支払", "敷金 ¥462,780／開店前準備期間負担金 ¥550,770／契約時販促負担金 ¥1,000,000", "契約書", 1],
+    ["2027.02.15", "物件 引渡", "出店期間の起算日", "契約書", 1],
+    ["2027.02.17", "B工事 完了", "この日を落とすとC工事と竣工がそのまま後ろ倒しになる", "設計会社工程", 2],
+    ["2027.04.15", "竣工", "官公庁検査は4月中旬に並走", "設計会社工程", 1],
+    ["2027.04.28", "スタッフトレーニング 完了", "竣工から開業までの約2週間", "社内目標", 0],
+    ["2027.04.30", "グランドオープン（営業開始日）", "同日から出店料・共益費・販促費の起算", "契約書", 1],
+  ];
+
+  const rows = [["期日", "マイルストーン", "内容", "典拠"].map((h) => ({
+    text: h,
+    options: { color: C.grey, fontSize: 8.5, fill: { color: C.band }, fontFace: F.jp },
+  }))];
+  for (const [dt, name, note, src, kind] of data) {
+    const bg = kind === 2 ? "F7EBEE" : kind === 1 ? "FAF7F8" : C.white;
+    rows.push([
+      { text: dt, options: { fontFace: F.num, bold: kind > 0, color: kind === 2 ? C.bordeaux : C.ink, fill: { color: bg } } },
+      { text: name, options: { fontFace: F.jp, bold: kind > 0, color: kind === 2 ? C.bordeaux : C.ink, fill: { color: bg } } },
+      { text: note, options: { fontFace: F.jp, color: C.grey, fill: { color: bg } } },
+      { text: src, options: { fontFace: F.jp, color: C.grey, fill: { color: bg } } },
+    ]);
+  }
+
+  s.addTable(rows, {
+    x: 0.5, y: 1.6, w: 12.33, colW: [1.35, 3.5, 6.08, 1.4],
+    fontSize: 8.8, color: C.ink, valign: "middle",
+    border: [
+      { type: "none" }, { type: "none" },
+      { type: "solid", color: C.line, pt: 0.5 }, { type: "none" },
+    ],
+    rowH: 0.32, margin: [2, 6, 2, 6],
+  });
+  footnote(s, SRC_AB);
+}
+
+// ==========================================================================
+// 10. 資金・支払スケジュール
 // ==========================================================================
 {
   const s = pres.addSlide();
   titleSlide(s, "資金・支払スケジュール", "契約要目表および特記事項 第2条・第3条");
-  s.addText("出店料・負担金はいずれも消費税別途。網掛けは営業開始日（2027年4月30日）から発生する継続費用。", {
-    x: 0.5, y: 1.18, w: 12.33, h: 0.26,
-    fontSize: 10.5, fontFace: F.jp, color: C.grey, margin: 0,
-  });
+  lede(s, "出店料・負担金はいずれも消費税別途。網掛けは営業開始日（2027年4月30日）から発生する継続費用。");
 
   const data = [
     ["2026.09.01", "第1回 敷金", "¥11,105,988", "本契約締結時", 0],
@@ -450,11 +580,11 @@ function darkSlide() {
     ],
     rowH: 0.38, margin: [3, 6, 3, 6],
   });
-  footnote(s, "敷金総額 ¥38,870,959（@¥211,727/㎡）。解約金は平均月額出店料等の8ヶ月相当額、営業開始日前解約金は16ヶ月相当額に賃貸人負担額を加算。");
+  footnote(s, "敷金総額 ¥38,870,959（@¥211,727/㎡）。B工事・C工事費は賃貸人負担1億円が上限で、金額合意（10/31）後に覚書で確定。" + "　　" + SRC_A);
 }
 
 // ==========================================================================
-// 9. クリティカルパスと留意点
+// 11. クリティカルパスと留意点
 // ==========================================================================
 {
   const s = pres.addSlide();
@@ -462,40 +592,40 @@ function darkSlide() {
 
   const risks = [
     {
+      cat: "工程の前提",
+      h: "着工2/10が契約上の引渡2/15より早い",
+      b: "工程表ヘッダーは着工2027年2月10日。契約書の引渡日は2月15日で、5日の逆転がある。B工事の施工バーも2/1起点で描かれている。",
+      f: "引渡前のB工事着手が可能かを三井不動産・TMM・ディコンに確認する。不可なら工程全体を5日後ろ倒しし、竣工日の再設定を求める。",
+    },
+    {
       cat: "工期",
-      h: "引渡から完成まで実質2ヶ月",
-      b: "重飲食・厨房付き183.59㎡としては極めてタイト。B工事とC工事の取り合いが滞れば4月中旬完成が崩れる。",
-      f: "引渡前に施工者間で総合工程・取り合い調整を完了。厨房機器は実施設計完了時点（1月末）で発注確定。",
+      h: "B工事とC工事が直列。緩衝がない",
+      b: "B工事2/1〜2/17、C工事2/18〜4/18。前回想定の並走ではないため、B工事の遅延はそのまま竣工4/15に跳ね返る。",
+      f: "B工事の完了判定基準を事前に文書化し、2/17時点でC工事が着手できる引渡条件をディコンと合意しておく。",
+    },
+    {
+      cat: "長納期品",
+      h: "分電盤は10月発注・2月設置",
+      b: "設計会社が特記事項として挙げているとおり、発注から設置まで約3.5ヶ月を要する。厨房機器も同等以上のリードタイムが見込まれる。",
+      f: "実施設計完了（10/19）を厨房機器の発注確定日として運用する。輸入機器がある場合は9月中に納期回答を取り付ける。",
+    },
+    {
+      cat: "費用区分",
+      h: "賃貸人負担1億円の覚書を年内に",
+      b: "B工事の金額合意が10/31に前倒しされたことで、賃貸人負担額を確定する条件が整う。厨房機器・什器・備品は賃貸人負担の対象外。",
+      f: "10/31の金額合意と同時に覚書ドラフトを回付し、12月中に締結。自社負担額を年内に確定して資金計画に反映する。",
     },
     {
       cat: "工事条件",
       h: "騒音・振動・臭気を伴う工事は時間制限",
-      b: "事務所・住宅・美術館に近接するため、工事実施時間の制限が工期と費用に影響する旨を承諾する条項がある。",
-      f: "1日あたりの作業可能時間帯を書面で確認し、深夜・早朝の割増を当初予算に織り込む。",
-    },
-    {
-      cat: "承認",
-      h: "賃貸人承認が二段構え",
-      b: "デザインクライテリア承認と工事等承認申請の双方が必要で、いずれも承認前は着工できない。",
-      f: "基本設計段階（10〜11月）からサイン・ファサードを先行協議し、2/14までに承認を取り切る。",
-    },
-    {
-      cat: "費用区分",
-      h: "賃貸人負担1億円の確定は覚書待ち",
-      b: "金額は見積書と内装工事図面に基づき確定する建付け。厨房機器・什器・備品は賃貸人負担の対象外。",
-      f: "負担区分を発注前に合意し、1月末の見積確定と同時に覚書ドラフトを回付。自社負担額を2月上旬に確定。",
-    },
-    {
-      cat: "組織",
-      h: "地位承継と許認可名義の整合",
-      b: "新会社への承継は賃借人が連帯保証人となることを条件に賃貸人が承諾し、3者覚書を締結する。",
-      f: "新会社設立を11月末までに完了し年内に覚書締結。以降の工事発注・許認可は新会社名義に統一。",
+      b: "事務所・住宅・美術館に近接するため工事実施時間の制限を承諾する条項がある。C工事の2ヶ月はこの制約下での実働となる。",
+      f: "作業可能時間帯を書面で確認し、C工事の見積・工程に反映させる。深夜・早朝の割増を当初予算に織り込む。",
     },
     {
       cat: "契約リスク",
-      h: "開業遅延のペナルティが重い",
-      b: "営業開始日に営業を開始しないことは契約解除事由。営業開始日前の解約は出店料等16ヶ月相当額＋賃貸人負担額。",
-      f: "トレーニング期間をバッファ扱いしない。完成を4/10目標で管理し、是正の予備日を5日確保する。",
+      h: "竣工から開業まで実働2週間",
+      b: "竣工4/15、営業開始日4/30。営業開始日に営業を開始しないことは契約解除事由で、開業前解約は出店料等16ヶ月相当額＋賃貸人負担額。",
+      f: "トレーニング期間をバッファ扱いしない。官公庁検査（4月中旬）と是正を竣工前に織り込み、4/15を実質的な最終期限として管理する。",
     },
   ];
 
@@ -525,52 +655,52 @@ function darkSlide() {
       { text: r.f, options: { color: C.ink } },
     ], {
       x: cx + 0.18, y: cy + 1.14, w: cw - 0.36, h: 0.4,
-      fontSize: 9, fontFace: F.jp, margin: 0,
+      fontSize: 9, fontFace: F.jp, margin: 0, valign: "top",
     });
   });
-  footnote(s, SRC);
+  footnote(s, SRC_AB);
 }
 
 // ==========================================================================
-// 10. 次のアクション
+// 12. 次のアクション
 // ==========================================================================
 {
   const s = darkSlide();
   s.addText("次のアクション", {
-    x: 0.9, y: 0.95, w: 11.5, h: 0.6,
+    x: 0.9, y: 0.85, w: 11.5, h: 0.6,
     fontSize: 30, fontFace: F.mincho, color: C.white, margin: 0,
   });
 
   const acts = [
-    { d: "2026年8月中", h: "契約条件の最終確認と社内決裁", b: "9月1日の契約締結と第1回敷金 ¥11,105,988・内装管理費 ¥1,285,130 の資金手当てを確定させる。" },
-    { d: "2026年9月末", h: "設計プランの確定", b: "以降の全工程がここから逆算される。同時にデザインクライテリアの事前協議を賃貸人と開始する。" },
-    { d: "2026年10月末", h: "幹部採用の完了と新会社設立の着手", b: "総支配人・エグゼクティブシェフを確定し、11月末の新会社設立、年内の3者覚書締結につなげる。" },
+    { d: "2026年8月中", h: "着工日2/10の前提確認と契約締結の準備", b: "引渡2/15との逆転についてノーツデザインオフィス・TMM・ディコンに照会。9/1の契約締結と第1回敷金 ¥11,105,988・内装管理費 ¥1,285,130 の資金手当てを確定。" },
+    { d: "2026年9月中旬", h: "基本設計のビル側内容確認を完了させる", b: "TMMの確認完了（9/18）を受けて実施設計に入る。並行して幹部採用を10月末までに確定させる。" },
+    { d: "2026年10月末", h: "実施設計完了とB工事金額合意", b: "実施設計10/19完了を受けて厨房機器の発注を確定。10/31のB工事金額合意と同時に、賃貸人負担額の覚書ドラフトを回付する。" },
   ];
   acts.forEach((a, i) => {
-    const ay = 2.15 + i * 1.42;
+    const ay = 2.0 + i * 1.5;
     s.addText(String(i + 1), {
       x: 0.9, y: ay, w: 0.5, h: 0.5,
       fontSize: 26, fontFace: F.num, color: "E0A5B4", margin: 0,
     });
     s.addText(a.d, {
-      x: 1.55, y: ay + 0.02, w: 2.2, h: 0.3,
+      x: 1.55, y: ay + 0.02, w: 2.3, h: 0.3,
       fontSize: 11, fontFace: F.num, color: "E0A5B4", margin: 0,
     });
     s.addText(a.h, {
-      x: 3.8, y: ay - 0.02, w: 8.5, h: 0.36,
+      x: 3.9, y: ay - 0.02, w: 8.4, h: 0.36,
       fontSize: 17, bold: true, fontFace: F.jp, color: C.white, margin: 0,
     });
     s.addText(a.b, {
-      x: 3.8, y: ay + 0.4, w: 8.5, h: 0.6,
-      fontSize: 10.5, fontFace: F.jp, color: "E8D5DA", margin: 0,
+      x: 3.9, y: ay + 0.4, w: 8.4, h: 0.75,
+      fontSize: 10.5, fontFace: F.jp, color: "E8D5DA", margin: 0, valign: "top",
     });
   });
 
-  s.addText("株式会社WineBank　2026年8月18日", {
-    x: 7.4, y: 6.7, w: 5, h: 0.3,
+  s.addText("株式会社WineBank　2026年8月28日", {
+    x: 7.4, y: 6.75, w: 5, h: 0.3,
     fontSize: 10, fontFace: F.jp, color: "E8D5DA", align: "right", margin: 0,
   });
 }
 
-const out = path.join(__dirname, "THIERRY_MARX_BISTRO_開業工程_20260818.pptx");
+const out = path.join(__dirname, "THIERRY_MARX_BISTRO_開業工程_20260828.pptx");
 pres.writeFile({ fileName: out }).then(() => console.log("wrote", out));
