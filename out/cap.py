@@ -261,5 +261,97 @@ for i,(k,v) in enumerate(iss):
     z.cell(r,3,v).font=BK
     z.cell(r,3).alignment=Alignment(wrap_text=True,vertical='top')
     z.row_dimensions[r].height=46
+# ============ ⑥既存株主入替えシナリオ ============
+x=wb.create_sheet('⑥既存株主入替え')
+for col,w in zip('ABCDEFGH',[3,34,15,15,15,15,40,2]): x.column_dimensions[col].width=w
+x['B1']='既存株主を入れ替えて強力なパートナーを迎える場合'; x['B1'].font=Font(name=F,bold=True,size=15)
+x['B2']='経営陣以外の株主を買い取り、パートナーが譲受＋増資で持分を取る前提。単位：株／円'; x['B2'].font=SM
+bar(x,4,'【1】株主の色分け',6)
+for j,t in enumerate(['','FD 株数','FD 比率','','','']):
+    c=x.cell(5,2+j,t); c.font=HD; c.fill=HF; c.alignment=Alignment(horizontal='center')
+grp=[('経営陣ブロック（残留）',4367,'中野ブロック3,961＋小田垣200＋戸高SO200＋従業員6'),
+     ('　うち 中野ブロック',3961,'中野個人3,413＋SO170＋Crown Jewel box 287＋スペースバンク91'),
+     ('売却対象（外部株主）',1423,'MFV749＋Private BANK375＋ベクトル157＋個人90＋寺田52')]
+G0=6
+for i,(n,v,nt) in enumerate(grp):
+    r=G0+i
+    x.cell(r,2,n).font=SB if i!=1 else BK
+    c=x.cell(r,3,v); c.number_format=NUM; c.font=SB if i!=1 else BK
+    c=x.cell(r,4,f"=C{r}/'②希薄化余地'!$C${P_T}"); c.number_format=PCT; c.font=SB if i!=1 else BK
+    x.cell(r,7,nt).font=SM
+    if i==2:
+        for cc in range(2,5): x.cell(r,cc).fill=OR_
+G_EXT=G0+2
+PX=G0+3
+x.cell(PX,2,'買取・引受 単価（前提）').font=BK
+c=x.cell(PX,3,450000); c.number_format=YEN; c.font=BL; c.fill=YL
+x.cell(PX,7,'2026年1月ラウンドと同額を仮置き。ここを変えると【2】【3】が再計算されます。').font=SM
+n=G0+5
+bar(x,n,'【2】売却対象株主の取得原価　※買取交渉の難易度',6)
+for j,t in enumerate(['株主','株数','取得原価 合計','取得単価','@45万での倍率','受取額 @45万']):
+    c=x.cell(n+1,2+j,t); c.font=HD; c.fill=HF; c.alignment=Alignment(horizontal='center',wrap_text=True)
+sh=[('マネーフォワードベンチャーズ',749,527*285000+222*450000,'527株@28.5万＋222株@45万'),
+    ('株式会社Private BANK',375,375*50000,'2021/12ラウンド @5万'),
+    ('株式会社ベクトル',157,157*192000,'2022/10ラウンド @19.2万'),
+    ('個人投資家様',90,90*450000,'2026/01ラウンド @45万。直近参加のため簿価売却'),
+    ('寺田倉庫株式会社',52,52*192000,'2022/10ラウンド @19.2万')]
+H0=n+2
+for i,(nm,cnt,cst,nt) in enumerate(sh):
+    r=H0+i
+    x.cell(r,2,nm).font=BK
+    c=x.cell(r,3,cnt); c.number_format=NUM; c.font=BK
+    c=x.cell(r,4,cst); c.number_format=YEN; c.font=BK
+    c=x.cell(r,5,f'=D{r}/C{r}'); c.number_format=YEN; c.font=BK
+    c=x.cell(r,6,f"=C{r}*$C${PX}/D{r}"); c.number_format='0.00"x"'; c.font=SB
+    c=x.cell(r,7,f"=C{r}*$C${PX}"); c.number_format=YEN; c.font=BK
+H1=H0+len(sh)-1; HT=H1+1
+x.cell(HT,2,'合計').font=SB
+for col in (3,4,7):
+    c=x.cell(HT,col,f'=SUM({get_column_letter(col)}{H0}:{get_column_letter(col)}{H1})')
+    c.number_format=NUM if col==3 else YEN; c.font=SB; c.fill=TF; c.border=TB
+for cc in (2,5,6): x.cell(HT,cc).fill=TF; x.cell(HT,cc).border=TB
+x.cell(HT+2,2,'※取得原価の大半が低い株主（Private BANK 9.0倍・ベクトル/寺田 2.3倍）は売却に応じやすい。').font=SM
+x.cell(HT+3,2,'※実質的な交渉相手はマネーフォワードベンチャーズ1社。@45万では1.35倍にとどまり、価格を押してくる可能性が高い。').font=RD
+x.cell(HT+4,2,'※個人投資家様90株は2026年1月に@45万で参加したばかりで簿価売却となるため、別途の配慮が要る。').font=RD
+n=HT+6
+bar(x,n,'【3】パートナー持分別の投下額　※外部1,423株の譲受＋増資',6)
+for j,t in enumerate(['パートナー 目標持分','必要な増資 株数','譲受＋増資の\n投下総額','上場前 総株数','中野ブロック\n比率','']):
+    c=x.cell(n+1,2+j,t); c.font=HD; c.fill=HF; c.alignment=Alignment(horizontal='center',wrap_text=True,vertical='center')
+x.row_dimensions[n+1].height=34
+K0=n+2
+tg=[(0.334,'拒否権ライン。持分法適用で相手のPLに乗る'),
+    (0.40,'筆頭株主は中野氏のまま。実質的な共同経営'),
+    (0.501,'連結子会社化。上場は親子上場となる')]
+for i,(t2,nt) in enumerate(tg):
+    r=K0+i
+    c=x.cell(r,2,t2); c.number_format=PCT; c.font=BL; c.fill=YL
+    c=x.cell(r,3,f"=($B{r}*'②希薄化余地'!$C${P_T}-$C${G_EXT})/(1-$B{r})"); c.number_format=NUM; c.font=BK
+    c=x.cell(r,4,f"=($C${G_EXT}+C{r})*$C${PX}"); c.number_format=YEN; c.font=SB
+    c=x.cell(r,5,f"='②希薄化余地'!$C${P_T}+C{r}"); c.number_format=NUM; c.font=BK
+    c=x.cell(r,6,f"='②希薄化余地'!$C${P_B}/E{r}"); c.number_format=PCT; c.font=SB
+    x.cell(r,7,nt).font=SM
+    if i==2:
+        for cc in range(2,7): x.cell(r,cc).fill=OR_
+K1=K0+2
+x.cell(K1+2,2,'※投下総額は@45万換算。支配権プレミアムを乗せれば増え、FY2026の着地を理由に値引きされれば減ります。').font=SM
+n=K1+4
+bar(x,n,'【4】過半数を渡す場合に必ず起きること',6)
+w=[('親子上場','上場会社が過半数を持つと、WineBankの上場は親子上場になる。東証は支配株主を有する上場会社への'
+    'ガバナンス要求を強めており、上場審査では親会社からの独立性が厳しく問われる。'
+    '実務的には、出口はIPOではなく将来の完全子会社化（M&A）に寄る。'),
+   ('赤字の連結','過半数を取った相手はWineBankの損益を全部取り込む。FY2026の経常▲124.8百万円を連結する判断は'
+    '上場会社にとって重い。プランDの黒字化を確認してからのほうが、相手は動きやすい。'),
+   ('IPOを残す道','パートナーを33.4〜49%にとどめれば親子上場にはならず、持分法で相手のPLには乗る。'
+    '「本気度」は比率ではなく、独占提携・役員派遣・相手の営業目標への組み込み・未達時のラチェットで担保する。'),
+   ('PEという選択肢','既存株主を全部買い取り、経営改革し、数年でIPOに持っていくのはプライベートエクイティの標準的な仕事。'
+    'PEが40%前後、事業会社が10〜15%で並走する二階建てなら、株主整理・経営改革・IPOの3つを同時に満たせる。')]
+for i,(k,v) in enumerate(w):
+    r=n+1+i
+    x.cell(r,2,k).font=SB; x.cell(r,2).fill=OR_
+    x.cell(r,3,v).font=BK
+    x.merge_cells(start_row=r,start_column=3,end_row=r,end_column=7)
+    x.cell(r,3).alignment=Alignment(wrap_text=True,vertical='top')
+    x.row_dimensions[r].height=46
+
 for ws in wb: ws.sheet_view.showGridLines=False
 wb.save('WineBank_資本政策シミュレーション.xlsx'); print('saved')
