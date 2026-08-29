@@ -7,3 +7,4 @@ public/uploads/*
 !public/uploads/.gitkeep
 .claude/
 out/slide-*.jpg
+out/ch-*.jpg
