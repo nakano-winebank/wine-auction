@@ -156,6 +156,52 @@ const cel = (x,o) => ({text:x,options:Object.assign({fill:{color:PANEL},fontSize
     t({x:M+0.45,y:5.55,w:CW-0.9,h:0.75,fontSize:13,color:MUTE,lineSpacing:20}));
 }
 
+/* 6b NARRATIVE ★ ------------------------------------------------------ */{
+  const s=base("NARRATIVE","「相殺してよ」と言われたら",
+    "2.5%払って5%返ってくるなら、差額をください——ごもっともです。ただ、相殺した瞬間に消えるものがあります。");
+
+  // --- left: the netted world ---
+  card(s,M,1.78,5.9,2.72,PANEL);
+  s.addText("相殺した世界", t({x:M+0.42,y:1.98,w:5.06,h:0.32,fontSize:14,bold:true,color:MUTE}));
+  s.addText("3月。口座に25,000円が戻る。",
+    t({x:M+0.42,y:2.36,w:5.06,h:0.4,fontSize:18,bold:true,color:TEXT}));
+  [["","明細に一行増える。それだけ。"],
+   ["","何も起きず、誰にも会わない。"],
+   ["","来年また、同じ一行が増える。"]].forEach((v,i)=>{
+    s.addText(v[1], t({x:M+0.42,y:2.94+i*0.4,w:5.06,h:0.32,fontSize:13,color:MUTE}));
+  });
+
+  // --- right: the points world ---
+  card(s,M+6.16,1.78,5.9,2.72,PANEL2);
+  s.addText("ポイントの世界", t({x:M+6.58,y:1.98,w:5.06,h:0.32,fontSize:14,bold:true,color:GOLD}));
+  [["5月","取引先と、グランメゾンで。",TEXT],
+   ["8月","義父の誕生日に、生まれ年を一本。",TEXT],
+   ["11月","部下の昇進祝いに、もう一本。",TEXT],
+   ["年明け","「今年もよく飲んだな」と思う。",GOLD_L]].forEach((v,i)=>{
+    const y=2.4+i*0.48;
+    s.addText(v[0], t({x:M+6.58,y:y,w:0.86,h:0.3,fontSize:12,bold:true,color:GOLD}));
+    s.addText(v[1], t({x:M+7.5,y:y,w:4.16,h:0.3,fontSize:13.5,color:v[2],
+      bold:i===3?true:false}));
+  });
+
+  // --- three answers ---
+  [["財布から見れば、倍ちがう","接待交際費はもともと出ていくお金。そこに5万円分が当たります。"],
+   ["逆向きの、別の契約のお金","2.5%は預かる対価、5%は借りる対価。相殺すると「利回り」になります。"],
+   ["手間は、ゼロ","手数料は年1回の自動引落。ポイントは自動付与。お店で名前を言うだけです。"]
+  ].forEach((v,i)=>{
+    const x=M+i*4.14;
+    card(s,x,4.68,3.86,1.18,PANEL);
+    badge(s,x+0.28,4.86,i+1,GOLD);
+    s.addText(v[0], t({x:x+0.78,y:4.88,w:2.84,h:0.3,fontSize:13,bold:true,color:GOLD_L}));
+    s.addText(v[1], t({x:x+0.28,y:5.26,w:3.3,h:0.52,fontSize:10.5,color:MUTE,lineSpacing:15}));
+  });
+
+  card(s,M,6.02,CW,0.64,BURG);
+  s.addText("手数料は「預かる」ためのお金。ポイントは「開ける」ためのお金。同じ2.5%に見えて、向きが逆です。",
+    t({x:M+0.45,y:6.17,w:CW-0.9,h:0.36,fontSize:15,bold:true,color:GOLD_L,align:"center"}));
+  s.addNotes("最初に必ず出る質問。相殺は2.5万円の値引きで終わるが、ポイントは5万円分の食卓になる。ワインは一人では飲まないので、ポイントは必ず誰かとの時間に変わる。往復させることが、この商品を金融商品でなく保っている点も正直に説明する。");
+}
+
 /* 7 UNIT ECONOMICS ★ -------------------------------------------------- */{
   const s=base("UNIT ECONOMICS","どの交換経路を通っても黒字",
     "ワイン100万円・会員1名・年間。飲食原価率30%で算定。");
