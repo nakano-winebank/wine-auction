@@ -44,11 +44,11 @@ const cel = (x,o) => ({text:x,options:Object.assign({fill:{color:PANEL},fontSize
     fontSize:11,bold:true,color:GOLD,charSpacing:4}));
   s.addText("ビジネスポイント経済圏構想", t({x:M,y:1.9,w:CW,h:0.95,fontSize:44,bold:true}));
   s.addText("「ワイン貯金」", t({x:M,y:2.86,w:CW,h:0.8,fontSize:40,bold:true,color:GOLD_L}));
-  s.addText("不確実な含み益を、確実なビジネスポイントに換える。価格リスクは、WineBankが取る。",
+  s.addText("保証賃料はポイントで。出口は専属専任媒介で。不動産オーナーの標準形を、ワインで。",
     t({x:M,y:3.86,w:CW,h:0.4,fontSize:16,color:MUTE}));
-  [["確実な","5%","会員は不確実な値上がりを確定ポイントに換える"],
-   ["実原価","1.5%","原価率30%。5万ptの当社負担は1.5万円"],
-   ["1pt","0.5円","グランメゾンは権威性を値付けする"]].forEach((v,i)=>{
+  [["賃料","5%","毎年確実に入る。含み益は会員のもの"],
+   ["出口","10%","専属専任媒介。当社は会員と同じ側に立つ"],
+   ["買戻し","なし","B/Sリスクゼロ。売上は完全に計上できる"]].forEach((v,i)=>{
     const x=M+i*4.14; card(s,x,4.7,3.86,1.32,PANEL);
     s.addText([{text:v[0]+" ",options:{fontSize:15,color:MUTE}},
                {text:v[1],options:{fontSize:25,bold:true,color:GOLD}}],
@@ -57,7 +57,7 @@ const cel = (x,o) => ({text:x,options:Object.assign({fill:{color:PANEL},fontSize
   });
   s.addText("2026年8月｜株式会社WineBank｜社外秘", t({x:M,y:H-0.55,w:CW,h:0.3,
     fontFace:"Arial",fontSize:10,color:"6B5A5F"}));
-  s.addNotes("核心はサブリース構造。含み益と引き換えに価格リスクを当社が取り、会員には確定ポイントを渡す。");
+  s.addNotes("核心は不動産と同じ形。サブリースで保証賃料、専属専任媒介で出口。含み益は会員のもの、当社は買戻し債務を負わない。");
 }
 
 /* 2 PROBLEM ----------------------------------------------------------- */{
@@ -116,9 +116,9 @@ const cel = (x,o) => ({text:x,options:Object.assign({fill:{color:PANEL},fontSize
 
 /* 5 STRUCTURE — サブリース ★ ----------------------------------------- */{
   const s=base("STRUCTURE","構造：ワインのサブリース",
-    "不動産のサブリースと同じ。所有者に確定収益を渡し、運営者が市況リスクを取る。");
-  [["会員（法人）が得るもの","確実な 5%","不確実な値上がり（実績年6%）を手放す代わりに、毎年必ず入るビジネスポイントを受け取る。",MINT,PANEL2],
-   ["WineBank が得るもの","含み益 ＋ 2.5%","価格リスクを引き受ける代わりに、ワインの値上がり分と管理手数料を得る。実原価は1.5%のみ。",GOLD,PANEL2]
+    "不動産のサブリースと同じ。所有者に保証賃料を渡し、含み益は所有者に残す。");
+  [["会員（法人）が得るもの","確実な 5%","市況にかかわらず毎年必ず入る保証賃料。しかも含み益は会員のものとして残る。",MINT,PANEL2],
+   ["WineBank が得るもの","在庫 ＋ 年3.7%","借入ゼロで在庫を調達し、管理手数料と出口の媒介手数料を得る。買戻し債務は負わない。",GOLD,PANEL2]
   ].forEach((c,i)=>{
     const x=M+i*6.32; card(s,x,1.9,5.98,2.2,c[4]);
     s.addText(c[0], t({x:x+0.4,y:2.12,w:5.2,h:0.34,fontSize:14,bold:true,color:MUTE}));
@@ -126,12 +126,12 @@ const cel = (x,o) => ({text:x,options:Object.assign({fill:{color:PANEL},fontSize
     s.addText(c[2], t({x:x+0.4,y:3.16,w:5.2,h:0.8,fontSize:12,color:MUTE,lineSpacing:19}));
   });
   card(s,M,4.32,CW,1.15,PANEL);
-  s.addText("契約の形：セール・アンド・リースバック（動産賃貸借）",
+  s.addText("契約の形：サブリース（動産賃貸借）＋ 専属専任媒介",
     t({x:M+0.45,y:4.52,w:CW-0.9,h:0.36,fontSize:16,bold:true,color:GOLD_L}));
-  s.addText("会員がワインを購入し所有権を持つ。そのワインをWineBankに賃貸し、賃料をビジネスポイントで受け取る。既存の「展示用高級ワイン節税商品」と同じ枠組みです。",
+  s.addText("不動産オーナーは、物件をサブリース会社に貸して保証賃料を得て、売るときは媒介業者に頼んで手数料を払う。含み益はオーナーのもの。それをそのままワインでやるだけです。",
     t({x:M+0.45,y:4.94,w:CW-0.9,h:0.42,fontSize:12,color:MUTE}));
   card(s,M,5.68,CW,0.95,BURG);
-  s.addText("この形なら「5%」は利回りではなく賃料率になる。出資法・金商法の議論から外れます。",
+  s.addText("この形なら「5%」は利回りではなく賃料率、「10%」は分配ではなく媒介手数料になる。",
     t({x:M+0.45,y:5.92,w:CW-0.9,h:0.44,fontSize:15.5,bold:true,color:GOLD_L}));
   s.addNotes("サブリース＝賃貸借契約。預り金でも集団投資スキームでもない。ここが法務上の最大の利点。");
 }
@@ -174,20 +174,20 @@ const cel = (x,o) => ({text:x,options:Object.assign({fill:{color:PANEL},fontSize
     t({x:M+0.4,y:5.82,w:5.2,h:0.5,fontSize:11.5,color:MUTE,lineSpacing:17}));
   card(s,M+6.32,5.05,5.76,1.5,PANEL);
   s.addText("これは「賃料」部分の収支にすぎない", t({x:M+6.7,y:5.3,w:5.0,h:0.36,fontSize:14,bold:true,color:GOLD_L}));
-  s.addText("本当の収益は、当社が引き受ける価格リスクの対価＝含み益にあります（次頁）。",
+  s.addText("これに出口の媒介手数料10%（年率換算 約2.7%）が乗り、当社の総取り分は年3.7%になります（次頁）。",
     t({x:M+6.7,y:5.74,w:5.0,h:0.62,fontSize:11.5,color:MUTE,lineSpacing:17}));
 }
 
 /* 8 SPREAD ★ ---------------------------------------------------------- */{
-  const s=base("SPREAD","サブリースの本当の収益",
-    "1.5%の実コストで、年6%の期待値を買う取引です。");
-  const rows=[["会員が受け取る","+5.0%","ポイント額面",MINT],
-              ["会員が払う","▲2.5%","管理手数料",MUTE],
-              ["会員の確定純益","+2.5%","含み益を手放す対価",MINT]];
-  const rows2=[["当社の実コスト","▲1.5%","5万pt × 原価率30%",AMBER],
-               ["管理手数料収入","+2.5%","保管・保険を含む",MINT],
-               ["引き受ける含み益","+6.0%","P1実績・経費控除後",GOLD]];
-  [["会員（法人）から見た取引",rows,PANEL],["WineBankから見た取引",rows2,PANEL2]].forEach((blk,i)=>{
+  const s=base("SPREAD","収益構造：会員と当社の取り分",
+    "ワイン100万円・年6%成長・5年保有を前提とした年率換算。");
+  const rows=[["保証賃料（ポイント）","+5.0%","毎年確定",MINT],
+              ["管理手数料","▲2.5%","保管・保険込",MUTE],
+              ["含み益（手数料控除後）","+3.8%","媒介10%控除後",GOLD]];
+  const rows2=[["管理手数料収入","+2.5%","保管・保険を含む",MINT],
+               ["ポイント実原価","▲1.5%","5万pt × 原価率30%",AMBER],
+               ["出口の媒介手数料","+2.7%","売却額の10%を年率換算",GOLD]];
+  [["会員（法人）の取り分",rows,PANEL],["WineBankの取り分",rows2,PANEL2]].forEach((blk,i)=>{
     const x=M+i*6.32; card(s,x,1.9,5.98,2.92,blk[2]);
     s.addText(blk[0], t({x:x+0.4,y:2.12,w:5.2,h:0.34,fontSize:15,bold:true,color:GOLD_L}));
     blk[1].forEach((r,j)=>{
@@ -198,38 +198,66 @@ const cel = (x,o) => ({text:x,options:Object.assign({fill:{color:PANEL},fontSize
     });
   });
   card(s,M,5.2,CW,1.42,BURG);
-  s.addText("期待値：当社 +7.0%／年（2.5% + 6.0% − 1.5%）。会員は確定 +2.5%。",
+  s.addText("会員 +6.3%／年、当社 +3.7%／年。どちらも同じ方向を向いています。",
     t({x:M+0.45,y:5.42,w:CW-0.9,h:0.44,fontSize:19,bold:true,color:GOLD_L}));
-  s.addText("損益分岐点はワイン価格が年▲7%を超えて下落した場合。Liv-ex 1000は過去20年で約4倍（年率約7%）、P1は指数下落局面でも年率6%を確保。ただしこれは、レバレッジのかかったワイン市況への賭けでもあります（次頁）。",
+  s.addText("当社は会員の取引相手ではなく代理人なので、高く早く売れるほど双方が儲かる。買戻しモデルの約7%より低いが、市場リスクを一切負わず、100万円を全額売上計上できる収益です。加えて在庫金利（自社保有なら年3%）の回避が乗ります。",
     t({x:M+0.45,y:5.9,w:CW-0.9,h:0.6,fontSize:12,color:TEXT,lineSpacing:18}));
-  s.addNotes("この頁が事業の収益構造そのもの。ただし次頁のリスク管理とセットで説明すること。");
+  s.addNotes("当社と会員が同じ方向を向いている点が最大の訴求。買戻しモデルとの決定的な違い。");
 }
 
-/* 9 RISK SIZING ★ CRITICAL -------------------------------------------- */{
-  const s=base("RISK SIZING","買戻し設計：ここだけは慎重に",
-    "サブリースは、規模に比例して膨らむショート・ボラティリティのポジションです。");
-  s.addTable([[hdr("プログラム規模"),hdr("買戻し債務"),hdr("ワイン▲20%時の損失"),hdr("資本金4.37億円に対して")],
-    [cel("100名（1億円）"),cel("1.0億円"),cel("▲2,000万円",{color:AMBER}),cel("吸収可能",{color:MINT})],
-    [cel("500名（5億円）"),cel("5.0億円"),cel("▲1.0億円",{color:AMBER}),cel("資本の約1/4が毀損",{color:AMBER})],
-    [cel("2,000名（20億円）",{fill:{color:PANEL2}}),cel("20.0億円",{fill:{color:PANEL2}}),
-     cel("▲4.0億円",{color:RED,bold:true,fill:{color:PANEL2}}),cel("債務超過の水準",{color:RED,bold:true,fill:{color:PANEL2}})]],
-    Object.assign(tb(),{x:M,y:1.88,w:CW,colW:[3.0,2.7,3.2,3.16],rowH:[0.42,0.46,0.46,0.46]}));
-  card(s,M,4.0,CW,1.02,PANEL2);
-  s.addText("⚠  買戻しを「契約上の保証」にすると、会計上は売上ではなく借入金になります。",
-    t({x:M+0.45,y:4.2,w:CW-0.9,h:0.36,fontSize:16,bold:true,color:AMBER}));
-  s.addText("リスクと経済価値が移転していないため、収益認識会計基準上、100万円を売上計上できない可能性がある。P/LもB/Sの物語も崩れ、SBIのDDで必ず論点になります。",
-    t({x:M+0.45,y:4.6,w:CW-0.9,h:0.34,fontSize:11.5,color:MUTE}));
-  s.addText("推奨する4つの歯止め", t({x:M,y:5.2,w:CW,h:0.3,fontSize:14,bold:true,color:GOLD}));
-  [["「保証」でなく「価格表」","Liv-ex連動の買取価格表を毎月公表。契約上の保証にはしない"],
-   ["買戻し価格に掛目を置く","取得価額の80%等。当社の損失を20%でキャップする"],
-   ["買戻し総額に上限を設ける","プログラム全体の◯%まで。青天井の債務を作らない"],
-   ["含み益の一部を引当に回す","毎期、買戻引当金として留保。好況時に備えを積む"]
-  ].forEach((v,i)=>{
-    const x=M+i*3.11; card(s,x,5.5,2.87,1.15,PANEL);
-    s.addText(v[0], t({x:x+0.22,y:5.66,w:2.5,h:0.3,fontSize:11.5,bold:true,color:GOLD_L}));
-    s.addText(v[1], t({x:x+0.22,y:6.02,w:2.5,h:0.5,fontSize:9.5,color:MUTE,lineSpacing:13}));
+/* 9 STRUCTURE CHOICE ★ ------------------------------------------------ */{
+  const s=base("STRUCTURE CHOICE","構造の選択：なぜ買戻しではなく媒介か",
+    "出口の設計は4通りありました。法務・会計・利益相反の3面で評価すると、答えは1つに絞られます。");
+  const g=(x,c)=>cel(x,{color:c,bold:true,fontSize:11});
+  s.addTable([[hdr(""),hdr("① 買戻し保証"),hdr("② 損益折半"),hdr("②' 利益のみ折半"),hdr("③ 媒介＋賃貸借")],
+    [cel("出資法（預り金）",{align:"left",fill:{color:PANEL2},bold:true}),g("✗ 元本保証と読まれる",RED),g("✗",RED),g("△",AMBER),g("◎ 該当しない",MINT)],
+    [cel("金商法（集団投資）",{align:"left",fill:{color:PANEL2},bold:true}),g("△",AMBER),g("✗ 損益分配そのもの",RED),g("△ 50%は高い",AMBER),g("◎ 手数料は分配でない",MINT)],
+    [cel("売上計上（収益認識）",{align:"left",fill:{color:PANEL2},bold:true}),g("✗ 借入金になる",RED),g("△",AMBER),g("◎",MINT),g("◎ 完全な売却",MINT)],
+    [cel("B/Sリスク",{align:"left",fill:{color:PANEL2},bold:true}),g("✗ 規模に比例",RED),g("✗ 規模に比例",RED),g("◎ なし",MINT),g("◎ なし",MINT)],
+    [cel("会員との利益相反",{align:"left",fill:{color:PANEL2},bold:true}),g("✗ 当社が買主",RED),g("△",AMBER),g("◎",MINT),g("◎ 同じ側に立つ",MINT)],
+    [cel("当社の期待収益",{align:"left",fill:{color:PANEL2},bold:true}),cel("約7%／年",{fontSize:11}),cel("約5%／年",{fontSize:11}),cel("約4〜5%／年",{fontSize:11}),cel("約3.7%／年",{fontSize:11,bold:true,color:GOLD})],
+    [cel("説明のしやすさ",{align:"left",fill:{color:PANEL2},bold:true}),g("△",AMBER),g("✗",RED),g("△",AMBER),g("◎ 全員が知っている",MINT)]],
+    Object.assign(tb(),{x:M,y:1.88,w:CW,colW:[2.62,2.28,2.28,2.28,2.6],
+      rowH:[0.42,0.4,0.4,0.4,0.4,0.4,0.4,0.4]}));
+  card(s,M,5.28,5.9,1.34,PANEL);
+  s.addText("②の致命傷は「折半」ではなく「損失も」",
+    t({x:M+0.4,y:5.46,w:5.1,h:0.32,fontSize:14.5,bold:true,color:AMBER}));
+  s.addText("手数料はマイナスになりません。損失を分担した瞬間、それは共同事業の損益分配になり、①で避けたB/Sリスクも形を変えて戻ってきます。",
+    t({x:M+0.4,y:5.86,w:5.1,h:0.62,fontSize:11.5,color:MUTE,lineSpacing:17}));
+  card(s,M+6.16,5.28,5.9,1.34,BURG);
+  s.addText("市場リスクを抱えた7%より、リスクゼロの3.7%",
+    t({x:M+6.56,y:5.46,w:5.1,h:0.32,fontSize:14.5,bold:true,color:GOLD_L}));
+  s.addText("③は当社の収益を半分にしますが、買戻し債務も市場リスクも負わず、100万円を全額売上計上できます。SBIに持っていける形は③だけです。",
+    t({x:M+6.56,y:5.86,w:5.1,h:0.62,fontSize:11.5,color:TEXT,lineSpacing:17}));
+  s.addNotes("①は出資法と収益認識で不可。②は損失分担が集団投資スキームに当たる。③を採用する。");
+}
+
+/* 9b TWO TRACKS ★ ----------------------------------------------------- */{
+  const s=base("TWO TRACKS","2本立て：飲む人には、貸させない",
+    "飲むつもりの人に含み益はなく、売る出口も要りません。サブリースは運用型だけに掛けます。");
+  const cols=[["消費型","自己利用・贈答",
+      [["契約","売買 ＋ 寄託のみ"],["ポイント","購入時の値引きポイント"],["出口","飲む・贈る"],["規制の表面積","ほぼゼロ（小売＋保管＋販促）"]],PANEL,MINT],
+    ["運用型","サブリース ＋ 専属専任媒介",
+      [["契約","売買 ＋ 賃貸借 ＋ 媒介"],["ポイント","賃料としてのビジネスポイント"],["出口","売る（いつでも消費型へ転換可）"],["規制の表面積","賃貸借と媒介の設計が要る"]],PANEL2,GOLD]];
+  cols.forEach((c,i)=>{
+    const x=M+i*6.16; card(s,x,1.9,5.9,3.0,c[3]);
+    s.addText(c[0], t({x:x+0.4,y:2.12,w:5.1,h:0.4,fontSize:21,bold:true,color:c[4]}));
+    s.addText(c[1], t({x:x+0.4,y:2.56,w:5.1,h:0.3,fontSize:12,color:MUTE}));
+    c[2].forEach((r,j)=>{
+      const y=2.98+j*0.44;
+      s.addText(r[0], t({x:x+0.4,y:y,w:1.5,h:0.3,fontSize:11,color:MUTE}));
+      s.addText(r[1], t({x:x+1.95,y:y,w:3.55,h:0.3,fontSize:11.5}));
+    });
   });
-  s.addNotes("かぼちゃの馬車・レオパレスのサブリース破綻と同じ失敗様式。規模が小さいうちに歯止めを設計しておく。");
+  card(s,M,5.06,CW,1.02,BURG);
+  s.addText("そしてこの2本立ては、8:2のハイブリッド設計とそのまま重なります。",
+    t({x:M+0.45,y:5.26,w:CW-0.9,h:0.36,fontSize:16,bold:true,color:GOLD_L}));
+  s.addText("80%＝お任せ銘柄＝運用型（当社が選び、貸し、いずれ売る）　／　20%＝指名銘柄＝消費型（自分で選んだ、飲むための一本）",
+    t({x:M+0.45,y:5.66,w:CW-0.9,h:0.34,fontSize:12.5,color:TEXT}));
+  card(s,M,6.2,CW,0.62,PANEL2);
+  s.addText("運用型 → 消費型への転換はいつでも可。値下がり局面で「売らずに飲む」を選べることが、保証なしの下値になります。",
+    t({x:M+0.45,y:6.34,w:CW-0.9,h:0.36,fontSize:13,bold:true,color:GOLD_L}));
+  s.addNotes("自分で選んだワインは飲みたいワイン。当社が選んだワインは資産。顧客心理と契約構造が一致する。");
 }
 
 /* 10 0.5円 ------------------------------------------------------------ */{
@@ -293,8 +321,8 @@ const cel = (x,o) => ({text:x,options:Object.assign({fill:{color:PANEL},fontSize
   const s=base("ECOSYSTEM","第3の原資は、オークションにある",
     "楽天のポイント原資は加盟店手数料。自腹を切っていません。");
   card(s,M,1.9,CW,0.86,PANEL2);
-  s.addText([{text:"現状のポイント原資は「管理手数料＋含み益」だけ。",options:{color:TEXT}},
-             {text:"  市況に依存しすぎている。",options:{color:AMBER,bold:true}}],
+  s.addText([{text:"ポイント原資は「管理手数料2.5%」と「出口の媒介手数料10%」。",options:{color:TEXT}},
+             {text:"  後者は売れるたびに入る。",options:{color:GOLD,bold:true}}],
     t({x:M+0.45,y:2.14,w:CW-0.9,h:0.4,fontSize:14.5}));
   const nodes=["ワインを買う","限定ポイントが貯まる","会食・入札に使う","在庫が回転する","成約手数料が入る"];
   const nw=2.15, gap=0.32, total=nodes.length*nw+(nodes.length-1)*gap, x0=(W-total)/2;
@@ -308,9 +336,9 @@ const cel = (x,o) => ({text:x,options:Object.assign({fill:{color:PANEL},fontSize
   s.addText("その成約手数料が、次のポイント原資になる", t({x:x0+0.5,y:4.68,w:total-1.0,h:0.42,
     fontSize:12.5,bold:true,color:BG,align:"center",valign:"middle"}));
   card(s,M,5.4,CW,1.2,PANEL2);
-  s.addText("「出口が課題」と「原資が市況に依存する」が、同じ一手で同時に解けます。",
+  s.addText("専属専任媒介だから、すべての出口が自社の板を通ります。",
     t({x:M+0.45,y:5.62,w:CW-0.9,h:0.42,fontSize:17,bold:true,color:GOLD_L}));
-  s.addText("成約手数料をポイントで支払わせれば当社の実コストはゼロ。自社オークション基盤は既に開発中です。",
+  s.addText("会員は他社にもヤフオクにも出せない。ポイント原資が努力目標ではなく契約になります。手数料をポイントで支払わせれば実コストはゼロ。",
     t({x:M+0.45,y:6.1,w:CW-0.9,h:0.34,fontSize:12,color:MUTE}));
 }
 
@@ -377,22 +405,46 @@ const cel = (x,o) => ({text:x,options:Object.assign({fill:{color:PANEL},fontSize
 }
 
 /* 17 EXIT ------------------------------------------------------------- */{
-  const s=base("EXIT","出口設計：4つの経路","元本保証は使わない。それでも下値は作れます。");
-  [["P2P・オークション","会員が自身のボトルを売却。当社は成約手数料を収受。法的に最もクリーンで、経済圏の原資にもなる。",GOLD_L,PANEL],
-   ["当社買取（価格表方式）","Liv-ex連動の買取価格表を毎月公表。掛目◯%。「保証」ではなく「可視性」を提供する。",GOLD_L,PANEL],
-   ["ポイント転換（飲んで出る）","保有ワインを当社評価額でポイントに転換し消費できる。保証の一言も使わずに心理的な下値が生まれる。",MINT,PANEL2],
-   ["贈答・承継","取引先への贈答、次世代への引き継ぎ。換金ではないため規制論点が生じない。",GOLD_L,PANEL]
-  ].forEach((v,i)=>{
-    const x=M+(i%2)*6.32, y=1.95+Math.floor(i/2)*1.72;
-    card(s,x,y,5.98,1.5,v[3]); badge(s,x+0.32,y+0.24,i+1);
-    s.addText(v[0], t({x:x+0.85,y:y+0.26,w:4.85,h:0.34,fontSize:15,bold:true,color:v[2]}));
-    s.addText(v[1], t({x:x+0.32,y:y+0.72,w:5.34,h:0.68,fontSize:11.5,color:MUTE,lineSpacing:18}));
+  const s=base("EXIT","出口設計：ワインの専属専任媒介",
+    "価格は約束しない。売る努力を約束する。元本保証を一言も使わずに、出口をつくります。");
+  card(s,M,1.9,5.9,2.5,PANEL2);
+  s.addText("媒介契約の設計", t({x:M+0.4,y:2.12,w:5.1,h:0.34,fontSize:16,bold:true,color:GOLD_L}));
+  s.addText([{text:"動産には宅建業法の適用がありません。",options:{bold:true,color:TEXT}},
+             {text:"報酬上限も期間制限もレインズ義務もかからず、10%は自由に設定できます。",options:{color:MUTE}}],
+    t({x:M+0.4,y:2.5,w:5.1,h:0.56,fontSize:11.5,lineSpacing:17}));
+  s.addText("手数料は階段制にする", t({x:M+0.4,y:3.16,w:5.1,h:0.28,fontSize:12.5,bold:true,color:GOLD}));
+  [["取得価額以下","5%"],["〜 +30%","10%"],["+30% 超","15%"]].forEach((v,i)=>{
+    const x=M+0.4+i*1.68;
+    card(s,x,3.52,1.56,0.68,PANEL);
+    s.addText(v[0], t({x:x+0.06,y:3.6,w:1.44,h:0.24,fontSize:9.5,color:MUTE,align:"center"}));
+    s.addText(v[1], t({x:x+0.06,y:3.83,w:1.44,h:0.3,fontSize:15,bold:true,color:GOLD,align:"center"}));
   });
-  card(s,M,5.5,CW,1.1,PANEL2);
-  s.addText("値下がりしても、飲めば取り戻せる。消費効用が下値になる資産は、ワインだけです。",
-    t({x:M+0.45,y:5.72,w:CW-0.9,h:0.42,fontSize:17,bold:true,color:GOLD_L}));
-  s.addText("実コストは額面の30%。NOT A HOTELは泊まっても資産は戻らない。金もアートも同じです。",
-    t({x:M+0.45,y:6.19,w:CW-0.9,h:0.32,fontSize:12,color:MUTE}));
+  card(s,M+6.16,1.9,5.9,2.5,PANEL);
+  s.addText("自主的に移植する4つの保護規定", t({x:M+6.56,y:2.12,w:5.1,h:0.34,fontSize:16,bold:true,color:GOLD_L}));
+  s.addText("専属で縛りながら売却義務を負わないのは片務的です。不動産で用意されている保護を、自分から入れておきます。",
+    t({x:M+6.56,y:2.52,w:5.1,h:0.4,fontSize:11,color:MUTE}));
+  [["報告義務","月1回、掲載状況・入札・引合いを書面で"],
+   ["期間","1年更新。サブリース契約中は自動更新"],
+   ["解除権","一定期間売れなければ解除し他社売却可"],
+   ["掲載義務","自社マーケットプレイスへの掲載（レインズ相当）"]
+  ].forEach((v,i)=>{
+    const y=2.98+i*0.36;
+    s.addText(v[0], t({x:M+6.56,y:y,w:1.15,h:0.28,fontSize:11,bold:true,color:GOLD}));
+    s.addText(v[1], t({x:M+7.76,y:y,w:3.9,h:0.28,fontSize:11,color:MUTE}));
+  });
+  card(s,M,4.56,CW,1.02,PANEL2);
+  s.addText("当社は会員の取引相手ではなく、代理人になる。", t({x:M+0.45,y:4.76,w:CW-0.9,h:0.36,fontSize:16,bold:true,color:GOLD_L}));
+  s.addText("買戻しでは、会員は高く売りたく当社は安く買いたい。媒介なら、高く早く売れるほど双方が儲かる。この利益相反の解消は、投資家にもSBIにも必ず効きます。",
+    t({x:M+0.45,y:5.16,w:CW-0.9,h:0.34,fontSize:12,color:MUTE}));
+  card(s,M,5.74,5.9,0.88,BURG);
+  s.addText("最後のバックストップ：現物返還", t({x:M+0.4,y:5.9,w:5.1,h:0.3,fontSize:14,bold:true,color:GOLD_L}));
+  s.addText("売れなければ現物をお届けする。当社の負担はゼロ、会員には絶対的。出口は常にあります。",
+    t({x:M+0.4,y:6.22,w:5.1,h:0.32,fontSize:11,color:TEXT}));
+  card(s,M+6.16,5.74,5.9,0.88,PANEL);
+  s.addText("手数料はポイントで支払可能に", t({x:M+6.56,y:5.9,w:5.1,h:0.3,fontSize:14,bold:true,color:GOLD_L}));
+  s.addText("当社はポイント負債を額面で消却でき、実質コストはゼロ。ポイントと出口が一つの系になります。",
+    t({x:M+6.56,y:6.22,w:5.1,h:0.32,fontSize:11,color:MUTE}));
+  s.addNotes("会員間オークションを運営する場合、古物営業法上の「古物競りあっせん業者」の届出（公安委員会）が必要になる可能性が高い。許可ではなく届出。");
 }
 
 /* 18 RISK ------------------------------------------------------------- */{
@@ -401,7 +453,7 @@ const cel = (x,o) => ({text:x,options:Object.assign({fill:{color:PANEL},fontSize
   [["出資法・景表法","「年率5%」と言わない","「預ける＋年率＋貯金」の組合せは預り金と読まれる。サブリース（動産賃貸借）の建て付けにし、5%は『賃料率』として説明する。商標『ワイン貯金』は競合を止めるが、法規制は止めない。"],
    ["資金決済法","6ヶ月ルールか、届出か","自家型前払式支払手段は基準日の未使用残高1,000万円超で届出＋供託（残高の半額）。1人5万ptなら約200名で到達。四半期付与・6ヶ月有効なら適用除外の余地（要確認）。"],
    ["課税・役員賞与","法人付与・値引き構成にする","個人付与＋個人消費は役員賞与認定の往復ビンタ。法人に付与し、接待交際費の値引きとして構成する。ローンチ前に顧問税理士の一筆を。"],
-   ["会計（最重要）","買戻し保証は売上を消す","契約上の買戻し保証があるとリスクと経済価値が移転せず、収益認識基準上、売上計上できない可能性。ポイントも履行義務として繰延が必要。SBIのDDで必ず出る。"]
+   ["会計","だから買戻しを採らない","買戻し保証があるとリスクと経済価値が移転せず、収益認識基準上100万円を売上計上できない。媒介方式ならこの論点自体が消える。ポイントは履行義務として繰延が必要。"]
   ].forEach((v,i)=>{
     const x=M+(i%2)*6.32, y=1.95+Math.floor(i/2)*2.32;
     card(s,x,y,5.98,2.1,i===3?PANEL2:PANEL); badge(s,x+0.32,y+0.26,i+1,i===3?AMBER:GOLD);
@@ -409,12 +461,12 @@ const cel = (x,o) => ({text:x,options:Object.assign({fill:{color:PANEL},fontSize
     s.addText(v[1], t({x:x+0.32,y:y+0.74,w:5.34,h:0.32,fontSize:13,bold:true,color:AMBER}));
     s.addText(v[2], t({x:x+0.32,y:y+1.12,w:5.34,h:0.88,fontSize:10.5,color:MUTE,lineSpacing:16}));
   });
-  s.addNotes("弁護士確認は3点セット：①サブリース＝賃貸借の建て付けが金商法・出資法外にあること ②ポイントの前払式支払手段該当性と6ヶ月ルール ③買戻し条項の会計上の帰結。");
+  s.addNotes("弁護士確認は3点セット：①動産賃貸借＋専属専任媒介が金商法・出資法外にあること ②ポイントの前払式支払手段該当性と6ヶ月ルール ③特定物の分別管理か消費寄託か。古物競りあっせん業者の届出要否も。");
 }
 
 /* 19 ROADMAP ---------------------------------------------------------- */{
-  const s=base("ROADMAP","ロードマップ","法務確認と買戻し設計を終えてから、ポイントを走らせます。");
-  [["PHASE 0","〜2ヶ月","土台を固める",["店舗原価率30%の検証","弁護士意見書（3点）","買戻し条項と引当方針","会員・ポイント規約の整備"]],
+  const s=base("ROADMAP","ロードマップ","契約設計と法務確認を終えてから、ポイントを走らせます。");
+  [["PHASE 0","〜2ヶ月","土台を固める",["店舗原価率30%の検証","弁護士意見書（3点）","賃貸借・媒介契約の整備","消費型／運用型の比率設計"]],
    ["PHASE 1","3〜6ヶ月","100万プランで開始",["ポイント台帳をマイページに実装","四半期付与・失効通知の運用","店舗別レート表の運用開始"]],
    ["PHASE 2","6〜12ヶ月","経済圏に広げる",["Signature（1,000万）展開","オークション手数料との接続","曜日・時間帯の動的レート"]],
    ["PHASE 3","Year 2〜","ST公募へ",["会員数と在庫回転率を実績に","SBI証券へ再提案","100億円のCloud Cave構想"]]
@@ -430,15 +482,15 @@ const cel = (x,o) => ({text:x,options:Object.assign({fill:{color:PANEL},fontSize
         paraSpaceAfter:15,lineSpacing:20}));
   });
   card(s,M,6.1,CW,0.55,PANEL2);
-  s.addText("規模が小さいうちに歯止めを設計する。サブリースは、後から縮められません。",
+  s.addText("専属専任は最初の契約書でしか作れません。後から追加でお願いはできません。",
     t({x:M+0.45,y:6.22,w:CW-0.9,h:0.32,fontSize:12.5,bold:true,color:GOLD_L}));
 }
 
 /* 20 NEXT ------------------------------------------------------------- */{
   const s=base("NEXT ACTION","次に決めるべきこと",
-    "サブリースの歯止めが決まれば、レート表とランク設計は利益から逆算して確定できます。");
+    "契約の骨格が決まれば、レート表とランク設計は利益から逆算して確定できます。");
   s.addText("経営判断が必要な3点", t({x:M,y:1.85,w:5.98,h:0.34,fontSize:15,bold:true,color:GOLD}));
-  [["買戻しの形","「保証」か「価格表オプション」か。売上計上の可否がここで決まる。最優先。"],
+  [["媒介手数料の階段","5%／10%／15%の刻みと閾値。②で狙った利益折半の経済性を、手数料の枠内でどこまで取り戻すか。"],
    ["還元率の構造","フラット5% か、ランク別 3/4/5% か。コストはどちらでも成立する。判断軸は「上位ランクに上がる理由を作りたいか」。"],
    ["社内精算レート","系列レストランへの補填率（例：額面の70%）。後から決めると必ず揉める。"]
   ].forEach((v,i)=>{
@@ -447,9 +499,9 @@ const cel = (x,o) => ({text:x,options:Object.assign({fill:{color:PANEL},fontSize
     s.addText(v[1], t({x:M+0.3,y:y+0.62,w:5.38,h:0.46,fontSize:10.5,color:MUTE,lineSpacing:15}));
   });
   s.addText("弁護士に投げる3点セット", t({x:M+6.32,y:1.85,w:5.98,h:0.34,fontSize:15,bold:true,color:GOLD}));
-  [["サブリースの建て付け","動産賃貸借として、出資法・金商法の枠外にあることの確認。5%＝賃料率という整理の妥当性。"],
+  [["サブリースと媒介","動産賃貸借＋専属専任媒介が出資法・金商法の枠外にあることの確認。古物競りあっせん業者の届出要否も。"],
    ["ポイントの法的性質","前払式支払手段への該当性。四半期付与・6ヶ月有効による適用除外の可否。"],
-   ["買戻し条項の帰結","買戻しの形ごとの収益認識・リース会計・出資法上の評価。会計士と合同で。"]
+   ["特定物か消費寄託か","分別管理（会員は所有者）か、同種同等を返す消費寄託（在庫は動くが会員は債権者）か。最も重い判断。"]
   ].forEach((v,i)=>{
     const y=2.24+i*1.30; card(s,M+6.32,y,5.98,1.16,PANEL); badge(s,M+6.62,y+0.2,i+1);
     s.addText(v[0], t({x:M+7.14,y:y+0.22,w:4.9,h:0.32,fontSize:14,bold:true,color:GOLD_L}));
