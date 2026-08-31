@@ -99,6 +99,39 @@ const lft=(x,o)=>cel(x,Object.assign({align:"left"},o||{}));
   s.addNotes("この頁は説得ではなく告白として読ませる。WineBankが先にリスクを取っていることが伝われば、以降の数字はすべて素直に入る。");
 }
 
+/* 2c BUSINESS CASE ★ -------------------------------------------------- */{
+  const s=base("BUSINESS CASE","数字で見ると：同じキャッシュで、ワインは2.5倍",
+    "ワイン1億円／値上がり6%・金利3%・保管料1.5%・粗利30%・管理手数料2.5%・マイル還元3〜5%（連結原価30%）");
+  s.addText("販売ミックス：100万×52名 ＋ 400万×7名 ＋ 1,000万×2名 ＝ 1億円　／　マイル発行 368万円　※単位：万円",
+    t({x:M,y:1.64,w:CW,h:0.28,fontSize:10.5,color:GOLD}));
+  s.addTable([[hdr(""),hdr("① 1億を保有し続ける"),hdr("② 1億を販売＋1.2億を新規買付"),hdr("差")],
+    [lft("PL（営業損益）",{fill:{color:PANEL2},bold:true}),cel("▲450",{color:RED}),
+     cel("+2,405",{color:MINT,bold:true}),cel("+2,855",{color:MINT,bold:true})],
+    [lft("新規買付前のCF",{fill:{color:PANEL2},bold:true}),cel("▲450",{color:RED}),
+     cel("+9,405",{color:MINT,bold:true}),cel("+9,855",{color:MINT,bold:true})],
+    [lft("純CF",{fill:{color:PANEL2},bold:true}),cel("▲450"),cel("▲595"),
+     cel("▲145",{color:AMBER,bold:true})],
+    [lft("ワイン在庫（簿価）",{fill:{color:PANEL2},bold:true}),cel("10,000"),cel("15,000"),cel("+5,000",{color:MINT})],
+    [lft("預かり資産（会員所有）",{fill:{color:PANEL2},bold:true}),cel("0"),
+     cel("10,000",{color:GOLD,bold:true}),cel("+10,000",{color:MINT,bold:true})],
+    [lft("支配下のワイン総額",{fill:{color:BURG},bold:true}),cel("10,000",{fill:{color:BURG}}),
+     cel("25,000",{fill:{color:BURG},bold:true,color:GOLD_L}),
+     cel("2.50倍",{fill:{color:BURG},bold:true,color:GOLD_L})]],
+    Object.assign(tb(),{x:M,y:1.98,w:CW,colW:[3.3,2.7,3.5,2.56],
+      rowH:[0.42,0.42,0.42,0.42,0.42,0.42,0.46]}));
+  card(s,M,5.14,5.9,1.48,BURG);
+  s.addText("純CFはほぼ同じ。なのに、ワインは2.5倍。",
+    t({x:M+0.4,y:5.3,w:5.1,h:0.32,fontSize:15,bold:true,color:GOLD_L}));
+  s.addText("▲450万と▲595万。差は145万円です。同じだけ現金を使って、セラーのワインは1億から2億5,000万へ。しかもうち1億は、会員のお金で買われたワインです。",
+    t({x:M+0.4,y:5.66,w:5.1,h:0.86,fontSize:10.5,color:TEXT,lineSpacing:15}));
+  card(s,M+6.16,5.14,5.9,1.48,PANEL);
+  s.addText("同じ1億が、コストから収益に変わる。",
+    t({x:M+6.56,y:5.3,w:5.1,h:0.32,fontSize:15,bold:true,color:GOLD_L}));
+  s.addText("自社で持つと 年▲450万（金利300＋保管150）。会員に持たせて預かると 年+140万（手数料250−マイル110）。同じワインで、年590万ひっくり返ります。加えて成功報酬が5年後846万。",
+    t({x:M+6.56,y:5.66,w:5.1,h:0.86,fontSize:10.5,color:MUTE,lineSpacing:15}));
+  s.addNotes("保管料1.5%は仮定。2.0%まで上げてもシナリオ2のPLは+2,280万で結論は変わらない。最大の変数は粗利30%を維持できるか。");
+}
+
 /* 3 INSIGHT */{
   const s=base("INSIGHT","ワイン＝コンテンツ。ワインマイル＝コミュニケーション。",
     "SNSの本質は、本来別々だった二つを一体化させたこと。ワインでも同じことが起きます。");
