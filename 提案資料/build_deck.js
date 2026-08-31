@@ -466,28 +466,31 @@ const lft=(x,o)=>cel(x,Object.assign({align:"left"},o||{}));
 /* 16 WINEBANK CLUB */{
   const s=base("WINEBANK CLUB","WineBank CLUB とは",
     "会員制度とは別の、飲むための会員制度。レストラン販売価格の半額（原価相当）でワインが楽しめます。");
-  [["STANDARD","8,800円〜　マイル充当・単月利用可",
-    ["提携店でのコルケージ無料","グループ飲食店の優待","会員向けワイン価格（半額）","提携店向けワイン配送料無料"],PANEL,TEXT],
-   ["GOLD","年会費制",
-    ["上記に加え、生産者イベント招待","ザルト高級グラス使用","個室優先利用・予約4名以上","コンシェルジュによる選定"],PANEL,GOLD_L],
+  [["STANDARD","月 8,800円〜　マイル充当・単月利用可",
+    ["提携店でのコルケージ無料","グループ飲食店の優待","会員向けワイン価格（半額）",
+     "提携店向けワイン配送料無料","4名未満・ワイン価格 上限5万円"],PANEL,TEXT],
+   ["GOLD","月 22,000円〜",
+    ["上記に加え、生産者イベント招待","ザルト高級グラス使用",
+     "個室優先利用・予約4名以上","ワイン価格の上限なし","コンシェルジュによる選定"],PANEL,GOLD_L],
    ["BLACK","年間5,000万以上、もしくは年会費60万円",
-    ["未公開ワインの優先割当","ワイン樽買いの権利","ソムリエへの直接相談","会員限定のクローズドな会","国内外ワイナリーツアー"],PANEL2,GOLD]
+    ["未公開ワインの優先割当","ワイン樽買いの権利","ソムリエへの直接相談",
+     "会員限定のクローズドな会","国内外ワイナリーツアー"],PANEL2,GOLD]
   ].forEach((c,i)=>{
     const x=M+i*4.14; card(s,x,1.82,3.86,3.32,c[3]);
     s.addText(c[0], t({x:x+0.32,y:2.02,w:3.24,h:0.4,fontSize:20,bold:true,color:c[4]}));
     s.addText(c[1], t({x:x+0.32,y:2.46,w:3.24,h:0.42,fontSize:10.5,color:MUTE,lineSpacing:14}));
     s.addText(c[2].map((b,j)=>({text:b,options:{bullet:{indent:12},breakLine:j<c[2].length-1}})),
-      t({x:x+0.32,y:2.98,w:3.24,h:2.06,fontSize:11,valign:"top",paraSpaceAfter:9,lineSpacing:16}));
+      t({x:x+0.32,y:2.96,w:3.24,h:2.08,fontSize:11,valign:"top",paraSpaceAfter:8,lineSpacing:16}));
   });
   card(s,M,5.32,5.9,1.3,BURG);
   s.addText("「半額」が、すべてを説明します", t({x:M+0.4,y:5.46,w:5.1,h:0.3,fontSize:14,bold:true,color:GOLD_L}));
   s.addText("レストランで3倍の値がつくワインが、原価相当で飲める。これ以上わかりやすい入会理由はありません。ワイン好きにとっては、これ自体がキラーコンテンツです。",
     t({x:M+0.4,y:5.78,w:5.1,h:0.74,fontSize:10.5,color:TEXT,lineSpacing:15}));
   card(s,M+6.16,5.32,5.9,1.3,PANEL);
-  s.addText("マイルとの接続：まず体験させ、引き上げる", t({x:M+6.56,y:5.46,w:5.1,h:0.3,fontSize:14,bold:true,color:GOLD_L}));
-  s.addText("100万・400万会員はマイル充当で単月利用。SIGNATUREにはSTANDARDを無料付与。半額を一度体験した人が、GOLD・BLACKへ自分から上がっていきます。",
+  s.addText("引き上げの動線は「人数」と「上限」", t({x:M+6.56,y:5.46,w:5.1,h:0.3,fontSize:14,bold:true,color:GOLD_L}));
+  s.addText("STANDARDは4名未満・ワイン5万円まで。GOLDでその両方が外れます。SIGNATUREにはSTANDARDを無料付与し、まず半額を体験させてから上げる設計です。",
     t({x:M+6.56,y:5.78,w:5.1,h:0.74,fontSize:10.5,color:MUTE,lineSpacing:15}));
-  s.addNotes("STANDARD 8,800円〜の課金サイクル（月額／年額）は要確認。");
+  s.addNotes("STANDARD 月8,800円＝年約10.6万円。GOLD 月22,000円＝年26.4万円。SIGNATUREへのSTANDARD無料付与は年10.6万円相当の原価。");
 }
 
 /* 17 NO YEN */{
