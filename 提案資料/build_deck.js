@@ -71,6 +71,34 @@ const lft=(x,o)=>cel(x,Object.assign({align:"left"},o||{}));
     t({x:M+0.45,y:6.22,w:CW-0.9,h:0.32,fontSize:12,color:TEXT}));
 }
 
+/* 2b WHY ★ ------------------------------------------------------------ */{
+  const s=base("WHY","「WineBankは、損をしていませんか？」",
+    "いちばん多くいただく質問です。正直にお答えします。");
+  s.addText("いいえ。先に、出しているだけです。",
+    t({x:M,y:1.66,w:CW,h:0.62,fontSize:31,bold:true,color:GOLD_L}));
+  [["ワイン投資だけでは、広がらなかった",
+    "持っているだけでは、ワインは資産のまま。飲む相手も、語る相手もいない。豊かにするには、コミュニティが要る。そこに気づきました。"],
+   ["だから去年、WineBank CLUBをつくった",
+    "そこで会員の皆さまから聞いた声が、すべての出発点でした。「もっと、ワインを通じて人と繋がりたい」。この一言です。"],
+   ["だから、先に渡すことにした",
+    "価値は、体験しないと分かりません。だから一定数ご購入いただいた方に、まずマイルをお渡しします。使って、集まって、また誰かを連れてきてもらう。"],
+   ["原資は、ワインの未来です",
+    "ワインは値上がりする。私たちはそう信じています。その未来を先読みして、私たちもお客様と一緒にリスクを取り、先にお渡しする。"]
+  ].forEach((v,i)=>{
+    const x=M+i*3.07;
+    card(s,x,2.5,2.85,2.62,i===3?PANEL2:PANEL);
+    badge(s,x+0.28,2.74,i+1);
+    s.addText(v[0], t({x:x+0.28,y:3.2,w:2.29,h:0.6,fontSize:13.5,bold:true,color:GOLD_L,lineSpacing:19}));
+    s.addText(v[1], t({x:x+0.28,y:3.88,w:2.29,h:1.16,fontSize:10.5,color:MUTE,lineSpacing:16}));
+  });
+  card(s,M,5.34,CW,1.28,BURG);
+  s.addText("損をしているのではありません。先に出して、一緒に賭けているだけです。",
+    t({x:M+0.45,y:5.56,w:CW-0.9,h:0.44,fontSize:21,bold:true,color:GOLD_L}));
+  s.addText("だから管理費の一部と、将来の利益の一部を——お客様の取り分を優先したうえで——分けていただく。増えたら、分け合う。それだけのことです。",
+    t({x:M+0.45,y:6.06,w:CW-0.9,h:0.42,fontSize:13,color:TEXT}));
+  s.addNotes("この頁は説得ではなく告白として読ませる。WineBankが先にリスクを取っていることが伝われば、以降の数字はすべて素直に入る。");
+}
+
 /* 3 INSIGHT */{
   const s=base("INSIGHT","ワイン＝コンテンツ。ワインマイル＝コミュニケーション。",
     "SNSの本質は、本来別々だった二つを一体化させたこと。ワインでも同じことが起きます。");
@@ -170,31 +198,33 @@ const lft=(x,o)=>cel(x,Object.assign({align:"left"},o||{}));
 /* 7 NARRATIVE */{
   const s=base("NARRATIVE","「相殺してよ」と言われたら",
     "差額をください——ごもっともです。ただ、相殺した世界には、次の1年で何も起きません。");
-  card(s,M,1.72,3.5,2.6,PANEL);
+  card(s,M,1.72,3.5,2.72,PANEL);
   s.addText("相殺した世界", t({x:M+0.32,y:1.9,w:2.86,h:0.3,fontSize:13,bold:true,color:MUTE}));
   s.addText("3月。口座に25,000円。", t({x:M+0.32,y:2.24,w:2.86,h:0.36,fontSize:15,bold:true,color:TEXT}));
   s.addText("明細に一行増える。それだけ。\n誰にも会わず、何も残らない。\n来年また、同じ一行が増える。",
     t({x:M+0.32,y:2.72,w:2.86,h:1.3,fontSize:11.5,color:MUTE,lineSpacing:20}));
-  card(s,M+3.66,1.72,8.4,2.6,PANEL2);
+  card(s,M+3.66,1.72,8.4,2.72,PANEL2);
   s.addText("相殺しない世界", t({x:M+3.98,y:1.9,w:7.76,h:0.3,fontSize:13,bold:true,color:GOLD}));
   [["5月","取引先と、グランメゾンで。"],["8月","義父の誕生日に、生まれ年を一本。"],
-   ["11月","部下の昇進祝いに、もう一本。"],["1月","会員限定の生産者イベントへ。"],
-   ["3月","オークションで一本落札。また限定マイルが入る。"],["通年","ワイナートが毎号届く。"]
+   ["11月","ブルゴーニュワイン樽を共同落札。"],["1月","会員限定の生産者イベントへ。"],
+   ["3月","オークションで落札。マイルがまた入る。"],["通年","ワイナートが毎号届く。"]
   ].forEach((v,i)=>{
     const x=M+3.98+(i%2)*3.9, y=2.26+Math.floor(i/2)*0.6;
     s.addText(v[0], t({x:x,y:y,w:0.62,h:0.28,fontSize:11,bold:true,color:GOLD}));
     s.addText(v[1], t({x:x+0.68,y:y,w:3.1,h:0.28,fontSize:11.5,color:TEXT}));
   });
-  card(s,M,4.46,CW,0.82,BURG);
+  s.addText("※ その他、ボルドーマラソン・5大シャトー訪問企画、国内ワイナリーツアー等の年間ワインイベント盛りだくさん",
+    t({x:M+3.98,y:3.78,w:7.76,h:0.4,fontSize:10,color:GOLD,lineSpacing:14}));
+  card(s,M,4.58,CW,0.8,BURG);
   s.addText("25,000円は貯金になりません。50,000マイルは、ワインのある一年になります。",
-    t({x:M+0.45,y:4.64,w:CW-0.9,h:0.42,fontSize:18,bold:true,color:GOLD_L,align:"center"}));
+    t({x:M+0.45,y:4.75,w:CW-0.9,h:0.42,fontSize:18,bold:true,color:GOLD_L,align:"center"}));
   [["税務はカードのマイルと同じ","AMEX等のマイレージ還元は法人・個人とも課税されません。ワインマイルも同じ「利用に応じた還元」として設計します。※顧問税理士の確認を前提"],
    ["一般サービスへの交換は 0.5","ワイン関連の一般サービスへは0.5で交換可能。比べたうえで「ワインならWineBank経済圏が一番得だ」と分かる設計にします。"],
    ["手間は、ゼロ","手数料は年1回の自動引落。マイルは自動付与。使うときは、お店で名前を言うだけです。"]
   ].forEach((v,i)=>{
-    const x=M+i*4.14; card(s,x,5.42,3.86,1.2,PANEL);
-    s.addText(v[0], t({x:x+0.3,y:5.58,w:3.26,h:0.3,fontSize:12.5,bold:true,color:GOLD_L}));
-    s.addText(v[1], t({x:x+0.3,y:5.92,w:3.26,h:0.62,fontSize:9.5,color:MUTE,lineSpacing:13}));
+    const x=M+i*4.14; card(s,x,5.5,3.86,1.16,PANEL);
+    s.addText(v[0], t({x:x+0.3,y:5.64,w:3.26,h:0.3,fontSize:12.5,bold:true,color:GOLD_L}));
+    s.addText(v[1], t({x:x+0.3,y:5.96,w:3.26,h:0.62,fontSize:9.5,color:MUTE,lineSpacing:13}));
   });
 }
 
@@ -224,7 +254,7 @@ const lft=(x,o)=>cel(x,Object.assign({align:"left"},o||{}));
     t({x:M+0.4,y:5.58,w:5.1,h:0.8,fontSize:11,color:MUTE,lineSpacing:16}));
   card(s,M+6.16,4.98,5.9,1.62,BURG);
   s.addText("真水で出ていくのは、系列店外だけ", t({x:M+6.56,y:5.18,w:5.1,h:0.32,fontSize:15,bold:true,color:GOLD_L}));
-  s.addText("系列店外・一般サービスへの交換は連結でも現金流出です。ここだけはレートを0.5〜0.75に割り引き、年間付与マイルに対する上限を設ける必要があります。航空会社が自社便と提携他社便でレートを変えるのと同じ考え方です。",
+  s.addText("系列店外・一般サービスへの交換は連結でも現金流出です。ここだけはレートを0.5〜0.75に割り引き、年間付与マイルに対する上限を設ける必要があります。航空会社が自社便と提携他社便でレートを変えるのと同じ考え方です。※要検討",
     t({x:M+6.56,y:5.58,w:5.1,h:0.8,fontSize:11,color:TEXT,lineSpacing:16}));
   s.addNotes("重要：単体P/Lと連結P/Lを必ず分けて説明する。SBIには連結、系列店の店長には単体（90%が入る）を見せる。");
 }
@@ -392,7 +422,7 @@ const lft=(x,o)=>cel(x,Object.assign({align:"left"},o||{}));
     [lft("成功報酬（値上がり分）",{fill:{color:PANEL2},bold:true}),cel("25%"),cel("25%"),cel("25%")],
     [lft("グランメゾン交換レート",{fill:{color:PANEL2},bold:true}),cel("0.5円"),cel("0.5円"),cel("0.5円")],
     [lft("未公開ワインの情報",{fill:{color:PANEL2},bold:true}),cel("—"),cel("先行案内"),cel("優先割当",{bold:true,color:GOLD})],
-    [lft("WineBank CLUB",{fill:{color:PANEL2},bold:true}),cel("マイル充当・単月のみ"),cel("マイル充当・単月のみ"),cel("BLACK 無料付与",{bold:true,color:GOLD})]],
+    [lft("WineBank CLUB",{fill:{color:PANEL2},bold:true}),cel("マイル充当・単月のみ"),cel("マイル充当・単月のみ"),cel("STANDARD 無料付与",{bold:true,color:GOLD})]],
     Object.assign(tb(),{x:M,y:1.8,w:CW,colW:[3.3,2.92,2.92,2.92],rowH:[0.44,0.42,0.42,0.42,0.42,0.42,0.42,0.42]}));
   card(s,M,5.32,5.9,1.3,PANEL);
   s.addText("廃止するもの", t({x:M+0.4,y:5.46,w:5.1,h:0.3,fontSize:14,bold:true,color:AMBER}));
@@ -405,27 +435,30 @@ const lft=(x,o)=>cel(x,Object.assign({align:"left"},o||{}));
 }
 
 /* 16 WINEBANK CLUB */{
-  const s=base("WINEBANK CLUB","WineBank CLUB とは何か（1枚で）",
-    "投資会員制度とは別の、飲むための会員制度です。BLACKがキラーコンテンツになります。");
-  [["STANDARD","マイル充当・単月利用可",["提携店でのコルケージ無料","グループ飲食店の優待","会員向けワイン価格"],PANEL,MUTE],
-   ["GOLD","年会費制",["上記に加え、生産者イベント招待","マーケットプレイス送料優遇","コンシェルジュによる選定"],PANEL,GOLD_L],
-   ["BLACK","SIGNATURE会員へ無料付与",["未公開ワインの優先割当","グランメゾンVIP席の優先予約","ソムリエへの直接相談","会員限定のクローズドな会"],PANEL2,GOLD]
+  const s=base("WINEBANK CLUB","WineBank CLUB とは",
+    "会員制度とは別の、飲むための会員制度。レストラン販売価格の半額（原価相当）でワインが楽しめます。");
+  [["STANDARD","8,800円〜　マイル充当・単月利用可",
+    ["提携店でのコルケージ無料","グループ飲食店の優待","会員向けワイン価格（半額）","提携店向けワイン配送料無料"],PANEL,TEXT],
+   ["GOLD","年会費制",
+    ["上記に加え、生産者イベント招待","ザルト高級グラス使用","個室優先利用・予約4名以上","コンシェルジュによる選定"],PANEL,GOLD_L],
+   ["BLACK","年間5,000万以上、もしくは年会費60万円",
+    ["未公開ワインの優先割当","ワイン樽買いの権利","ソムリエへの直接相談","会員限定のクローズドな会","国内外ワイナリーツアー"],PANEL2,GOLD]
   ].forEach((c,i)=>{
-    const x=M+i*4.14; card(s,x,1.82,3.86,3.2,c[3]);
-    s.addText(c[0], t({x:x+0.32,y:2.04,w:3.24,h:0.4,fontSize:20,bold:true,color:c[4]}));
-    s.addText(c[1], t({x:x+0.32,y:2.5,w:3.24,h:0.3,fontSize:11,color:MUTE}));
+    const x=M+i*4.14; card(s,x,1.82,3.86,3.32,c[3]);
+    s.addText(c[0], t({x:x+0.32,y:2.02,w:3.24,h:0.4,fontSize:20,bold:true,color:c[4]}));
+    s.addText(c[1], t({x:x+0.32,y:2.46,w:3.24,h:0.42,fontSize:10.5,color:MUTE,lineSpacing:14}));
     s.addText(c[2].map((b,j)=>({text:b,options:{bullet:{indent:12},breakLine:j<c[2].length-1}})),
-      t({x:x+0.32,y:2.9,w:3.24,h:1.95,fontSize:11.5,valign:"top",paraSpaceAfter:10,lineSpacing:17}));
+      t({x:x+0.32,y:2.98,w:3.24,h:2.06,fontSize:11,valign:"top",paraSpaceAfter:9,lineSpacing:16}));
   });
-  card(s,M,5.2,5.9,1.42,BURG);
-  s.addText("BLACKだけは、お金では買えない設計に", t({x:M+0.4,y:5.4,w:5.1,h:0.3,fontSize:14.5,bold:true,color:GOLD_L}));
-  s.addText("年会費を払えば入れる会員権は、いくらでもあります。SIGNATURE（1,000万）に付帯するかたちにすれば、BLACKは「買えないもの」になり、それ自体がSIGNATUREを売る理由になります。",
-    t({x:M+0.4,y:5.76,w:5.1,h:0.72,fontSize:11,color:TEXT,lineSpacing:16}));
-  card(s,M+6.16,5.2,5.9,1.42,PANEL);
-  s.addText("要確定：ランク別の年会費と特典の実数", t({x:M+6.56,y:5.4,w:5.1,h:0.3,fontSize:14.5,bold:true,color:AMBER}));
-  s.addText("本頁は構造の提案です。現行CLUBの年会費・特典・提携店数の実数をいただければ、そのまま確定版に差し替えます。BLACKの特典内容は、SIGNATUREの購買動機を決める最重要項目です。",
-    t({x:M+6.56,y:5.76,w:5.1,h:0.72,fontSize:11,color:MUTE,lineSpacing:16}));
-  s.addNotes("現行WineBank CLUBのランク・年会費・特典の正確な情報を未入手のため、構造のみ提案。実数を反映して確定させる必要がある。");
+  card(s,M,5.32,5.9,1.3,BURG);
+  s.addText("「半額」が、すべてを説明します", t({x:M+0.4,y:5.46,w:5.1,h:0.3,fontSize:14,bold:true,color:GOLD_L}));
+  s.addText("レストランで3倍の値がつくワインが、原価相当で飲める。これ以上わかりやすい入会理由はありません。ワイン好きにとっては、これ自体がキラーコンテンツです。",
+    t({x:M+0.4,y:5.78,w:5.1,h:0.74,fontSize:10.5,color:TEXT,lineSpacing:15}));
+  card(s,M+6.16,5.32,5.9,1.3,PANEL);
+  s.addText("マイルとの接続：まず体験させ、引き上げる", t({x:M+6.56,y:5.46,w:5.1,h:0.3,fontSize:14,bold:true,color:GOLD_L}));
+  s.addText("100万・400万会員はマイル充当で単月利用。SIGNATUREにはSTANDARDを無料付与。半額を一度体験した人が、GOLD・BLACKへ自分から上がっていきます。",
+    t({x:M+6.56,y:5.78,w:5.1,h:0.74,fontSize:10.5,color:MUTE,lineSpacing:15}));
+  s.addNotes("STANDARD 8,800円〜の課金サイクル（月額／年額）は要確認。");
 }
 
 /* 17 NO YEN */{
@@ -522,7 +555,7 @@ const lft=(x,o)=>cel(x,Object.assign({align:"left"},o||{}));
     s.addText(v[1], t({x:M+2.56,y:y,w:2.94,h:0.42,fontSize:9.5,color:MUTE,lineSpacing:13}));
   });
   card(s,M+6.16,1.8,5.9,3.5,PANEL);
-  s.addText("新規獲得：100本お預かりプラン", t({x:M+6.56,y:2.0,w:5.1,h:0.34,fontSize:16,bold:true,color:GOLD_L}));
+  s.addText("新規獲得：VVIP限定 100本お預かりプラン", t({x:M+6.56,y:2.0,w:5.1,h:0.34,fontSize:16,bold:true,color:GOLD_L}));
   s.addText("買わなくていい。いま自宅にある100本を預けるだけ。購入資金ゼロで在庫が増え、これまでWineBankの顧客層でなかった愛好家層に入口が開きます。",
     t({x:M+6.56,y:2.42,w:5.1,h:0.72,fontSize:11,color:MUTE,lineSpacing:16}));
   [["摩擦が、ゼロ","購入も入会金も不要。「セラーが満杯」という最大のペインを直撃する"],
