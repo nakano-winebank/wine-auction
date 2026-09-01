@@ -101,16 +101,16 @@ const lft=(x,o)=>cel(x,Object.assign({align:"left"},o||{}));
 
 /* 2c BUSINESS CASE ★ -------------------------------------------------- */{
   const s=base("BUSINESS CASE","数字で見ると：同じキャッシュで、ワインは2.5倍",
-    "WineBank単体ベース。ワイン1億円／値上がり6%・金利3%・保管料1.5%・粗利30%・管理手数料2.5%");
-  s.addText("販売ミックス：100万×52名 ＋ 400万×7名 ＋ 1,000万×2名 ＝ 1億円　／　マイル発行 368万円（原価率44.5%＝想定交換ミックス）　※単位：万円",
+    "WineBank単体ベース。ワイン1億円／値上がり6%・金利3%・保管料210円/本（鈴与実額）・粗利30%・管理手数料2.5%");
+  s.addText("販売ミックス：100万×52名 ＋ 400万×7名 ＋ 1,000万×2名 ＝ 1億円　／　還元率 3.5/4.5/5.5%　マイル発行 418万円（原価率43.6%）　※単位：万円",
     t({x:M,y:1.64,w:CW,h:0.28,fontSize:10.5,color:GOLD}));
   s.addTable([[hdr(""),hdr("① 1億を保有し続ける"),hdr("② 1億を販売＋1.2億を新規買付"),hdr("差")],
-    [lft("PL（営業損益）",{fill:{color:PANEL2},bold:true}),cel("▲450",{color:RED}),
-     cel("+2,351",{color:MINT,bold:true}),cel("+2,801",{color:MINT,bold:true})],
-    [lft("新規買付前のCF",{fill:{color:PANEL2},bold:true}),cel("▲450",{color:RED}),
-     cel("+9,351",{color:MINT,bold:true}),cel("+9,801",{color:MINT,bold:true})],
-    [lft("純CF",{fill:{color:PANEL2},bold:true}),cel("▲450"),cel("▲649"),
-     cel("▲199",{color:AMBER,bold:true})],
+    [lft("PL（営業損益）",{fill:{color:PANEL2},bold:true}),cel("▲405",{color:RED}),
+     cel("+2,495",{color:MINT,bold:true}),cel("+2,900",{color:MINT,bold:true})],
+    [lft("新規買付前のCF",{fill:{color:PANEL2},bold:true}),cel("▲405",{color:RED}),
+     cel("+9,495",{color:MINT,bold:true}),cel("+9,900",{color:MINT,bold:true})],
+    [lft("純CF",{fill:{color:PANEL2},bold:true}),cel("▲405"),cel("▲505"),
+     cel("▲100",{color:AMBER,bold:true})],
     [lft("ワイン在庫（簿価）",{fill:{color:PANEL2},bold:true}),cel("10,000"),cel("15,000"),cel("+5,000",{color:MINT})],
     [lft("預かり資産（会員所有）",{fill:{color:PANEL2},bold:true}),cel("0"),
      cel("10,000",{color:GOLD,bold:true}),cel("+10,000",{color:MINT,bold:true})],
@@ -122,12 +122,12 @@ const lft=(x,o)=>cel(x,Object.assign({align:"left"},o||{}));
   card(s,M,5.14,5.9,1.48,BURG);
   s.addText("純CFはほぼ同じ。なのに、ワインは2.5倍。",
     t({x:M+0.4,y:5.3,w:5.1,h:0.32,fontSize:15,bold:true,color:GOLD_L}));
-  s.addText("▲450万と▲649万。差は199万円です。同じだけ現金を使って、セラーのワインは1億から2億5,000万へ。しかもうち1億は、会員のお金で買われたワインです。",
+  s.addText("▲405万と▲505万。差は100万円です。同じだけ現金を使って、セラーのワインは1億から2億5,000万へ。しかもうち1億は、会員のお金で買われたワインです。",
     t({x:M+0.4,y:5.66,w:5.1,h:0.86,fontSize:10.5,color:TEXT,lineSpacing:15}));
   card(s,M+6.16,5.14,5.9,1.48,PANEL);
   s.addText("同じ1億が、コストから収益に変わる。",
     t({x:M+6.56,y:5.3,w:5.1,h:0.32,fontSize:15,bold:true,color:GOLD_L}));
-  s.addText("自社で持つと 年▲450万（金利300＋保管150）。会員に持たせて預かると、現金ベースは▲64万（手数料250−保管150−マイル164）ですが、成功報酬が年169万発生します。差引 年+105万。同じワインで年555万ひっくり返ります。",
+  s.addText("自社で持つと 年▲405万（金利300＋保管105）。会員に持たせて預かると 年+13万（手数料250−保管105−マイル182＋オークション50）。成功報酬169万を含めれば +182万。同じワインで年587万ひっくり返ります。",
     t({x:M+6.56,y:5.66,w:5.1,h:0.86,fontSize:10.5,color:MUTE,lineSpacing:15}));
   s.addNotes("すべて単体ベース。連結（マイル原価17.5%）ならPLは+2,451万、継続は+186万/年。保管料1.5%と粗利30%が最大の変数。");
 }
@@ -135,33 +135,33 @@ const lft=(x,o)=>cel(x,Object.assign({align:"left"},o||{}));
 /* 2d ACCUMULATION ★ --------------------------------------------------- */{
   const s=base("ACCUMULATION","「手出しは、増え続けないか」",
     "単発の試算で黒字でも、マイルの支払いが年々膨らんで食い潰すのではないか——ご指摘への回答です。");
-  s.addText("毎年1億円ずつ販売を続けた場合。単体ベース、マイル原価率44.5%。　※単位：万円",
+  s.addText("毎年1億円ずつ販売を続けた場合。単体ベース、還元率3.5/4.5/5.5%、マイル原価率43.6%。　※単位：万円",
     t({x:M,y:1.64,w:CW,h:0.28,fontSize:10.5,color:GOLD}));
-  s.addTable([[hdr("年"),hdr("預かり資産"),hdr("粗利"),hdr("管理手数料"),hdr("保管・保険"),hdr("マイル費用"),hdr("成功報酬\n（発生）"),hdr("年間計")],
-    [lft("1年",{fill:{color:PANEL2},bold:true}),cel("10,000"),cel("3,000"),cel("+250"),
-     cel("▲150",{color:AMBER}),cel("▲164",{color:AMBER}),cel("+150",{color:GOLD}),cel("+3,086",{color:MINT,bold:true})],
-    [lft("3年",{fill:{color:PANEL2},bold:true}),cel("30,000"),cel("3,000"),cel("+750"),
-     cel("▲450",{color:AMBER}),cel("▲491",{color:AMBER}),cel("+450",{color:GOLD}),cel("+3,259",{color:MINT,bold:true})],
-    [lft("5年",{fill:{color:PANEL2},bold:true}),cel("50,000"),cel("3,000"),cel("+1,250"),
-     cel("▲750",{color:AMBER}),cel("▲819",{color:AMBER}),cel("+750",{color:GOLD}),cel("+3,431",{color:MINT,bold:true})],
+  s.addTable([[hdr("年"),hdr("預かり資産"),hdr("粗利"),hdr("手数料−保管"),hdr("マイル費用"),hdr("オーク\nション"),hdr("成功報酬\n（発生）"),hdr("年間計")],
+    [lft("1年",{fill:{color:PANEL2},bold:true}),cel("10,000"),cel("3,000"),cel("+145"),
+     cel("▲182",{color:AMBER}),cel("+50",{color:MINT}),cel("+150",{color:GOLD}),cel("+3,163",{color:MINT,bold:true})],
+    [lft("3年",{fill:{color:PANEL2},bold:true}),cel("30,000"),cel("3,000"),cel("+435"),
+     cel("▲546",{color:AMBER}),cel("+150",{color:MINT}),cel("+450",{color:GOLD}),cel("+3,489",{color:MINT,bold:true})],
+    [lft("5年",{fill:{color:PANEL2},bold:true}),cel("50,000"),cel("3,000"),cel("+725"),
+     cel("▲910",{color:AMBER}),cel("+250",{color:MINT}),cel("+750",{color:GOLD}),cel("+3,815",{color:MINT,bold:true})],
     [lft("10年",{fill:{color:BURG},bold:true}),cel("100,000",{fill:{color:BURG}}),cel("3,000",{fill:{color:BURG}}),
-     cel("+2,500",{fill:{color:BURG}}),cel("▲1,500",{fill:{color:BURG},color:AMBER}),
-     cel("▲1,638",{fill:{color:BURG},color:AMBER}),cel("+1,500",{fill:{color:BURG},color:GOLD_L}),
-     cel("+3,862",{fill:{color:BURG},color:MINT,bold:true})]],
+     cel("+1,450",{fill:{color:BURG}}),cel("▲1,820",{fill:{color:BURG},color:AMBER}),
+     cel("+500",{fill:{color:BURG},color:MINT}),cel("+1,500",{fill:{color:BURG},color:GOLD_L}),
+     cel("+4,630",{fill:{color:BURG},color:MINT,bold:true})]],
     Object.assign(tb(),{x:M,y:1.98,w:CW,colW:[0.9,1.7,1.3,1.7,1.6,1.6,1.5,1.76],
       rowH:[0.5,0.44,0.44,0.44,0.48]}));
   card(s,M,4.52,5.9,1.22,BURG);
-  s.addText("マイルの原資は、管理手数料ではなく成功報酬です。",
+  s.addText("手数料だけでは足りない。だから3つで支えます。",
     t({x:M+0.4,y:4.66,w:5.1,h:0.32,fontSize:15,bold:true,color:GOLD_L}));
-  s.addText("手数料2.5%から保管1.5%を引くと残りは1.0%。マイル1.64%はこれを超えます。埋めているのは値上がり益25%（年1.5%相当）。先に出して、値上がりで回収する構造です。",
+  s.addText("手数料2.5%から保管1.05%（鈴与実額210円/本）を引くと残りは1.45%。マイル1.82%はこれを超えます。差を埋めるのがオークション手数料0.5%と、値上がり益25%（年1.5%相当）です。",
     t({x:M+0.4,y:5.0,w:5.1,h:0.7,fontSize:10.5,color:TEXT,lineSpacing:15}));
   card(s,M+6.16,4.52,5.9,1.22,PANEL);
   s.addText("すべて預かり資産に比例するので、比は変わりません。",
     t({x:M+6.56,y:4.66,w:5.1,h:0.32,fontSize:15,bold:true,color:GOLD_L}));
-  s.addText("手数料2.5%・保管1.5%・マイル1.64%・成功報酬1.5%。全部が定率なので、規模が何倍になっても差引0.86%は動きません。手出しが収入を追い越す構造になっていません。",
+  s.addText("手数料2.5%・保管1.05%・マイル1.82%・オークション0.5%・成功報酬1.5%。全部が定率なので、規模が何倍になっても差引1.63%は動きません。手出しが収入を追い越す構造ではありません。",
     t({x:M+6.56,y:5.0,w:5.1,h:0.7,fontSize:10.5,color:MUTE,lineSpacing:15}));
   card(s,M,5.9,CW,0.72,PANEL2);
-  s.addText("ただし現金ベースでは年▲64万。成功報酬は出口までキャッシュになりません。ここは資金繰りとして別途見る必要があります。",
+  s.addText("現金ベースでも年+13万。ただし成功報酬169万は出口までキャッシュになりません。資金繰りは別途見る必要があります。",
     t({x:M+0.45,y:6.08,w:CW-0.9,h:0.4,fontSize:13.5,bold:true,color:AMBER}));
   s.addNotes("従来「継続収支+86万/年」としていたのは保管料1.5%の控除漏れ。正しくは現金ベース▲64万/年、成功報酬の発生を含めて+105万/年。");
 }
@@ -266,7 +266,7 @@ const lft=(x,o)=>cel(x,Object.assign({align:"left"},o||{}));
   const s=base("SOLUTION","設計：ワイン貯金の3ステップ","所有権は会員に。管理手数料を払う代わりに、その倍のマイルを受け取る。");
   [["ワインを購入し、預ける","100万円","所有権は会員。定温セラーで保管・動産保険付帯。WineBankに賃貸する"],
    ["管理手数料を払う","▲25,000円","年率2.5%。保管料・保険料を含む"],
-   ["ワインマイルを得る","50,000マイル","年率5%相当。会食・贈答・イベント・オークション・ワイナートに使える"]
+   ["ワインマイルを得る","35,000マイル","年率3.5%（PRESTIGE）。会食・贈答・イベント・オークション・スクールに使える"]
   ].forEach((v,i)=>{
     const x=M+i*4.32; card(s,x,1.9,3.9,2.4); badge(s,x+0.32,2.16,i+1);
     s.addText(v[0], t({x:x+0.8,y:2.18,w:2.82,h:0.32,fontSize:13.5,bold:true}));
@@ -275,9 +275,9 @@ const lft=(x,o)=>cel(x,Object.assign({align:"left"},o||{}));
     if(i<2) s.addText("▶", t({x:x+3.94,y:2.88,w:0.36,h:0.4,fontSize:17,color:GOLD,align:"center"}));
   });
   card(s,M,4.6,CW,1.0,PANEL2);
-  s.addText("会員は2.5万円払って、5万円分を受け取る。差額の2.5万円を「貯金」していると考える。",
+  s.addText("会員は2.5万円払って、3.5万円分を受け取る。差額の1万円を「貯金」していると考える。",
     t({x:M+0.45,y:4.82,w:CW-0.9,h:0.42,fontSize:19,bold:true,color:GOLD_L}));
-  s.addText("さらに、値上がり分の75%も会員のものとして残ります。",
+  s.addText("上位ランクは4.5%・5.5%。さらに値上がり分の75%も会員のものとして残ります。",
     t({x:M+0.45,y:5.26,w:CW-0.9,h:0.3,fontSize:12.5,color:TEXT}));
   card(s,M,5.76,CW,0.86,BURG);
   s.addText("加えて、落札・出品・会食・贈答・イベント参加のたびに限定マイルが貯まります。",
@@ -319,28 +319,30 @@ const lft=(x,o)=>cel(x,Object.assign({align:"left"},o||{}));
 
 /* 8 UNIT ECONOMICS */{
   const s=base("UNIT ECONOMICS","マイル原価は「どこで使われるか」で決まる",
-    "WineBank単体ベース。系列店へはマイル額面×レート×90%を保証。額面100に対する当社コストで表示。");
+    "WineBank単体ベース。系列店へはマイル額面×レート×90%を保証。スクール・イベントは原価率50%。額面100に対する当社コスト。");
   s.addTable([[hdr("交換先"),hdr("レート"),hdr("単体コスト"),hdr("連結コスト（参考）"),hdr("方針")],
     [lft("系列レストラン"),cel("1.0円"),cel("90",{color:RED,bold:true}),cel("30"),cel("要誘導",{color:AMBER})],
     [lft("グランメゾン",{fill:{color:PANEL2}}),cel("0.5円",{fill:{color:PANEL2},bold:true,color:GOLD}),
      cel("45",{fill:{color:PANEL2}}),cel("15",{fill:{color:PANEL2}}),cel("◎",{color:MINT,bold:true,fill:{color:PANEL2}})],
     [lft("WineBank CLUB 充当"),cel("1.0円"),cel("0",{color:MINT,bold:true}),cel("0"),cel("◎",{color:MINT,bold:true})],
     [lft("オークション成約手数料"),cel("1.0円"),cel("0",{color:MINT,bold:true}),cel("0"),cel("◎ 最優先で誘導",{color:MINT,bold:true})],
+    [lft("ワインスクール受講料"),cel("1.0円"),cel("50",{color:AMBER}),cel("50"),cel("○")],
+    [lft("会員交流イベント参加費"),cel("1.0円"),cel("50",{color:AMBER}),cel("50"),cel("○")],
     [lft("ワイン追加購入"),cel("1.0円"),cel("80",{color:RED}),cel("80"),cel("上限20%",{color:AMBER})],
     [lft("系列店外の飲食"),cel("0.75円"),cel("75",{color:RED}),cel("75"),cel("上限必須",{color:AMBER})],
     [lft("失効"),cel("—"),cel("0",{color:MINT,bold:true}),cel("0"),cel("◎",{color:MINT,bold:true})]],
     Object.assign(tb(),{x:M,y:1.86,w:CW,colW:[3.7,1.5,2.2,2.9,1.76],
-      rowH:[0.4,0.36,0.36,0.36,0.36,0.36,0.36,0.36]}));
-  s.addText("想定ミックス：系列店35% ／ グランメゾン20% ／ CLUB充当15% ／ オークション10% ／ 追加購入5% ／ 失効15%　→　加重平均 単体44.5%",
-    t({x:M,y:4.9,w:CW,h:0.28,fontSize:10.5,color:GOLD}));
-  card(s,M,5.28,5.9,1.34,BURG);
-  s.addText("損益分岐は 2つあります", t({x:M+0.4,y:5.42,w:5.1,h:0.34,fontSize:17,bold:true,color:GOLD_L}));
-  s.addText("現金ベース（手数料2.5%−保管1.5%）÷ 発行3.68% ＝ 27.2%。成功報酬（年1.5%相当）を含めると 73.1%。想定ミックスの44.5%は、現金では届かず、成功報酬込みなら29ポイントの余裕があります。",
-    t({x:M+0.4,y:5.8,w:5.1,h:0.74,fontSize:10.5,color:TEXT,lineSpacing:15}));
-  card(s,M+6.16,5.28,5.9,1.34,PANEL);
-  s.addText("だからこそ、どこで使わせるかを設計する", t({x:M+6.56,y:5.42,w:5.1,h:0.34,fontSize:15,bold:true,color:AMBER}));
-  s.addText("原価ゼロのオークション・CLUB充当へ誘導できれば33.2%まで下がり、現金ベースの赤字も縮みます。全額を系列店1.0円で使われると90%となり、成功報酬を含めても赤字です。",
-    t({x:M+6.56,y:5.8,w:5.1,h:0.74,fontSize:10.5,color:MUTE,lineSpacing:15}));
+      rowH:[0.38,0.32,0.32,0.32,0.32,0.32,0.32,0.32,0.32,0.32]}));
+  s.addText("想定ミックス：系列店25% ／ グランメゾン18% ／ CLUB充当12% ／ オークション12% ／ スクール10% ／ イベント8% ／ 追加購入5% ／ 失効10%　→　加重平均 43.6%",
+    t({x:M,y:5.06,w:CW,h:0.28,fontSize:10,color:GOLD}));
+  card(s,M,5.42,5.9,1.2,BURG);
+  s.addText("損益分岐は 46.7%。想定は 43.6%。", t({x:M+0.4,y:5.54,w:5.1,h:0.32,fontSize:16,bold:true,color:GOLD_L}));
+  s.addText("（手数料2.5% − 保管1.05% ＋ オークション0.5%）÷ 発行4.18% ＝ 46.7%。現金ベースでも3ポイントの余裕があり、成功報酬を含めればさらに厚くなります。",
+    t({x:M+0.4,y:5.86,w:5.1,h:0.66,fontSize:10,color:TEXT,lineSpacing:14}));
+  card(s,M+6.16,5.42,5.9,1.2,PANEL);
+  s.addText("余裕は薄い。だから誘導の設計で決まる。", t({x:M+6.56,y:5.54,w:5.1,h:0.32,fontSize:15,bold:true,color:AMBER}));
+  s.addText("系列店1.0円に偏るほど90%へ近づき赤字化します。原価ゼロのオークション・CLUB充当、原価50%のスクール・イベントへ誘導するほど収支は改善します。",
+    t({x:M+6.56,y:5.86,w:5.1,h:0.66,fontSize:10,color:MUTE,lineSpacing:14}));
   s.addNotes("継続収支：基本ケース+86万/年、良好ケース（オークション誘導強化）+128万/年、最悪ケース▲81万/年。90%保証は系列店への送客投資であり、連結では相殺される。");
 }
 
@@ -504,8 +506,8 @@ const lft=(x,o)=>cel(x,Object.assign({align:"left"},o||{}));
   const s=base("MEMBERSHIP","新・会員制度（差し替え案）","手数料はフラットに。ランク差は還元率と、届く情報に寄せる。");
   s.addTable([[hdr(""),hdr("PRESTIGE  100万〜"),hdr("GOLD  400万〜"),hdr("SIGNATURE  1,000万〜")],
     [lft("管理手数料（年）",{fill:{color:PANEL2},bold:true}),cel("2.5%"),cel("2.5%"),cel("2.5%")],
-    [lft("ワインマイル還元率",{fill:{color:PANEL2},bold:true}),cel("3%",{bold:true,color:GOLD}),cel("4%",{bold:true,color:GOLD}),cel("5%",{bold:true,color:GOLD})],
-    [lft("実質",{fill:{color:PANEL2},bold:true}),cel("+0.5%",{color:MINT}),cel("+1.5%",{color:MINT}),cel("+2.5%",{color:MINT,bold:true})],
+    [lft("ワインマイル還元率",{fill:{color:PANEL2},bold:true}),cel("3.5%",{bold:true,color:GOLD}),cel("4.5%",{bold:true,color:GOLD}),cel("5.5%",{bold:true,color:GOLD})],
+    [lft("実質",{fill:{color:PANEL2},bold:true}),cel("+1.0%",{color:MINT}),cel("+2.0%",{color:MINT}),cel("+3.0%",{color:MINT,bold:true})],
     [lft("成功報酬（値上がり分）",{fill:{color:PANEL2},bold:true}),cel("25%"),cel("25%"),cel("25%")],
     [lft("グランメゾン交換レート",{fill:{color:PANEL2},bold:true}),cel("0.5円"),cel("0.5円"),cel("0.5円")],
     [lft("未公開ワインの情報",{fill:{color:PANEL2},bold:true}),cel("—"),cel("先行案内"),cel("優先割当",{bold:true,color:GOLD})],
@@ -517,7 +519,7 @@ const lft=(x,o)=>cel(x,Object.assign({align:"left"},o||{}));
     t({x:M+0.4,y:5.78,w:5.1,h:0.74,fontSize:10.5,color:MUTE,lineSpacing:15}));
   card(s,M+6.16,5.32,5.9,1.3,BURG);
   s.addText("刻むなら、還元率と情報を刻む", t({x:M+6.56,y:5.46,w:5.1,h:0.3,fontSize:14,bold:true,color:GOLD_L}));
-  s.addText("「上のランクだと還元が1.7倍」「未公開ワインが先に届く」は伝わります。レートを刻むのはやめ、体感できる2軸だけに集約します。",
+  s.addText("100万でも実質+1.0%を確保。額面0.5pp上げても当社の実費用は0.22ppしか増えないため、還元率は上げるほうが費用対効果が高い設計です。",
     t({x:M+6.56,y:5.78,w:5.1,h:0.74,fontSize:10.5,color:TEXT,lineSpacing:15}));
 }
 
