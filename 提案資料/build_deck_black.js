@@ -127,7 +127,7 @@ const lft=(x,o)=>cel(x,Object.assign({align:"left"},o||{}));
   card(s,M+6.16,5.14,5.9,1.48,PANEL);
   s.addText("同じ1億が、コストから収益に変わる。",
     t({x:M+6.56,y:5.3,w:5.1,h:0.32,fontSize:15,bold:true,color:GOLD_L}));
-  s.addText("自社で持つと 年▲450万（金利300＋保管150）。会員に持たせて預かると 年+86万（手数料250−マイル164）。同じワインで、年536万ひっくり返ります。加えて成功報酬が5年後846万。",
+  s.addText("自社で持つと 年▲450万（金利300＋保管150）。会員に持たせて預かると、現金ベースは▲64万（手数料250−保管150−マイル164）ですが、成功報酬が年169万発生します。差引 年+105万。同じワインで年555万ひっくり返ります。",
     t({x:M+6.56,y:5.66,w:5.1,h:0.86,fontSize:10.5,color:MUTE,lineSpacing:15}));
   s.addNotes("すべて単体ベース。連結（マイル原価17.5%）ならPLは+2,451万、継続は+186万/年。保管料1.5%と粗利30%が最大の変数。");
 }
@@ -137,33 +137,33 @@ const lft=(x,o)=>cel(x,Object.assign({align:"left"},o||{}));
     "単発の試算で黒字でも、マイルの支払いが年々膨らんで食い潰すのではないか——ご指摘への回答です。");
   s.addText("毎年1億円ずつ販売を続けた場合。単体ベース、マイル原価率44.5%。　※単位：万円",
     t({x:M,y:1.64,w:CW,h:0.28,fontSize:10.5,color:GOLD}));
-  s.addTable([[hdr("年"),hdr("預かり資産"),hdr("粗利"),hdr("管理手数料"),hdr("マイル費用"),hdr("年間計"),hdr("累計マイル"),hdr("累計利益")],
-    [lft("1年",{fill:{color:PANEL2},bold:true}),cel("10,000"),cel("3,000"),cel("250"),cel("▲164",{color:AMBER}),
-     cel("+3,086",{color:MINT,bold:true}),cel("164"),cel("3,086",{color:GOLD})],
-    [lft("3年",{fill:{color:PANEL2},bold:true}),cel("30,000"),cel("3,000"),cel("750"),cel("▲491",{color:AMBER}),
-     cel("+3,259",{color:MINT,bold:true}),cel("983"),cel("9,517",{color:GOLD})],
-    [lft("5年",{fill:{color:PANEL2},bold:true}),cel("50,000"),cel("3,000"),cel("1,250"),cel("▲819",{color:AMBER}),
-     cel("+3,431",{color:MINT,bold:true}),cel("2,456"),cel("16,294",{color:GOLD})],
+  s.addTable([[hdr("年"),hdr("預かり資産"),hdr("粗利"),hdr("管理手数料"),hdr("保管・保険"),hdr("マイル費用"),hdr("成功報酬\n（発生）"),hdr("年間計")],
+    [lft("1年",{fill:{color:PANEL2},bold:true}),cel("10,000"),cel("3,000"),cel("+250"),
+     cel("▲150",{color:AMBER}),cel("▲164",{color:AMBER}),cel("+150",{color:GOLD}),cel("+3,086",{color:MINT,bold:true})],
+    [lft("3年",{fill:{color:PANEL2},bold:true}),cel("30,000"),cel("3,000"),cel("+750"),
+     cel("▲450",{color:AMBER}),cel("▲491",{color:AMBER}),cel("+450",{color:GOLD}),cel("+3,259",{color:MINT,bold:true})],
+    [lft("5年",{fill:{color:PANEL2},bold:true}),cel("50,000"),cel("3,000"),cel("+1,250"),
+     cel("▲750",{color:AMBER}),cel("▲819",{color:AMBER}),cel("+750",{color:GOLD}),cel("+3,431",{color:MINT,bold:true})],
     [lft("10年",{fill:{color:BURG},bold:true}),cel("100,000",{fill:{color:BURG}}),cel("3,000",{fill:{color:BURG}}),
-     cel("2,500",{fill:{color:BURG}}),cel("▲1,638",{fill:{color:BURG},color:AMBER}),
-     cel("+3,862",{fill:{color:BURG},color:MINT,bold:true}),cel("9,007",{fill:{color:BURG}}),
-     cel("34,743",{fill:{color:BURG},color:GOLD_L,bold:true})]],
-    Object.assign(tb(),{x:M,y:1.98,w:CW,colW:[1.1,1.9,1.4,1.8,1.8,1.6,1.5,0.96],
-      rowH:[0.48,0.44,0.44,0.44,0.48]}));
-  card(s,M,4.5,5.9,1.24,BURG);
-  s.addText("マイルも手数料も、同じ預かり資産に比例します。",
-    t({x:M+0.4,y:4.64,w:5.1,h:0.32,fontSize:15,bold:true,color:GOLD_L}));
-  s.addText("マイル費用は預かり資産の1.64%、管理手数料は2.5%。どちらも定率なので、規模がどれだけ大きくなっても比は変わりません。手出しが収入を追い越す構造になっていない、というのが答えです。",
-    t({x:M+0.4,y:4.98,w:5.1,h:0.7,fontSize:10.5,color:TEXT,lineSpacing:15}));
-  card(s,M+6.16,4.5,5.9,1.24,PANEL);
-  s.addText("販売を止めても、ストックだけで回ります。",
-    t({x:M+6.56,y:4.64,w:5.1,h:0.32,fontSize:15,bold:true,color:GOLD_L}));
-  s.addText("新規販売がゼロでも、預かり資産1億あたり年+86万。5億で+431万、10億で+862万。赤字になるのはマイル原価率が67.9%を超えたときだけです。",
-    t({x:M+6.56,y:4.98,w:5.1,h:0.7,fontSize:10.5,color:MUTE,lineSpacing:15}));
+     cel("+2,500",{fill:{color:BURG}}),cel("▲1,500",{fill:{color:BURG},color:AMBER}),
+     cel("▲1,638",{fill:{color:BURG},color:AMBER}),cel("+1,500",{fill:{color:BURG},color:GOLD_L}),
+     cel("+3,862",{fill:{color:BURG},color:MINT,bold:true})]],
+    Object.assign(tb(),{x:M,y:1.98,w:CW,colW:[0.9,1.7,1.3,1.7,1.6,1.6,1.5,1.76],
+      rowH:[0.5,0.44,0.44,0.44,0.48]}));
+  card(s,M,4.52,5.9,1.22,BURG);
+  s.addText("マイルの原資は、管理手数料ではなく成功報酬です。",
+    t({x:M+0.4,y:4.66,w:5.1,h:0.32,fontSize:15,bold:true,color:GOLD_L}));
+  s.addText("手数料2.5%から保管1.5%を引くと残りは1.0%。マイル1.64%はこれを超えます。埋めているのは値上がり益25%（年1.5%相当）。先に出して、値上がりで回収する構造です。",
+    t({x:M+0.4,y:5.0,w:5.1,h:0.7,fontSize:10.5,color:TEXT,lineSpacing:15}));
+  card(s,M+6.16,4.52,5.9,1.22,PANEL);
+  s.addText("すべて預かり資産に比例するので、比は変わりません。",
+    t({x:M+6.56,y:4.66,w:5.1,h:0.32,fontSize:15,bold:true,color:GOLD_L}));
+  s.addText("手数料2.5%・保管1.5%・マイル1.64%・成功報酬1.5%。全部が定率なので、規模が何倍になっても差引0.86%は動きません。手出しが収入を追い越す構造になっていません。",
+    t({x:M+6.56,y:5.0,w:5.1,h:0.7,fontSize:10.5,color:MUTE,lineSpacing:15}));
   card(s,M,5.9,CW,0.72,PANEL2);
-  s.addText("10年で累計マイル支払 9,007万に対し、累計利益 3億4,743万。マイルが利益を食い潰す局面は訪れません。",
-    t({x:M+0.45,y:6.08,w:CW-0.9,h:0.4,fontSize:14,bold:true,color:GOLD_L}));
-  s.addNotes("中谷氏のご指摘への回答スライド。要点は「両方ともAUMに比例するので比率が固定される」という構造の話。");
+  s.addText("ただし現金ベースでは年▲64万。成功報酬は出口までキャッシュになりません。ここは資金繰りとして別途見る必要があります。",
+    t({x:M+0.45,y:6.08,w:CW-0.9,h:0.4,fontSize:13.5,bold:true,color:AMBER}));
+  s.addNotes("従来「継続収支+86万/年」としていたのは保管料1.5%の控除漏れ。正しくは現金ベース▲64万/年、成功報酬の発生を含めて+105万/年。");
 }
 
 /* 3 INSIGHT */{
@@ -334,12 +334,12 @@ const lft=(x,o)=>cel(x,Object.assign({align:"left"},o||{}));
   s.addText("想定ミックス：系列店35% ／ グランメゾン20% ／ CLUB充当15% ／ オークション10% ／ 追加購入5% ／ 失効15%　→　加重平均 単体44.5%",
     t({x:M,y:4.9,w:CW,h:0.28,fontSize:10.5,color:GOLD}));
   card(s,M,5.28,5.9,1.34,BURG);
-  s.addText("損益分岐は 67.9%", t({x:M+0.4,y:5.42,w:5.1,h:0.34,fontSize:17,bold:true,color:GOLD_L}));
-  s.addText("管理手数料250万 ÷ マイル発行368万。加重平均の原価率がこれを下回れば、単体でも継続収支は黒字です。想定ミックスは44.5%で、23ポイントの余裕があります。",
+  s.addText("損益分岐は 2つあります", t({x:M+0.4,y:5.42,w:5.1,h:0.34,fontSize:17,bold:true,color:GOLD_L}));
+  s.addText("現金ベース（手数料2.5%−保管1.5%）÷ 発行3.68% ＝ 27.2%。成功報酬（年1.5%相当）を含めると 73.1%。想定ミックスの44.5%は、現金では届かず、成功報酬込みなら29ポイントの余裕があります。",
     t({x:M+0.4,y:5.8,w:5.1,h:0.74,fontSize:10.5,color:TEXT,lineSpacing:15}));
   card(s,M+6.16,5.28,5.9,1.34,PANEL);
-  s.addText("赤字になるのは、たった一つの場合だけ", t({x:M+6.56,y:5.42,w:5.1,h:0.34,fontSize:15,bold:true,color:AMBER}));
-  s.addText("全額を系列店の1.0円で使われた場合のみ90%となり、継続▲81万/年。逆に言えば、どこで使わせるかの設計が、そのまま収支になります。",
+  s.addText("だからこそ、どこで使わせるかを設計する", t({x:M+6.56,y:5.42,w:5.1,h:0.34,fontSize:15,bold:true,color:AMBER}));
+  s.addText("原価ゼロのオークション・CLUB充当へ誘導できれば33.2%まで下がり、現金ベースの赤字も縮みます。全額を系列店1.0円で使われると90%となり、成功報酬を含めても赤字です。",
     t({x:M+6.56,y:5.8,w:5.1,h:0.74,fontSize:10.5,color:MUTE,lineSpacing:15}));
   s.addNotes("継続収支：基本ケース+86万/年、良好ケース（オークション誘導強化）+128万/年、最悪ケース▲81万/年。90%保証は系列店への送客投資であり、連結では相殺される。");
 }
