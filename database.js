@@ -422,7 +422,8 @@ if (USE_PG) {
 } else {
   // ===================== SQLite モード（ローカル開発用） =====================
   const { DatabaseSync } = require('node:sqlite');
-  const sqliteDb = new DatabaseSync(path.join(__dirname, 'wine_auction.db'));
+  // SQLITE_PATH でファイルを差し替えられるようにしておく（テストの分離用）
+  const sqliteDb = new DatabaseSync(process.env.SQLITE_PATH || path.join(__dirname, 'wine_auction.db'));
 
   sqliteDb.exec("PRAGMA journal_mode = WAL");
   sqliteDb.exec("PRAGMA foreign_keys = ON");

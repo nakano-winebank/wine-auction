@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>会員管理 — WineBank 管理画面</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: {
+        colors: {
+          gold: { DEFAULT: '#A78450', hover: '#8B6914' },
+          dark: { 900: '#0A0A0A', 800: '#141414', 700: '#1C1C1C', 600: '#252525' }
+        }
+      } }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter','Noto Sans JP',sans-serif; }
+    /* Tailwind CDN が読めなかった場合でも表示が崩れないようにする */
+    .hidden { display: none !important; }
+    input, select, textarea {
+      background:#1C1C1C; border:1px solid rgba(255,255,255,.1);
+      border-radius:4px; padding:6px 8px; color:#fff; font-size:13px; width:100%;
+    }
+    input:focus, select:focus { outline:none; border-color:#A78450; }
+    label { font-size:11px; color:rgba(255,255,255,.4); display:block; margin-bottom:3px; }
+    .btn { background:#A78450; color:#0A0A0A; font-weight:600; font-size:13px;
+           padding:7px 14px; border-radius:4px; transition:.15s; }
+    .btn:hover { background:#8B6914; }
+    .btn-ghost { background:transparent; border:1px solid rgba(255,255,255,.15);
+                 color:rgba(255,255,255,.7); font-size:12px; padding:5px 11px; border-radius:4px; }
+    .btn-ghost:hover { border-color:#A78450; color:#A78450; }
+    .card { background:#141414; border:1px solid rgba(255,255,255,.06); border-radius:6px; }
+  </style>
+</head>
+<body class="bg-dark-900 text-white/90">
+
+  <header class="bg-dark-800 border-b border-white/5 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 flex items-center h-14 gap-4">
+      <a href="/admin" class="text-white/40 hover:text-gold text-sm">← 管理画面</a>
+      <span class="font-semibold text-sm">会員管理</span>
+      <div class="ml-auto flex gap-2">
+        <button id="btnExpire" class="btn-ghost">期限切れマイルを失効</button>
+        <button id="btnNew" class="btn">会員口座を開設</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-6">
+    <div id="alert" class="hidden mb-4 p-3 rounded text-sm"></div>
+
+    <!-- 一覧 -->
+    <div id="listView">
+      <div class="card overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="text-xs text-white/40 border-b border-white/10">
+            <tr>
+              <th class="text-left  py-3 px-3 font-medium">会員番号</th>
+              <th class="text-left  py-3 px-3 font-medium">氏名 / メール</th>
+              <th class="text-left  py-3 px-3 font-medium">ランク</th>
+              <th class="text-right py-3 px-3 font-medium">簿価</th>
+              <th class="text-right py-3 px-3 font-medium">評価額</th>
+              <th class="text-right py-3 px-3 font-medium">本数</th>
+              <th class="text-right py-3 px-3 font-medium">マイル残高</th>
+              <th class="text-left  py-3 px-3 font-medium">状態</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="listBody">
+            <tr><td colspan="9" class="text-center py-10 text-white/40">読み込み中…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ランク設定 -->
+      <h2 class="text-sm font-semibold mt-8 mb-3">ランク設定</h2>
+      <div class="card overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="text-xs text-white/40 border-b border-white/10">
+            <tr>
+              <th class="text-left py-3 px-3 font-medium">コード</th>
+              <th class="text-left py-3 px-3 font-medium">簿価下限</th>
+              <th class="text-left py-3 px-3 font-medium">管理手数料率</th>
+              <th class="text-left py-3 px-3 font-medium">マイル還元率</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="rankBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 明細 -->
+    <div id="detailView" class="hidden"></div>
+  </main>
+
+<script>
+const token = localStorage.getItem('token');
+const yen  = (n) => n === null || n === undefined ? '—' : '¥' + Math.round(n).toLocaleString();
+const num  = (n) => n === null || n === undefined ? '—' : Math.round(n).toLocaleString();
+const date = (s) => s ? new Date(s).toLocaleDateString('ja-JP') : '—';
+const esc  = (s) => String(s ?? '').replace(/[&<>"']/g, c => (
+  { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+
+async function api(path, options = {}) {
+  const res = await fetch('/api/admin/members' + path, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + token,
+      ...(options.headers || {}),
+    },
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body.error || `エラー (${res.status})`);
+  return body;
+}
+
+function notify(message, ok = true) {
+  const el = document.getElementById('alert');
+  el.textContent = message;
+  el.className = 'mb-4 p-3 rounded text-sm ' +
+    (ok ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-300'
+        : 'bg-red-500/10 border border-red-500/30 text-red-300');
+  el.classList.remove('hidden');
+  setTimeout(() => el.classList.add('hidden'), 5000);
+}
+
+const guard = (fn) => async (...args) => {
+  try { await fn(...args); } catch (e) { notify(e.message, false); }
+};
+
+// ───────────── 一覧
+
+const loadList = guard(async () => {
+  const { members } = await api('/');
+  const body = document.getElementById('listBody');
+  if (!members.length) {
+    body.innerHTML = '<tr><td colspan="9" class="text-center py-10 text-white/40">会員口座がまだありません。</td></tr>';
+    return;
+  }
+  body.innerHTML = members.map(m => `
+    <tr class="border-b border-white/5 hover:bg-white/[0.02]">
+      <td class="py-2.5 px-3 font-mono text-xs text-white/60">${esc(m.account_no)}</td>
+      <td class="px-3">
+        <div>${esc(m.full_name || m.display_name || '—')}</div>
+        <div class="text-xs text-white/35">${esc(m.email)}</div>
+      </td>
+      <td class="px-3">
+        <span class="text-gold text-xs">${esc(m.rank_code || '—')}</span>
+        ${m.locked_rank_code ? '<span class="text-xs text-white/30 ml-1">(固定)</span>' : ''}
+      </td>
+      <td class="text-right px-3 tabular-nums text-white/70">${yen(m.portfolio.bookValue)}</td>
+      <td class="text-right px-3 tabular-nums">${yen(m.portfolio.marketValue)}</td>
+      <td class="text-right px-3 tabular-nums text-white/60">${num(m.portfolio.bottles)}</td>
+      <td class="text-right px-3 tabular-nums text-gold">${num(m.mile_balance)}</td>
+      <td class="px-3 text-xs text-white/40">${esc(m.status)}</td>
+      <td class="px-3 text-right">
+        <button class="btn-ghost" onclick="openDetail(${m.id})">明細</button>
+      </td>
+    </tr>`).join('');
+});
+
+const loadRanks = guard(async () => {
+  const { ranks } = await api('/ranks');
+  document.getElementById('rankBody').innerHTML = ranks.map(r => `
+    <tr class="border-b border-white/5" data-rank="${esc(r.code)}">
+      <td class="py-2 px-3 text-gold">${esc(r.code)}</td>
+      <td class="px-3 w-40"><input type="number" step="100000" value="${r.min_book_value}" data-f="minBookValue"></td>
+      <td class="px-3 w-32"><input type="number" step="0.001" value="${r.fee_rate}" data-f="feeRate"></td>
+      <td class="px-3 w-32"><input type="number" step="0.001" value="${r.mile_rate}" data-f="mileRate"></td>
+      <td class="px-3 text-right"><button class="btn-ghost" onclick="saveRank('${esc(r.code)}')">保存</button></td>
+    </tr>`).join('');
+});
+
+window.saveRank = guard(async (code) => {
+  const row = document.querySelector(`[data-rank="${code}"]`);
+  const payload = {};
+  row.querySelectorAll('input[data-f]').forEach(i => { payload[i.dataset.f] = Number(i.value); });
+  await api('/ranks/' + code, { method: 'PATCH', body: JSON.stringify(payload) });
+  notify(`${code} を更新しました`);
+  loadList();
+});
+
+// ───────────── 明細
+
+window.openDetail = guard(async (id) => {
+  const d = await api('/' + id);
+  document.getElementById('listView').classList.add('hidden');
+  const view = document.getElementById('detailView');
+  view.classList.remove('hidden');
+
+  const p = d.portfolio;
+  view.innerHTML = `
+    <button class="btn-ghost mb-4" onclick="closeDetail()">← 一覧へ戻る</button>
+
+    <div class="card p-4 mb-4">
+      <div class="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <div class="text-lg font-semibold">${esc(d.user.full_name || d.user.display_name || '—')}</div>
+          <div class="text-xs text-white/40">${esc(d.user.email)} · <span class="font-mono">${esc(d.member.account_no)}</span></div>
+        </div>
+        <div class="text-right text-sm">
+          <div class="text-gold text-xl">${esc(d.rank ? d.rank.name : 'ランクなし')}</div>
+          <div class="text-xs text-white/40">
+            簿価 ${yen(p.bookValue)} ／ 評価額 ${yen(p.marketValue)} ／ ${num(p.bottles)}本
+            ／ マイル ${num(d.miles.balance)}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid lg:grid-cols-2 gap-4 mb-4">
+      <!-- 保有ワイン登録 -->
+      <div class="card p-4">
+        <h3 class="text-sm font-semibold mb-3">保有ワインを登録</h3>
+        <div class="grid grid-cols-2 gap-2 mb-2">
+          <div class="col-span-2"><label>銘柄名 *</label><input id="h_wineName" placeholder="Château Margaux"></div>
+          <div><label>生産者</label><input id="h_producer"></div>
+          <div><label>ヴィンテージ</label><input id="h_vintage" type="number"></div>
+          <div><label>本数 *</label><input id="h_quantity" type="number" value="1"></div>
+          <div><label>取得単価（円・税込）*</label><input id="h_acquiredUnitPrice" type="number"></div>
+          <div><label>時価（円/本）</label><input id="h_unitMarketPrice" type="number"></div>
+          <div><label>保管拠点</label><input id="h_storageSite" placeholder="鈴与"></div>
+          <div><label>購入経路</label>
+            <select id="h_purchaseChannel">
+              <option value="ec">EC</option>
+              <option value="auction">オークション</option>
+              <option value="concierge">コンシェルジュ</option>
+              <option value="transfer">持込・移管</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn w-full" onclick="addHolding(${id})">登録する</button>
+      </div>
+
+      <!-- マイル操作 -->
+      <div class="card p-4">
+        <h3 class="text-sm font-semibold mb-3">マイル操作</h3>
+
+        <div class="mb-4 pb-4 border-b border-white/10">
+          <div class="text-xs text-white/40 mb-2">
+            年次還元（簿価 ${yen(p.bookValue)} × ${d.rank ? (d.rank.mile_rate * 100).toFixed(1) + '%' : '—'}
+            = <span class="text-gold">${d.rank ? num(Math.round(p.bookValue * d.rank.mile_rate)) : '—'} マイル</span>）
+          </div>
+          <button class="btn w-full" onclick="annualReward(${id})" ${d.rank ? '' : 'disabled'}>年次還元を付与</button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 mb-2">
+          <div><label>マイル数</label><input id="m_amount" type="number" placeholder="5000"></div>
+          <div><label>種別</label>
+            <select id="m_kind">
+              <option value="bonus">期間限定（180日）</option>
+              <option value="reward">還元（365日）</option>
+              <option value="campaign">キャンペーン（90日）</option>
+              <option value="adjust">調整（365日）</option>
+            </select>
+          </div>
+          <div class="col-span-2"><label>メモ</label><input id="m_memo" placeholder="オークション参加ボーナス"></div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <button class="btn" onclick="grantMiles(${id})">付与</button>
+          <button class="btn-ghost py-2" onclick="redeemMiles(${id})">利用（消費）</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 管理手数料 -->
+    <div class="card p-4 mb-4">
+      <h3 class="text-sm font-semibold mb-3">管理手数料を計上</h3>
+      <div class="flex flex-wrap gap-2 items-end">
+        <div class="w-44"><label>期間開始</label><input id="f_start" type="date"></div>
+        <div class="w-44"><label>期間終了</label><input id="f_end" type="date"></div>
+        <button class="btn" onclick="accrueFee(${id})">計上する</button>
+        <span class="text-xs text-white/35 ml-2">簿価 × ランクの料率 × 日割りで計算されます</span>
+      </div>
+      ${d.fees.length ? `
+      <table class="w-full text-sm mt-4">
+        <thead class="text-xs text-white/40 border-b border-white/10">
+          <tr><th class="text-left py-2">対象期間</th><th class="text-right">対象簿価</th>
+              <th class="text-right">料率</th><th class="text-right">金額</th><th class="text-right">状態</th></tr>
+        </thead>
+        <tbody>${d.fees.map(f => `
+          <tr class="border-b border-white/5">
+            <td class="py-2 text-white/70">${date(f.period_start)} 〜 ${date(f.period_end)}</td>
+            <td class="text-right tabular-nums text-white/60">${yen(f.basis_book_value)}</td>
+            <td class="text-right tabular-nums text-white/60">${(f.fee_rate * 100).toFixed(2)}%</td>
+            <td class="text-right tabular-nums">${yen(f.amount)}</td>
+            <td class="text-right text-xs text-white/40">${esc(f.status)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>` : '<p class="text-xs text-white/30 mt-3">計上履歴はありません。</p>'}
+    </div>
+
+    <!-- 保有ワイン -->
+    <div class="card p-4 mb-4">
+      <h3 class="text-sm font-semibold mb-3">保有ワイン</h3>
+      ${d.holdings.length ? `
+      <div class="overflow-x-auto"><table class="w-full text-sm">
+        <thead class="text-xs text-white/40 border-b border-white/10">
+          <tr><th class="text-left py-2">銘柄</th><th class="text-right">本数</th>
+              <th class="text-right">取得単価</th><th class="text-right">時価</th>
+              <th class="text-right">評価額</th><th class="text-left px-3">保管</th><th></th></tr>
+        </thead>
+        <tbody>${d.holdings.map(h => `
+          <tr class="border-b border-white/5">
+            <td class="py-2">${esc(h.wine_name)}
+              <span class="text-xs text-white/35">${esc(h.producer || '')}${h.vintage ? ' ' + h.vintage : ''}</span></td>
+            <td class="text-right tabular-nums">${num(h.quantity)}</td>
+            <td class="text-right tabular-nums text-white/60">${yen(h.acquired_unit_price)}</td>
+            <td class="text-right tabular-nums text-white/60">${yen(h.latest_market_price)}</td>
+            <td class="text-right tabular-nums">${yen(h.market_value ?? h.book_value)}</td>
+            <td class="px-3 text-xs text-white/40">${esc(h.storage_site || '—')}</td>
+            <td class="text-right"><button class="btn-ghost" onclick="revalue(${h.id})">時価更新</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table></div>` : '<p class="text-xs text-white/30">保有ワインはありません。</p>'}
+    </div>
+
+    <!-- マイル明細 -->
+    <div class="card p-4">
+      <h3 class="text-sm font-semibold mb-3">マイル明細</h3>
+      ${d.miles.transactions.length ? `
+      <div class="overflow-x-auto"><table class="w-full text-sm">
+        <thead class="text-xs text-white/40 border-b border-white/10">
+          <tr><th class="text-left py-2">日付</th><th class="text-left">区分</th>
+              <th class="text-left">内容</th><th class="text-right">マイル</th>
+              <th class="text-right">残高</th><th class="text-right">失効日</th></tr>
+        </thead>
+        <tbody>${d.miles.transactions.map(t => `
+          <tr class="border-b border-white/5">
+            <td class="py-2 text-xs text-white/50">${date(t.occurred_at)}</td>
+            <td>${esc(t.type)}</td>
+            <td class="text-xs text-white/40">${esc(t.memo || t.channel || '')}</td>
+            <td class="text-right tabular-nums ${t.amount >= 0 ? 'text-emerald-400' : 'text-white/70'}">
+              ${t.amount >= 0 ? '+' : ''}${num(t.amount)}</td>
+            <td class="text-right tabular-nums text-white/40">${num(t.balance_after)}</td>
+            <td class="text-right text-xs text-white/35">${date(t.expires_at)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table></div>` : '<p class="text-xs text-white/30">明細はありません。</p>'}
+    </div>`;
+});
+
+window.closeDetail = () => {
+  document.getElementById('detailView').classList.add('hidden');
+  document.getElementById('listView').classList.remove('hidden');
+  loadList();
+};
+
+const val = (id) => document.getElementById(id).value.trim();
+
+window.addHolding = guard(async (id) => {
+  await api(`/${id}/holdings`, { method: 'POST', body: JSON.stringify({
+    wineName: val('h_wineName'),
+    producer: val('h_producer') || null,
+    vintage: val('h_vintage') ? Number(val('h_vintage')) : null,
+    quantity: Number(val('h_quantity')),
+    acquiredUnitPrice: Number(val('h_acquiredUnitPrice')),
+    unitMarketPrice: val('h_unitMarketPrice') ? Number(val('h_unitMarketPrice')) : null,
+    storageSite: val('h_storageSite') || null,
+    purchaseChannel: val('h_purchaseChannel'),
+  }) });
+  notify('保有ワインを登録しました');
+  openDetail(id);
+});
+
+window.revalue = guard(async (holdingId) => {
+  const input = prompt('新しい時価（円/本）を入力してください');
+  if (!input) return;
+  await api(`/holdings/${holdingId}/valuations`, {
+    method: 'POST', body: JSON.stringify({ unitMarketPrice: Number(input), source: 'manual' }),
+  });
+  notify('時価を更新しました');
+  const back = document.querySelector('#detailView button');
+  if (back) back.click();
+});
+
+window.grantMiles = guard(async (id) => {
+  await api(`/${id}/miles/grant`, { method: 'POST', body: JSON.stringify({
+    amount: Number(val('m_amount')), kind: val('m_kind'), memo: val('m_memo') || null,
+  }) });
+  notify('マイルを付与しました');
+  openDetail(id);
+});
+
+window.redeemMiles = guard(async (id) => {
+  await api(`/${id}/miles/redeem`, { method: 'POST', body: JSON.stringify({
+    amount: Number(val('m_amount')), memo: val('m_memo') || null,
+  }) });
+  notify('マイルを消費しました');
+  openDetail(id);
+});
+
+window.annualReward = guard(async (id) => {
+  await api(`/${id}/miles/annual-reward`, { method: 'POST', body: JSON.stringify({}) });
+  notify('年次還元を付与しました');
+  openDetail(id);
+});
+
+window.accrueFee = guard(async (id) => {
+  if (!val('f_start') || !val('f_end')) throw new Error('期間を指定してください');
+  await api(`/${id}/fees`, { method: 'POST', body: JSON.stringify({
+    periodStart: new Date(val('f_start')).toISOString(),
+    periodEnd: new Date(val('f_end')).toISOString(),
+  }) });
+  notify('管理手数料を計上しました');
+  openDetail(id);
+});
+
+document.getElementById('btnNew').addEventListener('click', guard(async () => {
+  const userId = prompt('会員口座を開設するユーザーID を入力してください');
+  if (!userId) return;
+  await api('/', { method: 'POST', body: JSON.stringify({ userId: Number(userId) }) });
+  notify('会員口座を開設しました');
+  loadList();
+}));
+
+document.getElementById('btnExpire').addEventListener('click', guard(async () => {
+  const r = await api('/miles/expire', { method: 'POST', body: JSON.stringify({}) });
+  notify(`${r.lots} ロット / ${num(r.amount)} マイルを失効させました`);
+  loadList();
+}));
+
+if (!token) {
+  location.href = '/login';
+} else {
+  loadList();
+  loadRanks();
+}
+</script>
+</body>
+</html>

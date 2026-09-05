@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>マイ・セラー — WineBank</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: {
+        colors: {
+          gold: { DEFAULT: '#A78450', hover: '#8B6914' },
+          dark: { 900: '#0A0A0A', 800: '#141414', 700: '#1C1C1C', 600: '#252525' }
+        },
+        fontFamily: { serif: ['Noto Serif JP','serif'], sans: ['Inter','Noto Sans JP','sans-serif'] }
+      } }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Noto+Serif+JP:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap');
+    body { font-family: 'Inter', 'Noto Sans JP', sans-serif; }
+    /* Tailwind CDN が読めなかった場合でも表示が崩れないようにする */
+    .hidden { display: none !important; }
+    .tab-active { border-bottom: 2px solid #A78450; color: #A78450; font-weight: 700; }
+    .tab-inactive { border-bottom: 2px solid transparent; color: rgba(255,255,255,0.4); }
+    .tab-inactive:hover { color: rgba(255,255,255,0.7); }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(6px) } to { opacity:1; transform:translateY(0) } }
+    .fade-in { animation: fadeIn .3s ease; }
+  </style>
+</head>
+<body class="bg-dark-900 text-white/90">
+
+  <header class="bg-dark-800/95 backdrop-blur border-b border-white/5 sticky top-0 z-40">
+    <div class="max-w-5xl mx-auto px-4">
+      <div class="flex items-center h-14 gap-3">
+        <a href="/" class="text-white/40 hover:text-gold p-1 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        </a>
+        <a href="/" class="font-serif text-gold tracking-wide">WineBank</a>
+        <span class="font-medium text-white/90 ml-1 text-sm">マイ・セラー</span>
+        <span id="accountNo" class="ml-auto text-xs text-white/30 font-mono"></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-4 py-6">
+
+    <div id="loading" class="text-center py-20 text-white/40 text-sm">読み込み中…</div>
+
+    <!-- 口座未開設 / 未ログイン -->
+    <div id="empty" class="hidden text-center py-20">
+      <p class="text-white/60 mb-2" id="emptyMessage"></p>
+      <a href="/login" class="inline-block mt-4 px-5 py-2 bg-gold hover:bg-gold-hover text-dark-900 rounded text-sm font-semibold transition">ログイン</a>
+    </div>
+
+    <div id="content" class="hidden fade-in">
+
+      <!-- ランクと資産 -->
+      <section class="mb-6">
+        <div class="bg-gradient-to-br from-dark-700 to-dark-800 border border-gold/20 rounded-lg p-5 mb-4">
+          <div class="flex items-start justify-between flex-wrap gap-4">
+            <div>
+              <div class="text-xs text-white/40 mb-1">会員ランク</div>
+              <div class="font-serif text-3xl text-gold" id="rankName">—</div>
+              <div class="text-xs text-white/40 mt-1" id="rankRates"></div>
+            </div>
+            <div class="text-right">
+              <div class="text-xs text-white/40 mb-1">保有ワイン評価額</div>
+              <div class="text-3xl font-semibold" id="marketValue">—</div>
+              <div class="text-xs mt-1" id="unrealized"></div>
+            </div>
+          </div>
+          <!-- 次ランクまでの進捗（ゲーミフィケーション） -->
+          <div id="nextRankBox" class="hidden mt-5 pt-4 border-t border-white/10">
+            <div class="flex justify-between text-xs mb-2">
+              <span class="text-white/50">次のランク <span class="text-gold font-semibold" id="nextRankName"></span> まで</span>
+              <span class="text-white/70" id="nextRankRemaining"></span>
+            </div>
+            <div class="h-1.5 bg-dark-600 rounded-full overflow-hidden">
+              <div id="nextRankBar" class="h-full bg-gold rounded-full transition-all" style="width:0%"></div>
+            </div>
+            <div class="text-xs text-white/35 mt-2" id="nextRankBenefit"></div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div class="bg-dark-800 border border-white/5 rounded p-3">
+            <div class="text-xs text-white/40 mb-1">簿価（取得価額）</div>
+            <div class="text-lg font-semibold" id="bookValue">—</div>
+          </div>
+          <div class="bg-dark-800 border border-white/5 rounded p-3">
+            <div class="text-xs text-white/40 mb-1">保有本数</div>
+            <div class="text-lg font-semibold" id="bottles">—</div>
+          </div>
+          <div class="bg-dark-800 border border-white/5 rounded p-3">
+            <div class="text-xs text-white/40 mb-1">ワインマイル残高</div>
+            <div class="text-lg font-semibold text-gold" id="mileBalance">—</div>
+          </div>
+          <div class="bg-dark-800 border border-white/5 rounded p-3">
+            <div class="text-xs text-white/40 mb-1">90日以内に失効</div>
+            <div class="text-lg font-semibold" id="expiringSoon">—</div>
+          </div>
+        </div>
+
+        <!-- 失効が近いマイルの警告 -->
+        <div id="expiryWarning" class="hidden mt-3 bg-amber-500/10 border border-amber-500/30 rounded p-3 text-sm">
+          <span class="text-amber-400 font-semibold">まもなく失効するマイルがあります。</span>
+          <span class="text-white/70" id="expiryWarningText"></span>
+        </div>
+      </section>
+
+      <!-- タブ -->
+      <nav class="flex gap-5 border-b border-white/10 mb-5 text-sm">
+        <button data-tab="holdings" class="tab-active pb-2 transition">保有ワイン</button>
+        <button data-tab="miles"    class="tab-inactive pb-2 transition">マイル明細</button>
+        <button data-tab="fees"     class="tab-inactive pb-2 transition">管理手数料</button>
+      </nav>
+
+      <section id="tab-holdings"></section>
+      <section id="tab-miles" class="hidden"></section>
+      <section id="tab-fees" class="hidden"></section>
+    </div>
+  </main>
+
+<script>
+const yen  = (n) => n === null || n === undefined ? '—' : '¥' + Math.round(n).toLocaleString();
+const num  = (n) => n === null || n === undefined ? '—' : Math.round(n).toLocaleString();
+const date = (s) => s ? new Date(s).toLocaleDateString('ja-JP') : '—';
+const esc  = (s) => String(s ?? '').replace(/[&<>"']/g, c => (
+  { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+
+const CHANNEL_LABELS = {
+  restaurant: '系列レストラン', grandmaison: 'グランメゾン', club: 'CLUB年会費',
+  auction: 'オークション', school: 'ワインスクール', event: '会員交流イベント', wine: 'ワイン購入',
+};
+const KIND_LABELS = { reward: '年次還元', bonus: '期間限定', campaign: 'キャンペーン', adjust: '調整' };
+const TYPE_LABELS = { grant: '付与', redeem: '利用', expire: '失効', cancel: '取消', adjust: '調整' };
+const STATUS_LABELS = { stored: '保管中', shipped: '出庫済', sold: '売却済', withdrawn: '引出済' };
+
+function show(id) { document.getElementById(id).classList.remove('hidden'); }
+function hide(id) { document.getElementById(id).classList.add('hidden'); }
+
+async function load() {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    hide('loading'); show('empty');
+    document.getElementById('emptyMessage').textContent = 'マイ・セラーのご利用にはログインが必要です。';
+    return;
+  }
+
+  const res = await fetch('/api/member', { headers: { Authorization: 'Bearer ' + token } });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    hide('loading'); show('empty');
+    document.getElementById('emptyMessage').textContent =
+      body.hasAccount === false
+        ? 'まだ会員口座が開設されていません。ワインをご購入いただくと、こちらに保有状況が表示されます。'
+        : (body.error || '読み込みに失敗しました。');
+    return;
+  }
+
+  render(await res.json());
+  hide('loading'); show('content');
+}
+
+function render(d) {
+  document.getElementById('accountNo').textContent = d.member.account_no || '';
+
+  // ランク
+  if (d.rank) {
+    document.getElementById('rankName').textContent = d.rank.name;
+    document.getElementById('rankRates').textContent =
+      `管理手数料 ${(d.rank.fee_rate * 100).toFixed(1)}% ／ マイル還元 ${(d.rank.mile_rate * 100).toFixed(1)}%`;
+  } else {
+    document.getElementById('rankName').textContent = '—';
+    document.getElementById('rankRates').textContent = 'ワインをご購入いただくとランクが決定します';
+  }
+
+  // 資産
+  const p = d.portfolio;
+  document.getElementById('marketValue').textContent = yen(p.marketValue);
+  document.getElementById('bookValue').textContent = yen(p.bookValue);
+  document.getElementById('bottles').textContent = num(p.bottles) + ' 本';
+
+  const gainEl = document.getElementById('unrealized');
+  const sign = p.unrealizedGain >= 0 ? '+' : '−';
+  gainEl.textContent = `含み損益 ${sign}${yen(Math.abs(p.unrealizedGain)).slice(1)}（${(p.unrealizedGainRate * 100).toFixed(1)}%）`;
+  gainEl.className = 'text-xs mt-1 ' + (p.unrealizedGain >= 0 ? 'text-emerald-400' : 'text-red-400');
+
+  // 次ランクまでの進捗
+  if (d.nextRank) {
+    show('nextRankBox');
+    document.getElementById('nextRankName').textContent = d.nextRank.name;
+    document.getElementById('nextRankRemaining').textContent = 'あと ' + yen(d.nextRank.remaining);
+    const pct = Math.max(0, Math.min(100, (p.bookValue / d.nextRank.min_book_value) * 100));
+    document.getElementById('nextRankBar').style.width = pct.toFixed(1) + '%';
+    document.getElementById('nextRankBenefit').textContent =
+      `${d.nextRank.name} になるとマイル還元率が ${(d.nextRank.mile_rate * 100).toFixed(1)}% になります`;
+  }
+
+  // マイル
+  document.getElementById('mileBalance').textContent = num(d.miles.balance);
+  document.getElementById('expiringSoon').textContent = num(d.miles.expiringSoonAmount);
+  if (d.miles.expiringSoonAmount > 0) {
+    const soonest = d.miles.expiringSoon[0];
+    show('expiryWarning');
+    document.getElementById('expiryWarningText').textContent =
+      `${num(d.miles.expiringSoonAmount)} マイルが90日以内に失効します（直近 ${date(soonest.expires_at)}）。`;
+  }
+
+  renderHoldings(d.holdings);
+  renderMiles(d.miles);
+  renderFees(d.fees);
+}
+
+function renderHoldings(holdings) {
+  const el = document.getElementById('tab-holdings');
+  if (!holdings.length) {
+    el.innerHTML = '<p class="text-white/40 text-sm py-8 text-center">保有ワインはまだありません。</p>';
+    return;
+  }
+  el.innerHTML = `
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="text-xs text-white/40 border-b border-white/10">
+          <tr>
+            <th class="text-left  py-2 px-2 font-medium">銘柄</th>
+            <th class="text-right py-2 px-2 font-medium">本数</th>
+            <th class="text-right py-2 px-2 font-medium">取得単価</th>
+            <th class="text-right py-2 px-2 font-medium">時価</th>
+            <th class="text-right py-2 px-2 font-medium">評価額</th>
+            <th class="text-right py-2 px-2 font-medium">含み損益</th>
+            <th class="text-left  py-2 px-2 font-medium">保管</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${holdings.map(h => {
+            const gain = h.unrealized_gain;
+            const cls = gain === null ? 'text-white/30' : gain >= 0 ? 'text-emerald-400' : 'text-red-400';
+            const gainText = gain === null ? '—' : (gain >= 0 ? '+' : '−') + yen(Math.abs(gain)).slice(1);
+            return `
+            <tr class="border-b border-white/5">
+              <td class="py-2.5 px-2">
+                <div class="text-white/90">${esc(h.wine_name)}</div>
+                <div class="text-xs text-white/35">
+                  ${esc(h.producer || '')}${h.vintage ? ' ' + h.vintage : ''}
+                  · <span class="text-white/25">${STATUS_LABELS[h.status] || esc(h.status)}</span>
+                </div>
+              </td>
+              <td class="text-right px-2 tabular-nums">${num(h.quantity)}</td>
+              <td class="text-right px-2 tabular-nums text-white/60">${yen(h.acquired_unit_price)}</td>
+              <td class="text-right px-2 tabular-nums text-white/60">${yen(h.latest_market_price)}</td>
+              <td class="text-right px-2 tabular-nums">${yen(h.market_value ?? h.book_value)}</td>
+              <td class="text-right px-2 tabular-nums ${cls}">${gainText}</td>
+              <td class="px-2 text-xs text-white/40">${esc(h.storage_site || '—')}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function renderMiles(m) {
+  const el = document.getElementById('tab-miles');
+  const lots = m.expiring.length ? `
+    <h3 class="text-xs text-white/40 mb-2 mt-1">有効期限のあるマイル</h3>
+    <div class="grid gap-2 sm:grid-cols-2 mb-6">
+      ${m.expiring.map(l => `
+        <div class="bg-dark-800 border border-white/5 rounded p-3 flex justify-between items-center">
+          <div>
+            <div class="text-sm">${num(l.remaining_amount)} マイル</div>
+            <div class="text-xs text-white/35">${KIND_LABELS[l.kind] || esc(l.kind)}${l.memo ? ' · ' + esc(l.memo) : ''}</div>
+          </div>
+          <div class="text-xs text-right text-white/50">${date(l.expires_at)}<br><span class="text-white/25">まで</span></div>
+        </div>`).join('')}
+    </div>` : '';
+
+  const rows = m.transactions.length ? m.transactions.map(t => `
+    <tr class="border-b border-white/5">
+      <td class="py-2 px-2 text-xs text-white/50">${date(t.occurred_at)}</td>
+      <td class="px-2">${TYPE_LABELS[t.type] || esc(t.type)}</td>
+      <td class="px-2 text-xs text-white/40">
+        ${CHANNEL_LABELS[t.channel] || esc(t.channel || '')}${t.memo ? (t.channel ? ' · ' : '') + esc(t.memo) : ''}
+      </td>
+      <td class="text-right px-2 tabular-nums ${t.amount >= 0 ? 'text-emerald-400' : 'text-white/70'}">
+        ${t.amount >= 0 ? '+' : ''}${num(t.amount)}
+      </td>
+      <td class="text-right px-2 tabular-nums text-white/40">${num(t.balance_after)}</td>
+    </tr>`).join('')
+    : '<tr><td colspan="5" class="text-center py-8 text-white/40 text-sm">明細はまだありません。</td></tr>';
+
+  el.innerHTML = lots + `
+    <h3 class="text-xs text-white/40 mb-2">マイル明細</h3>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="text-xs text-white/40 border-b border-white/10">
+          <tr>
+            <th class="text-left  py-2 px-2 font-medium">日付</th>
+            <th class="text-left  py-2 px-2 font-medium">区分</th>
+            <th class="text-left  py-2 px-2 font-medium">内容</th>
+            <th class="text-right py-2 px-2 font-medium">マイル</th>
+            <th class="text-right py-2 px-2 font-medium">残高</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+function renderFees(fees) {
+  const el = document.getElementById('tab-fees');
+  if (!fees.length) {
+    el.innerHTML = '<p class="text-white/40 text-sm py-8 text-center">管理手数料の計上はまだありません。</p>';
+    return;
+  }
+  const label = { draft: '計上済', billed: '請求済', paid: '入金済', void: '取消' };
+  el.innerHTML = `
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="text-xs text-white/40 border-b border-white/10">
+          <tr>
+            <th class="text-left  py-2 px-2 font-medium">対象期間</th>
+            <th class="text-right py-2 px-2 font-medium">対象簿価</th>
+            <th class="text-right py-2 px-2 font-medium">料率</th>
+            <th class="text-right py-2 px-2 font-medium">金額</th>
+            <th class="text-right py-2 px-2 font-medium">状態</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${fees.map(f => `
+            <tr class="border-b border-white/5">
+              <td class="py-2 px-2 text-white/70">${date(f.period_start)} 〜 ${date(f.period_end)}</td>
+              <td class="text-right px-2 tabular-nums text-white/60">${yen(f.basis_book_value)}</td>
+              <td class="text-right px-2 tabular-nums text-white/60">${(f.fee_rate * 100).toFixed(2)}%</td>
+              <td class="text-right px-2 tabular-nums">${yen(f.amount)}</td>
+              <td class="text-right px-2 text-xs text-white/40">${label[f.status] || esc(f.status)}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+document.querySelectorAll('[data-tab]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-tab]').forEach(b => {
+      b.className = b === btn
+        ? 'tab-active pb-2 transition'
+        : 'tab-inactive pb-2 transition';
+      document.getElementById('tab-' + b.dataset.tab).classList.toggle('hidden', b !== btn);
+    });
+  });
+});
+
+load();
+</script>
+</body>
+</html>

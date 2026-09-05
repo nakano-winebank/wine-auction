@@ -82,7 +82,11 @@ app.use('/api/upload', require('./routes/upload'));
 // ユーザーブロック・プロフィール
 app.use('/api/users', require('./routes/users'));
 
+// 会員管理（マイ・セラー）
+app.use('/api/member', require('./routes/members'));
+
 // 管理画面
+app.use('/api/admin/members', require('./routes/admin-members'));
 app.use('/api/admin', require('./routes/admin'));
 
 // 一括インポート
@@ -242,6 +246,8 @@ app.get('/sell', (req, res) => res.sendFile(path.join(__dirname, 'public', 'sell
 app.get('/mypage', (req, res) => res.sendFile(path.join(__dirname, 'public', 'mypage.html')));
 app.get('/checkout', (req, res) => res.sendFile(path.join(__dirname, 'public', 'checkout.html')));
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
+app.get('/member', (req, res) => res.sendFile(path.join(__dirname, 'public', 'member.html')));
+app.get('/admin/members', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-members.html')));
 app.get('/admin/import', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-import.html')));
 app.get('/admin/photos', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-photos.html')));
 
@@ -265,12 +271,26 @@ setInterval(async () => {
   } catch(e) {}
 }, 60 * 1000);
 
+// マイルの有効期限切れを1時間ごとに失効させる
+const mileService = require('./services/miles');
+setInterval(async () => {
+  try {
+    const result = await mileService.expireLots();
+    if (result.lots > 0) {
+      console.log(`🍷 マイル失効: ${result.lots}ロット / ${result.amount.toLocaleString()}マイル`);
+    }
+  } catch (e) {
+    console.error('マイル失効処理エラー:', e.message);
+  }
+}, 60 * 60 * 1000);
+
 const PORT = process.env.PORT || 3000;
 
 // DB初期化してからサーバー起動
 const db = require('./database');
 (async () => {
   if (db.init) await db.init();
+  await require('./db/membership-schema').migrate();
   server.listen(PORT, () => {
     console.log(`
 🍷 ワインオークション サーバー起動
