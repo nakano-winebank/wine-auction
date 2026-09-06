@@ -9,7 +9,9 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "test": "node --test test/*.test.js"
+    "test": "node --test test/*.test.js",
+    "build:css": "tailwindcss -i src/tailwind.css -o public/css/tailwind.css --minify",
+    "watch:css": "tailwindcss -i src/tailwind.css -o public/css/tailwind.css --watch"
   },
   "dependencies": {
     "adm-zip": "^0.5.17",
@@ -28,5 +30,8 @@
     "socket.io": "^4.7.4",
     "stripe": "^22.0.0",
     "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.19"
   }
 }

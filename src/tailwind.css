@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* CDN 版が入れていた既定のフォント指定を、ビルド版でも同じように効かせる */
+@layer base {
+  body {
+    font-family: theme('fontFamily.sans');
+  }
+}
