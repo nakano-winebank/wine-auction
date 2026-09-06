@@ -256,6 +256,7 @@ app.get('/checkout', (req, res) => res.sendFile(path.join(__dirname, 'public', '
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
 app.get('/member', (req, res) => res.sendFile(path.join(__dirname, 'public', 'member.html')));
 app.get('/member/join', (req, res) => res.sendFile(path.join(__dirname, 'public', 'member-join.html')));
+app.get('/terms/miles', (req, res) => res.sendFile(path.join(__dirname, 'public', 'terms-miles.html')));
 app.get('/admin/members', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-members.html')));
 app.get('/admin/import', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-import.html')));
 app.get('/admin/member-import', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-member-import.html')));

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>ワインマイル利用規約 — WineBank</title>
+  <link rel="stylesheet" href="/css/tailwind.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Inter:wght@300;400;500;600&family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@400;500;600&display=swap">
+  <style>
+    body { font-family: 'Inter', 'Noto Sans JP', 'Hiragino Sans', sans-serif; }
+    .hidden { display: none !important; }
+    .mincho { font-family: 'Noto Serif JP', 'Hiragino Mincho ProN', 'Yu Mincho', serif; }
+    .tracked { letter-spacing: .18em; }
+    .tracked-sm { letter-spacing: .08em; }
+    .rule-gold { height: 1px; background: linear-gradient(90deg,#A78450,rgba(167,132,80,0)); }
+    /* 条文は読み物なので、行間を広めに取って一行を短くする */
+    article { max-width: 68ch; }
+    article h2 { font-family: 'Noto Serif JP', serif; font-size: 15px; color: #A78450;
+                 letter-spacing: .08em; margin: 40px 0 12px; }
+    article ol { list-style: none; counter-reset: item; padding: 0; margin: 0; }
+    article ol > li { counter-increment: item; position: relative; padding-left: 28px;
+                      margin-bottom: 12px; font-size: 13.5px; line-height: 2;
+                      color: rgba(255,255,255,.72); }
+    article ol > li::before { content: counter(item) '.'; position: absolute; left: 0;
+                              color: rgba(255,255,255,.3); font-size: 12px; }
+    article b { color: rgba(255,255,255,.92); font-weight: 600; }
+    table.disc { width: 100%; border-collapse: collapse; font-size: 13px; margin: 14px 0 4px; }
+    table.disc th { text-align: left; font-weight: 500; font-size: 11px;
+                    color: rgba(255,255,255,.4); padding: 0 10px 8px;
+                    border-bottom: 1px solid rgba(255,255,255,.12); }
+    table.disc td { padding: 9px 10px; border-bottom: 1px solid rgba(255,255,255,.05);
+                    color: rgba(255,255,255,.72); }
+    table.disc td.r, table.disc th.r { text-align: right; }
+  </style>
+</head>
+<body class="bg-dark-900 text-white/90">
+
+  <header class="bg-dark-800/95 backdrop-blur border-b border-white/5 sticky top-0 z-40">
+    <div class="max-w-4xl mx-auto px-4">
+      <div class="flex items-center h-14 gap-3">
+        <a href="/member" class="text-white/40 hover:text-gold p-1 transition" aria-label="戻る">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        </a>
+        <a href="/" class="mincho text-gold tracked-sm">WineBank</a>
+        <span class="text-white/70 ml-1 text-xs tracked-sm">ワインマイル利用規約</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-4 py-10">
+
+    <!--
+      ⚠️ 本文の正本は、提案資料ブランチの
+         提案資料/ワインマイル利用規約_ドラフト.md
+      です。条文を直したときは両方をそろえること。
+      弁護士意見書の内部メモ（⚠️ 付きの検討事項）は会員に出すものではないので、
+      このページには載せていません。
+    -->
+    <div class="bg-amber-500/10 border border-amber-500/30 rounded-sm p-4 mb-10 text-[12.5px] text-amber-200/90 leading-relaxed">
+      <b class="text-amber-300">ドラフト（未確定）</b> ── 本規約は起案中のもので、まだ効力を有しません。
+      社内確認および法務確認を経て確定・公表します。数値の記載は現在のマスタ設定を反映しています。
+    </div>
+
+    <div class="text-[11px] text-gold/70 tracked mb-4">TERMS</div>
+    <h1 class="mincho text-2xl text-white/90 mb-4 tracked-sm">ワインマイル利用規約</h1>
+    <div class="rule-gold w-24 mb-8"></div>
+
+    <article>
+      <h2>第1条（定義）</h2>
+      <ol>
+        <li>「本サービス」とは、株式会社WineBank（以下「当社」）が提供するワインマイルプログラムをいいます。</li>
+        <li>「本マイル」とは、当社が会員に対し<b>無償で</b>付与するポイントをいいます。</li>
+        <li>本マイルの区分と有効期間は、下表のとおりです。
+          <div id="kindTable" class="mt-2"></div>
+        </li>
+        <li><b>本マイルは、当社が会員に無償で付与するものであり、会員が対価を支払って取得することはできません。</b></li>
+      </ol>
+
+      <h2>第2条（付与条件）</h2>
+      <ol>
+        <li>本マイルは、当社所定の対象取引・対象サービスのご利用に応じ、当社所定の付与率により付与します。</li>
+        <li>会員のランク別の付与率は、次のとおりです。
+          <div id="rankTable" class="mt-2"></div>
+        </li>
+        <li>年次マイルは、<b>会員が当社にお支払いいただく管理手数料に対する謝礼として無償で付与する</b>ものであり、
+            会員が当社に対しワインを賃貸することの対価ではありません。</li>
+        <li>対象取引が取消・返品・返金となった場合、当社は付与済みの本マイルを取り消すことがあります。</li>
+      </ol>
+
+      <h2>第3条（利用条件）</h2>
+      <ol>
+        <li>本マイルは、当社および当社が指定する当社の密接関係者が提供する商品・サービスの対価に充当できます。
+            <b>当社以外の第三者が提供する商品・サービスにはご利用いただけません。</b></li>
+        <li>利用先ごとの充当レートは、次のとおりです。利用先により1マイルあたりの充当額が異なる場合があります。
+          <div id="channelTable" class="mt-2"></div>
+        </li>
+        <li>本マイルを現金と引き換えることはできません。</li>
+        <li>本マイルのご利用は、有効期間の満了日が近いものから順に行います。</li>
+      </ol>
+
+      <h2>第4条（有効期間および失効）</h2>
+      <ol>
+        <li>本マイルの有効期間は、第1条3項に定めるとおりです。</li>
+        <li>有効期間が満了した本マイルは失効し、以後ご利用いただけません。</li>
+        <li><b>当社は、本マイルが失効する<span id="noticeDays">30</span>日前までに、会員に対し、
+            失効する数量および失効日を電子メールその他の方法により通知します。</b></li>
+        <li>会員が退会された場合、保有する本マイルは失効します。</li>
+      </ol>
+
+      <h2>第5条（本規約および利用条件の変更）</h2>
+      <ol>
+        <li>当社は、本規約および付与率・充当レート・有効期間その他の利用条件を変更することがあります。</li>
+        <li>会員に不利益となる変更を行う場合、当社は、変更内容および効力発生日を、
+            <b>効力発生日の30日前までに</b>当社ウェブサイトへの掲示および電子メールにより通知します。</li>
+        <li>前項の通知後、効力発生日までに会員が退会されない場合、変更にご同意いただいたものとみなします。</li>
+      </ol>
+
+      <h2>第6条（譲渡等の禁止）</h2>
+      <ol>
+        <li>会員は、本マイルを第三者に譲渡し、貸与し、質入れし、または相続させることはできません。</li>
+        <li>会員は、本マイルを他のポイント・電子マネー等と相互に交換することはできません。</li>
+      </ol>
+
+      <h2>第7条（不正利用）</h2>
+      <ol>
+        <li>当社は、会員に次の行為があると認めた場合、本マイルの取消し、本サービスの利用停止その他必要な措置を講じることがあります。
+          <div class="text-[12.5px] text-white/55 mt-2 leading-loose">
+            (1) 虚偽の情報を用いて本マイルを取得する行為<br>
+            (2) 本マイルを不正に売買・譲渡する行為<br>
+            (3) その他本規約に違反する行為
+          </div>
+        </li>
+      </ol>
+
+      <h2>第8条（トラブルへの対応・お問い合わせ）</h2>
+      <ol>
+        <li>本マイルの残高、付与、利用および失効に関するお問い合わせは、当社所定の窓口で受け付けます。</li>
+        <li>会員は、<a href="/member" class="text-gold hover:underline">マイ・セラー</a>において、
+            本マイルの残高、付与・利用の履歴および失効予定を随時ご確認いただけます。</li>
+        <li>システム障害等により本マイルの残高に誤りが生じた場合、当社は、当社の記録に基づき、これを訂正します。
+            会員からお申出があった場合、当社は誠実に調査し、その結果を回答します。</li>
+      </ol>
+
+      <h2>第9条（本サービスの終了）</h2>
+      <ol>
+        <li>当社は、本サービスを終了することがあります。</li>
+        <li>前項の場合、当社は、<b>終了日の6か月前までに</b>、当社ウェブサイトへの掲示および
+            電子メールにより会員に通知します。</li>
+        <li>当社は、終了日までの間、会員が保有する本マイルをご利用いただく機会を確保するよう努めます。</li>
+      </ol>
+
+      <h2>第10条（準拠法および管轄）</h2>
+      <ol>
+        <li>本規約は日本法に準拠します。</li>
+        <li>本サービスに関して当社と会員との間に紛争が生じた場合、東京地方裁判所を第一審の専属的合意管轄裁判所とします。</li>
+      </ol>
+    </article>
+
+    <p class="text-[11px] text-white/25 mt-12 pt-6 border-t border-white/5">
+      本ページに記載の付与率・充当レート・有効期間は、現在のマスタ設定を自動で反映しています。
+    </p>
+  </main>
+
+<script>
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => (
+  { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+const yen = (n) => '¥' + Math.round(Number(n) || 0).toLocaleString();
+const rate = (v) => '¥' + (Number(v) % 1 === 0 ? Number(v).toLocaleString() : Number(v).toFixed(2));
+
+// 規約が「当社ウェブサイトに掲載する」と約束している数値は、
+// 条文に書き写さず master から描画する。設定を変えたときに記載がずれない。
+(async () => {
+  const res = await fetch('/api/member/shop/program');
+  if (!res.ok) return;
+  const d = await res.json();
+
+  document.getElementById('noticeDays').textContent = d.expiryNoticeDays;
+
+  const v = d.validityDays || {};
+  const months = (days) => days === null || days === undefined ? '無期限'
+    : days % 30 === 0 ? `${days / 30}か月（${days}日）` : `${days}日`;
+  document.getElementById('kindTable').innerHTML = `
+    <table class="disc">
+      <thead><tr><th>区分</th><th>付与の事由</th><th class="r">有効期間</th></tr></thead>
+      <tbody>
+        <tr><td>購入マイル</td><td>ワインその他商品のご購入</td><td class="r">${months(v.reward)}</td></tr>
+        <tr><td>年次マイル</td><td>管理手数料のお支払い</td><td class="r">${months(v.reward)}</td></tr>
+        <tr><td>期間限定マイル</td><td>対象サービスのご利用（オークション・スクール・イベント等）</td><td class="r">${months(v.bonus)}</td></tr>
+        <tr><td>キャンペーンマイル</td><td>当社所定のキャンペーン</td><td class="r">${months(v.campaign)}</td></tr>
+      </tbody>
+    </table>`;
+
+  document.getElementById('rankTable').innerHTML = `
+    <table class="disc">
+      <thead><tr><th>会員ランク</th><th class="r">簿価</th><th class="r">付与率</th><th class="r">年間管理手数料率</th></tr></thead>
+      <tbody>
+        ${d.ranks.map(r => `
+          <tr>
+            <td class="text-gold">${esc(r.name)}</td>
+            <td class="r tabular-nums">${yen(r.minBookValue)}以上</td>
+            <td class="r tabular-nums">${(r.mileRate * 100).toFixed(1)}%</td>
+            <td class="r tabular-nums text-white/50">${(r.feeRate * 100).toFixed(1)}%</td>
+          </tr>`).join('')}
+      </tbody>
+    </table>`;
+
+  document.getElementById('channelTable').innerHTML = `
+    <table class="disc">
+      <thead><tr><th>利用先</th><th class="r">1マイルあたりの充当額</th></tr></thead>
+      <tbody>
+        ${d.channels.map(c => `
+          <tr><td>${esc(c.name)}</td><td class="r tabular-nums text-gold">${rate(c.yenPerMile)}</td></tr>`).join('')}
+      </tbody>
+    </table>`;
+})();
+</script>
+</body>
+</html>

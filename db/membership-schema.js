@@ -143,11 +143,33 @@ const TABLES = [
       col('balance_after', 'bigint', 'NOT NULL'),
       col('occurred_at', 'ts', 'NOT NULL'),
       col('channel', 'text'),                                    // restaurant / grandmaison / club / auction / school / event / wine
+      col('yen_per_mile', 'num'),                                // 利用時に適用した充当レート
+      col('yen_value', 'bigint'),                                // 充当額（円）
       col('reference', 'text'),
       col('memo', 'text'),
       col('created_at', 'ts'),
     ],
     indexes: [['mile_transactions_member_idx', 'member_id, occurred_at']],
+  },
+  {
+    /**
+     * マイルの利用チャネルと充当レート。
+     *
+     * 景品表示法5条2号（有利誤認表示）の観点から、利用先によって1マイルあたりの
+     * 充当額が異なる場合は、会員が交換先を選ぶ前にレートを明示する必要がある。
+     * レートをコードに埋めず master に置いているのは、member_ranks と同じ理由で、
+     * 変更があってもコード改修なしで反映できるようにするため。
+     */
+    name: 'mile_channels',
+    cols: [
+      col('id', 'id'),
+      col('code', 'text', 'NOT NULL UNIQUE'),
+      col('name', 'text', 'NOT NULL'),
+      col('description', 'text'),
+      col('yen_per_mile', 'num', 'NOT NULL DEFAULT 1'),   // 1マイルあたりの充当額（円）
+      col('sort_order', 'int', 'NOT NULL DEFAULT 0'),
+      col('is_active', 'int', 'NOT NULL DEFAULT 1'),
+    ],
   },
   {
     /**
@@ -252,6 +274,9 @@ async function addColumnIfMissing(table, column, pg) {
 const ADDED_COLUMNS = [
   ['mile_lots', col('paid_amount', 'bigint')],
   ['member_accounts', col('legacy_rank', 'text')],
+  // 利用時に適用した充当レートと充当額。後からいくら充当したかを証明できるようにする
+  ['mile_transactions', col('yen_per_mile', 'num')],
+  ['mile_transactions', col('yen_value', 'bigint')],
 ];
 
 function ddlFor(table, pg) {
@@ -280,6 +305,19 @@ async function migrate() {
 
   for (const [table, column] of ADDED_COLUMNS) {
     await addColumnIfMissing(table, column, pg);
+  }
+
+  // 利用チャネル master の初期投入（既存行は上書きしない）
+  const { REDEEM_CHANNELS } = require('../services/miles');
+  for (let i = 0; i < REDEEM_CHANNELS.length; i += 1) {
+    const c = REDEEM_CHANNELS[i];
+    const existing = await db.prepare('SELECT id FROM mile_channels WHERE code = ?').get(c.code);
+    if (!existing) {
+      await db.prepare(`
+        INSERT INTO mile_channels (code, name, description, yen_per_mile, sort_order, is_active)
+        VALUES (?, ?, ?, ?, ?, 1)
+      `).run(c.code, c.name, c.description, c.yenPerMile, (i + 1) * 10);
+    }
   }
 
   // ランク master の初期投入（既存行は上書きしない）

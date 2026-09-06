@@ -45,23 +45,54 @@ const PURCHASED_KIND = 'purchased';
 const GRANT_KINDS = Object.keys(MILE_VALIDITY_DAYS);
 
 /**
- * マイルを使えるチャネル。8/31 中谷氏MTGの「マイルはコミュニティ通貨」を実装に落としたもの。
- * ワイン購入以外でも使えることがこの一覧で表現されている。
+ * マイルを使えるチャネルの初期値。8/31 中谷氏MTGの「マイルはコミュニティ通貨」を
+ * 実装に落としたもの。ワイン購入以外でも使えることがこの一覧で表現されている。
+ *
+ * 実際に使われるのは mile_channels テーブルの値で、これはその初期投入用。
+ * 充当レートを変えるときは管理画面（またはテーブル）を直す。コード改修は要らない。
+ *
+ * ⚠️ 景品表示法5条2号（有利誤認表示）
+ *    利用先によって充当レートが異なる場合は、会員が交換先を選ぶ前にレートを明示すること。
+ *    「1マイル＝1円」とだけ見せて一部が0.5円、という表示にしてはいけない。
+ *    画面は listChannels() が返す yenPerMile を選択前に必ず表示する。
+ *    初期値は全チャネル 1.0 円。異なるレートを設定するかは経営判断。
  */
 const REDEEM_CHANNELS = [
-  { code: 'restaurant',  name: '系列レストラン',     description: 'グループ直営レストランでのお支払いに充当' },
-  { code: 'grandmaison', name: 'グランメゾン',       description: '提携グランメゾンのコース・ペアリングに充当' },
-  { code: 'school',      name: 'ワインスクール',     description: '講座の受講料に充当' },
-  { code: 'event',       name: '会員交流イベント',   description: '試飲会・生産者を招いた会の参加費に充当' },
-  { code: 'auction',     name: 'オークション',       description: '落札代金の一部に充当' },
-  { code: 'club',        name: 'CLUB年会費',         description: 'WineBank CLUB の年会費に充当' },
-  { code: 'wine',        name: 'ワイン購入',         description: 'ワインのご購入代金に充当' },
+  { code: 'restaurant',  name: '系列レストラン',     description: 'グループ直営レストランでのお支払いに充当', yenPerMile: 1 },
+  { code: 'grandmaison', name: 'グランメゾン',       description: '提携グランメゾンのコース・ペアリングに充当', yenPerMile: 1 },
+  { code: 'school',      name: 'ワインスクール',     description: '講座の受講料に充当', yenPerMile: 1 },
+  { code: 'event',       name: '会員交流イベント',   description: '試飲会・生産者を招いた会の参加費に充当', yenPerMile: 1 },
+  { code: 'auction',     name: 'オークション',       description: '落札代金の一部に充当', yenPerMile: 1 },
+  { code: 'club',        name: 'CLUB年会費',         description: 'WineBank CLUB の年会費に充当', yenPerMile: 1 },
+  { code: 'wine',        name: 'ワイン購入',         description: 'ワインのご購入代金に充当', yenPerMile: 1 },
 ];
 
-const REDEEM_CHANNEL_CODES = REDEEM_CHANNELS.map(c => c.code);
-
-/** 1マイルあたりの円換算。充当額の表示と、有償分の未使用残高（円）の算定に使う。 */
+/** 有償分の未使用残高（円）の算定に使う既定レート。供託の判定基礎はこの額面で数える。 */
 const MILE_TO_YEN = 1;
+
+/** 利用できるチャネルの一覧。充当レート込みで返す。 */
+async function listChannels() {
+  const rows = await db.prepare(
+    'SELECT * FROM mile_channels WHERE is_active = 1 ORDER BY sort_order ASC, id ASC'
+  ).all();
+  return rows.map(r => ({
+    code: r.code,
+    name: r.name,
+    description: r.description,
+    yenPerMile: Number(r.yen_per_mile),
+  }));
+}
+
+async function getChannel(code) {
+  if (!code) return null;
+  const r = await db.prepare(
+    'SELECT * FROM mile_channels WHERE code = ? AND is_active = 1').get(code);
+  if (!r) return null;
+  return {
+    code: r.code, name: r.name, description: r.description,
+    yenPerMile: Number(r.yen_per_mile),
+  };
+}
 
 /** 現在の残高（有効期限内のロット残の合計）。 */
 async function getBalance(memberId, at = nowIso()) {
@@ -154,9 +185,14 @@ async function redeem(memberId, amount, opts = {}) {
     throw new Error('利用マイルは1以上の整数で指定してください');
   }
 
-  if (opts.channel && !REDEEM_CHANNEL_CODES.includes(opts.channel)) {
-    throw new Error(`不明な利用チャネルです: ${opts.channel}`);
+  // 充当レートはチャネル master 由来。利用時点のレートを台帳に残し、
+  // 後から「いくら充当したか」を証明できるようにする。
+  let channel = null;
+  if (opts.channel) {
+    channel = await getChannel(opts.channel);
+    if (!channel) throw new Error(`不明な利用チャネルです: ${opts.channel}`);
   }
+  const yenPerMile = channel ? channel.yenPerMile : MILE_TO_YEN;
 
   const occurredAt = opts.occurredAt || nowIso();
   const balance = await getBalance(memberId, occurredAt);
@@ -186,14 +222,23 @@ async function redeem(memberId, amount, opts = {}) {
     running -= take;
     await insertReturningId(`
       INSERT INTO mile_transactions
-        (member_id, lot_id, type, amount, balance_after, occurred_at, channel, reference, memo, created_at)
-      VALUES (?, ?, 'redeem', ?, ?, ?, ?, ?, ?, ?)
+        (member_id, lot_id, type, amount, balance_after, occurred_at, channel,
+         yen_per_mile, yen_value, reference, memo, created_at)
+      VALUES (?, ?, 'redeem', ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [memberId, lot.id, -take, running, occurredAt,
-        opts.channel || null, opts.reference || null, opts.memo || null, nowIso()]);
+        opts.channel || null, yenPerMile, Math.round(take * yenPerMile),
+        opts.reference || null, opts.memo || null, nowIso()]);
     applied.push({ lotId: lot.id, amount: take, expiresAt: lot.expires_at });
   }
 
-  return { redeemed: value, balance: running, lots: applied };
+  return {
+    redeemed: value,
+    balance: running,
+    lots: applied,
+    channel: channel ? channel.code : null,
+    yenPerMile,
+    yenValue: Math.round(value * yenPerMile),   // 実際に充当された金額
+  };
 }
 
 /**
@@ -367,7 +412,8 @@ module.exports = {
   GRANT_KINDS,
   PURCHASED_KIND,
   REDEEM_CHANNELS,
-  REDEEM_CHANNEL_CODES,
+  listChannels,
+  getChannel,
   MILE_TO_YEN,
   DEPOSIT_THRESHOLD_YEN,
   DEPOSIT_RATIO,

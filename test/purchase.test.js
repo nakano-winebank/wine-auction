@@ -349,3 +349,96 @@ test('無償付与マイルは供託の判定に一切入らない', async () =>
   assert.strictEqual(after.yen, before.yen,
     '無償分は前払式支払手段に当たらないため、供託の判定基礎に入れない');
 });
+
+// ───────────────────────────────── 充当レート（景品表示法5条2号：有利誤認表示）
+
+test('利用チャネルは master から取得でき、充当レートが必ず添えられる', async () => {
+  const channels = await miles.listChannels();
+  assert.strictEqual(channels.length, 7);
+  for (const c of channels) {
+    assert.ok(typeof c.yenPerMile === 'number' && c.yenPerMile > 0,
+      `${c.code} に充当レートが入っている（画面が選択前に表示するために必須）`);
+    assert.ok(c.name && c.description);
+  }
+});
+
+test('充当レートはコードではなく master を直せば変わる', async () => {
+  await db.prepare('UPDATE mile_channels SET yen_per_mile = ? WHERE code = ?')
+    .run(0.5, 'grandmaison');
+  try {
+    const ch = await miles.getChannel('grandmaison');
+    assert.strictEqual(ch.yenPerMile, 0.5, 'コード改修なしでレートが変わる');
+
+    const list = await miles.listChannels();
+    assert.strictEqual(list.find(c => c.code === 'grandmaison').yenPerMile, 0.5);
+    assert.strictEqual(list.find(c => c.code === 'restaurant').yenPerMile, 1,
+      '他のチャネルは影響を受けない');
+  } finally {
+    await db.prepare('UPDATE mile_channels SET yen_per_mile = 1 WHERE code = ?').run('grandmaison');
+  }
+});
+
+test('レートが異なるチャネルでは充当額がレート通りに計算される', async () => {
+  const userId = await makeUser();
+  const { memberId } = await purchase.purchasePlan(userId, 'GOLD');
+
+  await db.prepare('UPDATE mile_channels SET yen_per_mile = ? WHERE code = ?')
+    .run(0.5, 'grandmaison');
+  try {
+    const full = await miles.redeem(memberId, 10000, { channel: 'restaurant' });
+    assert.strictEqual(full.yenPerMile, 1);
+    assert.strictEqual(full.yenValue, 10000, '1.0円のチャネルは額面どおり');
+
+    const half = await miles.redeem(memberId, 10000, { channel: 'grandmaison' });
+    assert.strictEqual(half.yenPerMile, 0.5);
+    assert.strictEqual(half.yenValue, 5000, '0.5円のチャネルは半額の充当');
+  } finally {
+    await db.prepare('UPDATE mile_channels SET yen_per_mile = 1 WHERE code = ?').run('grandmaison');
+  }
+});
+
+test('利用時に適用したレートと充当額が台帳に残る', async () => {
+  const userId = await makeUser();
+  const { memberId } = await purchase.purchasePlan(userId, 'GOLD');
+
+  await db.prepare('UPDATE mile_channels SET yen_per_mile = ? WHERE code = ?').run(0.5, 'school');
+  try {
+    await miles.redeem(memberId, 4000, { channel: 'school' });
+  } finally {
+    await db.prepare('UPDATE mile_channels SET yen_per_mile = 1 WHERE code = ?').run('school');
+  }
+
+  const rows = await db.prepare(`
+    SELECT yen_per_mile, yen_value, amount FROM mile_transactions
+    WHERE member_id = ? AND type = 'redeem' AND channel = 'school'
+  `).all(memberId);
+  assert.ok(rows.length >= 1);
+  const totalYen = rows.reduce((sum, r) => sum + Number(r.yen_value), 0);
+  assert.strictEqual(totalYen, 2000, '後から充当額を証明できる');
+  for (const r of rows) {
+    assert.strictEqual(Number(r.yen_per_mile), 0.5, '利用時点のレートが残る');
+  }
+
+  // レートを戻しても、過去の記録は当時のレートのまま
+  const after = await db.prepare(`
+    SELECT yen_per_mile FROM mile_transactions
+    WHERE member_id = ? AND channel = 'school' LIMIT 1
+  `).get(memberId);
+  assert.strictEqual(Number(after.yen_per_mile), 0.5,
+    'master を戻しても過去の取引のレートは書き換わらない');
+});
+
+test('無効化したチャネルは利用できない', async () => {
+  const userId = await makeUser();
+  const { memberId } = await purchase.purchasePlan(userId, 'PRESTIGE');
+  await db.prepare('UPDATE mile_channels SET is_active = 0 WHERE code = ?').run('event');
+  try {
+    await assert.rejects(
+      () => miles.redeem(memberId, 100, { channel: 'event' }),
+      /不明な利用チャネル/);
+    const list = await miles.listChannels();
+    assert.ok(!list.some(c => c.code === 'event'), '一覧にも出ない');
+  } finally {
+    await db.prepare('UPDATE mile_channels SET is_active = 1 WHERE code = ?').run('event');
+  }
+});

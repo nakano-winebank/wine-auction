@@ -48,6 +48,35 @@ router.patch('/ranks/:code', handle(async (req, res) => {
   res.json({ rank: await members.getRank(req.params.code) });
 }));
 
+// ───────────────────────────────── マイルの利用チャネル
+
+router.get('/channels', handle(async (req, res) => {
+  res.json({ channels: await miles.listChannels() });
+}));
+
+/**
+ * 充当レートの変更。レートをコードに埋めていないので、ここを直せば画面にも即反映される。
+ * ⚠️ 利用先ごとにレートを変えた場合、会員が交換先を選ぶ前にレートが見えている必要がある
+ *    （景品表示法5条2号の有利誤認表示）。会員画面は listChannels() の値をそのまま出している。
+ */
+router.patch('/channels/:code', handle(async (req, res) => {
+  const { yenPerMile, name, description, isActive } = req.body;
+  const fields = [];
+  const params = [];
+  if (yenPerMile !== undefined) {
+    const rate = Number(yenPerMile);
+    if (!Number.isFinite(rate) || rate <= 0) throw new Error('充当レートは0より大きい数値で指定してください');
+    fields.push('yen_per_mile = ?'); params.push(rate);
+  }
+  if (name !== undefined)        { fields.push('name = ?');        params.push(name); }
+  if (description !== undefined) { fields.push('description = ?'); params.push(description); }
+  if (isActive !== undefined)    { fields.push('is_active = ?');   params.push(isActive ? 1 : 0); }
+  if (!fields.length) throw new Error('更新する項目がありません');
+  params.push(req.params.code);
+  await db.prepare(`UPDATE mile_channels SET ${fields.join(', ')} WHERE code = ?`).run(...params);
+  res.json({ channel: await miles.getChannel(req.params.code) });
+}));
+
 /**
  * 有償マイルの未使用残高と、供託義務の判定材料。
  * 資金決済法の基準日（3/31・9/30）残高が1,000万円を超えると供託義務が生じるため、

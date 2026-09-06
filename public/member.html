@@ -135,7 +135,11 @@
         <!-- マイル利用 -->
         <div id="redeemPanel" class="hidden mt-4 bg-dark-800 border border-gold/25 rounded-lg p-5">
           <h3 class="font-serif text-lg text-gold mb-1">マイルをつかう</h3>
-          <p class="text-xs text-white/40 mb-4">ワインのご購入以外にも、グループの各サービスでご利用いただけます。</p>
+          <p class="text-xs text-white/40 mb-4">
+            ワインのご購入以外にも、グループの各サービスでご利用いただけます。
+            利用先により1マイルあたりの充当額が異なる場合があります。
+            <a href="/terms/miles" class="text-gold/80 hover:text-gold underline underline-offset-2">利用規約</a>
+          </p>
 
           <div id="channelList" class="grid gap-2 sm:grid-cols-2 mb-4"></div>
 
@@ -179,6 +183,11 @@
       <section id="tab-miles" class="hidden"></section>
       <section id="tab-fees" class="hidden"></section>
     </div>
+
+    <footer class="mt-14 pt-6 border-t border-white/5 flex flex-wrap gap-x-6 gap-y-2 text-[11px] text-white/30">
+      <a href="/terms/miles" class="hover:text-gold transition">ワインマイル利用規約</a>
+      <span>マイルの有効期限が近づいた際は、失効30日前までにメールでお知らせします。</span>
+    </footer>
   </main>
 
 <script>
@@ -187,6 +196,10 @@ const num  = (n) => n === null || n === undefined ? '—' : Math.round(n).toLoca
 const date = (s) => s ? new Date(s).toLocaleDateString('ja-JP') : '—';
 const esc  = (s) => String(s ?? '').replace(/[&<>"']/g, c => (
   { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+
+// 1マイルあたりの充当額。0.5 のような端数も落とさずに見せる
+const rate = (v) => v === null || v === undefined ? '—'
+  : '＝ ¥' + (Number(v) % 1 === 0 ? Number(v).toLocaleString() : Number(v).toFixed(2));
 
 const CHANNEL_LABELS = {
   restaurant: '系列レストラン', grandmaison: 'グランメゾン', club: 'CLUB年会費',
@@ -249,10 +262,15 @@ async function load() {
 
 /** 設定に応じて、マイル利用・有償購入・デモの各UIを組み立てる。 */
 function renderShop() {
+  // 交換先ごとの充当レートは「選ぶ前」に見えている必要がある（景品表示法の有利誤認表示対策）。
+  // レートが一律でない場合は差が分かるよう、全チャネルに必ずレートを併記する。
   document.getElementById('channelList').innerHTML = config.channels.map(c => `
     <button data-channel="${esc(c.code)}"
-            class="text-left bg-dark-700 border border-white/10 hover:border-gold/50 rounded p-3 transition">
-      <div class="text-sm text-white/85">${esc(c.name)}</div>
+            class="text-left bg-dark-700 border border-white/10 hover:border-gold/50 rounded-sm p-3 transition">
+      <div class="flex items-baseline justify-between gap-2">
+        <span class="text-sm text-white/85">${esc(c.name)}</span>
+        <span class="text-[11px] text-gold tabular-nums whitespace-nowrap">1マイル ${rate(c.yenPerMile)}</span>
+      </div>
       <div class="text-xs text-white/35 mt-0.5">${esc(c.description)}</div>
     </button>`).join('');
 
@@ -261,9 +279,10 @@ function renderShop() {
       selectedChannel = btn.dataset.channel;
       document.querySelectorAll('[data-channel]').forEach(b => {
         b.className = b === btn
-          ? 'text-left bg-dark-700 border border-gold rounded p-3 transition'
-          : 'text-left bg-dark-700 border border-white/10 hover:border-gold/50 rounded p-3 transition';
+          ? 'text-left bg-dark-700 border border-gold rounded-sm p-3 transition'
+          : 'text-left bg-dark-700 border border-white/10 hover:border-gold/50 rounded-sm p-3 transition';
       });
+      updateRedeemYen();
     });
   });
 
@@ -301,12 +320,17 @@ document.getElementById('openMilePurchase').addEventListener('click', () => {
 });
 document.getElementById('closeMilePurchase').addEventListener('click', () => hide('milePurchasePanel'));
 
-// 入力中のマイルが何円ぶんかを添える
-document.getElementById('redeemAmount').addEventListener('input', (e) => {
-  const v = parseInt(e.target.value, 10);
-  document.getElementById('redeemYen').textContent =
-    Number.isFinite(v) && v > 0 ? `＝ ${yen(v * config.mileToYen)} 相当` : '';
-});
+/** 入力中のマイルが何円ぶんかを、選んだ交換先のレートで示す。 */
+function updateRedeemYen() {
+  const v = parseInt(document.getElementById('redeemAmount').value, 10);
+  const ch = config.channels.find(c => c.code === selectedChannel);
+  const el = document.getElementById('redeemYen');
+  if (!Number.isFinite(v) || v <= 0) { el.textContent = ''; return; }
+  el.textContent = ch
+    ? `${esc(ch.name)}で ${yen(v * ch.yenPerMile)} 相当`
+    : '交換先を選ぶと充当額が表示されます';
+}
+document.getElementById('redeemAmount').addEventListener('input', updateRedeemYen);
 
 document.getElementById('redeemBtn').addEventListener('click', async () => {
   const amount = parseInt(document.getElementById('redeemAmount').value, 10);
@@ -324,7 +348,8 @@ document.getElementById('redeemBtn').addEventListener('click', async () => {
 
   const channelName = (config.channels.find(c => c.code === selectedChannel) || {}).name || '';
   panelMessage('redeemMessage',
-    `${channelName}で ${num(body.redeemed)} マイルを利用しました。残高 ${num(body.balance)} マイル。`, true);
+    `${channelName}で ${num(body.redeemed)} マイル（${yen(body.yenValue)} 相当）を利用しました。` +
+    `残高 ${num(body.balance)} マイル。`, true);
   document.getElementById('redeemAmount').value = '';
   document.getElementById('redeemYen').textContent = '';
   await reload();

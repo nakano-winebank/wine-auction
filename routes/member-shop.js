@@ -19,8 +19,6 @@ function milePurchaseEnabled() {
   return process.env.MILE_PURCHASE_ENABLED === '1';
 }
 
-router.use(authenticateToken);
-
 const handle = (fn) => async (req, res) => {
   try {
     await fn(req, res);
@@ -28,6 +26,34 @@ const handle = (fn) => async (req, res) => {
     res.status(400).json({ error: e.message });
   }
 };
+
+/**
+ * プログラムの公開情報（ランク別の付与率・利用先ごとの充当レート）。
+ *
+ * 利用規約が「当社ウェブサイトに掲載する」と約束している内容そのものなので、
+ * 規約ページがこれを読んで描画する。規約本文に数値を書き写さないことで、
+ * master を変えたときに規約の記載とずれるのを防いでいる。
+ *
+ * 個人情報を含まない公開情報のため、ログイン不要。認証を掛ける前に登録している。
+ */
+router.get('/program', handle(async (req, res) => {
+  const ranks = await members.listRanks();
+  res.json({
+    ranks: ranks.map(r => ({
+      code: r.code, name: r.name,
+      minBookValue: r.min_book_value,
+      mileRate: r.mile_rate,
+      feeRate: r.fee_rate,
+    })),
+    channels: await miles.listChannels(),
+    validityDays: miles.MILE_VALIDITY_DAYS,
+    expiryNoticeDays: 30,
+  });
+}));
+
+router.use(authenticateToken);
+
+const handleAuthed = handle;
 
 /** 画面が最初に叩く。どの機能が開いているかをフロントに伝える。 */
 router.get('/config', handle(async (req, res) => {
@@ -37,7 +63,8 @@ router.get('/config', handle(async (req, res) => {
     demoMode: demo.isEnabled(),
     milePurchaseEnabled: milePurchaseEnabled(),
     mileToYen: miles.MILE_TO_YEN,
-    channels: miles.REDEEM_CHANNELS,
+    // 充当レート込み。画面は交換先を選ぶ前にこれを表示する（景表法の有利誤認表示対策）
+    channels: await miles.listChannels(),
     milePacks: milePurchaseEnabled() ? purchase.listMilePacks() : [],
   });
 }));
