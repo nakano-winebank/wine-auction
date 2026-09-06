@@ -118,11 +118,12 @@ DAYS_PER_MONTH = 30   # 1年＝360日として日次で刻む
 
 
 def monthly(u, hold_months, years=TERM_YEARS, capital=CAPITAL, util=UTIL,
-            ramp=RAMP_MONTHS, rate=None, share=0.5):
+            ramp=RAMP_MONTHS, rate=None, share=0.5, period_days=180):
     """日次キャッシュフロー。保有期間を整数月に丸めると満期までに何回転
     収まるかで結果が跳ねるため、日次で刻んで段差をならす。
 
-    share は税前利益のうち投資家に配分する比率。"""
+    share       は税前利益のうち投資家に配分する比率。
+    period_days は分配周期（既定180日＝半期。年1回分配なら360を渡す）。"""
     D       = int(round(years * 12 * DAYS_PER_MONTH))
     hold_d  = max(1, int(round(hold_months * DAYS_PER_MONTH)))
     ramp_d  = max(1, int(round(ramp * DAYS_PER_MONTH)))
@@ -154,10 +155,10 @@ def monthly(u, hold_months, years=TERM_YEARS, capital=CAPITAL, util=UTIL,
         cost_d[t] += sales_d[t] * u["var_rate"]
         cost_d[t] += SPC_FIXED_TOTAL / 360
 
-    # 半期（180日）ごとに税前利益を按分して分配
-    half = 180
+    # 分配周期（既定は半期＝180日）ごとに税前利益を按分して分配
+    half = period_days
     flows, carry = [-capital], 0.0
-    for h in range(1, int(round(years * 2)) + 1):
+    for h in range(1, int(round(years * 360 / half)) + 1):
         a, b = (h - 1) * half + 1, h * half
         carry += sum(sales_d[a:b + 1]) - sum(cogs_d[a:b + 1]) - sum(cost_d[a:b + 1])
         distributable = max(carry, 0.0)      # 累損は繰越、黒字分のみ分配
