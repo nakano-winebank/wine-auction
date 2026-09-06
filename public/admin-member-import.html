@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>会員データ取込 — WineBank 管理</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: {
+        colors: {
+          gold: { DEFAULT: '#A78450', hover: '#8B6914' },
+          dark: { 900: '#0A0A0A', 800: '#141414', 700: '#1C1C1C', 600: '#252525' }
+        },
+        fontFamily: { serif: ['Noto Serif JP','serif'], sans: ['Inter','Noto Sans JP','sans-serif'] }
+      } }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Noto+Serif+JP:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap');
+    body { font-family: 'Inter', 'Noto Sans JP', sans-serif; }
+    /* Tailwind CDN が読めなかった場合でも表示が崩れないようにする */
+    .hidden { display: none !important; }
+    .step-done { color: #A78450; }
+    table.grid th, table.grid td { border-bottom: 1px solid rgba(255,255,255,.06); }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(6px) } to { opacity:1; transform:translateY(0) } }
+    .fade-in { animation: fadeIn .3s ease; }
+  </style>
+</head>
+<body class="bg-dark-900 text-white/90">
+
+  <header class="bg-dark-800/95 backdrop-blur border-b border-white/5 sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto px-4">
+      <div class="flex items-center h-14 gap-3">
+        <a href="/admin/members" class="text-white/40 hover:text-gold p-1 transition" aria-label="戻る">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        </a>
+        <span class="font-serif text-gold tracking-wide">WineBank 管理</span>
+        <span class="font-medium text-white/90 ml-1 text-sm">会員データ取込</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 py-6">
+
+    <div id="needLogin" class="hidden text-center py-20">
+      <p class="text-white/60">管理者としてログインしてください。</p>
+      <a href="/login" class="inline-block mt-4 px-5 py-2 bg-gold hover:bg-gold-hover text-dark-900 rounded text-sm font-semibold transition">ログイン</a>
+    </div>
+
+    <div id="app" class="hidden">
+
+      <div class="bg-amber-500/10 border border-amber-500/30 rounded p-3 text-xs text-amber-200/90 mb-6 leading-relaxed">
+        取り込むファイルには個人情報が含まれます。ダウンロードした実データはリポジトリに置かないでください。<br>
+        列の対応付けは<b>ファイルの実際のヘッダー行</b>から選びます。候補は自動で提示されますが、必ず内容を確認してから進めてください。
+      </div>
+
+      <!-- ステップ1: ファイル -->
+      <section class="bg-dark-800 border border-white/10 rounded-lg p-5 mb-4">
+        <h2 class="font-serif text-lg text-gold mb-4">1. ファイルを選ぶ</h2>
+        <div class="flex flex-wrap items-end gap-4">
+          <label class="text-sm">
+            <span class="block text-xs text-white/40 mb-1">取込種別</span>
+            <select id="kind" class="bg-dark-700 border border-white/15 rounded px-3 py-2 text-sm text-white/90">
+              <option value="club">WineBank CLUB 会員</option>
+              <option value="investment">投資会員（保有本数・簿価）</option>
+            </select>
+          </label>
+          <label class="text-sm">
+            <span class="block text-xs text-white/40 mb-1">Excel / CSV ファイル</span>
+            <input id="file" type="file" accept=".xlsx,.xls,.csv"
+                   class="bg-dark-700 border border-white/15 rounded px-3 py-2 text-sm text-white/70">
+          </label>
+          <button id="analyzeBtn" class="px-5 py-2 bg-gold hover:bg-gold-hover text-dark-900 rounded text-sm font-semibold transition">
+            中身を確認する
+          </button>
+        </div>
+      </section>
+
+      <!-- ステップ2: 対応付け -->
+      <section id="mapSection" class="hidden bg-dark-800 border border-white/10 rounded-lg p-5 mb-4 fade-in">
+        <h2 class="font-serif text-lg text-gold mb-1">2. 列を対応付ける</h2>
+        <p class="text-xs text-white/40 mb-4" id="sheetInfo"></p>
+
+        <div class="overflow-x-auto mb-5">
+          <table class="grid w-full text-xs">
+            <thead class="text-white/40">
+              <tr id="previewHead"></tr>
+            </thead>
+            <tbody id="previewBody" class="text-white/60"></tbody>
+          </table>
+        </div>
+
+        <div id="mapFields" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 mb-5"></div>
+        <button id="dryRunBtn" class="px-5 py-2 bg-gold hover:bg-gold-hover text-dark-900 rounded text-sm font-semibold transition">
+          取込結果をプレビューする（ドライラン）
+        </button>
+      </section>
+
+      <!-- ステップ3: プレビュー -->
+      <section id="previewSection" class="hidden bg-dark-800 border border-white/10 rounded-lg p-5 mb-4 fade-in">
+        <h2 class="font-serif text-lg text-gold mb-4">3. 取込結果のプレビュー</h2>
+        <div id="summary" class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-5"></div>
+
+        <div class="flex gap-2 mb-3 text-xs">
+          <button data-filter="all"    class="px-3 py-1.5 border border-gold text-gold rounded transition">すべて</button>
+          <button data-filter="create" class="px-3 py-1.5 border border-white/15 text-white/60 rounded transition">新規</button>
+          <button data-filter="update" class="px-3 py-1.5 border border-white/15 text-white/60 rounded transition">更新</button>
+          <button data-filter="skip"   class="px-3 py-1.5 border border-white/15 text-white/60 rounded transition">取込対象外</button>
+          <button data-filter="warn"   class="px-3 py-1.5 border border-white/15 text-white/60 rounded transition">警告あり</button>
+        </div>
+
+        <div class="overflow-x-auto max-h-96 overflow-y-auto mb-5">
+          <table class="grid w-full text-xs">
+            <thead class="text-white/40 sticky top-0 bg-dark-800">
+              <tr>
+                <th class="text-left py-2 px-2 font-medium">行</th>
+                <th class="text-left py-2 px-2 font-medium">処理</th>
+                <th class="text-left py-2 px-2 font-medium">対象</th>
+                <th class="text-left py-2 px-2 font-medium">内容 / 理由</th>
+              </tr>
+            </thead>
+            <tbody id="itemRows"></tbody>
+          </table>
+        </div>
+
+        <div class="bg-dark-700 border border-gold/25 rounded p-4">
+          <p class="text-sm text-white/70 mb-3" id="executeNote"></p>
+          <label class="flex items-center gap-2 text-sm mb-3">
+            <input id="confirmCheck" type="checkbox" class="w-4 h-4">
+            <span>上記の内容を確認しました。この内容で本番のデータベースに取り込みます。</span>
+          </label>
+          <button id="executeBtn" disabled
+                  class="px-5 py-2 bg-gold hover:bg-gold-hover text-dark-900 rounded text-sm font-semibold transition">
+            取り込みを実行する
+          </button>
+        </div>
+      </section>
+
+      <!-- 結果 -->
+      <section id="resultSection" class="hidden bg-dark-800 border border-emerald-500/25 rounded-lg p-5 mb-4 fade-in">
+        <h2 class="font-serif text-lg text-emerald-400 mb-3">取り込みが完了しました</h2>
+        <div id="resultDetail" class="text-sm text-white/70"></div>
+      </section>
+
+      <div id="error" class="hidden bg-red-500/10 border border-red-500/30 rounded p-3 text-sm text-red-300 mb-4"></div>
+
+      <!-- 履歴 -->
+      <section class="bg-dark-800 border border-white/10 rounded-lg p-5">
+        <h2 class="font-serif text-lg text-white/80 mb-4">取込履歴</h2>
+        <div id="batches" class="text-sm text-white/50">読み込み中…</div>
+      </section>
+    </div>
+  </main>
+
+<script>
+const num = (n) => n === null || n === undefined ? '—' : Math.round(n).toLocaleString();
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => (
+  { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+const dateStr = (s) => s ? new Date(s).toLocaleString('ja-JP') : '—';
+
+const token = localStorage.getItem('token');
+const authOnly = { Authorization: 'Bearer ' + token };
+
+let fields = {};
+let analyzed = null;   // analyze の結果
+let plan = null;       // dryRun の結果
+let filter = 'all';
+
+function show(id) { document.getElementById(id).classList.remove('hidden'); }
+function hide(id) { document.getElementById(id).classList.add('hidden'); }
+function showError(msg) {
+  const el = document.getElementById('error');
+  el.textContent = msg;
+  el.classList.remove('hidden');
+  el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function currentKind() { return document.getElementById('kind').value; }
+function currentFile() { return document.getElementById('file').files[0]; }
+function currentSheet() { return analyzed ? analyzed.sheets[0] : null; }
+
+/** 画面で選ばれている対応付けを集める。 */
+function currentMapping() {
+  const mapping = {};
+  document.querySelectorAll('[data-field]').forEach(sel => {
+    mapping[sel.dataset.field] = sel.value === '' ? null : parseInt(sel.value, 10);
+  });
+  return mapping;
+}
+
+async function init() {
+  if (!token) { show('needLogin'); return; }
+  const res = await fetch('/api/admin/member-import/fields', { headers: authOnly });
+  if (!res.ok) { show('needLogin'); return; }
+  fields = (await res.json()).fields;
+  show('app');
+  loadBatches();
+}
+
+// ── ① 中身を確認する
+document.getElementById('analyzeBtn').addEventListener('click', async () => {
+  hide('error'); hide('previewSection'); hide('resultSection');
+  const file = currentFile();
+  if (!file) return showError('ファイルを選択してください。');
+
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('kind', currentKind());
+
+  const res = await fetch('/api/admin/member-import/analyze', {
+    method: 'POST', headers: authOnly, body: fd });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) return showError(body.error || 'ファイルの読み込みに失敗しました。');
+
+  analyzed = body;
+  renderMapping();
+  show('mapSection');
+});
+
+function renderMapping() {
+  const sheet = currentSheet();
+  document.getElementById('sheetInfo').textContent =
+    `シート「${sheet.name}」／ ${num(sheet.rowCount)}行 ／ ${sheet.headers.length}列。下の表は先頭数行のプレビューです。`;
+
+  document.getElementById('previewHead').innerHTML =
+    sheet.headers.map(h => `<th class="text-left py-2 px-2 font-medium whitespace-nowrap">${esc(h)}</th>`).join('');
+  document.getElementById('previewBody').innerHTML =
+    sheet.sampleRows.map(r =>
+      `<tr>${r.map(c => `<td class="py-1.5 px-2 whitespace-nowrap">${esc(c)}</td>`).join('')}</tr>`).join('');
+
+  const suggested = sheet.suggestedMapping || {};
+  document.getElementById('mapFields').innerHTML = fields[currentKind()].map(f => {
+    const options = ['<option value="">（取り込まない）</option>']
+      .concat(sheet.headers.map((h, i) =>
+        `<option value="${i}"${suggested[f.key] === i ? ' selected' : ''}>${esc(h || '(列' + (i + 1) + ')')}</option>`))
+      .join('');
+    return `
+      <label class="text-sm block">
+        <span class="block text-xs mb-1 ${f.required ? 'text-gold' : 'text-white/40'}">
+          ${esc(f.label)}${f.required ? ' <span class="text-red-400">*</span>' : ''}
+        </span>
+        <select data-field="${esc(f.key)}"
+                class="w-full bg-dark-700 border border-white/15 rounded px-3 py-2 text-sm text-white/90">${options}</select>
+      </label>`;
+  }).join('');
+}
+
+// ── ② ドライラン
+document.getElementById('dryRunBtn').addEventListener('click', async () => {
+  hide('error'); hide('resultSection');
+  const btn = document.getElementById('dryRunBtn');
+  btn.disabled = true; btn.textContent = '確認中…';
+
+  const fd = new FormData();
+  fd.append('file', currentFile());
+  fd.append('kind', currentKind());
+  fd.append('sheetName', currentSheet().name);
+  fd.append('mapping', JSON.stringify(currentMapping()));
+
+  const res = await fetch('/api/admin/member-import/dry-run', {
+    method: 'POST', headers: authOnly, body: fd });
+  const body = await res.json().catch(() => ({}));
+
+  btn.disabled = false; btn.textContent = '取込結果をプレビューする（ドライラン）';
+  if (!res.ok) return showError(body.error || 'ドライランに失敗しました。');
+
+  plan = body;
+  renderPlan();
+  show('previewSection');
+  document.getElementById('previewSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+
+function renderPlan() {
+  const s = plan.summary;
+  const tile = (label, value, cls) => `
+    <div class="bg-dark-700 border border-white/5 rounded p-3">
+      <div class="text-xs text-white/40 mb-1">${label}</div>
+      <div class="text-xl font-semibold ${cls || ''}">${num(value)}</div>
+    </div>`;
+  document.getElementById('summary').innerHTML =
+    tile('対象行', s.total) +
+    tile('新規', s.create, 'text-emerald-400') +
+    tile('更新', s.update, 'text-sky-400') +
+    tile('取込対象外', s.skip, 'text-red-400') +
+    tile('警告あり', s.warnings, 'text-amber-400');
+
+  renderItems();
+
+  document.getElementById('executeNote').textContent =
+    `新規 ${num(s.create)} 件、更新 ${num(s.update)} 件を取り込みます。取込対象外の ${num(s.skip)} 件は登録されません。`;
+  document.getElementById('confirmCheck').checked = false;
+  document.getElementById('executeBtn').disabled = true;
+}
+
+function renderItems() {
+  const label = { create: '新規', update: '更新', skip: '対象外' };
+  const cls = { create: 'text-emerald-400', update: 'text-sky-400', skip: 'text-red-400' };
+
+  const items = plan.items.filter(i =>
+    filter === 'all' ? true :
+    filter === 'warn' ? (i.warnings || []).length > 0 : i.action === filter);
+
+  document.getElementById('itemRows').innerHTML = items.length ? items.slice(0, 500).map(i => {
+    const notes = [];
+    if (i.reason) notes.push(`<span class="text-red-300">${esc(i.reason)}</span>`);
+    (i.warnings || []).forEach(w => notes.push(`<span class="text-amber-300">${esc(w)}</span>`));
+    if (i.withdrawn) notes.push('<span class="text-white/40">退会済みとして登録</span>');
+    if (i.preview && i.preview.rankCode) {
+      notes.push(`<span class="text-white/50">簿価から算定したランク: ${esc(i.preview.rankCode)}</span>`);
+    }
+    if (i.preview && i.preview.legacyRank) {
+      notes.push(`<span class="text-white/35">旧ランク: ${esc(i.preview.legacyRank)}（参考値）</span>`);
+    }
+    return `
+      <tr>
+        <td class="py-1.5 px-2 text-white/40">${i.row}</td>
+        <td class="py-1.5 px-2 ${cls[i.action]}">${label[i.action]}</td>
+        <td class="py-1.5 px-2 text-white/70">${esc(i.key || '—')}</td>
+        <td class="py-1.5 px-2">${notes.join(' ／ ') || '<span class="text-white/25">—</span>'}</td>
+      </tr>`;
+  }).join('') : '<tr><td colspan="4" class="py-6 text-center text-white/40">該当する行はありません。</td></tr>';
+}
+
+document.querySelectorAll('[data-filter]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    filter = btn.dataset.filter;
+    document.querySelectorAll('[data-filter]').forEach(b => {
+      b.className = b === btn
+        ? 'px-3 py-1.5 border border-gold text-gold rounded transition'
+        : 'px-3 py-1.5 border border-white/15 text-white/60 rounded transition';
+    });
+    renderItems();
+  });
+});
+
+// ── ③ 実行
+document.getElementById('confirmCheck').addEventListener('change', (e) => {
+  document.getElementById('executeBtn').disabled = !e.target.checked;
+});
+
+document.getElementById('executeBtn').addEventListener('click', async () => {
+  hide('error');
+  const btn = document.getElementById('executeBtn');
+  btn.disabled = true; btn.textContent = '取り込み中…';
+
+  const fd = new FormData();
+  fd.append('file', currentFile());
+  fd.append('kind', plan.kind);
+  fd.append('sheetName', currentSheet().name);
+  fd.append('mapping', JSON.stringify(currentMapping()));
+  fd.append('digest', plan.digest);   // プレビューと同じ内容であることの確認に使う
+
+  const res = await fetch('/api/admin/member-import/execute', {
+    method: 'POST', headers: authOnly, body: fd });
+  const body = await res.json().catch(() => ({}));
+
+  btn.textContent = '取り込みを実行する';
+  if (!res.ok) { btn.disabled = false; return showError(body.error || '取り込みに失敗しました。'); }
+
+  document.getElementById('resultDetail').innerHTML =
+    `新規 <b class="text-emerald-400">${num(body.applied.created)}</b> 件、` +
+    `更新 <b class="text-sky-400">${num(body.applied.updated)}</b> 件を登録しました。` +
+    `取込対象外は ${num(body.summary.skip)} 件です。`;
+  hide('previewSection');
+  show('resultSection');
+  loadBatches();
+});
+
+async function loadBatches() {
+  const res = await fetch('/api/admin/member-import/batches', { headers: authOnly });
+  if (!res.ok) return;
+  const { batches } = await res.json();
+  const kindLabel = { club: 'CLUB会員', investment: '投資会員' };
+  document.getElementById('batches').innerHTML = batches.length ? `
+    <div class="overflow-x-auto">
+      <table class="grid w-full text-xs">
+        <thead class="text-white/40">
+          <tr>
+            <th class="text-left py-2 px-2 font-medium">実行日時</th>
+            <th class="text-left py-2 px-2 font-medium">種別</th>
+            <th class="text-left py-2 px-2 font-medium">ファイル</th>
+            <th class="text-right py-2 px-2 font-medium">新規</th>
+            <th class="text-right py-2 px-2 font-medium">更新</th>
+            <th class="text-right py-2 px-2 font-medium">対象外</th>
+            <th class="text-left py-2 px-2 font-medium">実行者</th>
+          </tr>
+        </thead>
+        <tbody class="text-white/70">
+          ${batches.map(b => `
+            <tr>
+              <td class="py-1.5 px-2">${dateStr(b.executed_at)}</td>
+              <td class="py-1.5 px-2">${esc(kindLabel[b.kind] || b.kind)}</td>
+              <td class="py-1.5 px-2 text-white/40">${esc(b.file_name || '—')}</td>
+              <td class="py-1.5 px-2 text-right">${num(b.created_count)}</td>
+              <td class="py-1.5 px-2 text-right">${num(b.updated_count)}</td>
+              <td class="py-1.5 px-2 text-right text-white/40">${num(b.skipped_count)}</td>
+              <td class="py-1.5 px-2 text-white/40">${esc(b.executed_by_name || '—')}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>` : '<p class="text-white/40">取込履歴はまだありません。</p>';
+}
+
+init();
+</script>
+</body>
+</html>

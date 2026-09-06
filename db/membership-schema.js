@@ -45,6 +45,9 @@ const TABLES = [
       col('locked_rank_code', 'text'),                          // 手動ロック。NULL なら簿価から自動算定
       col('status', 'text', "NOT NULL DEFAULT 'active'"),        // active / suspended / closed
       col('joined_at', 'ts'),
+      // 移行前の購入額ランク（ブロンズ／シルバー／スタンダード／ゴールド／プラチナ／ダイヤモンド）。
+      // 実効ランクはあくまで簿価から算定するので、これは突合・監査用の参考値。
+      col('legacy_rank', 'text'),
       col('note', 'text'),
       col('created_at', 'ts'),
       col('updated_at', 'ts'),
@@ -147,6 +150,63 @@ const TABLES = [
     indexes: [['mile_transactions_member_idx', 'member_id, occurred_at']],
   },
   {
+    /**
+     * WineBank CLUB の会員資格。
+     *
+     * CLUB のランク（Standard / Ambassador / Gold / Black）は年会費で決まる会員制度で、
+     * 簿価から自動算定される投資ランク（member_ranks）とは別の軸。どちらにも Gold が
+     * あるため、同じ列に混ぜると区別がつかなくなる。ここを独立したテーブルにしておくと
+     * 「CLUB Black かつ 投資 SIGNATURE」のような組み合わせが自然に表現できる。
+     *
+     * ワインを購入していない CLUB 会員には member_accounts を作らないので、
+     * member_id は NULL のままになる（投資実績ができた時点で紐づく）。
+     */
+    name: 'club_memberships',
+    cols: [
+      col('id', 'id'),
+      col('club_member_no', 'text', 'NOT NULL UNIQUE'),   // CLUB の会員番号
+      col('user_id', 'int'),                              // ログインユーザーと紐づいた場合
+      col('member_id', 'int'),                            // 会員口座と紐づいた場合
+      col('club_rank', 'text'),                           // Standard / Ambassador / Gold / Black
+      col('name', 'text'),
+      col('name_kana', 'text'),
+      col('phone', 'text'),
+      col('email', 'text'),
+      col('joined_at', 'ts'),
+      col('joined_store', 'text'),
+      col('withdrawn_at', 'ts'),
+      col('status', 'text', "NOT NULL DEFAULT 'active'"),  // active / withdrawn
+      col('source', 'text'),                               // 取込元（import:club など）
+      col('note', 'text'),
+      col('created_at', 'ts'),
+      col('updated_at', 'ts'),
+    ],
+    indexes: [
+      ['club_memberships_email_idx', 'email'],
+      ['club_memberships_status_idx', 'status'],
+      ['club_memberships_member_idx', 'member_id'],
+    ],
+  },
+  {
+    // 一括インポートの実行記録。誰がいつ何件取り込んだかを後から追える。
+    name: 'member_import_batches',
+    cols: [
+      col('id', 'id'),
+      col('kind', 'text', 'NOT NULL'),        // club / investment
+      col('executed_by', 'int'),              // 実行した管理者の users.id
+      col('file_name', 'text'),
+      col('digest', 'text'),                  // 取り込んだ内容のハッシュ（ドライラン結果との一致確認用）
+      col('total_rows', 'int', 'NOT NULL DEFAULT 0'),
+      col('created_count', 'int', 'NOT NULL DEFAULT 0'),
+      col('updated_count', 'int', 'NOT NULL DEFAULT 0'),
+      col('skipped_count', 'int', 'NOT NULL DEFAULT 0'),
+      col('detail', 'text'),
+      col('executed_at', 'ts', 'NOT NULL'),
+      col('created_at', 'ts'),
+    ],
+    indexes: [['member_import_batches_kind_idx', 'kind, executed_at']],
+  },
+  {
     // 送信済み通知の記録。バッチが繰り返し走っても同じ通知を二度送らないための台帳。
     // dedupe_key に「何に対する通知か」を入れる（例: lot=123 / 2026Q3）。
     name: 'member_notifications',
@@ -191,6 +251,7 @@ async function addColumnIfMissing(table, column, pg) {
 // 後から足した列。テーブル定義（TABLES）にも同じ列を書いておくこと。
 const ADDED_COLUMNS = [
   ['mile_lots', col('paid_amount', 'bigint')],
+  ['member_accounts', col('legacy_rank', 'text')],
 ];
 
 function ddlFor(table, pg) {
