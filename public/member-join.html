@@ -5,16 +5,36 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ワインを購入して会員になる — WineBank</title>
   <link rel="stylesheet" href="/css/tailwind.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500;600&family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@400;500;600&display=swap">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Noto+Serif+JP:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap');
-    body { font-family: 'Inter', 'Noto Sans JP', sans-serif; }
-    /* Tailwind CDN が読めなかった場合でも表示が崩れないようにする */
+    body { font-family: 'Inter', 'Noto Sans JP', 'Hiragino Sans', sans-serif; }
+    /* CSS が部分的にしか読めない環境でも表示が崩れないようにする */
     .hidden { display: none !important; }
-    .plan-card { transition: border-color .2s, transform .2s; }
-    .plan-card:hover { transform: translateY(-2px); }
-    .plan-selected { border-color: #A78450 !important; box-shadow: 0 0 0 1px #A78450 inset; }
+
+    /* 生産者名などのラテン表記。明朝と並べても浮かないセリフ体を当てる */
+    .latin { font-family: 'Cormorant Garamond', 'Noto Serif JP', Georgia, serif; }
+    .mincho { font-family: 'Noto Serif JP', 'Hiragino Mincho ProN', 'Yu Mincho', serif; }
+    /* 儀礼的な見出しは字間を広げる。詰まった明朝は安く見える */
+    .tracked { letter-spacing: .18em; }
+    .tracked-sm { letter-spacing: .08em; }
+
+    /* 金の細線。囲うのではなく引くことで、装飾を足さずに格を出す */
+    .rule-gold { height: 1px; background: linear-gradient(90deg,#A78450,rgba(167,132,80,0)); }
+
+    .plan-card { position: relative; overflow: hidden; transition: border-color .25s, background .25s; }
+    .plan-card:hover { border-color: rgba(167,132,80,.55); background: #171717; }
+    .plan-selected { border-color: #A78450 !important; background: #171717 !important; }
+    .plan-selected .plan-mark { opacity: 1; }
+    .plan-mark { opacity: 0; transition: opacity .25s; }
+    /* ヴィンテージを大きく敷く。ワインを買う画面で最初に目に入るのが年号であってほしい */
+    .vintage-wm {
+      position: absolute; right: -6px; top: -14px; pointer-events: none;
+      font-family: 'Cormorant Garamond', Georgia, serif; font-size: 82px; line-height: 1;
+      color: rgba(167,132,80,.06); user-select: none;
+    }
     @keyframes fadeIn { from { opacity:0; transform:translateY(6px) } to { opacity:1; transform:translateY(0) } }
-    .fade-in { animation: fadeIn .3s ease; }
+    .fade-in { animation: fadeIn .4s ease both; }
+    @media (prefers-reduced-motion: reduce) { .fade-in { animation: none; } }
   </style>
 </head>
 <body class="bg-dark-900 text-white/90">
@@ -25,8 +45,8 @@
         <a href="/member" class="text-white/40 hover:text-gold p-1 transition" aria-label="戻る">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
         </a>
-        <a href="/" class="font-serif text-gold tracking-wide">WineBank</a>
-        <span class="font-medium text-white/90 ml-1 text-sm">ワインを購入する</span>
+        <a href="/" class="mincho text-gold tracking tracked-sm">WineBank</a>
+        <span class="text-white/70 ml-1 text-xs tracked-sm">ワインを購入する</span>
       </div>
     </div>
   </header>
@@ -42,40 +62,49 @@
     </div>
 
     <div id="content" class="hidden fade-in">
-      <section class="mb-8">
-        <h1 class="font-serif text-2xl text-white/90 mb-2">ご購入プラン</h1>
-        <p class="text-sm text-white/50 leading-relaxed">
-          ご購入いただいたワインは WineBank が保管し、会員口座に資産として記録されます。<br>
-          ご購入額に応じて会員ランクが決まり、ランクごとの還元率でワインマイルが貯まります。
+      <section class="mb-10">
+        <div class="text-[11px] text-gold/70 tracked mb-4">SELECTION</div>
+        <h1 class="mincho text-3xl md:text-[34px] leading-snug text-white/90 mb-5 tracked-sm">
+          ワインを愉しみながら、資産形成を。
+        </h1>
+        <div class="rule-gold w-24 mb-5"></div>
+        <p class="text-sm text-white/55 leading-loose max-w-2xl">
+          ソムリエが選び抜いた一本を、温度と湿度を管理したセラーでお預かりします。<br>
+          熟成の時間はそのまま資産の時間になり、ご購入額に応じた会員ランクごとの還元率で
+          ワインマイルが積み上がります。<br class="hidden md:block">
+          そのマイルは、レストランでの一皿にも、次の一本にも使えます。
         </p>
       </section>
 
-      <div id="plans" class="grid gap-4 md:grid-cols-3 mb-8"></div>
+      <div id="plans" class="grid gap-5 md:grid-cols-3 mb-10"></div>
 
       <!-- 購入確認 -->
-      <section id="confirm" class="hidden bg-dark-800 border border-gold/25 rounded-lg p-5 mb-8">
-        <h2 class="font-serif text-lg text-gold mb-4">ご購入内容の確認</h2>
-        <dl class="text-sm space-y-2 mb-5" id="confirmDetail"></dl>
-        <div class="flex gap-3 flex-wrap">
-          <button id="submitBtn" class="px-6 py-2.5 bg-gold hover:bg-gold-hover text-dark-900 rounded text-sm font-semibold transition">
+      <section id="confirm" class="hidden bg-dark-800 border border-gold/25 rounded-sm p-7 mb-10">
+        <div class="text-[11px] text-gold/70 tracked mb-2">CONFIRMATION</div>
+        <h2 class="mincho text-xl text-white/90 mb-5 tracked-sm">ご購入内容の確認</h2>
+        <dl class="text-sm mb-7" id="confirmDetail"></dl>
+        <div class="flex gap-3 flex-wrap items-center">
+          <button id="submitBtn" class="px-8 py-3 bg-gold hover:bg-gold-hover text-dark-900 rounded-sm text-sm font-semibold tracked-sm transition">
             このプランで購入する
           </button>
-          <button id="cancelBtn" class="px-4 py-2.5 border border-white/15 hover:border-white/30 text-white/60 rounded text-sm transition">
+          <button id="cancelBtn" class="px-5 py-3 text-white/45 hover:text-white/80 text-sm transition">
             選び直す
           </button>
         </div>
-        <p class="text-xs text-white/30 mt-4">
-          ※ 決済は未接続です。検証用に、購入が成立したものとして会員口座と保有ワインを登録します。
+        <p class="text-[11px] text-white/25 mt-5 leading-relaxed">
+          ※ 決済は未接続です。検証用に、ご購入が成立したものとして会員口座と保有ワインを登録します。
         </p>
       </section>
 
       <div id="error" class="hidden bg-red-500/10 border border-red-500/30 rounded p-3 text-sm text-red-300 mb-6"></div>
 
       <!-- 購入完了 -->
-      <section id="done" class="hidden bg-dark-800 border border-emerald-500/25 rounded-lg p-6 text-center">
-        <div class="font-serif text-xl text-emerald-400 mb-2">ご購入ありがとうございます</div>
-        <div class="text-sm text-white/70 mb-5" id="doneDetail"></div>
-        <a href="/member" class="inline-block px-6 py-2.5 bg-gold hover:bg-gold-hover text-dark-900 rounded text-sm font-semibold transition">
+      <section id="done" class="hidden bg-dark-800 border border-gold/25 rounded-sm p-10 text-center">
+        <div class="text-[11px] text-gold/70 tracked mb-4">WELCOME</div>
+        <div class="mincho text-2xl text-white/90 mb-3 tracked-sm">ようこそ、WineBank へ。</div>
+        <div class="rule-gold w-16 mx-auto mb-6" style="background:linear-gradient(90deg,rgba(167,132,80,0),#A78450,rgba(167,132,80,0))"></div>
+        <div class="text-sm text-white/60 leading-loose mb-8" id="doneDetail"></div>
+        <a href="/member" class="inline-block px-8 py-3 bg-gold hover:bg-gold-hover text-dark-900 rounded-sm text-sm font-semibold tracked-sm transition">
           マイ・セラーで確認する
         </a>
       </section>
@@ -120,19 +149,31 @@ async function load() {
 function renderPlans() {
   document.getElementById('plans').innerHTML = plans.map(p => `
     <button data-plan="${esc(p.rankCode)}"
-            class="plan-card text-left bg-dark-800 border border-white/10 hover:border-gold/50 rounded-lg p-5">
-      <div class="font-serif text-xl text-gold mb-1">${esc(p.rankName)}</div>
-      <div class="text-2xl font-semibold mb-4">${yen(p.bookValue)}</div>
+            class="plan-card text-left bg-dark-800 border border-white/10 rounded-sm p-6 flex flex-col">
+      ${p.wine.vintage ? `<span class="vintage-wm" aria-hidden="true">${p.wine.vintage}</span>` : ''}
 
-      <div class="text-sm text-white/80 mb-1">${esc(p.wine.wineName)}${p.wine.vintage ? ' ' + p.wine.vintage : ''}</div>
-      <div class="text-xs text-white/35 mb-3">${esc(p.wine.region)} ／ ${num(p.quantity)}本（${yen(p.unitPrice)}／本）</div>
-      <p class="text-xs text-white/45 leading-relaxed mb-4">${esc(p.wine.tagline)}</p>
+      <div class="flex items-center gap-2 mb-1">
+        <span class="mincho text-lg text-gold tracked">${esc(p.rankName)}</span>
+        <span class="plan-mark text-gold text-xs">●</span>
+      </div>
+      <div class="rule-gold w-12 mb-5"></div>
 
-      <dl class="text-xs space-y-1 border-t border-white/10 pt-3">
-        <div class="flex justify-between"><dt class="text-white/40">マイル還元率</dt><dd class="text-gold font-semibold">${(p.mileRate * 100).toFixed(1)}%</dd></div>
-        <div class="flex justify-between"><dt class="text-white/40">初年度マイル</dt><dd>${num(p.firstYearMiles)}</dd></div>
-        <div class="flex justify-between"><dt class="text-white/40">入会記念ボーナス</dt><dd>${num(p.welcomeBonusMiles)}</dd></div>
-        <div class="flex justify-between"><dt class="text-white/40">年間管理手数料</dt><dd class="text-white/60">${yen(p.annualFee)}（${(p.feeRate * 100).toFixed(1)}%）</dd></div>
+      <div class="latin text-[21px] text-white/90 leading-tight mb-1">${esc(p.wine.producer || p.wine.wineName)}</div>
+      <div class="text-[13px] text-white/70 mb-1">${esc(p.wine.wineName)}</div>
+      <div class="text-[11px] text-white/35 mb-4 tracked-sm">${esc(p.wine.region)}</div>
+
+      <p class="mincho text-[12.5px] text-white/50 leading-loose mb-6 flex-1">${esc(p.wine.tagline)}</p>
+
+      <div class="flex items-baseline justify-between mb-1">
+        <span class="text-[11px] text-white/35">${num(p.quantity)}本 ・ ${yen(p.unitPrice)}／本</span>
+      </div>
+      <div class="text-[26px] font-light tabular-nums text-white/90 mb-5 tracking-tight">${yen(p.bookValue)}</div>
+
+      <dl class="text-[11px] space-y-1.5 border-t border-white/10 pt-4">
+        <div class="flex justify-between"><dt class="text-white/35">マイル還元率</dt><dd class="text-gold tabular-nums">${(p.mileRate * 100).toFixed(1)}%</dd></div>
+        <div class="flex justify-between"><dt class="text-white/35">初年度マイル</dt><dd class="text-white/70 tabular-nums">${num(p.firstYearMiles)}</dd></div>
+        <div class="flex justify-between"><dt class="text-white/35">入会記念ボーナス</dt><dd class="text-white/70 tabular-nums">${num(p.welcomeBonusMiles)}</dd></div>
+        <div class="flex justify-between"><dt class="text-white/35">年間管理手数料</dt><dd class="text-white/50 tabular-nums">${yen(p.annualFee)}（${(p.feeRate * 100).toFixed(1)}%）</dd></div>
       </dl>
     </button>`).join('');
 
@@ -149,12 +190,20 @@ function selectPlan(rankCode) {
     b.classList.toggle('plan-selected', b.dataset.plan === rankCode);
   });
 
-  document.getElementById('confirmDetail').innerHTML = `
-    <div class="flex justify-between border-b border-white/5 pb-2"><dt class="text-white/40">プラン</dt><dd>${esc(selected.rankName)}</dd></div>
-    <div class="flex justify-between border-b border-white/5 pb-2"><dt class="text-white/40">銘柄</dt><dd>${esc(selected.wine.wineName)}${selected.wine.vintage ? ' ' + selected.wine.vintage : ''}</dd></div>
-    <div class="flex justify-between border-b border-white/5 pb-2"><dt class="text-white/40">本数</dt><dd>${num(selected.quantity)} 本</dd></div>
-    <div class="flex justify-between border-b border-white/5 pb-2"><dt class="text-white/40">ご購入金額</dt><dd class="text-lg font-semibold">${yen(selected.bookValue)}</dd></div>
-    <div class="flex justify-between"><dt class="text-white/40">付与予定マイル</dt><dd class="text-gold">${num(selected.firstYearMiles + selected.welcomeBonusMiles)}</dd></div>`;
+  const line = (label, value, cls = '') => `
+    <div class="flex justify-between items-baseline border-b border-white/5 py-3">
+      <dt class="text-white/40 text-[12px]">${label}</dt><dd class="${cls}">${value}</dd>
+    </div>`;
+  document.getElementById('confirmDetail').innerHTML =
+    line('プラン', `<span class="mincho text-gold tracked-sm">${esc(selected.rankName)}</span>`) +
+    line('銘柄', `<span class="latin text-[17px]">${esc(selected.wine.producer || selected.wine.wineName)}</span>
+                 <span class="text-white/45 text-[12px] ml-2">${selected.wine.vintage || ''}</span>`) +
+    line('本数', `<span class="tabular-nums">${num(selected.quantity)} 本</span>`) +
+    line('ご購入金額', `<span class="text-xl font-light tabular-nums">${yen(selected.bookValue)}</span>`) +
+    `<div class="flex justify-between items-baseline py-3">
+       <dt class="text-white/40 text-[12px]">付与予定マイル</dt>
+       <dd class="text-gold tabular-nums">${num(selected.firstYearMiles + selected.welcomeBonusMiles)}</dd>
+     </div>`;
 
   show('confirm');
   document.getElementById('confirm').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -188,9 +237,10 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
 
   const granted = (body.grants || []).reduce((sum, g) => sum + g.amount, 0);
   document.getElementById('doneDetail').innerHTML = `
-    会員番号 <span class="font-mono text-gold">${esc(body.accountNo)}</span> で会員口座を開設しました。<br>
-    会員ランクは <span class="text-gold font-semibold">${esc(body.rankCode || '—')}</span>、
-    ワインマイルを <span class="text-gold font-semibold">${num(granted)}</span> 付与しました。`;
+    お選びいただいた一本は、温度と湿度を管理したセラーでお預かりします。<br>
+    会員番号 <span class="font-mono text-gold">${esc(body.accountNo)}</span> ／
+    会員ランク <span class="mincho text-gold tracked-sm">${esc(body.rankCode || '—')}</span><br>
+    ワインマイルを <span class="text-gold tabular-nums">${num(granted)}</span> 進呈しました。`;
   hide('confirm');
   document.getElementById('plans').classList.add('hidden');
   show('done');
