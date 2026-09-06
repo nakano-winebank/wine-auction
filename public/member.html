@@ -50,10 +50,23 @@
     <!-- 口座未開設 / 未ログイン -->
     <div id="empty" class="hidden text-center py-20">
       <p class="text-white/60 mb-2" id="emptyMessage"></p>
-      <a href="/login" class="inline-block mt-4 px-5 py-2 bg-gold hover:bg-gold-hover text-dark-900 rounded text-sm font-semibold transition">ログイン</a>
+      <a id="emptyAction" href="/login" class="inline-block mt-4 px-5 py-2 bg-gold hover:bg-gold-hover text-dark-900 rounded text-sm font-semibold transition">ログイン</a>
     </div>
 
     <div id="content" class="hidden fade-in">
+
+      <!-- デモ用の時間送り。DEMO_MODE=1 のときだけ表示される -->
+      <section id="demoBar" class="hidden mb-5 bg-sky-500/10 border border-sky-500/30 rounded-lg p-4">
+        <div class="flex items-center flex-wrap gap-3">
+          <span class="text-xs font-semibold text-sky-300 border border-sky-400/40 rounded px-2 py-0.5">デモ・検証用</span>
+          <span class="text-sm text-white/70">時間を進めて、年次還元とマイルの失効を確認できます。</span>
+          <div class="ml-auto flex gap-2">
+            <button data-advance="180" class="px-3 py-1.5 border border-sky-400/40 hover:bg-sky-500/20 rounded text-xs transition">180日進める</button>
+            <button data-advance="365" class="px-3 py-1.5 bg-sky-500/80 hover:bg-sky-500 text-dark-900 font-semibold rounded text-xs transition">1年進める</button>
+          </div>
+        </div>
+        <div id="demoLog" class="hidden mt-3 pt-3 border-t border-sky-400/20 text-xs text-white/60 space-y-1"></div>
+      </section>
 
       <!-- ランクと資産 -->
       <section class="mb-6">
@@ -107,6 +120,48 @@
           <span class="text-amber-400 font-semibold">まもなく失効するマイルがあります。</span>
           <span class="text-white/70" id="expiryWarningText"></span>
         </div>
+
+        <!-- 会員ができること -->
+        <div class="flex flex-wrap gap-2 mt-4">
+          <a href="/member/join" class="px-4 py-2 bg-gold hover:bg-gold-hover text-dark-900 rounded text-sm font-semibold transition">ワインを購入する</a>
+          <button id="openRedeem" class="px-4 py-2 border border-gold/40 hover:border-gold text-gold rounded text-sm font-semibold transition">マイルをつかう</button>
+          <button id="openMilePurchase" class="hidden px-4 py-2 border border-white/15 hover:border-white/35 text-white/70 rounded text-sm transition">マイルを購入する</button>
+        </div>
+
+        <!-- マイル利用 -->
+        <div id="redeemPanel" class="hidden mt-4 bg-dark-800 border border-gold/25 rounded-lg p-5">
+          <h3 class="font-serif text-lg text-gold mb-1">マイルをつかう</h3>
+          <p class="text-xs text-white/40 mb-4">ワインのご購入以外にも、グループの各サービスでご利用いただけます。</p>
+
+          <div id="channelList" class="grid gap-2 sm:grid-cols-2 mb-4"></div>
+
+          <div class="flex flex-wrap items-end gap-3">
+            <label class="text-sm">
+              <span class="block text-xs text-white/40 mb-1">利用マイル</span>
+              <input id="redeemAmount" type="number" min="1" step="1" placeholder="5000"
+                     class="bg-dark-700 border border-white/15 rounded px-3 py-2 text-sm w-40 text-white/90">
+            </label>
+            <span class="text-xs text-white/40 pb-2.5" id="redeemYen"></span>
+            <button id="redeemBtn" class="px-5 py-2 bg-gold hover:bg-gold-hover text-dark-900 rounded text-sm font-semibold transition">つかう</button>
+            <button id="closeRedeem" class="px-3 py-2 text-white/40 hover:text-white/70 text-sm transition">閉じる</button>
+          </div>
+          <div id="redeemMessage" class="hidden mt-3 text-sm"></div>
+        </div>
+
+        <!-- マイルのみ追加購入（有償）。MILE_PURCHASE_ENABLED=1 のときだけ表示 -->
+        <div id="milePurchasePanel" class="hidden mt-4 bg-dark-800 border border-white/15 rounded-lg p-5">
+          <div class="flex items-center gap-2 mb-1">
+            <h3 class="font-serif text-lg text-white/85">マイルを購入する</h3>
+            <span class="text-xs font-semibold text-amber-300 border border-amber-400/40 rounded px-2 py-0.5">デモ・検証用</span>
+          </div>
+          <p class="text-xs text-amber-300/80 leading-relaxed mb-4">
+            有償でのマイル購入は、資金決済法上の前払式支払手段に該当する可能性があるため、
+            法務・財務局の確認が完了するまで本番公開できません。この画面は検証用です（決済は未接続）。
+          </p>
+          <div id="milePackList" class="grid gap-2 sm:grid-cols-3 mb-4"></div>
+          <button id="closeMilePurchase" class="px-3 py-2 text-white/40 hover:text-white/70 text-sm transition">閉じる</button>
+          <div id="milePurchaseMessage" class="hidden mt-3 text-sm"></div>
+        </div>
       </section>
 
       <!-- タブ -->
@@ -140,31 +195,185 @@ const STATUS_LABELS = { stored: '保管中', shipped: '出庫済', sold: '売却
 function show(id) { document.getElementById(id).classList.remove('hidden'); }
 function hide(id) { document.getElementById(id).classList.add('hidden'); }
 
+let token = null;
+let config = { channels: [], milePacks: [], demoMode: false, milePurchaseEnabled: false, mileToYen: 1 };
+let selectedChannel = null;
+
+function authHeaders() {
+  return { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' };
+}
+
+function emptyState(message, href, label) {
+  hide('loading'); show('empty');
+  document.getElementById('emptyMessage').textContent = message;
+  const action = document.getElementById('emptyAction');
+  action.href = href;
+  action.textContent = label;
+}
+
 async function load() {
-  const token = localStorage.getItem('token');
+  token = localStorage.getItem('token');
   if (!token) {
-    hide('loading'); show('empty');
-    document.getElementById('emptyMessage').textContent = 'マイ・セラーのご利用にはログインが必要です。';
+    emptyState('マイ・セラーのご利用にはログインが必要です。', '/login', 'ログイン');
     return;
   }
 
-  const res = await fetch('/api/member', { headers: { Authorization: 'Bearer ' + token } });
+  const [res, configRes] = await Promise.all([
+    fetch('/api/member', { headers: authHeaders() }),
+    fetch('/api/member/shop/config', { headers: authHeaders() }),
+  ]);
+
+  if (configRes.ok) config = await configRes.json();
+
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    hide('loading'); show('empty');
-    document.getElementById('emptyMessage').textContent =
-      body.hasAccount === false
-        ? 'まだ会員口座が開設されていません。ワインをご購入いただくと、こちらに保有状況が表示されます。'
-        : (body.error || '読み込みに失敗しました。');
+    // 口座がないのは行き止まりではない。ワイン購入への導線を出す。
+    if (body.hasAccount === false) {
+      emptyState(
+        'まだ会員口座が開設されていません。ワインをご購入いただくと、こちらに保有状況が表示されます。',
+        '/member/join', 'ワインを購入する');
+    } else {
+      emptyState(body.error || '読み込みに失敗しました。', '/login', 'ログイン');
+    }
     return;
   }
 
   render(await res.json());
+  renderShop();
   hide('loading'); show('content');
+}
+
+/** 設定に応じて、マイル利用・有償購入・デモの各UIを組み立てる。 */
+function renderShop() {
+  document.getElementById('channelList').innerHTML = config.channels.map(c => `
+    <button data-channel="${esc(c.code)}"
+            class="text-left bg-dark-700 border border-white/10 hover:border-gold/50 rounded p-3 transition">
+      <div class="text-sm text-white/85">${esc(c.name)}</div>
+      <div class="text-xs text-white/35 mt-0.5">${esc(c.description)}</div>
+    </button>`).join('');
+
+  document.querySelectorAll('[data-channel]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedChannel = btn.dataset.channel;
+      document.querySelectorAll('[data-channel]').forEach(b => {
+        b.className = b === btn
+          ? 'text-left bg-dark-700 border border-gold rounded p-3 transition'
+          : 'text-left bg-dark-700 border border-white/10 hover:border-gold/50 rounded p-3 transition';
+      });
+    });
+  });
+
+  if (config.milePurchaseEnabled) {
+    document.getElementById('openMilePurchase').classList.remove('hidden');
+    document.getElementById('milePackList').innerHTML = config.milePacks.map(p => `
+      <button data-pack="${esc(p.code)}"
+              class="bg-dark-700 border border-white/10 hover:border-gold/50 rounded p-3 text-center transition">
+        <div class="text-lg font-semibold text-gold">${num(p.miles)}</div>
+        <div class="text-xs text-white/40">マイル</div>
+        <div class="text-sm mt-1">${yen(p.yen)}</div>
+        <div class="text-xs text-white/30 mt-1">有効期限 ${num(p.validDays)}日</div>
+      </button>`).join('');
+    document.querySelectorAll('[data-pack]').forEach(btn => {
+      btn.addEventListener('click', () => purchaseMiles(btn.dataset.pack));
+    });
+  }
+
+  if (config.demoMode) document.getElementById('demoBar').classList.remove('hidden');
+}
+
+function panelMessage(id, text, ok) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.className = 'mt-3 text-sm ' + (ok ? 'text-emerald-400' : 'text-red-400');
+  el.classList.remove('hidden');
+}
+
+document.getElementById('openRedeem').addEventListener('click', () => {
+  document.getElementById('redeemPanel').classList.toggle('hidden');
+});
+document.getElementById('closeRedeem').addEventListener('click', () => hide('redeemPanel'));
+document.getElementById('openMilePurchase').addEventListener('click', () => {
+  document.getElementById('milePurchasePanel').classList.toggle('hidden');
+});
+document.getElementById('closeMilePurchase').addEventListener('click', () => hide('milePurchasePanel'));
+
+// 入力中のマイルが何円ぶんかを添える
+document.getElementById('redeemAmount').addEventListener('input', (e) => {
+  const v = parseInt(e.target.value, 10);
+  document.getElementById('redeemYen').textContent =
+    Number.isFinite(v) && v > 0 ? `＝ ${yen(v * config.mileToYen)} 相当` : '';
+});
+
+document.getElementById('redeemBtn').addEventListener('click', async () => {
+  const amount = parseInt(document.getElementById('redeemAmount').value, 10);
+  if (!selectedChannel) return panelMessage('redeemMessage', '利用先を選んでください。', false);
+  if (!Number.isFinite(amount) || amount <= 0) {
+    return panelMessage('redeemMessage', '利用マイルを入力してください。', false);
+  }
+
+  const res = await fetch('/api/member/shop/miles/redeem', {
+    method: 'POST', headers: authHeaders(),
+    body: JSON.stringify({ amount, channel: selectedChannel }),
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) return panelMessage('redeemMessage', body.error || '利用に失敗しました。', false);
+
+  const channelName = (config.channels.find(c => c.code === selectedChannel) || {}).name || '';
+  panelMessage('redeemMessage',
+    `${channelName}で ${num(body.redeemed)} マイルを利用しました。残高 ${num(body.balance)} マイル。`, true);
+  document.getElementById('redeemAmount').value = '';
+  document.getElementById('redeemYen').textContent = '';
+  await reload();
+});
+
+async function purchaseMiles(packCode) {
+  const res = await fetch('/api/member/shop/miles/purchase', {
+    method: 'POST', headers: authHeaders(),
+    body: JSON.stringify({ packCode }),
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) return panelMessage('milePurchaseMessage', body.error || '購入に失敗しました。', false);
+
+  panelMessage('milePurchaseMessage',
+    `${num(body.grant.amount)} マイルを購入しました（有効期限 ${date(body.grant.expiresAt)}）。残高 ${num(body.balance)} マイル。`, true);
+  await reload();
+}
+
+// デモ: 時間送り
+document.querySelectorAll('[data-advance]').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const days = parseInt(btn.dataset.advance, 10);
+    document.querySelectorAll('[data-advance]').forEach(b => { b.disabled = true; });
+
+    const res = await fetch('/api/demo/advance', {
+      method: 'POST', headers: authHeaders(),
+      body: JSON.stringify({ days }),
+    });
+    const body = await res.json().catch(() => ({}));
+
+    const log = document.getElementById('demoLog');
+    log.classList.remove('hidden');
+    log.innerHTML = res.ok
+      ? body.log.map(line => `<div>・${esc(line)}</div>`).join('')
+      : `<div class="text-red-400">${esc(body.error || '時間送りに失敗しました。')}</div>`;
+
+    document.querySelectorAll('[data-advance]').forEach(b => { b.disabled = false; });
+    if (res.ok) await reload();
+  });
+});
+
+/** 画面の数値だけを取り直す（デモログや開いたパネルはそのまま残す）。 */
+async function reload() {
+  const res = await fetch('/api/member', { headers: authHeaders() });
+  if (res.ok) render(await res.json());
 }
 
 function render(d) {
   document.getElementById('accountNo').textContent = d.member.account_no || '';
+
+  // 再描画のたびに状態依存の表示をいったん畳む（時間送りや利用のあとに古い表示が残らないように）
+  hide('nextRankBox');
+  hide('expiryWarning');
 
   // ランク
   if (d.rank) {

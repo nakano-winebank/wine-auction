@@ -15,13 +15,53 @@ const { insertReturningId, nowIso, isoAfterDays } = require('../db/helpers');
 
 /** 種別ごとの既定有効期間（日）。grant 時に validDays を渡せば個別に上書きできる。 */
 const MILE_VALIDITY_DAYS = {
-  reward:   365, // 預かり資産に対する年次還元マイル
-  bonus:    180, // 行動連動（オークション参加・来店など）＝期間限定マイル 6ヶ月
-  campaign:  90, // 販促。3ヶ月
-  adjust:   365, // 手動調整
+  reward:    365, // 預かり資産に対する年次還元マイル
+  bonus:     180, // 行動連動（オークション参加・来店など）＝期間限定マイル 6ヶ月
+  campaign:   90, // 販促。3ヶ月
+  adjust:    365, // 手動調整
+  purchased: 180, // 有償購入マイル。下の注意書きを必ず読むこと
 };
 
+/**
+ * ⚠️ 有償購入マイル（kind='purchased'）についての注意 — 法務確認前に本番公開しないこと
+ *
+ * 無償で「付与」するマイル（reward / bonus / campaign / adjust）は、資金決済法3条1項の
+ * 「対価を得て発行される」という要件を満たさないため、前払式支払手段には当たらない。
+ * 一方、現金で「購入」できるマイルは対価性があり、自家型前払式支払手段に該当し得る。
+ * 該当すると、財務局への届出と、基準日（3/31・9/30）の未使用残高が1,000万円を超えた
+ * ときの発行保証金の供託義務が発生する。
+ *
+ * ただし同法4条2号により「発行の日から6ヶ月以内に限り使用できるもの」は適用除外となる。
+ * そのため既定の有効期間を 180日 に置いている。ここを 180 より延ばす、あるいは無期限
+ * （null）にすると適用除外から外れるので、変更する場合は必ず法務確認を通すこと。
+ *
+ * いずれにせよ上記は法令の構造整理であって法務判断ではない。財務局・顧問弁護士の確認が済むまで
+ * 有償購入は MILE_PURCHASE_ENABLED フラグで閉じたままにしておくこと（routes/member-shop.js）。
+ *
+ * 集計は getPurchasedOutstanding() が有償分だけを対象にする。
+ */
+const PURCHASED_KIND = 'purchased';
+
 const GRANT_KINDS = Object.keys(MILE_VALIDITY_DAYS);
+
+/**
+ * マイルを使えるチャネル。8/31 中谷氏MTGの「マイルはコミュニティ通貨」を実装に落としたもの。
+ * ワイン購入以外でも使えることがこの一覧で表現されている。
+ */
+const REDEEM_CHANNELS = [
+  { code: 'restaurant',  name: '系列レストラン',     description: 'グループ直営レストランでのお支払いに充当' },
+  { code: 'grandmaison', name: 'グランメゾン',       description: '提携グランメゾンのコース・ペアリングに充当' },
+  { code: 'school',      name: 'ワインスクール',     description: '講座の受講料に充当' },
+  { code: 'event',       name: '会員交流イベント',   description: '試飲会・生産者を招いた会の参加費に充当' },
+  { code: 'auction',     name: 'オークション',       description: '落札代金の一部に充当' },
+  { code: 'club',        name: 'CLUB年会費',         description: 'WineBank CLUB の年会費に充当' },
+  { code: 'wine',        name: 'ワイン購入',         description: 'ワインのご購入代金に充当' },
+];
+
+const REDEEM_CHANNEL_CODES = REDEEM_CHANNELS.map(c => c.code);
+
+/** 1マイルあたりの円換算。充当額の表示と、有償分の未使用残高（円）の算定に使う。 */
+const MILE_TO_YEN = 1;
 
 /** 現在の残高（有効期限内のロット残の合計）。 */
 async function getBalance(memberId, at = nowIso()) {
@@ -76,11 +116,21 @@ async function grant(memberId, amount, opts = {}) {
   const validDays = opts.validDays === undefined ? MILE_VALIDITY_DAYS[kind] : opts.validDays;
   const expiresAt = validDays === null ? null : isoAfterDays(validDays, new Date(grantedAt));
 
+  // 有償購入分だけ支払対価を記録する。無償付与は NULL のままにして台帳上で分離する。
+  const paidAmount = opts.paidAmount === undefined || opts.paidAmount === null
+    ? null : Math.round(Number(opts.paidAmount));
+  if (paidAmount !== null && (!Number.isFinite(paidAmount) || paidAmount < 0)) {
+    throw new Error('支払対価は0以上で指定してください');
+  }
+  if (kind === PURCHASED_KIND && paidAmount === null) {
+    throw new Error('有償購入マイルには支払対価（paidAmount）が必須です');
+  }
+
   const lotId = await insertReturningId(`
     INSERT INTO mile_lots
-      (member_id, kind, granted_amount, remaining_amount, granted_at, expires_at, source_type, source_id, memo, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `, [memberId, kind, value, value, grantedAt, expiresAt,
+      (member_id, kind, granted_amount, remaining_amount, paid_amount, granted_at, expires_at, source_type, source_id, memo, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `, [memberId, kind, value, value, paidAmount, grantedAt, expiresAt,
       opts.sourceType || null, opts.sourceId || null, opts.memo || null, nowIso()]);
 
   const balance = await getBalance(memberId);
@@ -91,7 +141,7 @@ async function grant(memberId, amount, opts = {}) {
   `, [memberId, lotId, value, balance, grantedAt,
       opts.channel || null, opts.sourceId || null, opts.memo || null, nowIso()]);
 
-  return { lotId, amount: value, expiresAt, balance };
+  return { lotId, amount: value, kind, paidAmount, expiresAt, balance };
 }
 
 /**
@@ -102,6 +152,10 @@ async function redeem(memberId, amount, opts = {}) {
   const value = Math.round(Number(amount));
   if (!Number.isFinite(value) || value <= 0) {
     throw new Error('利用マイルは1以上の整数で指定してください');
+  }
+
+  if (opts.channel && !REDEEM_CHANNEL_CODES.includes(opts.channel)) {
+    throw new Error(`不明な利用チャネルです: ${opts.channel}`);
   }
 
   const occurredAt = opts.occurredAt || nowIso();
@@ -193,6 +247,39 @@ async function listTransactions(memberId, limit = 100, offset = 0) {
   }));
 }
 
+/**
+ * 有償で発行したマイルの未使用残高。資金決済法の基準日残高（3/31・9/30）の算定に使う。
+ * 無償付与分は前払式支払手段に当たらないため、この集計から必ず除外する。
+ *
+ * @param {string} asOf     基準日時（ISO）。この時点で有効なロットだけを数える
+ * @param {number} memberId 省略すると全会員の合計
+ */
+async function getPurchasedOutstanding(asOf = nowIso(), memberId = null) {
+  const params = [PURCHASED_KIND, asOf];
+  let scope = '';
+  if (memberId !== null) {
+    scope = ' AND member_id = ?';
+    params.push(memberId);
+  }
+  const row = await db.prepare(`
+    SELECT COALESCE(SUM(remaining_amount), 0) AS miles,
+           COALESCE(SUM(paid_amount), 0)      AS paid,
+           COUNT(*)                           AS lots
+    FROM mile_lots
+    WHERE kind = ? AND remaining_amount > 0
+      AND (expires_at IS NULL OR expires_at > ?)${scope}
+  `).get(...params);
+
+  const miles = Number(row ? row.miles : 0);
+  return {
+    asOf,
+    lots: Number(row ? row.lots : 0),
+    miles,                              // 未使用マイル数
+    yen: miles * MILE_TO_YEN,           // 未使用残高（円）＝供託の判定基礎
+    grantedPaidAmount: Number(row ? row.paid : 0), // 発行時に受け取った対価の合計
+  };
+}
+
 /** 期間内の付与・利用・失効のサマリ。PL 突合用。 */
 async function summarize(memberId, from, to) {
   const rows = await db.prepare(`
@@ -215,7 +302,12 @@ async function summarize(memberId, from, to) {
 module.exports = {
   MILE_VALIDITY_DAYS,
   GRANT_KINDS,
+  PURCHASED_KIND,
+  REDEEM_CHANNELS,
+  REDEEM_CHANNEL_CODES,
+  MILE_TO_YEN,
   getBalance,
+  getPurchasedOutstanding,
   getExpirySchedule,
   grant,
   redeem,

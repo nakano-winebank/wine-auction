@@ -83,7 +83,14 @@ app.use('/api/upload', require('./routes/upload'));
 app.use('/api/users', require('./routes/users'));
 
 // 会員管理（マイ・セラー）
+app.use('/api/member/shop', require('./routes/member-shop'));
 app.use('/api/member', require('./routes/members'));
+
+// デモ用の時間送り。DEMO_MODE=1 のときだけ登録する（本番では存在しないルート）
+if (require('./services/demo').isEnabled()) {
+  app.use('/api/demo', require('./routes/demo'));
+  console.log('⏩ DEMO_MODE 有効: /api/demo を登録しました（本番では設定しないこと）');
+}
 
 // 管理画面
 app.use('/api/admin/members', require('./routes/admin-members'));
@@ -247,6 +254,7 @@ app.get('/mypage', (req, res) => res.sendFile(path.join(__dirname, 'public', 'my
 app.get('/checkout', (req, res) => res.sendFile(path.join(__dirname, 'public', 'checkout.html')));
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
 app.get('/member', (req, res) => res.sendFile(path.join(__dirname, 'public', 'member.html')));
+app.get('/member/join', (req, res) => res.sendFile(path.join(__dirname, 'public', 'member-join.html')));
 app.get('/admin/members', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-members.html')));
 app.get('/admin/import', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-import.html')));
 app.get('/admin/photos', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-photos.html')));

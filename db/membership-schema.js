@@ -113,9 +113,13 @@ const TABLES = [
     cols: [
       col('id', 'id'),
       col('member_id', 'int', 'NOT NULL REFERENCES member_accounts(id)'),
-      col('kind', 'text', 'NOT NULL'),                           // reward / bonus / campaign / adjust
+      col('kind', 'text', 'NOT NULL'),                           // reward / bonus / campaign / adjust / purchased
       col('granted_amount', 'bigint', 'NOT NULL'),
       col('remaining_amount', 'bigint', 'NOT NULL'),
+      // 有償で購入されたマイルの支払対価（円）。無償付与は NULL。
+      // 資金決済法上、前払式支払手段に当たるのは「対価を得て発行される」もの＝この列が入る行だけ。
+      // 未使用残高の集計を有償分だけで出せるよう、台帳の段階で分離しておく。
+      col('paid_amount', 'bigint'),
       col('granted_at', 'ts', 'NOT NULL'),
       col('expires_at', 'ts'),                                   // NULL = 無期限
       col('source_type', 'text'),                                // fee_offset / auction / event / school ...
@@ -144,6 +148,30 @@ const TABLES = [
   },
 ];
 
+/**
+ * 既に作られているテーブルに後から追加された列を、冪等に足す。
+ * CREATE TABLE IF NOT EXISTS は既存テーブルに列を増やしてくれないため、
+ * スキーマを拡張したときはここに1行足す。
+ */
+async function addColumnIfMissing(table, column, pg) {
+  const type = TYPES[column.type][pg ? 0 : 1];
+  const exists = pg
+    ? await db.prepare(
+        'SELECT 1 AS found FROM information_schema.columns WHERE table_name = ? AND column_name = ?'
+      ).get(table, column.name)
+    : await db.prepare(
+        `SELECT 1 AS found FROM pragma_table_info('${table}') WHERE name = ?`
+      ).get(column.name);
+  if (exists) return false;
+  await db.exec(`ALTER TABLE ${table} ADD COLUMN ${column.name} ${type}`);
+  return true;
+}
+
+// 後から足した列。テーブル定義（TABLES）にも同じ列を書いておくこと。
+const ADDED_COLUMNS = [
+  ['mile_lots', col('paid_amount', 'bigint')],
+];
+
 function ddlFor(table, pg) {
   const i = pg ? 0 : 1;
   const cols = table.cols.map(c => `  ${c.name} ${TYPES[c.type][i]}${c.extra ? ' ' + c.extra : ''}`);
@@ -165,6 +193,10 @@ async function migrate() {
     for (const [name, cols] of t.indexes || []) {
       await db.exec(`CREATE INDEX IF NOT EXISTS ${name} ON ${t.name} (${cols})`);
     }
+  }
+
+  for (const [table, column] of ADDED_COLUMNS) {
+    await addColumnIfMissing(table, column, pg);
   }
 
   // ランク master の初期投入（既存行は上書きしない）
