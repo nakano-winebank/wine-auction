@@ -146,6 +146,27 @@ const TABLES = [
     ],
     indexes: [['mile_transactions_member_idx', 'member_id, occurred_at']],
   },
+  {
+    // 送信済み通知の記録。バッチが繰り返し走っても同じ通知を二度送らないための台帳。
+    // dedupe_key に「何に対する通知か」を入れる（例: lot=123 / 2026Q3）。
+    name: 'member_notifications',
+    cols: [
+      col('id', 'id'),
+      col('member_id', 'int', 'NOT NULL REFERENCES member_accounts(id)'),
+      col('type', 'text', 'NOT NULL'),        // mile_expiry / annual_reward / quarterly_report
+      col('dedupe_key', 'text', 'NOT NULL'),
+      col('status', 'text', "NOT NULL DEFAULT 'sent'"),  // sent / failed
+      col('to_email', 'text'),
+      col('detail', 'text'),
+      col('sent_at', 'ts', 'NOT NULL'),
+      col('created_at', 'ts'),
+    ],
+    indexes: [
+      // 同じ対象への二重送信は DB レベルで弾く
+      ['member_notifications_key_idx', 'member_id, type, dedupe_key', 'UNIQUE'],
+      ['member_notifications_sent_idx', 'type, sent_at'],
+    ],
+  },
 ];
 
 /**
@@ -190,8 +211,9 @@ async function migrate() {
 
   for (const t of TABLES) {
     await db.exec(ddlFor(t, pg));
-    for (const [name, cols] of t.indexes || []) {
-      await db.exec(`CREATE INDEX IF NOT EXISTS ${name} ON ${t.name} (${cols})`);
+    for (const [name, cols, unique] of t.indexes || []) {
+      await db.exec(
+        `CREATE ${unique === 'UNIQUE' ? 'UNIQUE ' : ''}INDEX IF NOT EXISTS ${name} ON ${t.name} (${cols})`);
     }
   }
 

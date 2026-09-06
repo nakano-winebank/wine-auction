@@ -292,6 +292,25 @@ setInterval(async () => {
   }
 }, 60 * 60 * 1000);
 
+// 会員向け通知メール（失効30日前の予告・年次還元の付与通知・四半期の評価額レポート）を
+// 1日1回まとめて流す。MEMBER_MAIL_BATCH=1 のときだけ実際に送信し、未設定なら何もしない。
+// 二重送信は member_notifications の記録で防いでいる（services/notifications.js）。
+const notifications = require('./services/notifications');
+const MEMBER_MAIL_INTERVAL = 24 * 60 * 60 * 1000;
+
+async function runMemberMailBatch() {
+  if (!notifications.isBatchEnabled()) return;
+  try {
+    const { results } = await notifications.runAll();
+    for (const r of results) {
+      if (r && r.count > 0) console.log(`📧 会員通知 ${r.type}: ${r.count}件送信`);
+    }
+  } catch (e) {
+    console.error('会員通知バッチのエラー:', e.message);
+  }
+}
+setInterval(runMemberMailBatch, MEMBER_MAIL_INTERVAL);
+
 const PORT = process.env.PORT || 3000;
 
 // DB初期化してからサーバー起動
@@ -299,6 +318,12 @@ const db = require('./database');
 (async () => {
   if (db.init) await db.init();
   await require('./db/membership-schema').migrate();
+  // 起動から5分後に1回流す。デプロイ直後の負荷と重ならないよう少し遅らせている。
+  if (notifications.isBatchEnabled()) {
+    console.log('📧 MEMBER_MAIL_BATCH 有効: 会員通知メールを1日1回送信します');
+    setTimeout(runMemberMailBatch, 5 * 60 * 1000);
+  }
+
   server.listen(PORT, () => {
     console.log(`
 🍷 ワインオークション サーバー起動
