@@ -22,6 +22,14 @@
                  color:rgba(255,255,255,.7); font-size:12px; padding:5px 11px; border-radius:4px; }
     .btn-ghost:hover { border-color:#A78450; color:#A78450; }
     .card { background:#141414; border:1px solid rgba(255,255,255,.06); border-radius:6px; }
+    /* 供託モニタ。深刻度は色だけでなく左の帯でも示す（色が見分けにくい環境向け） */
+    .sev { border-left:3px solid rgba(255,255,255,.15); }
+    .sev-off  { border-left-color:rgba(255,255,255,.15); }
+    .sev-ok   { border-left-color:#34D399; }
+    .sev-warn { border-left-color:#FBBF24; }
+    .sev-crit { border-left-color:#F87171; }
+    .chip { font-size:10.5px; font-weight:700; letter-spacing:.04em; padding:2px 8px;
+            border-radius:2px; border:1px solid currentColor; }
   </style>
 </head>
 <body class="bg-dark-900 text-white/90">
@@ -43,6 +51,22 @@
 
     <!-- 一覧 -->
     <div id="listView">
+      <!-- 有償マイルの未使用残高（資金決済法の供託判定） -->
+      <div id="depositCard" class="hidden card sev p-4 mb-4">
+        <div class="flex items-start justify-between gap-4 flex-wrap mb-3">
+          <div>
+            <div class="text-sm font-semibold">有償マイルの未使用残高</div>
+            <div class="text-xs text-white/40 mt-0.5">
+              資金決済法の基準日（3/31・9/30）残高が1,000万円を超えると供託義務が生じます。
+              無償で付与したマイルはこの集計に含みません。
+            </div>
+          </div>
+          <span id="depositChip" class="chip"></span>
+        </div>
+        <div id="depositGrid" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+        <div id="depositAction" class="hidden mt-3 p-3 rounded text-sm"></div>
+      </div>
+
       <div class="card overflow-x-auto">
         <table class="w-full text-sm">
           <thead class="text-xs text-white/40 border-b border-white/10">
@@ -121,6 +145,65 @@ function notify(message, ok = true) {
 const guard = (fn) => async (...args) => {
   try { await fn(...args); } catch (e) { notify(e.message, false); }
 };
+
+// ───────────── 有償マイルの未使用残高（供託判定）
+
+const loadDeposit = guard(async () => {
+  const d = await api('/miles/deposit-status');
+  const card = document.getElementById('depositCard');
+  card.classList.remove('hidden');
+
+  const used = d.threshold > 0 ? d.current.yen / d.threshold : 0;
+  // 深刻度は「直近基準日で超過したか」を最優先し、次に現在残高のしきい値接近度で決める
+  const sev = d.exceededAtPreviousBaseDate ? 'crit'
+            : !d.milePurchaseEnabled && d.current.yen === 0 ? 'off'
+            : used >= 0.7 ? 'warn' : 'ok';
+
+  card.className = 'card sev sev-' + sev + ' p-4 mb-4';
+
+  const chip = document.getElementById('depositChip');
+  const chipText = {
+    off:  ['有償マイル 無効', 'color:rgba(255,255,255,.45)'],
+    ok:   ['しきい値内', 'color:#34D399'],
+    warn: ['しきい値に接近', 'color:#FBBF24'],
+    crit: ['供託義務あり', 'color:#F87171'],
+  }[sev];
+  chip.textContent = chipText[0];
+  chip.setAttribute('style', chipText[1]);
+
+  const tile = (label, value, note, cls) => `
+    <div>
+      <div class="text-xs text-white/40 mb-1">${label}</div>
+      <div class="text-lg font-semibold tabular-nums ${cls || ''}">${value}</div>
+      ${note ? `<div class="text-xs text-white/30 mt-0.5">${note}</div>` : ''}
+    </div>`;
+
+  document.getElementById('depositGrid').innerHTML =
+    tile('現在の未使用残高', yen(d.current.yen), `${num(d.current.lots)} ロット`) +
+    tile('直近の基準日時点', yen(d.atPreviousBaseDate.yen), date(d.baseDate.previous),
+         d.exceededAtPreviousBaseDate ? 'text-red-400' : '') +
+    // 超過しているときは「余裕」ではなく超過額として、符号なしで見せる
+    (d.headroomYen < 0
+      ? tile('1,000万円の超過額', yen(-d.headroomYen), null, 'text-red-400')
+      : tile('1,000万円までの余裕', yen(d.headroomYen), null, used >= 0.7 ? 'text-amber-400' : '')) +
+    tile('次の基準日', date(d.baseDate.next), `あと ${num(d.daysToNextBaseDate)} 日`);
+
+  const action = document.getElementById('depositAction');
+  if (d.exceededAtPreviousBaseDate) {
+    action.className = 'mt-3 p-3 rounded text-sm bg-red-500/10 border border-red-500/30 text-red-300';
+    action.textContent =
+      `${date(d.baseDate.previous)} 時点で1,000万円を超えています。` +
+      `基準日から2ヶ月以内に ${yen(d.requiredDeposit)}（残高の2分の1）以上の供託が必要です。`;
+    action.classList.remove('hidden');
+  } else if (!d.milePurchaseEnabled) {
+    action.className = 'mt-3 p-3 rounded text-sm bg-white/5 border border-white/10 text-white/50';
+    action.textContent =
+      'マイルの有償購入は現在無効です（MILE_PURCHASE_ENABLED 未設定）。法務・財務局の確認が済むまで有効にしないでください。';
+    action.classList.remove('hidden');
+  } else {
+    action.classList.add('hidden');
+  }
+});
 
 // ───────────── 一覧
 
@@ -412,6 +495,7 @@ document.getElementById('btnExpire').addEventListener('click', guard(async () =>
   const r = await api('/miles/expire', { method: 'POST', body: JSON.stringify({}) });
   notify(`${r.lots} ロット / ${num(r.amount)} マイルを失効させました`);
   loadList();
+  loadDeposit();   // 失効すると有償分の未使用残高も動く
 }));
 
 if (!token) {
@@ -419,6 +503,7 @@ if (!token) {
 } else {
   loadList();
   loadRanks();
+  loadDeposit();
 }
 </script>
 </body>

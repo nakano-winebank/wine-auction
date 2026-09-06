@@ -48,6 +48,21 @@ router.patch('/ranks/:code', handle(async (req, res) => {
   res.json({ rank: await members.getRank(req.params.code) });
 }));
 
+/**
+ * 有償マイルの未使用残高と、供託義務の判定材料。
+ * 資金決済法の基準日（3/31・9/30）残高が1,000万円を超えると供託義務が生じるため、
+ * 有償マイルを有効にする前提として、常に見えるようにしておく。
+ * ※ 返す数字は法令の構造をそのまま計算したもので、法務判断ではない。
+ */
+router.get('/miles/deposit-status', handle(async (req, res) => {
+  const status = await miles.getDepositStatus(req.query.at || undefined);
+  res.json({
+    ...status,
+    // 画面に「そもそも有償マイルが有効か」も併せて出す
+    milePurchaseEnabled: process.env.MILE_PURCHASE_ENABLED === '1',
+  });
+}));
+
 // 有効期限切れの一括失効。id を省略すると全会員が対象。
 // 「/:id」を含む可変ルートより前に置き、id として解釈されないようにする。
 router.post('/miles/expire', handle(async (req, res) => {

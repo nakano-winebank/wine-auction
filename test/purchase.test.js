@@ -262,3 +262,90 @@ test('進める日数の範囲外は弾かれる', async () => {
     delete process.env.DEMO_MODE;
   }
 });
+
+// ───────────────────────────────── 供託判定（資金決済法の基準日残高）
+
+test('過去の基準日の未使用残高は、その後の利用に影響されない', async () => {
+  const userId = await makeUser();
+  const { memberId } = await purchase.purchasePlan(userId, 'PRESTIGE');
+
+  // 有償で 100,000 マイル発行する
+  await purchase.purchaseMiles(userId, 'pack_100k');
+
+  // 発行の直後を基準日、その1時間後を利用日として、時点をはっきり分ける
+  const baseDate = new Date(Date.now() + 60 * 1000).toISOString();
+  const usedAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+
+  const atBase = await miles.getPurchasedOutstanding(baseDate, memberId);
+  assert.strictEqual(atBase.yen, 100000, '基準日時点の未使用残高');
+
+  // 基準日の「後」に 40,000 使う。
+  // 消込は期限の近い順なので、同じ180日でも先に付与された入会記念ボーナス3,000が
+  // 先に消え、残り37,000が有償ロットから引かれる。無償と有償が混ざって消費されるが、
+  // 有償分の集計は有償ロットだけを見ているので影響を受けない。
+  await miles.redeem(memberId, 40000, { channel: 'restaurant', occurredAt: usedAt });
+
+  const afterUse = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
+  const later = await miles.getPurchasedOutstanding(afterUse, memberId);
+  assert.strictEqual(later.yen, 100000 - (40000 - purchase.WELCOME_BONUS_MILES),
+    '有償ロットから引かれたのは、無償ボーナスを使い切った残りの分だけ');
+  assert.strictEqual(later.yen, 63000);
+
+  // 基準日時点の残高は、あとから使っても変わってはいけない
+  const recheck = await miles.getPurchasedOutstanding(baseDate, memberId);
+  assert.strictEqual(recheck.yen, 100000,
+    '基準日より後の利用で過去の残高が減ってはならない');
+});
+
+test('発行前の時点では未使用残高に計上されない', async () => {
+  const userId = await makeUser();
+  const { memberId } = await purchase.purchasePlan(userId, 'PRESTIGE');
+  const before = new Date(Date.now() - 60000).toISOString();
+
+  await purchase.purchaseMiles(userId, 'pack_10k');
+
+  const past = await miles.getPurchasedOutstanding(before, memberId);
+  assert.strictEqual(past.yen, 0, '発行より前の基準日では0');
+  const now = await miles.getPurchasedOutstanding(undefined, memberId);
+  assert.strictEqual(now.yen, 10000);
+});
+
+test('基準日は3月31日と9月30日で、前後が正しく求まる', () => {
+  const { previous, next } = miles.baseDatesAround('2026-07-15T00:00:00Z');
+  assert.strictEqual(previous.slice(0, 10), '2026-03-31');
+  assert.strictEqual(next.slice(0, 10), '2026-09-30');
+
+  const q1 = miles.baseDatesAround('2026-01-10T00:00:00Z');
+  assert.strictEqual(q1.previous.slice(0, 10), '2025-09-30');
+  assert.strictEqual(q1.next.slice(0, 10), '2026-03-31');
+
+  const q4 = miles.baseDatesAround('2026-11-20T00:00:00Z');
+  assert.strictEqual(q4.previous.slice(0, 10), '2026-09-30');
+  assert.strictEqual(q4.next.slice(0, 10), '2027-03-31');
+});
+
+test('供託の判定に必要な数字が揃って返る', async () => {
+  const status = await miles.getDepositStatus();
+
+  assert.strictEqual(status.threshold, 10000000, 'しきい値は1,000万円');
+  assert.ok(status.baseDate.previous < status.at);
+  assert.ok(status.baseDate.next > status.at);
+  assert.ok(status.daysToNextBaseDate > 0);
+  assert.strictEqual(status.headroomYen, 10000000 - status.current.yen);
+  // このテストDBの有償残高は1,000万円に届かないので供託は不要
+  assert.strictEqual(status.exceededAtPreviousBaseDate, false);
+  assert.strictEqual(status.requiredDeposit, 0);
+});
+
+test('無償付与マイルは供託の判定に一切入らない', async () => {
+  const before = await miles.getPurchasedOutstanding();
+
+  // 大量に無償付与しても有償分の残高は動かない
+  const userId = await makeUser();
+  const { memberId } = await purchase.purchasePlan(userId, 'SIGNATURE');
+  await miles.grant(memberId, 5000000, { kind: 'campaign', memo: '大型キャンペーン' });
+
+  const after = await miles.getPurchasedOutstanding();
+  assert.strictEqual(after.yen, before.yen,
+    '無償分は前払式支払手段に当たらないため、供託の判定基礎に入れない');
+});

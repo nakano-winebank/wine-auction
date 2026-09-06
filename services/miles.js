@@ -251,32 +251,95 @@ async function listTransactions(memberId, limit = 100, offset = 0) {
  * 有償で発行したマイルの未使用残高。資金決済法の基準日残高（3/31・9/30）の算定に使う。
  * 無償付与分は前払式支払手段に当たらないため、この集計から必ず除外する。
  *
- * @param {string} asOf     基準日時（ISO）。この時点で有効なロットだけを数える
+ * 過去の基準日を渡しても正しい値が出るよう、`remaining_amount`（現在値）ではなく
+ * 「発行額 − その時点までの利用額」で数える。remaining_amount を使うと、
+ * 基準日より後に使われた分まで差し引かれてしまい、過去の残高が過小に出る。
+ * 失効は expires_at で判定するので、失効バッチの実行が遅れていても結果は変わらない。
+ *
+ * @param {string} asOf     基準日時（ISO）。この時点での未使用残高を返す
  * @param {number} memberId 省略すると全会員の合計
  */
 async function getPurchasedOutstanding(asOf = nowIso(), memberId = null) {
-  const params = [PURCHASED_KIND, asOf];
+  const params = [asOf, PURCHASED_KIND, asOf, asOf];
   let scope = '';
   if (memberId !== null) {
-    scope = ' AND member_id = ?';
+    scope = ' AND l.member_id = ?';
     params.push(memberId);
   }
   const row = await db.prepare(`
-    SELECT COALESCE(SUM(remaining_amount), 0) AS miles,
-           COALESCE(SUM(paid_amount), 0)      AS paid,
-           COUNT(*)                           AS lots
-    FROM mile_lots
-    WHERE kind = ? AND remaining_amount > 0
-      AND (expires_at IS NULL OR expires_at > ?)${scope}
+    SELECT COALESCE(SUM(l.granted_amount), 0) AS granted,
+           COALESCE(SUM(l.paid_amount), 0)    AS paid,
+           COUNT(*)                           AS lots,
+           COALESCE(SUM((
+             SELECT COALESCE(SUM(-t.amount), 0)
+             FROM mile_transactions t
+             WHERE t.lot_id = l.id AND t.type = 'redeem' AND t.occurred_at <= ?
+           )), 0) AS redeemed
+    FROM mile_lots l
+    WHERE l.kind = ?
+      AND l.granted_at <= ?
+      AND (l.expires_at IS NULL OR l.expires_at > ?)${scope}
   `).get(...params);
 
-  const miles = Number(row ? row.miles : 0);
+  const granted = Number(row ? row.granted : 0);
+  const redeemed = Number(row ? row.redeemed : 0);
+  const miles = Math.max(0, granted - redeemed);
   return {
     asOf,
     lots: Number(row ? row.lots : 0),
     miles,                              // 未使用マイル数
     yen: miles * MILE_TO_YEN,           // 未使用残高（円）＝供託の判定基礎
     grantedPaidAmount: Number(row ? row.paid : 0), // 発行時に受け取った対価の合計
+  };
+}
+
+/**
+ * 資金決済法の基準日（3月31日・9月30日）。
+ * 基準日時点の未使用残高が 1,000万円を超えると、その日から2ヶ月以内に
+ * 残高の2分の1以上を供託する義務が生じる。
+ */
+const DEPOSIT_THRESHOLD_YEN = 10000000;
+const DEPOSIT_RATIO = 0.5;
+
+/** 指定日の直前の基準日と、次の基準日を返す。 */
+function baseDatesAround(at = nowIso()) {
+  const d = new Date(at);
+  const y = d.getUTCFullYear();
+  // 各年の基準日は 3/31 と 9/30（その日の終わり時点の残高で判定する）
+  const marks = [
+    new Date(Date.UTC(y - 1, 8, 30, 23, 59, 59)),
+    new Date(Date.UTC(y, 2, 31, 23, 59, 59)),
+    new Date(Date.UTC(y, 8, 30, 23, 59, 59)),
+    new Date(Date.UTC(y + 1, 2, 31, 23, 59, 59)),
+  ];
+  const previous = [...marks].reverse().find(m => m <= d);
+  const next = marks.find(m => m > d);
+  return { previous: previous.toISOString(), next: next.toISOString() };
+}
+
+/**
+ * 供託義務の判定に必要な数字をまとめて返す。管理画面のモニタが使う。
+ * ※ 法令の構造をそのまま数字にしたものであって、法務判断ではない。
+ */
+async function getDepositStatus(at = nowIso()) {
+  const { previous, next } = baseDatesAround(at);
+  const [current, atPrevious] = await Promise.all([
+    getPurchasedOutstanding(at),
+    getPurchasedOutstanding(previous),
+  ]);
+
+  const exceeded = atPrevious.yen > DEPOSIT_THRESHOLD_YEN;
+  return {
+    at,
+    current,
+    baseDate: { previous, next },
+    atPreviousBaseDate: atPrevious,
+    threshold: DEPOSIT_THRESHOLD_YEN,
+    // 直近の基準日で超過していた場合に必要な供託額（残高の2分の1以上）
+    requiredDeposit: exceeded ? Math.ceil(atPrevious.yen * DEPOSIT_RATIO) : 0,
+    exceededAtPreviousBaseDate: exceeded,
+    headroomYen: DEPOSIT_THRESHOLD_YEN - current.yen,
+    daysToNextBaseDate: Math.ceil((new Date(next) - new Date(at)) / 86400000),
   };
 }
 
@@ -306,8 +369,12 @@ module.exports = {
   REDEEM_CHANNELS,
   REDEEM_CHANNEL_CODES,
   MILE_TO_YEN,
+  DEPOSIT_THRESHOLD_YEN,
+  DEPOSIT_RATIO,
   getBalance,
   getPurchasedOutstanding,
+  getDepositStatus,
+  baseDatesAround,
   getExpirySchedule,
   grant,
   redeem,
