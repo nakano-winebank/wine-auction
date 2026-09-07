@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CLUB会員 — WineBank 管理</title>
+  <link rel="stylesheet" href="/css/tailwind.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@400;500;600&display=swap">
+  <style>
+    body { font-family: 'Inter','Noto Sans JP','Hiragino Sans',sans-serif; }
+    .hidden { display: none !important; }
+    .mincho { font-family: 'Noto Serif JP','Hiragino Mincho ProN','Yu Mincho',serif; }
+    .tracked-sm { letter-spacing: .08em; }
+    input, select {
+      background:#1C1C1C; border:1px solid rgba(255,255,255,.1);
+      border-radius:3px; padding:7px 10px; color:#fff; font-size:13px;
+    }
+    input:focus, select:focus { outline:none; border-color:#A78450; }
+    .card { background:#141414; border:1px solid rgba(255,255,255,.06); border-radius:4px; }
+    .btn { background:#A78450; color:#0A0A0A; font-weight:600; font-size:13px;
+           padding:7px 14px; border-radius:3px; }
+    .btn:hover { background:#8B6914; }
+    .btn-ghost { background:transparent; border:1px solid rgba(255,255,255,.15);
+                 color:rgba(255,255,255,.7); font-size:12px; padding:6px 12px; border-radius:3px; }
+    .btn-ghost:hover { border-color:#A78450; color:#A78450; }
+    .btn-ghost[disabled] { opacity:.35; cursor:not-allowed; }
+    .btn-ghost[disabled]:hover { border-color:rgba(255,255,255,.15); color:rgba(255,255,255,.7); }
+    /* CLUBランクは投資ランクとは別体系。色ではなく枠で区別し、金は投資側に取っておく */
+    .rankchip { font-size:10.5px; padding:2px 8px; border-radius:2px;
+                border:1px solid rgba(255,255,255,.2); color:rgba(255,255,255,.7); }
+    .rank-Black { border-color:rgba(255,255,255,.55); color:#fff; }
+    .rank-Gold { border-color:rgba(167,132,80,.6); color:#A78450; }
+    .rank-Ambassador { border-color:rgba(160,180,210,.45); color:#A9BBD4; }
+    th { position:sticky; top:0; background:#141414; }
+  </style>
+</head>
+<body class="bg-dark-900 text-white/90">
+
+  <header class="bg-dark-800 border-b border-white/5 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 flex items-center h-14 gap-4">
+      <a href="/admin" class="text-white/40 hover:text-gold text-sm">← 管理画面</a>
+      <span class="mincho text-gold tracked-sm">CLUB会員</span>
+      <div class="ml-auto flex gap-2">
+        <a href="/admin/member-import" class="btn-ghost">会員データ取込</a>
+        <a href="/admin/members" class="btn-ghost">会員管理（投資）</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-6">
+
+    <div id="needLogin" class="hidden text-center py-20">
+      <p class="text-white/60">管理者としてログインしてください。</p>
+      <a href="/login" class="inline-block mt-4 btn">ログイン</a>
+    </div>
+
+    <div id="app" class="hidden">
+      <p class="text-xs text-white/40 mb-5 leading-relaxed">
+        WineBank CLUB の会員資格です。年会費で決まる会員制度で、簿価から自動算定される
+        <a href="/admin/members" class="text-gold/80 hover:text-gold underline underline-offset-2">投資ランク</a>とは別の体系です。
+        ワイン未購入の方には会員口座を作らないため、その場合「会員口座」は空欄になります。
+      </p>
+
+      <!-- 内訳 -->
+      <div id="summary" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4"></div>
+      <div id="rankBreakdown" class="card p-4 mb-5 hidden"></div>
+
+      <!-- 絞り込み -->
+      <div class="card p-4 mb-4">
+        <div class="flex flex-wrap items-end gap-3">
+          <label class="text-sm">
+            <span class="block text-[11px] text-white/40 mb-1">検索（会員番号・氏名・なまえ・メール・電話）</span>
+            <input id="q" type="search" placeholder="例: C001 / 匿名" class="w-72">
+          </label>
+          <label class="text-sm">
+            <span class="block text-[11px] text-white/40 mb-1">状態</span>
+            <select id="status">
+              <option value="">すべて</option>
+              <option value="active">有効</option>
+              <option value="withdrawn">退会済</option>
+            </select>
+          </label>
+          <label class="text-sm">
+            <span class="block text-[11px] text-white/40 mb-1">CLUBランク</span>
+            <select id="rank"><option value="">すべて</option></select>
+          </label>
+          <label class="text-sm">
+            <span class="block text-[11px] text-white/40 mb-1">会員口座</span>
+            <select id="linked">
+              <option value="">すべて</option>
+              <option value="1">紐づけ済み</option>
+              <option value="0">未紐づけ</option>
+            </select>
+          </label>
+          <button id="clearBtn" class="btn-ghost">条件をクリア</button>
+        </div>
+      </div>
+
+      <div id="error" class="hidden mb-4 p-3 rounded text-sm bg-red-500/10 border border-red-500/30 text-red-300"></div>
+
+      <!-- 一覧 -->
+      <div class="card overflow-x-auto mb-3">
+        <table class="w-full text-sm">
+          <thead class="text-[11px] text-white/40 border-b border-white/10">
+            <tr>
+              <th class="text-left py-3 px-3 font-medium">会員番号</th>
+              <th class="text-left py-3 px-3 font-medium">ランク</th>
+              <th class="text-left py-3 px-3 font-medium">氏名</th>
+              <th class="text-left py-3 px-3 font-medium">連絡先</th>
+              <th class="text-left py-3 px-3 font-medium">入会</th>
+              <th class="text-left py-3 px-3 font-medium">会員口座</th>
+              <th class="text-left py-3 px-3 font-medium">状態</th>
+            </tr>
+          </thead>
+          <tbody id="listBody"></tbody>
+        </table>
+      </div>
+
+      <div class="flex items-center justify-between text-xs text-white/40">
+        <span id="range"></span>
+        <span class="flex gap-2">
+          <button id="prevBtn" class="btn-ghost">前へ</button>
+          <button id="nextBtn" class="btn-ghost">次へ</button>
+        </span>
+      </div>
+    </div>
+  </main>
+
+<script>
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => (
+  { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+const num = (n) => n === null || n === undefined ? '—' : Math.round(n).toLocaleString();
+const date = (s) => s ? new Date(s).toLocaleDateString('ja-JP') : '—';
+
+const token = localStorage.getItem('token');
+const auth = { Authorization: 'Bearer ' + token };
+const PAGE = 50;
+let offset = 0, total = 0;
+
+const el = (id) => document.getElementById(id);
+function showError(m) { el('error').textContent = m; el('error').classList.remove('hidden'); }
+
+function params() {
+  const p = new URLSearchParams();
+  if (el('q').value.trim()) p.set('q', el('q').value.trim());
+  if (el('status').value) p.set('status', el('status').value);
+  if (el('rank').value) p.set('rank', el('rank').value);
+  if (el('linked').value) p.set('linked', el('linked').value);
+  p.set('limit', PAGE);
+  p.set('offset', offset);
+  return p;
+}
+
+async function loadSummary() {
+  const res = await fetch('/api/admin/member-import/club-members/summary', { headers: auth });
+  if (!res.ok) return;
+  const s = await res.json();
+
+  const active = (s.byStatus.find(x => x.status === 'active') || {}).count || 0;
+  const withdrawn = (s.byStatus.find(x => x.status === 'withdrawn') || {}).count || 0;
+  const tile = (label, value, note, cls) => `
+    <div class="card p-4">
+      <div class="text-[11px] text-white/40 mb-1">${label}</div>
+      <div class="text-xl font-light tabular-nums ${cls || ''}">${num(value)}</div>
+      ${note ? `<div class="text-[11px] text-white/30 mt-0.5">${note}</div>` : ''}
+    </div>`;
+  el('summary').innerHTML =
+    tile('CLUB会員 総数', s.total) +
+    tile('有効', active) +
+    tile('退会済', withdrawn, null, 'text-white/45') +
+    tile('会員口座と紐づけ済み', s.linked, `メール未登録 ${num(s.noEmail)} 名`);
+
+  if (s.byRank.length) {
+    el('rankBreakdown').classList.remove('hidden');
+    el('rankBreakdown').innerHTML = `
+      <div class="text-[11px] text-white/40 mb-3">CLUBランク別（有効会員）</div>
+      <div class="flex flex-wrap gap-x-8 gap-y-2">
+        ${s.byRank.map(r => `
+          <div class="flex items-baseline gap-2">
+            <span class="rankchip rank-${esc(r.rank)}">${esc(r.rank)}</span>
+            <span class="tabular-nums text-white/80">${num(r.count)}</span>
+            <span class="text-[11px] text-white/30">名</span>
+          </div>`).join('')}
+      </div>`;
+
+    // ランクの選択肢は実データから作る（体系が増えても画面を直さなくてよい）
+    const sel = el('rank');
+    if (sel.options.length === 1) {
+      s.byRank.forEach(r => {
+        if (r.rank === '(未設定)') return;
+        const o = document.createElement('option');
+        o.value = r.rank; o.textContent = r.rank;
+        sel.appendChild(o);
+      });
+    }
+  }
+}
+
+async function loadList() {
+  const res = await fetch('/api/admin/member-import/club-members?' + params(), { headers: auth });
+  if (!res.ok) { showError('一覧の取得に失敗しました。'); return; }
+  const d = await res.json();
+  total = d.total;
+
+  el('listBody').innerHTML = d.members.length ? d.members.map(m => `
+    <tr class="border-b border-white/5">
+      <td class="py-2.5 px-3 font-mono text-xs text-white/70">${esc(m.club_member_no)}</td>
+      <td class="px-3"><span class="rankchip rank-${esc(m.club_rank || '')}">${esc(m.club_rank || '—')}</span></td>
+      <td class="px-3">
+        <div class="text-white/85">${esc(m.name || '—')}</div>
+        ${m.name_kana ? `<div class="text-[11px] text-white/30">${esc(m.name_kana)}</div>` : ''}
+      </td>
+      <td class="px-3 text-xs text-white/50">
+        ${m.email ? esc(m.email) : '<span class="text-amber-400/70">メール未登録</span>'}
+        ${m.phone ? `<div class="text-white/30">${esc(m.phone)}</div>` : ''}
+      </td>
+      <td class="px-3 text-xs text-white/50">
+        ${date(m.joined_at)}
+        ${m.joined_store ? `<div class="text-white/30">${esc(m.joined_store)}</div>` : ''}
+      </td>
+      <td class="px-3 text-xs">
+        ${m.member_id
+          ? `<a href="/admin/members" class="text-gold/80 hover:text-gold">#${m.member_id}</a>`
+          : '<span class="text-white/25">—</span>'}
+      </td>
+      <td class="px-3 text-xs">
+        ${m.status === 'withdrawn'
+          ? `<span class="text-white/35">退会済 ${m.withdrawn_at ? date(m.withdrawn_at) : ''}</span>`
+          : '<span class="text-emerald-400/80">有効</span>'}
+      </td>
+    </tr>`).join('')
+    : '<tr><td colspan="7" class="py-10 text-center text-white/40">該当する会員はいません。</td></tr>';
+
+  const from = total === 0 ? 0 : offset + 1;
+  const to = Math.min(offset + PAGE, total);
+  el('range').textContent = `${num(from)}–${num(to)} / 全 ${num(total)} 名`;
+  el('prevBtn').disabled = offset === 0;
+  el('nextBtn').disabled = to >= total;
+}
+
+let timer = null;
+function refresh(resetOffset = true) {
+  if (resetOffset) offset = 0;
+  clearTimeout(timer);
+  timer = setTimeout(loadList, 180);   // 入力のたびに叩かないよう少し待つ
+}
+
+['q'].forEach(id => el(id).addEventListener('input', () => refresh()));
+['status', 'rank', 'linked'].forEach(id => el(id).addEventListener('change', () => refresh()));
+el('clearBtn').addEventListener('click', () => {
+  el('q').value = ''; el('status').value = ''; el('rank').value = ''; el('linked').value = '';
+  refresh();
+});
+el('prevBtn').addEventListener('click', () => { offset = Math.max(0, offset - PAGE); loadList(); });
+el('nextBtn').addEventListener('click', () => { offset += PAGE; loadList(); });
+
+(async () => {
+  if (!token) { el('needLogin').classList.remove('hidden'); return; }
+  const probe = await fetch('/api/admin/member-import/club-members/summary', { headers: auth });
+  if (!probe.ok) { el('needLogin').classList.remove('hidden'); return; }
+  el('app').classList.remove('hidden');
+  await loadSummary();
+  await loadList();
+})();
+</script>
+</body>
+</html>

@@ -353,3 +353,116 @@ test('取り込み上限を超えるファイルは弾かれる', async () => {
       kind: 'club', mapping: importer.suggestMapping(CLUB_HEADERS, 'club') }),
     /一度に取り込めるのは/);
 });
+
+// ───────────────────────────────── CLUB会員の絞り込み・内訳
+
+/**
+ * ルーターを通さず、同じ条件組み立てをここで再現して検証する。
+ * （routes 側は clubFilter() に条件を集約しているので、SQL の形はここと一致する）
+ */
+async function queryClub({ status, rank, linked, q } = {}) {
+  const clauses = [];
+  const params = [];
+  if (status) { clauses.push('status = ?'); params.push(status); }
+  if (rank) { clauses.push('club_rank = ?'); params.push(rank); }
+  if (linked === '1') clauses.push('member_id IS NOT NULL');
+  if (linked === '0') clauses.push('member_id IS NULL');
+  if (q) {
+    clauses.push('(club_member_no LIKE ? OR name LIKE ? OR name_kana LIKE ? OR email LIKE ? OR phone LIKE ?)');
+    const like = `%${q}%`;
+    params.push(like, like, like, like, like);
+  }
+  const where = clauses.length ? 'WHERE ' + clauses.join(' AND ') : '';
+  return db.prepare(
+    `SELECT * FROM club_memberships ${where} ORDER BY club_member_no ASC`).all(...params);
+}
+
+test('CLUB会員を状態・ランク・紐づけ有無で絞り込める', async () => {
+  const rows = [
+    CLUB_HEADERS,
+    clubRow('F001', 'Black',      '匿名 絞込一', 'しぼりこみいち', '090-2000-0001', 'f001@example.test', '2020/1/1', '銀座店', ''),
+    clubRow('F002', 'Standard',   '匿名 絞込二', 'しぼりこみに',   '090-2000-0002', 'f002@example.test', '2021/2/2', '青山店', ''),
+    clubRow('F003', 'Black',      '匿名 絞込三', 'しぼりこみさん', '090-2000-0003', 'f003@example.test', '2019/3/3', '大阪店', '2025/6/30'),
+  ];
+  const buf = buildXlsx(rows);
+  const mapping = importer.suggestMapping(CLUB_HEADERS, 'club');
+  const plan = await importer.dryRun(buf, { kind: 'club', mapping });
+  await importer.execute(buf, { kind: 'club', mapping, digest: plan.digest });
+
+  const black = await queryClub({ rank: 'Black' });
+  assert.ok(black.length >= 2);
+  assert.ok(black.every(r => r.club_rank === 'Black'));
+
+  const activeBlack = await queryClub({ rank: 'Black', status: 'active' });
+  assert.ok(activeBlack.every(r => r.status === 'active'));
+  assert.ok(!activeBlack.some(r => r.club_member_no === 'F003'), '退会済みは含まれない');
+
+  const withdrawn = await queryClub({ status: 'withdrawn' });
+  assert.ok(withdrawn.some(r => r.club_member_no === 'F003'));
+});
+
+test('会員番号・氏名・なまえ・メール・電話を横断で検索できる', async () => {
+  for (const [q, expected] of [
+    ['F001', 'F001'],
+    ['絞込二', 'F002'],
+    ['しぼりこみさん', 'F003'],
+    ['f001@example', 'F001'],
+    ['090-2000-0002', 'F002'],
+  ]) {
+    const hits = await queryClub({ q });
+    assert.ok(hits.some(r => r.club_member_no === expected),
+      `「${q}」で ${expected} が見つかる`);
+  }
+
+  const none = await queryClub({ q: 'まったく存在しない文字列' });
+  assert.strictEqual(none.length, 0);
+});
+
+test('会員口座の紐づけ有無で絞り込める', async () => {
+  // ワイン未購入のCLUB会員は member_id が NULL のまま
+  const unlinked = await queryClub({ linked: '0' });
+  assert.ok(unlinked.length > 0);
+  assert.ok(unlinked.every(r => r.member_id === null));
+
+  // 投資会員として取り込むと紐づく
+  const email = 'linked@example.test';
+  const clubBuf = buildXlsx([CLUB_HEADERS,
+    clubRow('F100', 'Gold', '匿名 紐づけ', '', '', email, '2020/1/1', '銀座店', '')]);
+  const clubMapping = importer.suggestMapping(CLUB_HEADERS, 'club');
+  const cp = await importer.dryRun(clubBuf, { kind: 'club', mapping: clubMapping });
+  await importer.execute(clubBuf, { kind: 'club', mapping: clubMapping, digest: cp.digest });
+
+  const investBuf = buildXlsx([INVEST_HEADERS,
+    investRow('F100', '匿名 紐づけ', email, '', 'ゴールド', 16, 4000000, '')]);
+  const im = importer.suggestMapping(INVEST_HEADERS, 'investment');
+  const ip = await importer.dryRun(investBuf, { kind: 'investment', mapping: im });
+  await importer.execute(investBuf, { kind: 'investment', mapping: im, digest: ip.digest });
+
+  const linked = await queryClub({ linked: '1' });
+  assert.ok(linked.some(r => r.club_member_no === 'F100'), '投資会員として取り込むと紐づく');
+  assert.ok(linked.every(r => r.member_id !== null));
+});
+
+test('CLUB会員の内訳が集計できる', async () => {
+  // 電話のみの会員を1件確実に入れてから数える（他のテストの副作用に依存しない）
+  const buf = buildXlsx([CLUB_HEADERS,
+    clubRow('F200', 'Standard', '匿名 電話のみ集計', '', '090-2000-0200', '', '2022/1/1', '銀座店', '')]);
+  const mapping = importer.suggestMapping(CLUB_HEADERS, 'club');
+  const plan = await importer.dryRun(buf, { kind: 'club', mapping });
+  await importer.execute(buf, { kind: 'club', mapping, digest: plan.digest });
+
+  const byStatus = await db.prepare(
+    'SELECT status, COUNT(*) AS n FROM club_memberships GROUP BY status').all();
+  const total = await db.prepare('SELECT COUNT(*) AS n FROM club_memberships').get();
+  const sum = byStatus.reduce((a, r) => a + Number(r.n), 0);
+  assert.strictEqual(sum, Number(total.n), '状態別の合計が総数と一致する');
+
+  const noEmail = await db.prepare(
+    `SELECT COUNT(*) AS n FROM club_memberships WHERE email IS NULL OR email = ''`).get();
+  assert.ok(Number(noEmail.n) >= 1, 'メール未登録の会員が数えられる（通知が届かない対象）');
+
+  const byRank = await db.prepare(`
+    SELECT club_rank, COUNT(*) AS n FROM club_memberships
+    WHERE status = 'active' GROUP BY club_rank`).all();
+  assert.ok(byRank.length >= 2, 'ランク別の内訳が出る');
+});

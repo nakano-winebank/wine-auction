@@ -260,6 +260,7 @@ app.get('/terms/miles', (req, res) => res.sendFile(path.join(__dirname, 'public'
 app.get('/admin/members', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-members.html')));
 app.get('/admin/import', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-import.html')));
 app.get('/admin/member-import', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-member-import.html')));
+app.get('/admin/club-members', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-club-members.html')));
 app.get('/admin/photos', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-photos.html')));
 
 // Socket.io

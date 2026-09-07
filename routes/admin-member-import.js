@@ -94,23 +94,65 @@ router.get('/batches', handle(async (req, res) => {
   res.json({ batches: rows });
 }));
 
-/** 取り込んだ CLUB 会員の一覧（確認用）。 */
+/**
+ * 絞り込み条件を組み立てる。件数取得と一覧取得で同じ条件を使い回すため、
+ * WHERE 句とパラメータを別々に返す（LIMIT / OFFSET は呼び出し側で足す）。
+ */
+function clubFilter(query) {
+  const clauses = [];
+  const params = [];
+  if (query.status) { clauses.push('status = ?'); params.push(query.status); }
+  if (query.rank)   { clauses.push('club_rank = ?'); params.push(query.rank); }
+  if (query.linked === '1')  clauses.push('member_id IS NOT NULL');
+  if (query.linked === '0')  clauses.push('member_id IS NULL');
+
+  const q = (query.q || '').trim();
+  if (q) {
+    // 会員番号・氏名・なまえ・メール・電話を横断で探す
+    clauses.push('(club_member_no LIKE ? OR name LIKE ? OR name_kana LIKE ? OR email LIKE ? OR phone LIKE ?)');
+    const like = `%${q}%`;
+    params.push(like, like, like, like, like);
+  }
+  return { where: clauses.length ? 'WHERE ' + clauses.join(' AND ') : '', params };
+}
+
+/** 取り込んだ CLUB 会員の一覧。 */
 router.get('/club-members', handle(async (req, res) => {
   const limit = Math.min(parseInt(req.query.limit, 10) || 100, 500);
   const offset = parseInt(req.query.offset, 10) || 0;
-  const params = [];
-  let where = '';
-  if (req.query.status) { where = 'WHERE status = ?'; params.push(req.query.status); }
-  params.push(limit, offset);
+  const { where, params } = clubFilter(req.query);
 
   const rows = await db.prepare(`
-    SELECT * FROM club_memberships ${where} ORDER BY club_member_no ASC LIMIT ? OFFSET ?
-  `).all(...params);
-  const total = await db.prepare(
-    `SELECT COUNT(*) AS n FROM club_memberships ${where}`
-  ).get(...params.slice(0, params.length - 2));
+    SELECT * FROM club_memberships ${where}
+    ORDER BY club_member_no ASC LIMIT ? OFFSET ?
+  `).all(...params, limit, offset);
 
-  res.json({ members: rows, total: Number(total.n) });
+  const total = await db.prepare(
+    `SELECT COUNT(*) AS n FROM club_memberships ${where}`).get(...params);
+
+  res.json({ members: rows, total: Number(total.n), limit, offset });
+}));
+
+/** CLUB会員の内訳。取り込み結果をひと目で確かめるために使う。 */
+router.get('/club-members/summary', handle(async (req, res) => {
+  const byStatus = await db.prepare(
+    'SELECT status, COUNT(*) AS n FROM club_memberships GROUP BY status').all();
+  const byRank = await db.prepare(`
+    SELECT club_rank, COUNT(*) AS n FROM club_memberships
+    WHERE status = 'active' GROUP BY club_rank ORDER BY n DESC`).all();
+  const linked = await db.prepare(
+    'SELECT COUNT(*) AS n FROM club_memberships WHERE member_id IS NOT NULL').get();
+  const noEmail = await db.prepare(
+    `SELECT COUNT(*) AS n FROM club_memberships WHERE email IS NULL OR email = ''`).get();
+  const total = await db.prepare('SELECT COUNT(*) AS n FROM club_memberships').get();
+
+  res.json({
+    total: Number(total.n),
+    linked: Number(linked.n),        // 投資側の会員口座と紐づいている数
+    noEmail: Number(noEmail.n),      // 通知メールが届かない数
+    byStatus: byStatus.map(r => ({ status: r.status, count: Number(r.n) })),
+    byRank: byRank.map(r => ({ rank: r.club_rank || '(未設定)', count: Number(r.n) })),
+  });
 }));
 
 module.exports = router;
