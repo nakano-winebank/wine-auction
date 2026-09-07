@@ -362,51 +362,57 @@ test('利用チャネルは master から取得でき、充当レートが必ず
   }
 });
 
+/** レートを一時的に変えて試す。初期値が変わってもテストが壊れないよう、元の値に戻す。 */
+async function withRate(code, rate, fn) {
+  const before = (await miles.getChannel(code)).yenPerMile;
+  await db.prepare('UPDATE mile_channels SET yen_per_mile = ? WHERE code = ?').run(rate, code);
+  try { return await fn(); }
+  finally {
+    await db.prepare('UPDATE mile_channels SET yen_per_mile = ? WHERE code = ?').run(before, code);
+  }
+}
+
+test('初期の充当レートは利用規約の記載どおり', async () => {
+  const list = await miles.listChannels();
+  const rateOf = (code) => list.find(c => c.code === code).yenPerMile;
+  assert.strictEqual(rateOf('grandmaison'), 0.5, '提携グランメゾンは0.5円');
+  assert.strictEqual(rateOf('restaurant'), 1, '系列レストランは1.0円');
+  for (const c of list.filter(x => x.code !== 'grandmaison')) {
+    assert.strictEqual(c.yenPerMile, 1, `${c.code} は1.0円`);
+  }
+});
+
 test('充当レートはコードではなく master を直せば変わる', async () => {
-  await db.prepare('UPDATE mile_channels SET yen_per_mile = ? WHERE code = ?')
-    .run(0.5, 'grandmaison');
-  try {
+  await withRate('grandmaison', 0.25, async () => {
     const ch = await miles.getChannel('grandmaison');
-    assert.strictEqual(ch.yenPerMile, 0.5, 'コード改修なしでレートが変わる');
+    assert.strictEqual(ch.yenPerMile, 0.25, 'コード改修なしでレートが変わる');
 
     const list = await miles.listChannels();
-    assert.strictEqual(list.find(c => c.code === 'grandmaison').yenPerMile, 0.5);
+    assert.strictEqual(list.find(c => c.code === 'grandmaison').yenPerMile, 0.25);
     assert.strictEqual(list.find(c => c.code === 'restaurant').yenPerMile, 1,
       '他のチャネルは影響を受けない');
-  } finally {
-    await db.prepare('UPDATE mile_channels SET yen_per_mile = 1 WHERE code = ?').run('grandmaison');
-  }
+  });
+  assert.strictEqual((await miles.getChannel('grandmaison')).yenPerMile, 0.5, '元に戻る');
 });
 
 test('レートが異なるチャネルでは充当額がレート通りに計算される', async () => {
   const userId = await makeUser();
   const { memberId } = await purchase.purchasePlan(userId, 'GOLD');
 
-  await db.prepare('UPDATE mile_channels SET yen_per_mile = ? WHERE code = ?')
-    .run(0.5, 'grandmaison');
-  try {
-    const full = await miles.redeem(memberId, 10000, { channel: 'restaurant' });
-    assert.strictEqual(full.yenPerMile, 1);
-    assert.strictEqual(full.yenValue, 10000, '1.0円のチャネルは額面どおり');
+  const full = await miles.redeem(memberId, 10000, { channel: 'restaurant' });
+  assert.strictEqual(full.yenPerMile, 1);
+  assert.strictEqual(full.yenValue, 10000, '1.0円のチャネルは額面どおり');
 
-    const half = await miles.redeem(memberId, 10000, { channel: 'grandmaison' });
-    assert.strictEqual(half.yenPerMile, 0.5);
-    assert.strictEqual(half.yenValue, 5000, '0.5円のチャネルは半額の充当');
-  } finally {
-    await db.prepare('UPDATE mile_channels SET yen_per_mile = 1 WHERE code = ?').run('grandmaison');
-  }
+  const half = await miles.redeem(memberId, 10000, { channel: 'grandmaison' });
+  assert.strictEqual(half.yenPerMile, 0.5);
+  assert.strictEqual(half.yenValue, 5000, '0.5円のチャネルは半額の充当');
 });
 
 test('利用時に適用したレートと充当額が台帳に残る', async () => {
   const userId = await makeUser();
   const { memberId } = await purchase.purchasePlan(userId, 'GOLD');
 
-  await db.prepare('UPDATE mile_channels SET yen_per_mile = ? WHERE code = ?').run(0.5, 'school');
-  try {
-    await miles.redeem(memberId, 4000, { channel: 'school' });
-  } finally {
-    await db.prepare('UPDATE mile_channels SET yen_per_mile = 1 WHERE code = ?').run('school');
-  }
+  await withRate('school', 0.5, () => miles.redeem(memberId, 4000, { channel: 'school' }));
 
   const rows = await db.prepare(`
     SELECT yen_per_mile, yen_value, amount FROM mile_transactions

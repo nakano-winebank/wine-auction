@@ -55,11 +55,13 @@ const GRANT_KINDS = Object.keys(MILE_VALIDITY_DAYS);
  *    利用先によって充当レートが異なる場合は、会員が交換先を選ぶ前にレートを明示すること。
  *    「1マイル＝1円」とだけ見せて一部が0.5円、という表示にしてはいけない。
  *    画面は listChannels() が返す yenPerMile を選択前に必ず表示する。
- *    初期値は全チャネル 1.0 円。異なるレートを設定するかは経営判断。
+ *
+ *    初期値は利用規約ドラフトの記載に合わせ、提携グランメゾンのみ 0.5 円、
+ *    その他は 1.0 円としている。変更は管理画面（PATCH /api/admin/members/channels/:code）から行う。
  */
 const REDEEM_CHANNELS = [
   { code: 'restaurant',  name: '系列レストラン',     description: 'グループ直営レストランでのお支払いに充当', yenPerMile: 1 },
-  { code: 'grandmaison', name: 'グランメゾン',       description: '提携グランメゾンのコース・ペアリングに充当', yenPerMile: 1 },
+  { code: 'grandmaison', name: 'グランメゾン',       description: '提携グランメゾンのコース・ペアリングに充当', yenPerMile: 0.5 },
   { code: 'school',      name: 'ワインスクール',     description: '講座の受講料に充当', yenPerMile: 1 },
   { code: 'event',       name: '会員交流イベント',   description: '試飲会・生産者を招いた会の参加費に充当', yenPerMile: 1 },
   { code: 'auction',     name: 'オークション',       description: '落札代金の一部に充当', yenPerMile: 1 },

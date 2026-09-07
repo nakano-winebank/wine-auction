@@ -381,7 +381,7 @@ window.openDetail = guard(async (id) => {
         <tbody>${d.holdings.map(h => `
           <tr class="border-b border-white/5">
             <td class="py-2">${esc(h.wine_name)}
-              <span class="text-xs text-white/35">${esc(h.producer || '')}${h.vintage ? ' ' + h.vintage : ''}</span></td>
+              <span class="text-xs text-white/35">${esc(h.producer || '')}${h.vintage ? ' ' + esc(h.vintage) : ''}</span></td>
             <td class="text-right tabular-nums">${num(h.quantity)}</td>
             <td class="text-right tabular-nums text-white/60">${yen(h.acquired_unit_price)}</td>
             <td class="text-right tabular-nums text-white/60">${yen(h.latest_market_price)}</td>

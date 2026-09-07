@@ -487,7 +487,7 @@ function renderHoldings(holdings) {
                 ${h.producer ? `<div class="latin text-[17px] text-white/90 leading-tight">${esc(h.producer)}</div>` : ''}
                 <div class="text-[13px] ${h.producer ? 'text-white/60' : 'text-white/90'}">${esc(h.wine_name)}</div>
                 <div class="text-[11px] text-white/30 mt-0.5">
-                  ${h.vintage ? h.vintage + ' ・ ' : ''}${STATUS_LABELS[h.status] || esc(h.status)}
+                  ${h.vintage ? esc(h.vintage) + ' ・ ' : ''}${STATUS_LABELS[h.status] || esc(h.status)}
                 </div>
               </td>
               <td class="text-right px-2 tabular-nums">${num(h.quantity)}</td>

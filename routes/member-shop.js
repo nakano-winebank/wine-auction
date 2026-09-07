@@ -61,6 +61,8 @@ router.get('/config', handle(async (req, res) => {
   res.json({
     hasAccount: !!account,
     demoMode: demo.isEnabled(),
+    // 決済未接続のため、プラン購入も DEMO_MODE でしか動かない
+    planPurchaseEnabled: demo.isEnabled(),
     milePurchaseEnabled: milePurchaseEnabled(),
     mileToYen: miles.MILE_TO_YEN,
     // 充当レート込み。画面は交換先を選ぶ前にこれを表示する（景表法の有利誤認表示対策）
@@ -75,7 +77,23 @@ router.get('/plans', handle(async (req, res) => {
   res.json({ plans: await purchase.listPlans() });
 }));
 
+/**
+ * ⚠️ 決済が未接続のため、DEMO_MODE=1 のときだけ実行できる。
+ *
+ * このエンドポイントは呼ばれた時点で保有ワイン（＝簿価）とマイルを発生させる。
+ * 決済を挟まないまま公開すると、ログインできる利用者が任意回数呼んで資産とマイルを
+ * 無制限に作れてしまう（作られたマイルはそのまま各チャネルで充当できてしまう）。
+ *
+ * Pay.jp を接続する際は、このフラグ判定を「決済成立の確認」に置き換え、決済IDで冪等にすること。
+ * プラン一覧の取得（GET /plans）は情報を返すだけなので閉じていない。
+ */
 router.post('/purchase', handle(async (req, res) => {
+  if (!demo.isEnabled()) {
+    return res.status(403).json({
+      error: 'ただいまオンラインでのご購入を承っておりません。担当コンシェルジュまでお問い合わせください。',
+      reason: 'payment_not_connected',
+    });
+  }
   const { rankCode } = req.body;
   if (!rankCode) throw new Error('プラン（rankCode）を指定してください');
   res.status(201).json(await purchase.purchasePlan(req.user.id, rankCode));

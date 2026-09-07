@@ -76,6 +76,11 @@
         </p>
       </section>
 
+      <div id="closed" class="hidden bg-dark-800 border border-white/10 rounded-sm p-6 mb-8 text-sm text-white/60 leading-relaxed">
+        ただいまオンラインでのご購入を承っておりません。<br>
+        ご購入をご希望の際は、担当コンシェルジュまでお問い合わせください。
+      </div>
+
       <div id="plans" class="grid gap-5 md:grid-cols-3 mb-10"></div>
 
       <!-- 購入確認 -->
@@ -126,6 +131,7 @@ const auth = { Authorization: 'Bearer ' + token, 'Content-Type': 'application/js
 
 let plans = [];
 let selected = null;
+let config = { planPurchaseEnabled: false };
 
 function show(id) { document.getElementById(id).classList.remove('hidden'); }
 function hide(id) { document.getElementById(id).classList.add('hidden'); }
@@ -139,14 +145,21 @@ function showError(message) {
 async function load() {
   if (!token) { hide('loading'); show('needLogin'); return; }
 
-  const res = await fetch('/api/member/shop/plans', { headers: auth });
+  const [res, configRes] = await Promise.all([
+    fetch('/api/member/shop/plans', { headers: auth }),
+    fetch('/api/member/shop/config', { headers: auth }),
+  ]);
   if (!res.ok) {
     hide('loading'); show('content');
     showError((await res.json().catch(() => ({}))).error || 'プランの読み込みに失敗しました。');
     return;
   }
   plans = (await res.json()).plans;
+  if (configRes.ok) config = await configRes.json();
+
   renderPlans();
+  // 決済が未接続のうちは、プランは見られても購入には進めない
+  if (!config.planPurchaseEnabled) show('closed');
   hide('loading'); show('content');
 }
 
@@ -189,6 +202,10 @@ function renderPlans() {
 function selectPlan(rankCode) {
   selected = plans.find(p => p.rankCode === rankCode);
   if (!selected) return;
+  if (!config.planPurchaseEnabled) {
+    document.getElementById('closed').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    return;
+  }
 
   document.querySelectorAll('[data-plan]').forEach(b => {
     b.classList.toggle('plan-selected', b.dataset.plan === rankCode);
