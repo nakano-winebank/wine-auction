@@ -64,7 +64,44 @@
           <button id="analyzeBtn" class="px-5 py-2 bg-gold hover:bg-gold-hover text-dark-900 rounded text-sm font-semibold transition">
             中身を確認する
           </button>
+          <button id="schemaBtn" class="px-4 py-2 border border-white/15 hover:border-gold hover:text-gold text-white/70 rounded text-sm transition">
+            列構成だけを書き出す
+          </button>
         </div>
+      </section>
+
+      <!-- 列構成レポート -->
+      <section id="schemaSection" class="hidden bg-dark-800 border border-white/10 rounded-lg p-5 mb-4 fade-in">
+        <h2 class="font-serif text-lg text-gold mb-1">列構成レポート</h2>
+        <p class="text-xs text-white/40 mb-4 leading-relaxed">
+          このファイルの<b class="text-white/70">列の構成だけ</b>を書き出したものです。
+          個人を特定し得る値は含めていません（値をそのまま出しているのは、ランクや店舗のような
+          区分値だけです）。開発側に構成を伝えるときは、これをコピーしてお送りください。
+        </p>
+        <div class="overflow-x-auto mb-4">
+          <table class="grid w-full text-xs">
+            <thead class="text-white/40">
+              <tr>
+                <th class="text-left py-2 px-2 font-medium">列名</th>
+                <th class="text-left py-2 px-2 font-medium">型</th>
+                <th class="text-right py-2 px-2 font-medium">入力あり</th>
+                <th class="text-right py-2 px-2 font-medium">空欄</th>
+                <th class="text-right py-2 px-2 font-medium">値の種類</th>
+                <th class="text-left py-2 px-2 font-medium">形 / 値</th>
+              </tr>
+            </thead>
+            <tbody id="schemaBody" class="text-white/60"></tbody>
+          </table>
+        </div>
+        <div class="flex flex-wrap gap-2 items-center">
+          <button id="copySchema" class="px-4 py-2 bg-gold hover:bg-gold-hover text-dark-900 rounded text-sm font-semibold transition">
+            コピーする
+          </button>
+          <span id="copyMsg" class="text-xs text-emerald-400 hidden">コピーしました</span>
+        </div>
+        <textarea id="schemaText" readonly
+                  class="w-full mt-3 bg-dark-700 border border-white/10 rounded p-3 text-[11px] text-white/60 font-mono"
+                  style="height:180px"></textarea>
       </section>
 
       <!-- ステップ2: 対応付け -->
@@ -235,6 +272,56 @@ function renderMapping() {
       </label>`;
   }).join('');
 }
+
+// ── 列構成レポート
+document.getElementById('schemaBtn').addEventListener('click', async () => {
+  hide('error'); hide('schemaSection');
+  const file = currentFile();
+  if (!file) return showError('ファイルを選択してください。');
+
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('kind', currentKind());
+
+  const res = await fetch('/api/admin/member-import/schema-report', {
+    method: 'POST', headers: authOnly, body: fd });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) return showError(body.error || '列構成の書き出しに失敗しました。');
+
+  const TYPE = { email:'メール', phone:'電話番号', date:'日付', number:'数値', text:'テキスト', empty:'（空）' };
+  document.getElementById('schemaBody').innerHTML = body.report.columns.map(c => {
+    const detail = c.values
+      ? c.values.map(v => `${esc(v.value)} <span class="text-white/25">(${num(v.count)})</span>`).join(' ／ ')
+      : `<span class="text-white/35">${esc(c.shape || '—')}</span>`;
+    return `
+      <tr>
+        <td class="py-1.5 px-2 text-white/85">${esc(c.header || '(列' + (c.index + 1) + ')')}</td>
+        <td class="py-1.5 px-2">${esc(TYPE[c.type] || c.type)}</td>
+        <td class="py-1.5 px-2 text-right tabular-nums">${num(c.filled)}</td>
+        <td class="py-1.5 px-2 text-right tabular-nums ${c.empty > 0 ? 'text-amber-400/80' : 'text-white/25'}">${num(c.empty)}</td>
+        <td class="py-1.5 px-2 text-right tabular-nums text-white/40">${num(c.distinctCount)}</td>
+        <td class="py-1.5 px-2">${detail}</td>
+      </tr>`;
+  }).join('');
+
+  document.getElementById('schemaText').value = body.text;
+  show('schemaSection');
+  document.getElementById('schemaSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+
+document.getElementById('copySchema').addEventListener('click', async () => {
+  const ta = document.getElementById('schemaText');
+  try {
+    await navigator.clipboard.writeText(ta.value);
+  } catch {
+    // クリップボードAPIが使えない環境向けの保険
+    ta.select();
+    document.execCommand('copy');
+  }
+  const msg = document.getElementById('copyMsg');
+  msg.classList.remove('hidden');
+  setTimeout(() => msg.classList.add('hidden'), 2500);
+});
 
 // ── ② ドライラン
 document.getElementById('dryRunBtn').addEventListener('click', async () => {

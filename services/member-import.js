@@ -164,6 +164,158 @@ function analyze(buffer, { sampleSize = 5 } = {}) {
   return { sheets };
 }
 
+// ───────────────────────────────── 列構成レポート（個人情報を含まない）
+
+/**
+ * 実ファイルから「列の構成」だけを取り出す。
+ *
+ * 取り込みの設計に必要なのは列名と値の形であって、中身そのものではない。
+ * このレポートは実データを持ち出さずに構成を共有するためのもので、
+ * 個人情報が出ないよう次の制限をかけている。
+ *
+ *   - 値をそのまま載せるのは「低カーディナリティかつ各値が3件以上ある」列だけ
+ *     （ランクや店舗のような区分値。氏名やメールは値の種類が多いので自動的に外れる）
+ *   - メール・電話・氏名らしき列は、種類数に関わらず値を出さない
+ *   - 日付は書式（YYYY/M/D など）のみ、数値は桁数の範囲のみ
+ */
+
+/** 値の見た目から型を推定する。 */
+function inferType(values) {
+  const nonEmpty = values.filter(v => v !== '');
+  if (!nonEmpty.length) return 'empty';
+  const hit = (fn) => nonEmpty.filter(fn).length / nonEmpty.length;
+
+  if (hit(v => looksLikeEmail(String(v).toLowerCase())) > 0.7) return 'email';
+  if (hit(v => /^[\d\-+()\s]{9,}$/.test(String(v))) > 0.7) return 'phone';
+  if (hit(v => v instanceof Date || toIsoDate(v) !== null) > 0.7) {
+    // 数値だけの列を日付と誤認しないよう、桁数で除外する
+    if (hit(v => /^\d{1,6}$/.test(String(v).trim())) > 0.7) return 'number';
+    return 'date';
+  }
+  if (hit(v => /^[¥￥]?[\d,，\s]+[円]?$/.test(String(v).trim())) > 0.7) return 'number';
+  return 'text';
+}
+
+/** 値を出してよい列か。区分値だけを通す。 */
+function safeToShowValues(type, counts) {
+  if (type !== 'text' && type !== 'number') return false;
+  const distinct = counts.size;
+  if (distinct === 0 || distinct > 20) return false;
+  // どの値も3件以上あることを条件にして、個人を特定し得る値が出ないようにする
+  for (const n of counts.values()) if (n < 3) return false;
+  return true;
+}
+
+/** 日付の書式を、値を出さずに表す。 */
+function dateShape(sample) {
+  const raw = String(sample).trim();
+  if (/^\d+(\.\d+)?$/.test(raw)) return 'Excelのシリアル値';
+  return raw
+    .replace(/\d{4}/, 'YYYY')
+    .replace(/\d{1,2}/, 'M')
+    .replace(/\d{1,2}/, 'D');
+}
+
+/**
+ * @param {Buffer} buffer  アップロードされたファイル
+ * @param {string} kind    club / investment（対応付けの候補を併せて出すため）
+ */
+function schemaReport(buffer, { kind, sheetName } = {}) {
+  const wb = XLSX.read(buffer, { type: 'buffer', codepage: 65001, cellDates: true });
+  const name = sheetName || wb.SheetNames[0];
+  const ws = wb.Sheets[name];
+  if (!ws) throw new Error(`シートが見つかりません: ${name}`);
+
+  const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', blankrows: false });
+  const headers = (raw[0] || []).map(h => String(cleanCell(h)));
+  const body = raw.slice(1).filter(r => r.some(c => cleanCell(c) !== ''));
+
+  const columns = headers.map((header, i) => {
+    const values = body.map(r => cleanCell(r[i] ?? ''));
+    const nonEmpty = values.filter(v => v !== '');
+    const type = inferType(values);
+
+    const counts = new Map();
+    for (const v of nonEmpty) {
+      const key = String(v);
+      counts.set(key, (counts.get(key) || 0) + 1);
+    }
+
+    const col = {
+      index: i,
+      header,
+      type,
+      rows: values.length,
+      filled: nonEmpty.length,
+      empty: values.length - nonEmpty.length,
+      distinctCount: counts.size,
+    };
+
+    if (type === 'date' && nonEmpty.length) {
+      col.shape = dateShape(nonEmpty[0]);
+    } else if (type === 'number' && nonEmpty.length) {
+      const digits = nonEmpty.map(v => String(v).replace(/[^\d]/g, '').length).filter(n => n > 0);
+      col.shape = digits.length ? `${Math.min(...digits)}〜${Math.max(...digits)}桁` : null;
+    } else if (type === 'text' && nonEmpty.length) {
+      const lens = nonEmpty.map(v => String(v).length);
+      col.shape = `${Math.min(...lens)}〜${Math.max(...lens)}文字`;
+    }
+
+    if (safeToShowValues(type, counts)) {
+      col.values = [...counts.entries()]
+        .sort((a, b) => b[1] - a[1])
+        .map(([value, count]) => ({ value, count }));
+    }
+    return col;
+  });
+
+  return {
+    sheetName: name,
+    sheetNames: wb.SheetNames,
+    rowCount: body.length,
+    columnCount: headers.length,
+    columns,
+    suggestedMapping: kind ? suggestMapping(headers, kind) : null,
+    fields: kind ? FIELDS[kind] : null,
+  };
+}
+
+/** レポートを、そのまま貼り付けられるテキストにする。 */
+function schemaReportText(report, kind) {
+  const typeLabel = {
+    email: 'メール', phone: '電話番号', date: '日付', number: '数値', text: 'テキスト', empty: '（空）',
+  };
+  const lines = [];
+  lines.push(`シート: ${report.sheetName}（全 ${report.sheetNames.length} シート）`);
+  lines.push(`${report.rowCount} 行 × ${report.columnCount} 列`);
+  lines.push('');
+  lines.push('列名\t型\t入力あり\t空欄\t値の種類\t形/値');
+
+  for (const c of report.columns) {
+    const detail = c.values
+      ? c.values.map(v => `${v.value}(${v.count})`).join(' / ')
+      : (c.shape || '');
+    lines.push([
+      c.header || `(列${c.index + 1})`,
+      typeLabel[c.type] || c.type,
+      c.filled, c.empty, c.distinctCount, detail,
+    ].join('\t'));
+  }
+
+  if (report.fields) {
+    lines.push('');
+    lines.push('■ 取込項目への対応付け（自動判定）');
+    for (const f of report.fields) {
+      const idx = report.suggestedMapping[f.key];
+      const col = idx === null || idx === undefined ? '（見つからず）' : report.columns[idx].header;
+      lines.push(`${f.label}${f.required ? '（必須）' : ''}\t→\t${col}`);
+    }
+  }
+  lines.push('');
+  lines.push('※ このレポートには個人を特定し得る値を含めていません。');
+  return lines.join('\n');
+}
+
 /**
  * ヘッダー名から対応付けの「候補」を出す。あくまで候補で、
  * 管理者が画面で確認・修正してから使う。確信が持てない列は null のままにする。
@@ -538,6 +690,7 @@ module.exports = {
   FIELDS, KINDS, MAX_ROWS,
   CLUB_RANK_LABELS, LEGACY_RANK_LABELS,
   analyze, suggestMapping, extractRows, buildRecords, validateMapping,
+  schemaReport, schemaReportText, inferType,
   dryRun, execute, digestOf,
   toIsoDate, toAmount, toInt, toEmail,
 };

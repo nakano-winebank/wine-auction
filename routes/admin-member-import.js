@@ -60,6 +60,21 @@ router.post('/analyze', upload.single('file'), handle(async (req, res) => {
   });
 }));
 
+/**
+ * 列構成レポート。実データを持ち出さずに、列の構成だけを共有するために使う。
+ *
+ * 個人を特定し得る値は含めない（値をそのまま出すのは、ランクや店舗のような
+ * 区分値だけ。氏名やメールは値の種類が多いため自動的に除外される）。
+ */
+router.post('/schema-report', upload.single('file'), handle(async (req, res) => {
+  if (!req.file) throw new Error('ファイルを選択してください');
+  const report = importer.schemaReport(req.file.buffer, {
+    kind: req.body.kind || null,
+    sheetName: req.body.sheetName || null,
+  });
+  res.json({ report, text: importer.schemaReportText(report, req.body.kind) });
+}));
+
 /** ② ドライラン。DB は変更せず、取り込み結果のプレビューと digest を返す。 */
 router.post('/dry-run', upload.single('file'), handle(async (req, res) => {
   if (!req.file) throw new Error('ファイルを選択してください');

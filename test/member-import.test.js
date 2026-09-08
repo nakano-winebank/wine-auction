@@ -466,3 +466,112 @@ test('CLUB会員の内訳が集計できる', async () => {
     WHERE status = 'active' GROUP BY club_rank`).all();
   assert.ok(byRank.length >= 2, 'ランク別の内訳が出る');
 });
+
+// ───────────────────────────────── 列構成レポート（個人情報を出さないこと）
+
+/** 実データに近い、種類の多い値を持つファイルを作る。 */
+function realisticClubFile(n = 120) {
+  const RANKS = ['Standard', 'Ambassador', 'Gold', 'Black'];
+  const STORES = ['銀座店', '青山店', '大阪店'];
+  const rows = [CLUB_HEADERS];
+  for (let i = 1; i <= n; i += 1) {
+    rows.push(clubRow(
+      'S' + String(i).padStart(4, '0'),
+      RANKS[i % 4],
+      `匿名 個人${i}`,
+      `とくめい こじん${i}`,
+      `090-1111-${String(i).padStart(4, '0')}`,
+      i % 10 === 0 ? '' : `person${i}@example.test`,
+      `2020/${(i % 12) + 1}/${(i % 27) + 1}`,
+      STORES[i % 3],
+      i % 25 === 0 ? '2025/6/30' : ''
+    ));
+  }
+  return buildXlsx(rows, '会員リスト');
+}
+
+test('列構成レポートに氏名・メール・電話の値が一切含まれない', () => {
+  const report = importer.schemaReport(realisticClubFile(), { kind: 'club' });
+  const text = importer.schemaReportText(report, 'club');
+  const serialized = JSON.stringify(report) + text;
+
+  assert.ok(!/個人\d/.test(serialized), '氏名が含まれない');
+  assert.ok(!/こじん\d/.test(serialized), 'なまえが含まれない');
+  assert.ok(!/@example\.test/.test(serialized), 'メールアドレスが含まれない');
+  assert.ok(!/090-1111/.test(serialized), '電話番号が含まれない');
+
+  // 列名そのものは構成情報なので含まれてよい
+  assert.ok(serialized.includes('氏名') && serialized.includes('メールアドレス'));
+});
+
+test('区分値（ランク・店舗）は件数つきで出る', () => {
+  const report = importer.schemaReport(realisticClubFile(), { kind: 'club' });
+  const rank = report.columns.find(c => c.header === '会員ランク');
+  assert.ok(rank.values, '低カーディナリティの列は値を出す');
+  assert.deepStrictEqual(rank.values.map(v => v.value).sort(),
+    ['Ambassador', 'Black', 'Gold', 'Standard']);
+  assert.ok(rank.values.every(v => v.count >= 3));
+
+  const store = report.columns.find(c => c.header === '入会店舗');
+  assert.ok(store.values && store.values.length === 3);
+});
+
+test('種類が多い列や個人情報らしき列には値を出さない', () => {
+  const report = importer.schemaReport(realisticClubFile(), { kind: 'club' });
+  for (const header of ['氏名', 'なまえ', 'メールアドレス', '電話番号', '会員番号']) {
+    const col = report.columns.find(c => c.header === header);
+    assert.strictEqual(col.values, undefined, `${header} の値は出さない`);
+  }
+});
+
+test('件数の少ない区分値も出さない（特定につながるため）', () => {
+  // 1人だけ特別なランクを持たせる
+  const rows = [CLUB_HEADERS];
+  for (let i = 1; i <= 30; i += 1) {
+    rows.push(clubRow('T' + i, i === 1 ? 'Founder' : 'Standard', `匿名${i}`, '', '', '', '', '銀座店', ''));
+  }
+  const report = importer.schemaReport(buildXlsx(rows), { kind: 'club' });
+  const rank = report.columns.find(c => c.header === '会員ランク');
+  assert.strictEqual(rank.values, undefined,
+    '1件しかない値があるときは、その列ごと値を出さない');
+});
+
+test('型・入力状況・形が読み取れる', () => {
+  const report = importer.schemaReport(realisticClubFile(120), { kind: 'club' });
+  assert.strictEqual(report.rowCount, 120);
+  assert.strictEqual(report.columnCount, CLUB_HEADERS.length);
+
+  const byHeader = Object.fromEntries(report.columns.map(c => [c.header, c]));
+  assert.strictEqual(byHeader['メールアドレス'].type, 'email');
+  assert.strictEqual(byHeader['電話番号'].type, 'phone');
+  assert.strictEqual(byHeader['入会日'].type, 'date');
+  assert.strictEqual(byHeader['氏名'].type, 'text');
+
+  // 10件に1件メールが空
+  assert.strictEqual(byHeader['メールアドレス'].empty, 12);
+  assert.ok(byHeader['入会日'].shape.includes('YYYY'), '日付は書式だけを示す');
+  assert.ok(byHeader['氏名'].shape.includes('文字'), 'テキストは長さの範囲だけ');
+});
+
+test('数値列は桁数の範囲だけを示し、金額そのものは出さない', () => {
+  const rows = [INVEST_HEADERS];
+  for (let i = 1; i <= 30; i += 1) {
+    rows.push(investRow('N' + i, `匿名${i}`, `n${i}@example.test`, '', 'ゴールド', 10, 4000000 + i, ''));
+  }
+  const report = importer.schemaReport(buildXlsx(rows), { kind: 'investment' });
+  const book = report.columns.find(c => c.header === '簿価');
+  assert.strictEqual(book.type, 'number');
+  assert.ok(/桁/.test(book.shape), '桁数の範囲で表す');
+  assert.strictEqual(book.values, undefined, '金額そのものは出さない');
+  assert.ok(!JSON.stringify(report).includes('4000001'), '個々の金額が漏れない');
+});
+
+test('レポートに取込項目への対応付けが添えられる', () => {
+  const report = importer.schemaReport(realisticClubFile(), { kind: 'club' });
+  assert.strictEqual(report.suggestedMapping.club_member_no, 0);
+  assert.strictEqual(report.suggestedMapping.name, 2);
+
+  const text = importer.schemaReportText(report, 'club');
+  assert.ok(text.includes('取込項目への対応付け'));
+  assert.ok(text.includes('個人を特定し得る値を含めていません'));
+});
