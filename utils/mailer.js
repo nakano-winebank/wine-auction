@@ -2,7 +2,19 @@ const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const FROM = process.env.EMAIL_FROM || 'WineBank オークション <noreply@wine-bank.co.jp>';
 
-async function sendMail({ to, subject, html }) {
+/**
+ * 会員向けメールの送信元。オークションの通知とは文脈が違うので分けられるようにしてある。
+ * 未設定なら EMAIL_FROM に落ちるため、既存の運用を壊さない。
+ */
+const MEMBER_FROM = process.env.MEMBER_EMAIL_FROM || FROM;
+
+/**
+ * 会員向けメールの返信先。失効予告や評価額レポートは問い合わせが来る前提のメールなので、
+ * 返信が届く窓口を入れておく。未設定なら reply_to を付けない。
+ */
+const MEMBER_REPLY_TO = process.env.MEMBER_EMAIL_REPLY_TO || null;
+
+async function sendMail({ to, subject, html, from, replyTo }) {
   if (!RESEND_API_KEY) {
     // Dev fallback: log to console
     console.log('\n📧 ===== [DEV MAIL] =====');
@@ -12,18 +24,37 @@ async function sendMail({ to, subject, html }) {
     console.log('========================\n');
     return;
   }
+  const payload = { from: from || FROM, to, subject, html };
+  if (replyTo) payload.reply_to = replyTo;
+
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${RESEND_API_KEY}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ from: FROM, to, subject, html }),
+    body: JSON.stringify(payload),
   });
   if (!res.ok) {
     const err = await res.text();
     throw new Error(`Resend API error ${res.status}: ${err}`);
   }
+}
+
+/** 会員向けメールはこちらを通す。送信元と返信先が自動で付く。 */
+function sendMemberMail({ to, subject, html }) {
+  return sendMail({ to, subject, html, from: MEMBER_FROM, replyTo: MEMBER_REPLY_TO });
+}
+
+/** 送信設定の現在値。管理画面の事前チェックが使う。 */
+function mailConfig() {
+  return {
+    hasApiKey: !!RESEND_API_KEY,
+    from: FROM,
+    memberFrom: MEMBER_FROM,
+    memberReplyTo: MEMBER_REPLY_TO,
+    baseUrl: BASE_URL,
+  };
 }
 
 // メール認証
@@ -242,7 +273,7 @@ async function sendMileExpiryWarning(m) {
         <td style="padding:8px;border-bottom:1px solid #eee;text-align:right;font-weight:bold">${num(l.amount)} マイル</td>
       </tr>`).join('');
 
-  await sendMail({
+  await sendMemberMail({
     to: m.email,
     subject: `【WineBank】${num(m.amount)}マイルの有効期限が近づいています`,
     html: memberLayout('まもなく失効するワインマイルがあります', m.name, `
@@ -274,7 +305,7 @@ async function sendMileExpiryWarning(m) {
  * @param {object} m { email, name, amount, expiresAt, balance, rankName, mileRate, bookValue }
  */
 async function sendAnnualRewardNotice(m) {
-  await sendMail({
+  await sendMemberMail({
     to: m.email,
     subject: `【WineBank】年次還元マイル ${num(m.amount)} を進呈しました`,
     html: memberLayout('年次還元マイルを進呈しました', m.name, `
@@ -312,7 +343,7 @@ async function sendQuarterlyReport(m) {
           最上位ランクをご維持いただいています。
         </div>`;
 
-  await sendMail({
+  await sendMemberMail({
     to: m.email,
     subject: `【WineBank】${m.quarterLabel} 保有ワイン評価額レポート`,
     html: memberLayout(`${m.quarterLabel} 保有ワイン評価額レポート`, m.name, `
@@ -338,6 +369,8 @@ async function sendQuarterlyReport(m) {
 }
 
 module.exports = {
+  mailConfig,
+  sendMemberMail,
   sendMileExpiryWarning,
   sendAnnualRewardNotice,
   sendQuarterlyReport,

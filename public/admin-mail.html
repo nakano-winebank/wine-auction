@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>メール送信設定 — WineBank 管理</title>
+  <link rel="stylesheet" href="/css/tailwind.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@400;500;600&display=swap">
+  <style>
+    body { font-family:'Inter','Noto Sans JP','Hiragino Sans',sans-serif; }
+    .hidden { display:none !important; }
+    .mincho { font-family:'Noto Serif JP','Hiragino Mincho ProN','Yu Mincho',serif; }
+    .tracked-sm { letter-spacing:.08em; }
+    .card { background:#141414; border:1px solid rgba(255,255,255,.06); border-radius:4px; }
+    .btn { background:#A78450; color:#0A0A0A; font-weight:600; font-size:13px;
+           padding:7px 14px; border-radius:3px; }
+    .btn:hover { background:#8B6914; }
+    .btn[disabled] { opacity:.4; cursor:not-allowed; }
+    .btn-ghost { background:transparent; border:1px solid rgba(255,255,255,.15);
+                 color:rgba(255,255,255,.7); font-size:12px; padding:6px 12px; border-radius:3px; }
+    .btn-ghost:hover { border-color:#A78450; color:#A78450; }
+    /* 判定は色だけでなく記号でも示す */
+    .chk { display:flex; gap:12px; padding:13px 0; border-bottom:1px solid rgba(255,255,255,.05); }
+    .chk:last-child { border-bottom:0; }
+    .mark { flex:0 0 auto; width:18px; text-align:center; font-size:13px; line-height:1.6; }
+    .ok .mark { color:#34D399; } .ng .mark { color:#F87171; } .warn .mark { color:#FBBF24; }
+    code { font-family:ui-monospace,Menlo,monospace; font-size:11.5px; color:#A78450;
+           background:rgba(167,132,80,.08); padding:1px 5px; border-radius:2px; }
+    .dns { width:100%; border-collapse:collapse; font-size:12px; margin-top:10px; }
+    .dns th { text-align:left; font-weight:500; font-size:10.5px; color:rgba(255,255,255,.38);
+              padding:0 10px 7px; border-bottom:1px solid rgba(255,255,255,.1); }
+    .dns td { padding:8px 10px; border-bottom:1px solid rgba(255,255,255,.05);
+              color:rgba(255,255,255,.65); vertical-align:top; }
+  </style>
+</head>
+<body class="bg-dark-900 text-white/90">
+
+  <header class="bg-dark-800 border-b border-white/5 sticky top-0 z-40">
+    <div class="max-w-5xl mx-auto px-4 flex items-center h-14 gap-4">
+      <a href="/admin" class="text-white/40 hover:text-gold text-sm">← 管理画面</a>
+      <span class="mincho text-gold tracked-sm">メール送信設定</span>
+      <div class="ml-auto flex gap-2">
+        <a href="/admin/members" class="btn-ghost">会員管理</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-4 py-6">
+    <div id="needLogin" class="hidden text-center py-20">
+      <p class="text-white/60">管理者としてログインしてください。</p>
+      <a href="/login" class="inline-block mt-4 btn">ログイン</a>
+    </div>
+
+    <div id="app" class="hidden">
+      <p class="text-xs text-white/40 mb-5 leading-relaxed">
+        会員宛メール（失効30日前の予告・年次還元の付与通知・四半期の評価額レポート）を
+        本番で流す前の確認画面です。<b class="text-white/70">失効予告は消費者契約法10条の下で失効条項の有効性を支える中核</b>のため、
+        ここが揃っていない状態で運用を始めないでください。
+      </p>
+
+      <div id="verdict" class="hidden mb-4 p-3 rounded text-sm"></div>
+
+      <section class="card p-5 mb-4">
+        <h2 class="text-sm font-semibold mb-1">送信の事前チェック</h2>
+        <p class="text-[11px] text-white/35 mb-3">サーバの現在の設定を読んでいます。</p>
+        <div id="checks"></div>
+      </section>
+
+      <section class="card p-5 mb-4">
+        <h2 class="text-sm font-semibold mb-3">テスト送信</h2>
+        <p class="text-[11px] text-white/40 mb-4 leading-relaxed">
+          実際の文面をご自身の受信箱で確認できます。宛先は<b class="text-white/70">操作した管理者本人</b>に固定されており、
+          他の宛先には送れません。<span id="testTo" class="text-gold"></span>
+        </p>
+        <div class="flex flex-wrap gap-2">
+          <button data-send="mile_expiry" class="btn-ghost">失効30日前の予告</button>
+          <button data-send="annual_reward" class="btn-ghost">年次還元の付与通知</button>
+          <button data-send="quarterly_report" class="btn-ghost">四半期の評価額レポート</button>
+        </div>
+        <div id="sendMsg" class="hidden mt-3 text-sm"></div>
+      </section>
+
+      <section class="card p-5 mb-4">
+        <h2 class="text-sm font-semibold mb-3">いま送る予定の件数（送信はしません）</h2>
+        <div id="preview" class="text-sm text-white/50">読み込み中…</div>
+      </section>
+
+      <section class="card p-5">
+        <h2 class="text-sm font-semibold mb-1">送信ドメインの設定手順</h2>
+        <p class="text-[11px] text-white/35 mb-4">
+          Resend の管理画面でドメインを追加すると、下記の種類のレコードが表示されます。
+          値は発行されたものをそのまま DNS に登録してください（下表の値は形式の例です）。
+        </p>
+        <ol class="text-[12.5px] text-white/60 leading-relaxed mb-4" style="padding-left:1.2em">
+          <li>Resend にログインし、Domains → Add Domain で送信に使うドメインを追加</li>
+          <li>表示された DNS レコードを、ドメインの DNS に登録</li>
+          <li>Resend 側の状態が <code>verified</code> になるまで待つ（通常数分〜数時間）</li>
+          <li>本番環境に <code>MEMBER_EMAIL_FROM</code> と <code>MEMBER_EMAIL_REPLY_TO</code> を設定</li>
+          <li>この画面でチェックがすべて緑になったら <code>MEMBER_MAIL_BATCH=1</code> を設定</li>
+        </ol>
+        <table class="dns">
+          <thead><tr><th>種類</th><th>用途</th><th>備考</th></tr></thead>
+          <tbody>
+            <tr><td>MX / TXT</td><td>SPF</td><td>この送信元からの送信を許可する宣言</td></tr>
+            <tr><td>TXT</td><td>DKIM</td><td>本文の改ざん検知に使う署名鍵</td></tr>
+            <tr><td>TXT</td><td>DMARC</td><td>任意だが推奨。なりすまし対策と到達率の改善</td></tr>
+          </tbody>
+        </table>
+        <p class="text-[11px] text-white/30 mt-4 leading-relaxed">
+          ※ 既にオークションの通知メールを同じドメインで送っている場合、認証は済んでいる可能性があります。
+          上の事前チェックで確認できます。
+        </p>
+      </section>
+    </div>
+  </main>
+
+<script>
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => (
+  { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+const num = (n) => Math.round(Number(n) || 0).toLocaleString();
+const token = localStorage.getItem('token');
+const auth = { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' };
+const el = (id) => document.getElementById(id);
+
+async function loadStatus() {
+  const res = await fetch('/api/admin/mail/status', { headers: auth });
+  if (!res.ok) { el('needLogin').classList.remove('hidden'); return false; }
+  const d = await res.json();
+  el('app').classList.remove('hidden');
+
+  el('checks').innerHTML = d.checks.map(c => {
+    const state = c.ok ? 'ok' : (c.severity === 'warn' ? 'warn' : 'ng');
+    const mark = c.ok ? '✓' : (c.severity === 'warn' ? '!' : '×');
+    return `
+      <div class="chk ${state}">
+        <span class="mark">${mark}</span>
+        <span>
+          <span class="text-[13px] text-white/85">${esc(c.label)}</span>
+          <span class="block text-[11.5px] text-white/40 mt-0.5">${esc(c.detail)}</span>
+        </span>
+      </div>`;
+  }).join('');
+
+  const v = el('verdict');
+  v.classList.remove('hidden');
+  if (d.ready) {
+    v.className = 'mb-4 p-3 rounded text-sm bg-emerald-500/10 border border-emerald-500/30 text-emerald-300';
+    v.textContent = '送信の準備ができています。';
+  } else {
+    v.className = 'mb-4 p-3 rounded text-sm bg-amber-500/10 border border-amber-500/30 text-amber-200';
+    v.textContent = '未設定の項目があります。この状態では会員宛メールは届きません。';
+  }
+  return true;
+}
+
+async function loadPreview() {
+  const res = await fetch('/api/admin/mail/preview', { headers: auth });
+  if (!res.ok) { el('preview').textContent = '取得に失敗しました。'; return; }
+  const { results } = await res.json();
+  const label = { mile_expiry:'失効30日前の予告', annual_reward:'年次還元の付与通知', quarterly_report:'四半期の評価額レポート' };
+  el('preview').innerHTML = results.map(r => `
+    <div class="flex justify-between py-1.5 border-b border-white/5 last:border-0">
+      <span class="text-white/70">${esc(label[r.type] || r.type)}</span>
+      <span class="tabular-nums ${r.count > 0 ? 'text-gold' : 'text-white/30'}">${num(r.count)} 件</span>
+    </div>`).join('') +
+    '<p class="text-[11px] text-white/30 mt-3">送信済みのものは除いた、いま送る対象の件数です。</p>';
+}
+
+document.querySelectorAll('[data-send]').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const msg = el('sendMsg');
+    btn.disabled = true;
+    const res = await fetch('/api/admin/mail/test-send', {
+      method: 'POST', headers: auth, body: JSON.stringify({ type: btn.dataset.send }),
+    });
+    const body = await res.json().catch(() => ({}));
+    btn.disabled = false;
+    msg.classList.remove('hidden');
+    if (!res.ok) {
+      msg.className = 'mt-3 text-sm text-red-400';
+      msg.textContent = body.error || '送信に失敗しました。';
+      return;
+    }
+    msg.className = 'mt-3 text-sm text-emerald-400';
+    msg.textContent = body.note
+      ? `${body.note}（宛先 ${body.to}）`
+      : `${body.to} に送信しました。受信箱をご確認ください。`;
+  });
+});
+
+(async () => {
+  if (!token) { el('needLogin').classList.remove('hidden'); return; }
+  if (await loadStatus()) await loadPreview();
+})();
+</script>
+</body>
+</html>

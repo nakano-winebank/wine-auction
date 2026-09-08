@@ -12,13 +12,6 @@ const miles = require('../services/miles');
 const purchase = require('../services/purchase');
 const demo = require('../services/demo');
 
-// ⚠️ 有償のマイル購入は、資金決済法上の前払式支払手段に該当し得るため既定で無効。
-//    法務・財務局の確認が済むまで、本番環境でこのフラグを立てないこと。
-//    詳細は services/miles.js の PURCHASED_KIND 付近の注意書きを参照。
-function milePurchaseEnabled() {
-  return process.env.MILE_PURCHASE_ENABLED === '1';
-}
-
 const handle = (fn) => async (req, res) => {
   try {
     await fn(req, res);
@@ -63,11 +56,9 @@ router.get('/config', handle(async (req, res) => {
     demoMode: demo.isEnabled(),
     // 決済未接続のため、プラン購入も DEMO_MODE でしか動かない
     planPurchaseEnabled: demo.isEnabled(),
-    milePurchaseEnabled: milePurchaseEnabled(),
     mileToYen: miles.MILE_TO_YEN,
     // 充当レート込み。画面は交換先を選ぶ前にこれを表示する（景表法の有利誤認表示対策）
     channels: await miles.listChannels(),
-    milePacks: milePurchaseEnabled() ? purchase.listMilePacks() : [],
   });
 }));
 
@@ -109,19 +100,6 @@ router.post('/miles/redeem', handle(async (req, res) => {
   const { amount, channel, memo } = req.body;
   const result = await miles.redeem(account.id, amount, { channel, memo });
   res.json(result);
-}));
-
-// ───────────────────────────────── マイルを買う（有償・要フラグ）
-
-router.post('/miles/purchase', handle(async (req, res) => {
-  if (!milePurchaseEnabled()) {
-    return res.status(403).json({
-      error: 'マイルの追加購入は現在ご利用いただけません（法務確認中）',
-    });
-  }
-  const { packCode } = req.body;
-  if (!packCode) throw new Error('パック（packCode）を指定してください');
-  res.status(201).json(await purchase.purchaseMiles(req.user.id, packCode));
 }));
 
 module.exports = router;

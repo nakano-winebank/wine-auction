@@ -19,30 +19,28 @@ const MILE_VALIDITY_DAYS = {
   bonus:     180, // 行動連動（オークション参加・来店など）＝期間限定マイル 6ヶ月
   campaign:   90, // 販促。3ヶ月
   adjust:    365, // 手動調整
-  purchased: 180, // 有償購入マイル。下の注意書きを必ず読むこと
 };
 
 /**
- * ⚠️ 有償購入マイル（kind='purchased'）についての注意 — 法務確認前に本番公開しないこと
+ * 有償購入マイル（kind='purchased'）— 2026年9月、経営判断により「販売しない」と決定
  *
- * 無償で「付与」するマイル（reward / bonus / campaign / adjust）は、資金決済法3条1項の
- * 「対価を得て発行される」という要件を満たさないため、前払式支払手段には当たらない。
- * 一方、現金で「購入」できるマイルは対価性があり、自家型前払式支払手段に該当し得る。
- * 該当すると、財務局への届出と、基準日（3/31・9/30）の未使用残高が1,000万円を超えた
- * ときの発行保証金の供託義務が発生する。
+ * 無償で「付与」するマイルは、資金決済法3条1項の「対価を得て発行される」という要件を
+ * 満たさないため、前払式支払手段に当たらない。届出も供託も不要。
+ * 一方、現金で「購入」できるマイルは対価性があり、自家型前払式支払手段に該当する
+ * （2026年9月の意見書は無償付与の3類型のみが対象で、有償販売は照会されていない）。
  *
- * ただし同法4条2号により「発行の日から6ヶ月以内に限り使用できるもの」は適用除外となる。
- * そのため既定の有効期間を 180日 に置いている。ここを 180 より延ばす、あるいは無期限
- * （null）にすると適用除外から外れるので、変更する場合は必ず法務確認を通すこと。
+ * 有償で発行しないと決めたため、販売の導線は削除してある。この定数と paid_amount 列を
+ * 残しているのは、**有償発行が存在しないことを機械的に保証するため**:
+ *   - grant() は kind='purchased' を拒否する（下記）。コードから有償ロットは作れない
+ *   - getPurchasedOutstanding() は常に 0 を返すはずで、管理画面がそれを表示する。
+ *     0 以外になったら、上記の前提が崩れているという警告になる
  *
- * いずれにせよ上記は法令の構造整理であって法務判断ではない。財務局・顧問弁護士の確認が済むまで
- * 有償購入は MILE_PURCHASE_ENABLED フラグで閉じたままにしておくこと（routes/member-shop.js）。
- *
- * 集計は getPurchasedOutstanding() が有償分だけを対象にする。
+ * 方針を変えて有償販売を行う場合は、財務局・顧問弁護士への照会が先に必要。
  */
 const PURCHASED_KIND = 'purchased';
 
-const GRANT_KINDS = Object.keys(MILE_VALIDITY_DAYS);
+/** 付与できる種別。有償（purchased）は販売しないと決めたので含めない。 */
+const GRANT_KINDS = Object.keys(MILE_VALIDITY_DAYS).filter(k => k !== PURCHASED_KIND);
 
 /**
  * マイルを使えるチャネルの初期値。8/31 中谷氏MTGの「マイルはコミュニティ通貨」を
@@ -141,6 +139,10 @@ async function grant(memberId, amount, opts = {}) {
     throw new Error('付与マイルは1以上の整数で指定してください');
   }
   const kind = opts.kind || 'reward';
+  if (kind === PURCHASED_KIND) {
+    // 有償発行は前払式支払手段に該当するため、販売しない方針に合わせてコードから塞いでいる
+    throw new Error('有償マイルは発行できません（マイルの販売は行わない方針です）');
+  }
   if (!GRANT_KINDS.includes(kind)) {
     throw new Error(`不明なマイル種別です: ${kind}`);
   }
@@ -155,10 +157,6 @@ async function grant(memberId, amount, opts = {}) {
   if (paidAmount !== null && (!Number.isFinite(paidAmount) || paidAmount < 0)) {
     throw new Error('支払対価は0以上で指定してください');
   }
-  if (kind === PURCHASED_KIND && paidAmount === null) {
-    throw new Error('有償購入マイルには支払対価（paidAmount）が必須です');
-  }
-
   const lotId = await insertReturningId(`
     INSERT INTO mile_lots
       (member_id, kind, granted_amount, remaining_amount, paid_amount, granted_at, expires_at, source_type, source_id, memo, created_at)
@@ -295,7 +293,11 @@ async function listTransactions(memberId, limit = 100, offset = 0) {
 }
 
 /**
- * 有償で発行したマイルの未使用残高。資金決済法の基準日残高（3/31・9/30）の算定に使う。
+ * 有償で発行したマイルの未使用残高。
+ *
+ * マイルは販売しない方針なので、この値は**常に 0 になるはず**。0 以外を返したときは
+ * 「無償発行のみ」という前提が崩れており、資金決済法上の届出・供託の検討が要る、
+ * という警告として機能する（管理画面が常時表示している）。
  * 無償付与分は前払式支払手段に当たらないため、この集計から必ず除外する。
  *
  * 過去の基準日を渡しても正しい値が出るよう、`remaining_amount`（現在値）ではなく

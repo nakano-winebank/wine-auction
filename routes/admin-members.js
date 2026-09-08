@@ -78,18 +78,15 @@ router.patch('/channels/:code', handle(async (req, res) => {
 }));
 
 /**
- * 有償マイルの未使用残高と、供託義務の判定材料。
- * 資金決済法の基準日（3/31・9/30）残高が1,000万円を超えると供託義務が生じるため、
- * 有償マイルを有効にする前提として、常に見えるようにしておく。
+ * 有償発行の有無の監視。
+ *
+ * マイルは販売しない方針なので、有償発行の残高は常に 0 のはず。0 以外になったら
+ * 「無償発行のみ」という前提が崩れており、資金決済法上の届出・供託の検討が要る。
+ * その状態を見逃さないよう、管理画面に常時表示している。
  * ※ 返す数字は法令の構造をそのまま計算したもので、法務判断ではない。
  */
 router.get('/miles/deposit-status', handle(async (req, res) => {
-  const status = await miles.getDepositStatus(req.query.at || undefined);
-  res.json({
-    ...status,
-    // 画面に「そもそも有償マイルが有効か」も併せて出す
-    milePurchaseEnabled: process.env.MILE_PURCHASE_ENABLED === '1',
-  });
+  res.json(await miles.getDepositStatus(req.query.at || undefined));
 }));
 
 // 有効期限切れの一括失効。id を省略すると全会員が対象。

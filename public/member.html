@@ -129,7 +129,6 @@
         <div class="flex flex-wrap gap-2 mt-4">
           <a href="/member/join" class="px-4 py-2 bg-gold hover:bg-gold-hover text-dark-900 rounded text-sm font-semibold transition">ワインを購入する</a>
           <button id="openRedeem" class="px-4 py-2 border border-gold/40 hover:border-gold text-gold rounded text-sm font-semibold transition">マイルをつかう</button>
-          <button id="openMilePurchase" class="hidden px-4 py-2 border border-white/15 hover:border-white/35 text-white/70 rounded text-sm transition">マイルを購入する</button>
         </div>
 
         <!-- マイル利用 -->
@@ -156,20 +155,6 @@
           <div id="redeemMessage" class="hidden mt-3 text-sm"></div>
         </div>
 
-        <!-- マイルのみ追加購入（有償）。MILE_PURCHASE_ENABLED=1 のときだけ表示 -->
-        <div id="milePurchasePanel" class="hidden mt-4 bg-dark-800 border border-white/15 rounded-lg p-5">
-          <div class="flex items-center gap-2 mb-1">
-            <h3 class="font-serif text-lg text-white/85">マイルを購入する</h3>
-            <span class="text-xs font-semibold text-amber-300 border border-amber-400/40 rounded px-2 py-0.5">デモ・検証用</span>
-          </div>
-          <p class="text-xs text-amber-300/80 leading-relaxed mb-4">
-            有償でのマイル購入は、資金決済法上の前払式支払手段に該当する可能性があるため、
-            法務・財務局の確認が完了するまで本番公開できません。この画面は検証用です（決済は未接続）。
-          </p>
-          <div id="milePackList" class="grid gap-2 sm:grid-cols-3 mb-4"></div>
-          <button id="closeMilePurchase" class="px-3 py-2 text-white/40 hover:text-white/70 text-sm transition">閉じる</button>
-          <div id="milePurchaseMessage" class="hidden mt-3 text-sm"></div>
-        </div>
       </section>
 
       <!-- タブ -->
@@ -213,7 +198,7 @@ function show(id) { document.getElementById(id).classList.remove('hidden'); }
 function hide(id) { document.getElementById(id).classList.add('hidden'); }
 
 let token = null;
-let config = { channels: [], milePacks: [], demoMode: false, milePurchaseEnabled: false, mileToYen: 1 };
+let config = { channels: [], demoMode: false, planPurchaseEnabled: false, mileToYen: 1 };
 let selectedChannel = null;
 
 function authHeaders() {
@@ -286,21 +271,6 @@ function renderShop() {
     });
   });
 
-  if (config.milePurchaseEnabled) {
-    document.getElementById('openMilePurchase').classList.remove('hidden');
-    document.getElementById('milePackList').innerHTML = config.milePacks.map(p => `
-      <button data-pack="${esc(p.code)}"
-              class="bg-dark-700 border border-white/10 hover:border-gold/50 rounded p-3 text-center transition">
-        <div class="text-lg font-semibold text-gold">${num(p.miles)}</div>
-        <div class="text-xs text-white/40">マイル</div>
-        <div class="text-sm mt-1">${yen(p.yen)}</div>
-        <div class="text-xs text-white/30 mt-1">有効期限 ${num(p.validDays)}日</div>
-      </button>`).join('');
-    document.querySelectorAll('[data-pack]').forEach(btn => {
-      btn.addEventListener('click', () => purchaseMiles(btn.dataset.pack));
-    });
-  }
-
   if (config.demoMode) document.getElementById('demoBar').classList.remove('hidden');
 }
 
@@ -315,10 +285,6 @@ document.getElementById('openRedeem').addEventListener('click', () => {
   document.getElementById('redeemPanel').classList.toggle('hidden');
 });
 document.getElementById('closeRedeem').addEventListener('click', () => hide('redeemPanel'));
-document.getElementById('openMilePurchase').addEventListener('click', () => {
-  document.getElementById('milePurchasePanel').classList.toggle('hidden');
-});
-document.getElementById('closeMilePurchase').addEventListener('click', () => hide('milePurchasePanel'));
 
 /** 入力中のマイルが何円ぶんかを、選んだ交換先のレートで示す。 */
 function updateRedeemYen() {
@@ -354,19 +320,6 @@ document.getElementById('redeemBtn').addEventListener('click', async () => {
   document.getElementById('redeemYen').textContent = '';
   await reload();
 });
-
-async function purchaseMiles(packCode) {
-  const res = await fetch('/api/member/shop/miles/purchase', {
-    method: 'POST', headers: authHeaders(),
-    body: JSON.stringify({ packCode }),
-  });
-  const body = await res.json().catch(() => ({}));
-  if (!res.ok) return panelMessage('milePurchaseMessage', body.error || '購入に失敗しました。', false);
-
-  panelMessage('milePurchaseMessage',
-    `${num(body.grant.amount)} マイルを購入しました（有効期限 ${date(body.grant.expiresAt)}）。残高 ${num(body.balance)} マイル。`, true);
-  await reload();
-}
 
 // デモ: 時間送り
 document.querySelectorAll('[data-advance]').forEach(btn => {

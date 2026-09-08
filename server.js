@@ -93,6 +93,7 @@ if (require('./services/demo').isEnabled()) {
 }
 
 // 管理画面
+app.use('/api/admin/mail', require('./routes/admin-mail'));
 app.use('/api/admin/member-import', require('./routes/admin-member-import'));
 app.use('/api/admin/members', require('./routes/admin-members'));
 app.use('/api/admin', require('./routes/admin'));
@@ -261,6 +262,7 @@ app.get('/admin/members', (req, res) => res.sendFile(path.join(__dirname, 'publi
 app.get('/admin/import', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-import.html')));
 app.get('/admin/member-import', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-member-import.html')));
 app.get('/admin/club-members', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-club-members.html')));
+app.get('/admin/mail', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-mail.html')));
 app.get('/admin/photos', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-photos.html')));
 
 // Socket.io

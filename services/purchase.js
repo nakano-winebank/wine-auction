@@ -176,67 +176,8 @@ async function purchasePlan(userId, rankCode) {
   };
 }
 
-// ───────────────────────────────── マイルのみの追加購入（有償）
-
-/**
- * ⚠️ 法務確認前に本番公開しないこと。詳細は services/miles.js の PURCHASED_KIND 付近の注意書き。
- *
- * 有償パックには「おまけマイル」を付けていない。おまけを付けると1回の購入の中に
- * 有償分（前払式支払手段に当たり得る）と無償分（当たらない）が混ざり、未使用残高を
- * 有償分だけで集計するのが難しくなるため。販促を付けたい場合は、購入とは別の
- * kind='campaign' のロットとして独立に付与すること。
- */
-const MILE_PACKS = [
-  { code: 'pack_10k',  yen: 10000 },
-  { code: 'pack_50k',  yen: 50000 },
-  { code: 'pack_100k', yen: 100000 },
-];
-
-/** パック一覧。マイル数は円から換算するだけで、レートは miles.MILE_TO_YEN に一本化してある。 */
-function listMilePacks() {
-  return MILE_PACKS.map(p => ({
-    ...p,
-    miles: Math.round(p.yen / miles.MILE_TO_YEN),
-    validDays: miles.MILE_VALIDITY_DAYS[miles.PURCHASED_KIND],
-  }));
-}
-
-/**
- * マイルを有償で購入する。
- *
- * 決済は未接続で、台帳への記録だけを行う（デモ・検証用）。実運用に載せる前に
- * Pay.jp の決済成立を待ってから grant する導線に差し替えること。
- */
-async function purchaseMiles(userId, packCode) {
-  const pack = listMilePacks().find(p => p.code === packCode);
-  if (!pack) throw new Error(`マイルパックが見つかりません: ${packCode}`);
-
-  const account = await members.getAccountByUser(userId);
-  if (!account) throw new Error('先にワインをご購入いただくと会員口座が開設されます');
-  if (account.status !== 'active') throw new Error('この会員口座は現在ご利用いただけません');
-
-  const grant = await miles.grant(account.id, pack.miles, {
-    kind: miles.PURCHASED_KIND,
-    paidAmount: pack.yen,
-    sourceType: 'mile_purchase',
-    sourceId: pack.code,
-    memo: `マイル購入 ¥${pack.yen.toLocaleString()}（デモ・検証用／決済未接続）`,
-  });
-
-  return {
-    memberId: account.id,
-    pack,
-    grant,
-    balance: await miles.getBalance(account.id),
-    purchasedOutstanding: await miles.getPurchasedOutstanding(nowIso(), account.id),
-  };
-}
-
 module.exports = {
   REPRESENTATIVE_WINES,
-  MILE_PACKS,
-  listMilePacks,
-  purchaseMiles,
   WELCOME_BONUS_MILES,
   DEFAULT_STORAGE_SITE,
   listPlans,

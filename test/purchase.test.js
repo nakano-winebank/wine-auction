@@ -11,7 +11,7 @@ delete process.env.DATABASE_URL;
 
 const db = require('../database');
 const { migrate } = require('../db/membership-schema');
-const { insertReturningId } = require('../db/helpers');
+const { insertReturningId, nowIso, isoAfterDays } = require('../db/helpers');
 const members = require('../services/members');
 const miles = require('../services/miles');
 const purchase = require('../services/purchase');
@@ -130,55 +130,51 @@ test('マイル利用は有効期限の近いロットから引き当てられ�
   assert.strictEqual(Number(bonusLot.remaining_amount), 0, '期限の近いボーナスから消える');
 });
 
-// ───────────────────────────────── 有償マイル（前払式支払手段の論点）
+// ───────────────────────────────── 有償マイルは発行しない（経営判断 2026年9月）
 
-test('有償購入マイルは kind と支払対価で無償付与と台帳上分離される', async () => {
+test('有償マイルはコードから発行できない', async () => {
   const userId = await makeUser();
   const { memberId } = await purchase.purchasePlan(userId, 'PRESTIGE');
 
-  const result = await purchase.purchaseMiles(userId, 'pack_50k');
-  assert.strictEqual(result.grant.kind, 'purchased');
-  assert.strictEqual(result.grant.paidAmount, 50000);
-  assert.strictEqual(result.grant.amount, 50000);
-
-  const lot = await db.prepare(
-    `SELECT kind, paid_amount FROM mile_lots WHERE id = ?`).get(result.grant.lotId);
-  assert.strictEqual(lot.kind, 'purchased');
-  assert.strictEqual(Number(lot.paid_amount), 50000);
-
-  // 無償付与分には支払対価が入らない
-  const free = await db.prepare(
-    `SELECT COUNT(*) AS n FROM mile_lots WHERE member_id = ? AND kind != 'purchased' AND paid_amount IS NOT NULL`
-  ).get(memberId);
-  assert.strictEqual(Number(free.n), 0);
-});
-
-test('有償分の未使用残高は無償付与マイルを含まない', async () => {
-  const userId = await makeUser();
-  const { memberId, balance: freeBalance } = await purchase.purchasePlan(userId, 'PRESTIGE');
-
-  await purchase.purchaseMiles(userId, 'pack_10k');
-  const outstanding = await miles.getPurchasedOutstanding(undefined, memberId);
-
-  assert.strictEqual(outstanding.miles, 10000, '有償で発行した分だけを数える');
-  assert.strictEqual(outstanding.yen, 10000, '供託判定の基礎になる円換算');
-  assert.strictEqual(outstanding.grantedPaidAmount, 10000);
-  assert.strictEqual(await miles.getBalance(memberId), freeBalance + 10000,
-    '会員から見た残高は有償・無償の合計');
-});
-
-test('有償購入マイルの有効期限は6ヶ月以内（資金決済法4条2号の適用除外を外さないため）', async () => {
-  assert.ok(miles.MILE_VALIDITY_DAYS.purchased !== null, '無期限にしない');
-  assert.ok(miles.MILE_VALIDITY_DAYS.purchased <= 180,
-    '180日を超えると適用除外から外れるため、変更には法務確認が要る');
-});
-
-test('支払対価なしで有償マイルを発行しようとすると弾かれる', async () => {
-  const userId = await makeUser();
-  const { memberId } = await purchase.purchasePlan(userId, 'PRESTIGE');
+  await assert.rejects(
+    () => miles.grant(memberId, 1000, { kind: 'purchased', paidAmount: 1000 }),
+    /マイルの販売は行わない方針/);
   await assert.rejects(
     () => miles.grant(memberId, 1000, { kind: 'purchased' }),
-    /支払対価/);
+    /マイルの販売は行わない方針/);
+});
+
+test('付与できる種別に purchased は含まれない', () => {
+  assert.ok(!miles.GRANT_KINDS.includes('purchased'));
+  assert.deepStrictEqual(miles.GRANT_KINDS.sort(), ['adjust', 'bonus', 'campaign', 'reward']);
+});
+
+test('マイルを販売する導線が実装に残っていない', () => {
+  assert.strictEqual(purchase.purchaseMiles, undefined, 'サービスに販売関数がない');
+  assert.strictEqual(purchase.listMilePacks, undefined, 'パック定義がない');
+});
+
+test('有償発行の残高は常に0で、無償付与をいくら積んでも動かない', async () => {
+  const userId = await makeUser();
+  const { memberId } = await purchase.purchasePlan(userId, 'SIGNATURE');
+  await miles.grant(memberId, 9000000, { kind: 'campaign', memo: '大型キャンペーン' });
+
+  const outstanding = await miles.getPurchasedOutstanding();
+  assert.strictEqual(outstanding.yen, 0,
+    '無償付与は前払式支払手段に当たらないため、届出・供託の判定基礎に入らない');
+  assert.strictEqual(outstanding.lots, 0);
+
+  // 会員から見た残高は当然増えている
+  assert.ok(await miles.getBalance(memberId) > 9000000);
+});
+
+test('供託の監視は「有償発行なし」を示す', async () => {
+  const status = await miles.getDepositStatus();
+  assert.strictEqual(status.current.yen, 0, '有償発行がない状態');
+  assert.strictEqual(status.atPreviousBaseDate.yen, 0);
+  assert.strictEqual(status.exceededAtPreviousBaseDate, false);
+  assert.strictEqual(status.requiredDeposit, 0);
+  assert.strictEqual(status.threshold, 10000000, 'しきい値の定義自体は残す（監視の基準として）');
 });
 
 // ───────────────────────────────── デモ用の時間送り
@@ -269,8 +265,13 @@ test('過去の基準日の未使用残高は、その後の利用に影響さ�
   const userId = await makeUser();
   const { memberId } = await purchase.purchasePlan(userId, 'PRESTIGE');
 
-  // 有償で 100,000 マイル発行する
-  await purchase.purchaseMiles(userId, 'pack_100k');
+  // 監視ロジックの検証用に、有償ロットを台帳へ直接入れる。
+  // grant() は purchased を拒否するので、通常の経路ではこの状態は作れない。
+  await insertReturningId(`
+    INSERT INTO mile_lots
+      (member_id, kind, granted_amount, remaining_amount, paid_amount, granted_at, expires_at, created_at)
+    VALUES (?, 'purchased', ?, ?, ?, ?, ?, ?)
+  `, [memberId, 100000, 100000, 100000, nowIso(), isoAfterDays(180), nowIso()]);
 
   // 発行の直後を基準日、その1時間後を利用日として、時点をはっきり分ける
   const baseDate = new Date(Date.now() + 60 * 1000).toISOString();
@@ -302,7 +303,11 @@ test('発行前の時点では未使用残高に計上されない', async () =>
   const { memberId } = await purchase.purchasePlan(userId, 'PRESTIGE');
   const before = new Date(Date.now() - 60000).toISOString();
 
-  await purchase.purchaseMiles(userId, 'pack_10k');
+  await insertReturningId(`
+    INSERT INTO mile_lots
+      (member_id, kind, granted_amount, remaining_amount, paid_amount, granted_at, expires_at, created_at)
+    VALUES (?, 'purchased', ?, ?, ?, ?, ?, ?)
+  `, [memberId, 10000, 10000, 10000, nowIso(), isoAfterDays(180), nowIso()]);
 
   const past = await miles.getPurchasedOutstanding(before, memberId);
   assert.strictEqual(past.yen, 0, '発行より前の基準日では0');
@@ -335,19 +340,6 @@ test('供託の判定に必要な数字が揃って返る', async () => {
   // このテストDBの有償残高は1,000万円に届かないので供託は不要
   assert.strictEqual(status.exceededAtPreviousBaseDate, false);
   assert.strictEqual(status.requiredDeposit, 0);
-});
-
-test('無償付与マイルは供託の判定に一切入らない', async () => {
-  const before = await miles.getPurchasedOutstanding();
-
-  // 大量に無償付与しても有償分の残高は動かない
-  const userId = await makeUser();
-  const { memberId } = await purchase.purchasePlan(userId, 'SIGNATURE');
-  await miles.grant(memberId, 5000000, { kind: 'campaign', memo: '大型キャンペーン' });
-
-  const after = await miles.getPurchasedOutstanding();
-  assert.strictEqual(after.yen, before.yen,
-    '無償分は前払式支払手段に当たらないため、供託の判定基礎に入れない');
 });
 
 // ───────────────────────────────── 充当レート（景品表示法5条2号：有利誤認表示）
