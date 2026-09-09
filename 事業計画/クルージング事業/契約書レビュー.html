@@ -1,0 +1,561 @@
+<title>クルージング事業 契約書レビュー</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+:root{
+  --paper:#F2F3F6; --panel:#FFFFFF; --panel-2:#EAECF1;
+  --ink:#171A21; --ink-2:#454C5C; --ink-3:#727A8C;
+  --rule:#CFD4DE; --rule-2:#E2E5EC;
+  --indigo:#22406B; --indigo-soft:#D8E0EC;
+  --wine:#7B2B3B; --wine-soft:#F0DCE0;
+  --amber:#8A6110; --amber-soft:#F2E6CC;
+  --moss:#2C5C4F; --moss-soft:#D8E7E1;
+  --pos:#2C5C4F; --neg:#7B2B3B;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#11141B; --panel:#181C25; --panel-2:#20252F;
+    --ink:#E7E9EE; --ink-2:#AEB5C4; --ink-3:#7C8497;
+    --rule:#2C323E; --rule-2:#232833;
+    --indigo:#8FB0DC; --indigo-soft:#1E2A3D;
+    --wine:#E5A0AC; --wine-soft:#332025;
+    --amber:#DDB35C; --amber-soft:#2C2617;
+    --moss:#7FC0AC; --moss-soft:#182C27;
+    --pos:#7FC0AC; --neg:#E5A0AC;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#11141B; --panel:#181C25; --panel-2:#20252F;
+  --ink:#E7E9EE; --ink-2:#AEB5C4; --ink-3:#7C8497;
+  --rule:#2C323E; --rule-2:#232833;
+  --indigo:#8FB0DC; --indigo-soft:#1E2A3D;
+  --wine:#E5A0AC; --wine-soft:#332025;
+  --amber:#DDB35C; --amber-soft:#2C2617;
+  --moss:#7FC0AC; --moss-soft:#182C27;
+  --pos:#7FC0AC; --neg:#E5A0AC;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:"Zen Kaku Gothic New",-apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+  font-size:15px;line-height:1.75;-webkit-font-smoothing:antialiased;font-feature-settings:"palt" 1;}
+.wrap{max-width:1120px;margin:0 auto;padding:0 28px 96px}
+
+.mast{border-bottom:2px solid var(--ink);padding:56px 0 22px;margin-bottom:44px}
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--indigo);font-weight:600;display:flex;gap:14px;flex-wrap:wrap}
+h1{font-family:"Shippori Mincho","Yu Mincho",serif;font-weight:700;
+  font-size:clamp(30px,4.4vw,46px);line-height:1.28;margin:16px 0 10px;text-wrap:balance}
+.dek{color:var(--ink-2);font-size:15.5px;margin:0;max-width:72ch}
+.srcline{margin-top:22px;padding-top:14px;border-top:1px solid var(--rule-2);
+  font-size:12.5px;color:var(--ink-3);display:flex;gap:8px 22px;flex-wrap:wrap}
+.srcline b{color:var(--ink-2);font-weight:500}
+
+.verdict{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));
+  gap:1px;background:var(--rule);border:1px solid var(--rule);margin-bottom:52px}
+.vcell{background:var(--panel);padding:24px 24px 22px;display:flex;flex-direction:column;gap:9px}
+.vtag{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.14em;
+  text-transform:uppercase;font-weight:600;display:inline-flex;align-items:center;gap:8px}
+.vtag::before{content:"";width:9px;height:9px;flex:none}
+.vtag.a{color:var(--wine)} .vtag.a::before{background:var(--wine)}
+.vtag.b{color:var(--amber)} .vtag.b::before{background:var(--amber)}
+.vtag.c{color:var(--moss)} .vtag.c::before{background:var(--moss)}
+.vhead{font-family:"Shippori Mincho",serif;font-size:20px;font-weight:700;line-height:1.4;margin:0}
+.vnum{font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:27px;line-height:1.15;
+  letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.vnum small{font-size:13px;font-weight:500;color:var(--ink-3);letter-spacing:0;margin-left:6px}
+.vbody{font-size:13.5px;color:var(--ink-2);margin:0;line-height:1.7}
+
+section{margin-bottom:60px}
+.shead{display:flex;align-items:baseline;gap:14px;border-bottom:1px solid var(--ink);
+  padding-bottom:9px;margin-bottom:26px}
+.snum{font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:600;color:var(--indigo);
+  letter-spacing:.1em;flex:none}
+h2{font-family:"Shippori Mincho",serif;font-size:24px;font-weight:700;margin:0;line-height:1.35}
+.shead .note{margin-left:auto;font-size:12px;color:var(--ink-3);font-family:"IBM Plex Mono",monospace}
+h3{font-size:15px;font-weight:700;margin:36px 0 12px;padding-left:11px;
+  border-left:3px solid var(--indigo);line-height:1.5}
+h3:first-of-type{margin-top:0}
+p{margin:0 0 14px}
+.lede{font-size:15.5px;color:var(--ink-2);margin-bottom:24px;max-width:74ch}
+
+.scroll{overflow-x:auto;border:1px solid var(--rule);background:var(--panel);margin-bottom:8px}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:520px}
+th,td{padding:9px 14px;text-align:right;border-bottom:1px solid var(--rule-2);white-space:nowrap}
+th:first-child,td:first-child{text-align:left;white-space:normal;min-width:170px}
+thead th{background:var(--panel-2);font-weight:700;font-size:11.5px;letter-spacing:.06em;
+  color:var(--ink-2);border-bottom:1px solid var(--rule)}
+tbody td:not(:first-child){font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;font-weight:500}
+td.txt,th.txt{font-family:inherit!important;text-align:left;white-space:normal;font-weight:400!important}
+tbody tr:last-child td{border-bottom:none}
+tr.total td{background:var(--panel-2);font-weight:700;border-top:1px solid var(--rule)}
+tr.sub td:first-child{padding-left:26px;font-size:12.5px;color:var(--ink-2)}
+.pos{color:var(--pos)} .neg{color:var(--neg)} .dim{color:var(--ink-3)}
+caption{caption-side:bottom;text-align:left;font-size:12px;color:var(--ink-3);
+  padding:9px 14px;border-top:1px solid var(--rule-2)}
+.cap{font-size:12px;color:var(--ink-3);margin:0 0 26px;line-height:1.65;max-width:82ch}
+.cap b{color:var(--ink-2);font-weight:500}
+
+/* findings */
+.finds{border:1px solid var(--rule);background:var(--panel);margin-bottom:8px}
+.find{display:grid;grid-template-columns:98px 1fr;border-bottom:1px solid var(--rule-2)}
+.find:last-child{border-bottom:none}
+.kind{display:flex;flex-direction:column;align-items:flex-start;gap:6px;
+  padding:17px 12px 0 16px;border-right:1px solid var(--rule-2)}
+.chip{font-family:"IBM Plex Mono",monospace;font-size:10px;font-weight:600;letter-spacing:.07em;
+  padding:3px 7px;border:1px solid currentColor;line-height:1.3;white-space:nowrap}
+.k-fix .chip{color:var(--wine);background:var(--wine-soft)}
+.k-ask .chip{color:var(--amber);background:var(--amber-soft)}
+.k-ok .chip{color:var(--moss);background:var(--moss-soft)}
+.clause{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-3);letter-spacing:.02em}
+.fbody{padding:16px 22px 18px}
+.ftitle{font-weight:700;font-size:14.5px;line-height:1.5;margin-bottom:7px}
+.quote{font-size:12.5px;color:var(--ink-2);background:var(--panel-2);
+  padding:9px 13px;margin:0 0 10px;border-left:2px solid var(--rule);line-height:1.65}
+.ftext{font-size:13.5px;color:var(--ink-2);margin:0 0 9px;line-height:1.72}
+.ftext b{color:var(--ink)}
+.faction{font-size:12.5px;color:var(--ink);margin:0;padding:9px 13px;
+  background:var(--indigo-soft);border-left:3px solid var(--indigo);line-height:1.68}
+.k-ok .faction{background:var(--moss-soft);border-left-color:var(--moss)}
+
+.callout{border:1px solid var(--rule);border-left:3px solid var(--wine);background:var(--panel);
+  padding:16px 20px;margin:22px 0}
+.callout .ct{font-weight:700;font-size:13.5px;margin-bottom:5px;color:var(--wine)}
+.callout p{font-size:13.5px;color:var(--ink-2);margin:0;line-height:1.72}
+.callout.good{border-left-color:var(--moss)} .callout.good .ct{color:var(--moss)}
+
+/* reply draft */
+.draft{border:1px solid var(--rule);background:var(--panel);padding:26px 30px;
+  font-size:13.5px;line-height:1.95;white-space:pre-wrap;font-family:inherit;
+  max-height:none;overflow-x:auto}
+.draft b{font-weight:700}
+
+ol.acts{list-style:none;counter-reset:a;padding:0;margin:0;border:1px solid var(--rule)}
+ol.acts li{counter-increment:a;background:var(--panel);padding:15px 20px 15px 58px;position:relative;
+  border-bottom:1px solid var(--rule-2);font-size:13.5px;line-height:1.7}
+ol.acts li:last-child{border-bottom:none}
+ol.acts li::before{content:counter(a);position:absolute;left:20px;top:15px;
+  font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:12px;color:var(--indigo);
+  border:1px solid var(--indigo);width:21px;height:21px;display:flex;align-items:center;justify-content:center}
+ol.acts .who{display:block;margin-top:4px;font-size:11.5px;color:var(--ink-3);
+  font-family:"IBM Plex Mono",monospace;letter-spacing:.03em}
+
+footer{border-top:1px solid var(--rule);margin-top:70px;padding-top:18px;
+  font-size:12px;color:var(--ink-3);line-height:1.7}
+a{color:var(--indigo)}
+:focus-visible{outline:2px solid var(--indigo);outline-offset:2px}
+@media (max-width:640px){
+  .wrap{padding:0 16px 64px}
+  .find{grid-template-columns:1fr}
+  .kind{flex-direction:row;align-items:center;padding:14px 22px 0;border-right:none}
+  .fbody{padding-top:10px}
+  .draft{padding:18px 16px}
+}
+</style>
+
+<div class="wrap">
+
+<header class="mast">
+  <div class="eyebrow">
+    <span>WineBank — 契約書レビュー</span>
+    <span>2026.09.09</span>
+  </div>
+  <h1>造船匿名組合契約とF&amp;B業務委託契約のレビュー</h1>
+  <p class="dek">Yo Nakano &amp; Co. 村松様よりお送りいただいた2本のドラフトを、これまでの事業計画・CF表と突合しました。<b>F&amp;B契約は前回指摘した論点が解決しています。</b>一方、匿名組合契約には署名前に必ず直すべき条項があります。</p>
+  <div class="srcline">
+    <span><b>レビュー対象</b>　匿名組合契約書（造船匿名組合）2026.09.01版／F&amp;B業務委託契約書 2026.09.06版</span>
+    <span><b>突合資料</b>　収益分配計算_0825_CF表／0824事業計画</span>
+  </div>
+</header>
+
+<div class="verdict">
+  <div class="vcell">
+    <span class="vtag a">匿名組合契約 ─ 修正が必要</span>
+    <h2 class="vhead">出資額と違約金が噛み合っていない</h2>
+    <div class="vnum neg">5,000<small>万円 違約金 / 出資2,600万円</small></div>
+    <p class="vbody">第3条は出資コミットメント総額を「1億円」とし、違約金を「その50％（金50,000,000円）」と<b>金額でハードコード</b>しています。CF表の中野さん枠は2,600万円。このまま締結すると、<b>400万円の払込遅延で既払2,200万円が没収され、なお2,800万円の債務が残ります。</b></p>
+  </div>
+  <div class="vcell">
+    <span class="vtag b">F&amp;B契約 ─ 骨格は良い、条件は未確定</span>
+    <h2 class="vhead">経済条件が全部「料金表」に外出し</h2>
+    <div class="vnum">△660<span class="dim">〜</span>3,065<small>万円 営業利益</small></div>
+    <p class="vbody">コーディネーションフィー10%は明確に当社の収益として規定されました（前回の矛盾は解決）。ただし食材費・シェフ人件費の算出基準は<b>「別途書面で定める料金表」</b>。マークアップ率次第で営業利益が赤字にも3,000万円にもなります。</p>
+  </div>
+  <div class="vcell">
+    <span class="vtag c">整合性 ─ 3点突合の結果</span>
+    <h2 class="vhead">解決2件・未解決5件</h2>
+    <div class="vnum">2<span class="dim">/</span>7</div>
+    <p class="vbody">F&amp;Bの10%帰属と、出資返還の3,000万円バッファはCF表と契約書が一致しました。一方、<b>船舶売買価格4.35億円とAM報酬1億円は、リターンを決める2大変数でありながら契約書に金額の記載がありません。</b></p>
+  </div>
+</div>
+
+<section>
+  <div class="shead">
+    <span class="snum">01</span>
+    <h2>全体の整合性 ─ 事業計画・CF表・契約書の3点突合</h2>
+  </div>
+  <p class="lede">これまでに頂いた資料と今回の契約書を並べて、同じ項目が同じ数字になっているかを確認しました。</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>項目</th><th>0824事業計画</th><th>0825 CF表</th><th class="txt">契約書</th><th>判定</th></tr></thead>
+      <tbody>
+        <tr><td>船舶取得原価</td><td>2.0億</td><td>1.445億</td><td class="txt">記載なし</td><td class="neg">不一致</td></tr>
+        <tr><td>GK②への転売価格</td><td>4.0億</td><td>4.35億</td><td class="txt">記載なし</td><td class="neg">不一致</td></tr>
+        <tr><td>出資コミットメント</td><td class="dim">—</td><td>1.95億（中野さん枠2,600万）</td><td class="txt">1億円</td><td class="neg">不一致</td></tr>
+        <tr><td>ストラクチャリングAM報酬</td><td class="dim">未開示</td><td>1.0億</td><td class="txt">控除項目として列挙のみ・金額なし</td><td class="neg">不一致</td></tr>
+        <tr><td>造船AM報酬</td><td class="dim">未開示</td><td>0.1億</td><td class="txt">同上</td><td class="neg">不一致</td></tr>
+        <tr><td>F&amp;B売上の10%の帰属</td><td>WineBank</td><td>投資家</td><td class="txt">WineBank（第4条3項）</td><td class="pos">契約書で確定</td></tr>
+        <tr><td>手元流動性バッファ</td><td class="dim">—</td><td>3,000万（GK①CF）</td><td class="txt">3,000万（第6条2項②）</td><td class="pos">一致</td></tr>
+        <tr><td>営業者報酬</td><td class="dim">—</td><td class="dim">—</td><td class="txt">年額20万円（第5条4項）</td><td class="dim">新規</td></tr>
+        <tr><td>船舶売買契約の日付</td><td class="dim">—</td><td>2026年9月に取得計上</td><td class="txt">2026年10月13日付（第6条2項①）</td><td class="neg">1か月超のズレ</td></tr>
+      </tbody>
+      <caption>「契約書に記載なし」の4項目は、いずれも投資リターンを直接決める変数です。</caption>
+    </table>
+  </div>
+
+  <div class="callout">
+    <div class="ct">リターンを決める2大変数が、契約書のどこにも金額として書かれていません</div>
+    <p>前回の検証で、<b>転売価格が4.35億→3.0億に下がるとGK①のIRRは114%→11%、2.5億以下で元本割れ</b>になることを確認しました。ところが匿名組合契約には転売価格もAM報酬も金額の記載がなく、しかも第2条5項が<br>
+    <span style="font-size:12.5px;color:var(--ink-2)">「事業概要等の変更、およびそれに伴う諸条件の改定については、甲がその裁量により単独で決定できるものとし、乙は甲の決定に対して一切の指図、介入、不服申立て、または権利主張を行えないものとする」</span><br>
+    と定めています。<b>転売価格が下がってもAM報酬が上がっても、組合員は異議を述べられません。</b></p>
+  </div>
+</section>
+
+<section>
+  <div class="shead">
+    <span class="snum">02</span>
+    <h2>匿名組合契約（造船匿名組合）</h2>
+    <span class="note">修正要求5 / 確認3 / 良い条項2</span>
+  </div>
+  <p class="lede">営業者は合同会社Craftsmanship（代表社員 山田雅也氏／れいわ税理士法人内）。事業は「東京ウォータウェイズからのWATERWAYS Ⅲ取得 → 改修 → GK②への転売」で、2年で完結する設計です。</p>
+
+  <div class="finds">
+
+    <div class="find k-fix"><div class="kind"><span class="chip">修正要求</span><span class="clause">第3条1項・5項</span></div><div class="fbody">
+      <div class="ftitle">出資コミットメント額1億円と違約金5,000万円のハードコード</div>
+      <p class="quote">「乙は、本匿名組合事業のために、甲に対し、金 100,000,000 円を上限とする出資を行う（以下「出資コミットメント総額」という）義務を負う。」<br>
+      「…違約金として、出資コミットメント総額の50％に相当する額（金 50,000,000 円…）の支払義務を負う…甲は、乙が既に払い込みを完了していた出資金から当該違約金（金 50,000,000 円）を差し引く（相殺する）ことで没収することができる。」</p>
+      <p class="ftext">1億円は組合全体（1.95億円）とも中野さん枠（2,600万円）とも一致しません。文言は「乙は…出資を行う」なので<b>組合員ごとに金額を差し替えるテンプレート</b>と読めますが、その場合<b>括弧内の「金 50,000,000 円」は自動で連動しません</b>（2箇所にハードコードされています）。<br>
+      仮に2,600万円に差し替えても、「50％」の計算値1,300万円と括弧内5,000万円が食い違ったまま残ります。<b>キャピタルコール②の400万円を延滞しただけで、既払2,200万円が全額没収され、なお2,800万円の債務が残る</b>読み方が可能です。第3条3項が「損失は出資実行済元本を限度」と定めているのに、違約金だけがその枠外で青天井になっています。</p>
+      <p class="faction"><b>修正案：</b>①「金100,000,000円」を当社の実額（26,000,000円）に置換。②違約金を「<b>当該組合員の出資コミットメント額の50％</b>」とし、括弧内のハードコード金額を削除。③「ただし、既に払い込まれた出資実行済元本の額を上限とする」を追加。</p>
+    </div></div>
+
+    <div class="find k-fix"><div class="kind"><span class="chip">修正要求</span><span class="clause">第2条4項・5項</span></div><div class="fbody">
+      <div class="ftitle">転売価格・AM報酬を営業者が単独裁量で変更できる</div>
+      <p class="ftext">リターンを決める全ての変数（TWWからの取得価格94.5百万、改修費50百万、GK②への転売価格435百万、ストラクチャリングAM報酬100百万、造船AM報酬10百万）が契約書に金額として記載されていません。唯一の明示金額は<b>営業者報酬の年額20万円</b>だけです。<br>
+      第5条4項はAM報酬を「処分可能利益」の控除項目として列挙していますが、金額も上限もありません。前回の検証では、<b>ストラクチャリングAM報酬1億円がGK①総費用2.768億円の36%を占め、これが無ければ投資家利益は158.2→258.2百万円</b>になります。</p>
+      <p class="faction"><b>修正案：</b>①別紙で事業計画（取得価格・改修費・転売価格・AM報酬）を特定し、契約書に添付。②「転売価格の10%以上の変更」「AM報酬の増額」「出資コミットメント総額の増額」は<b>出資割合の過半数の同意を要する</b>旨を第2条に追加。</p>
+    </div></div>
+
+    <div class="find k-fix"><div class="kind"><span class="chip">修正要求</span><span class="clause">第7条2項・3項</span></div><div class="fbody">
+      <div class="ftitle">利益相反ルールが構造上機能しない</div>
+      <p class="quote">「利益相反に該当する事項…については、両アセットマネージャーによる協議の上、投資家保護および客観的透明性を確保するため、造船アセットマネージャーの意見を尊重して決定するものとし、乙はこれをあらかじめ承諾する。」</p>
+      <p class="ftext">最大の利益相反事項は<b>「TWWからの取得価格」と「GK②への転売価格」</b>です。ところが取得の相手方であるTWW自身が造船アセットマネージャーです（第2条1項①＋CF表）。<b>TWWとの取引の利益相反を、TWWの意見を尊重して決めることになります。</b><br>
+      通常事項の決定は「ストラクチャリングAMの意見を尊重」ですが、YN&amp;C様も報酬1億円の受領者かつ最大出資者（割り戻し後26.7%）です。<b>両AMとも利益相反当事者で、独立した第三者の判断が構造上存在しません。</b></p>
+      <p class="faction"><b>修正案：</b>①船舶の取得価格・転売価格については<b>第三者の船舶鑑定評価書の取得を営業者の義務</b>として明記。②利益相反事項は、当該利益相反の当事者であるAMを除外した上で、<b>利害関係のない組合員の過半数の同意</b>で決定する建て付けに変更。</p>
+    </div></div>
+
+    <div class="find k-fix"><div class="kind"><span class="chip">修正要求</span><span class="clause">第5条2項・5項</span></div><div class="fbody">
+      <div class="ftitle">益金は発生主義で一括、現金は2年かけて分割 ─ 納税が先行する</div>
+      <p class="quote">第2項「…転売先からの現実の現金の着金（分割払いおよび延べ払い分を含む）の有無にかかわらず、発生主義の原則に従って当然に乙に帰属（パススルー）するものとし…」<br>
+      第5項「実際の現金入金が甲の口座に確認できない期間については、甲は乙に対して現金による分配金の支払義務（送金義務）を負わず、乙はこれをあらかじめ了承する。」</p>
+      <p class="ftext">計算期間は3月1日〜翌年2月末で、第1期は事業実行日〜2027年2月末（第5条1項）。船舶の引渡しが2026年中なら、<b>利益2,109万円が第1期に全額益金として当社に帰属</b>します。一方、第1期中の現金回収は2026年10月の約387万円のみ。<br>
+      <b>2027年4月頃に約740万円（実効35%）を納税する時点で、回収済み現金は387万円しかありません。</b></p>
+      <p class="faction"><b>確認・修正案：</b>①船舶の引渡日と益金計上時期を確定させ、納税時期と現金回収のスケジュールを明示していただく。②第6条の出資返還とは別に、<b>「課税所得の発生に対応する納税資金相当額を優先的に分配する」条項</b>の追加を検討。</p>
+    </div></div>
+
+    <div class="find k-fix"><div class="kind"><span class="chip">修正要求</span><span class="clause">第6条2項①</span></div><div class="fbody">
+      <div class="ftitle">未締結の契約を確定日付で特定している</div>
+      <p class="ftext">「甲と株式会社東京ウォータウェイズとの間で締結された船舶売買契約（<b>2026年10月13日付</b>）」と出資返還の要件に書かれていますが、本日は2026年9月9日で<b>まだ締結されていません</b>。締結日がずれると、第6条の出資返還要件が文言上機能しなくなります。<br>
+      あわせて、CF表は船舶取得を2026年9月に計上しており、<b>契約日10月13日とは1か月以上ずれています。</b></p>
+      <p class="faction"><b>修正案：</b>「甲と株式会社東京ウォータウェイズとの間で<b>締結される</b>船舶売買契約」に変更。あわせてCF表のタイムラインを実際の契約スケジュールに合わせて更新していただく。</p>
+    </div></div>
+
+    <div class="find k-ask"><div class="kind"><span class="chip">確認</span><span class="clause">第13条2項・第14条1項</span></div><div class="fbody">
+      <div class="ftitle">「対象除外顧客」に当社が該当するか</div>
+      <p class="ftext">第14条1項は、当社が「一般社団法人第二種金融商品取引業協会が定める『事業型ファンドの私募の取扱い等に関する規則』別表1第2項に掲げる<b>対象除外顧客に該当することを表明し、保証する</b>」と定めています。<b>該当しない場合、締結と同時に表明保証違反になります。</b></p>
+      <p class="faction"><b>確認事項：</b>別表1第2項の具体的な要件と、当社が該当するかの判定根拠をご教示いただきたい。該当しない場合の取扱いもあわせて。</p>
+    </div></div>
+
+    <div class="find k-ask"><div class="kind"><span class="chip">確認</span><span class="clause">第11条1項</span></div><div class="fbody">
+      <div class="ftitle">追加組合員の加入に「あらかじめ無条件で同意」</div>
+      <p class="ftext">「甲は…他の匿名組合員を随時加入させ、出資コミットメント総額の範囲内において出資を受け入れることができるものとし、乙はこれにあらかじめ無条件で同意する」。<br>
+      本件出資割合は「各組合員の出資コミットメント額の合計に対する割合」（第11条2項）なので、<b>追加組合員が入ると当社の割合は希薄化します。</b>事業から生じる利益の総額は転売益で概ね固定されているため、単純な持分の目減りになります。</p>
+      <p class="faction"><b>確認・修正案：</b>「出資コミットメント総額」の上限を契約上固定し、その<b>増額には既存組合員の同意を要する</b>旨を明記していただきたい。あわせて、現時点の組合員全員の出資コミットメント額の一覧をご開示ください（当社の本件出資割合13.33%の前提確認のため）。</p>
+    </div></div>
+
+    <div class="find k-ask"><div class="kind"><span class="chip">確認</span><span class="clause">第5条1項</span></div><div class="fbody">
+      <div class="ftitle">計算期間が2月末決算 ─ GK②の決算期との関係</div>
+      <p class="ftext">GK①の計算期間は3月1日〜翌年2月末日。一方CF表のGK②は3月末を年度末として減価償却を計算しています。<b>両組合の決算期がずれていると、船舶の引渡し・償却開始・損益のパススルーのタイミングがずれます。</b>前回指摘した「減価償却の月割」の論点に直結します。</p>
+      <p class="faction"><b>確認事項：</b>GK②（会員権発行匿名組合）の計算期間をご教示ください。また、両組合の決算期のずれが償却開始時期に与える影響について、れいわ税理士法人・マクシブ様の整理をお示しいただきたい。</p>
+    </div></div>
+
+    <div class="find k-ok"><div class="kind"><span class="chip">良い条項</span><span class="clause">第6条</span></div><div class="fbody">
+      <div class="ftitle">出資の返還（元本の早期回収）の設計は投資家に有利で、CF表とも一致</div>
+      <p class="ftext">毎月末に判定し、①全ての支払債務が完済されており、②口座残高が3,000万円以上ある場合に、3,000万円を手元流動性として残した超過額を100万円単位で元本返還する設計です。<b>CF表のGK①CFにある「3,000万円のキャッシュ基準」と完全に一致</b>しており、モデルと契約が噛み合っています。<br>
+      第5条7項が「当該支払が利益の分配か出資の返還のいずれに該当するかを書面で明示する」と定めている点も、<b>課税される利益分配と非課税の元本返還を区分できる</b>ため実務上ありがたい条項です。</p>
+      <p class="faction">特段の修正要求はありません。</p>
+    </div></div>
+
+    <div class="find k-ok"><div class="kind"><span class="chip">良い条項</span><span class="clause">第4条6項・第3条3項</span></div><div class="fbody">
+      <div class="ftitle">借入禁止と、損失の出資額限定</div>
+      <p class="ftext">「甲は、本匿名組合事業に関して、借入を行うことはできないものとする」（第4条6項）はレバレッジによる想定外の損失拡大を防ぎます。第3条3項の「損失は出資実行済元本を限度とし、乙は出資コミットメント総額を超えて追加の損失負担または払込義務を一切負わない」も投資家保護として適切です。</p>
+      <p class="faction">ただし前述のとおり、<b>第3条5項の違約金だけがこの「出資額限度」の原則の例外</b>になっています。そこを揃えれば全体として整合します。</p>
+    </div></div>
+
+  </div>
+</section>
+
+<section>
+  <div class="shead">
+    <span class="snum">03</span>
+    <h2>F&amp;B業務委託契約</h2>
+    <span class="note">修正要求4 / 確認3 / 良い条項3</span>
+  </div>
+  <p class="lede">甲＝東京ウォータウェイズ、乙＝当社、丙＝【AM】（未特定）の3者契約です。骨格は当社に配慮された内容ですが、経済条件が全部「料金表」に外出しされている点と、賠償責任に上限がない点が残ります。</p>
+
+  <div class="callout good">
+    <div class="ct">前回指摘した最重要の矛盾が、この契約書で解決しました</div>
+    <p>第4条3項が「甲が本船舶内において上げたF&amp;B関連の売上総額（消費税等を除く）の10％に相当する金額を、コーディネーションフィーとして甲から徴収（請求）することができる」と明記し、さらに<b>「乙が甲に対して卸売販売を行う…物品自体に内包される利益とは完全に別個の独立した業務対価であり、乙による物品の卸売に伴う利益の有無にかかわらず、甲は乙に対してこれを支払わなければならない」</b>と続けています。<br>
+    <b>母数（甲のF&amp;B売上総額・税抜）も、卸売マージンとの別建ても明確です。</b>CF表では同じ10%が「投資家の出資割合にて按分」となっていましたが、契約書側で当社の収益として確定しました。よく書かれた条項だと思います。</p>
+  </div>
+
+  <div class="finds">
+
+    <div class="find k-fix"><div class="kind"><span class="chip">修正要求</span><span class="clause">第6条2項</span></div><div class="fbody">
+      <div class="ftitle">賠償責任に上限がなく、契約当事者でない第三者への補償まで負う</div>
+      <p class="quote">「乙は、前項の乙の責めに帰すべき飲食トラブルに起因して甲、丙（<b>または船主、株式会社UMITO等の関係各社</b>）に損害または費用（弁護士費用を含む）が発生した場合、<b>これをすべて補償し</b>、甲及び丙を完全に免責させなければならない。」</p>
+      <p class="ftext">賠償上限（キャップ）がなく、間接損害・逸失利益の除外もなく、契約当事者ではない「船主、株式会社UMITO等の関係各社」への補償まで無限定に約束する建て付けです。<br>
+      船内で食中毒事故が起きて運航が1か月停止した場合、一般販売の逸失利益だけで約4,500万円（30万円×5枠×30日）。これに会員100口への補償・返金、UMITOブランドの毀損、会員解約が加わります。<b>年間営業利益が1,000万円台の事業に対して、上限のない補償義務は釣り合いません。</b></p>
+      <p class="faction"><b>修正案：</b>①責任上限を「<b>直近12か月間に乙が甲から受領した対価の総額</b>」または「PL保険の填補限度額」に設定。②間接損害・逸失利益・機会損失・信用毀損を除外。③「船主、株式会社UMITO等の関係各社」への補償義務は削除するか、契約書で特定された当事者に限定。</p>
+    </div></div>
+
+    <div class="find k-fix"><div class="kind"><span class="chip">修正要求</span><span class="clause">第4条1項</span></div><div class="fbody">
+      <div class="ftitle">経済条件の本体が「料金表」に外出しされ、契約書だけでは採算が判断できない</div>
+      <p class="quote">「本件業務の遂行に伴う個別の食材費、飲料調達費、手配シェフへの人件費等の算出基準、支払金額、および支払方法は、甲乙間で別途書面にて定める『料金表』または個別発注書に基づくものとする。」</p>
+      <p class="ftext">契約書の建て付けは<b>「卸売＋料金表精算＋フィー10%」</b>方式です。小売売上を計上するのは甲であり、当社の売上は「料金表に基づく請求額＋コーディネーションフィー」になります。<b>したがって当社の利益は料金表のマークアップ率でほぼ決まりますが、その料金表がまだ存在しません。</b></p>
+      <div class="scroll" style="margin-top:10px">
+        <table>
+          <thead><tr><th>料金表のマークアップ率</th><th>0%</th><th>10%</th><th>15%</th><th>20%</th><th>30%</th><th>40%</th></tr></thead>
+          <tbody>
+            <tr><td>1運航あたり粗利</td><td>3.0</td><td>4.9</td><td>5.9</td><td>6.9</td><td>8.8</td><td>10.8</td></tr>
+            <tr><td>年間粗利（480運航）</td><td>1,440</td><td>2,371</td><td>2,837</td><td>3,302</td><td>4,234</td><td>5,165</td></tr>
+            <tr class="total"><td>営業利益（固定費2,100万控除後）</td><td class="neg">−660</td><td>271</td><td>737</td><td class="pos">1,202</td><td class="pos">2,134</td><td class="pos">3,065</td></tr>
+          </tbody>
+          <caption>単位：万円。1運航あたり実費19.4万円（食材・飲料9.9＋シェフ等8.0＋物流1.5）、小売30万円の10%＝フィー3.0万円で試算。<b>損益分岐マークアップ率は7.1%</b>。コーディネーションフィーだけ（年1,440万円）では固定費2,100万円を賄えません。</caption>
+        </table>
+      </div>
+      <p class="faction"><b>修正案：</b>料金表を<b>本契約と同時に締結し、契約書に別紙として添付</b>する。あわせて①最低乗船人数または1運航あたり最低保証額、②年間の最低発注運航回数、③料金表の改定手続（一方的改定の禁止）を規定していただきたい。</p>
+    </div></div>
+
+    <div class="find k-fix"><div class="kind"><span class="chip">修正要求</span><span class="clause">第8条2項</span></div><div class="fbody">
+      <div class="ftitle">当事者でない契約の終了により、補償なく事業を失う</div>
+      <p class="quote">「甲と株式会社UMITOとの間で締結されている本船舶に係る『船舶再裸傭船契約』が、期間満了、解除、失効その他の理由のいかんを問わず終了したときは、本契約も当然に同時点をもって自動的に終了する…乙は甲に対して本契約の終了に伴う<b>補償、損害賠償、得べかりし利益の補填、その他一切の金銭請求または法的請求を行うことはできない</b>。」</p>
+      <p class="ftext">当社が当事者でない契約（甲⇔UMITO間）の終了で、当社の事業が何の補償もなく消滅します。当社は什器・食器・グラス・初期ワイン在庫に約1,500万円を投じる想定であり、<b>これが回収不能になります。</b>解除事由が甲の債務不履行であっても同じ結論になる書き方です。</p>
+      <p class="faction"><b>修正案：</b>①再裸傭船契約の<b>期間・更新条件の開示</b>。②終了時の<b>未償却初期投資の精算</b>と<b>在庫の簿価買取</b>を規定。③終了が見込まれる場合の<b>事前通知義務（3か月前）</b>。④甲の帰責事由による終了の場合は補償請求の制限を適用除外。</p>
+    </div></div>
+
+    <div class="find k-fix"><div class="kind"><span class="chip">修正要求</span><span class="clause">第8条1項・3項</span></div><div class="fbody">
+      <div class="ftitle">契約期間1年、中途解約通知期間が空欄（●か月前）</div>
+      <p class="ftext">会員権の権利期間は20年、GK②の事業期間は22年です。<b>その中で当社だけが1年契約というのは不均衡</b>で、ティエリー・マルクス級の招聘シェフ網を組む前提での相手方への説明が困難です。<br>
+      さらに第8条3項の解約通知期間が<b>「●か月前」のまま空欄</b>です。ここが1か月だと、統括マネージャーの人件費（年900万円想定）を含む固定費体制を維持できません。</p>
+      <p class="faction"><b>修正案：</b>①初回契約期間を<b>3年</b>とし、以後1年自動更新。②第8条3項の解約通知期間を<b>6か月前</b>で確定。</p>
+    </div></div>
+
+    <div class="find k-ask"><div class="kind"><span class="chip">確認</span><span class="clause">第4条3項 vs CF表</span></div><div class="fbody">
+      <div class="ftitle">「F&amp;B売上の10%」がCF表と契約書で二重に存在していないか</div>
+      <p class="ftext">CF表の「一般販売チャーター価格」シートのF&amp;B例では、販売1万円・原価5千円に対し「簡便法による計算(10%)＝1,000円」が<b>投資家の出資割合にて按分</b>、残る4,000円が<b>オペレーター利益</b>とされ、合計で1万円に閉じています。契約書どおり当社に10%を支払うと、この内訳が成り立ちません。</p>
+      <div class="scroll" style="margin-top:10px">
+        <table>
+          <thead><tr><th>販売1万円の内訳</th><th>CF表</th><th>契約書を反映すると</th></tr></thead>
+          <tbody>
+            <tr><td>ワイン原価（当社からの卸売）</td><td>5,000</td><td>5,000</td></tr>
+            <tr><td>投資家（傭船料的な10%）</td><td>1,000</td><td>1,000</td></tr>
+            <tr><td>当社コーディネーションフィー</td><td class="neg">0</td><td class="pos">1,000</td></tr>
+            <tr class="total"><td>オペレーター利益（甲）</td><td>4,000</td><td class="neg">3,000</td></tr>
+          </tbody>
+          <caption>単位：円。契約書を反映すると甲の取り分が4,000円→3,000円に減ります。</caption>
+        </table>
+      </div>
+      <p class="faction"><b>確認事項：</b>①CF表の「簡便法による計算(10%)＝投資家へ」は何の対価か。②当社のコーディネーションフィー10%と併存するのか（合計20%か）。③併存する場合、甲の採算が成り立つかを甲側でご確認いただきたい。</p>
+    </div></div>
+
+    <div class="find k-ask"><div class="kind"><span class="chip">確認</span><span class="clause">第5条1項・2項</span></div><div class="fbody">
+      <div class="ftitle">基準販売価格の遵守と独占禁止法の関係</div>
+      <p class="ftext">当社は甲に対する<b>卸売業者</b>の立場です（第2条1項③）。その当社が、甲の販売価格について「相手方の事前の書面による承諾なく、当該飲食基準価格を下回る価格での販売（割引販売等）を行ってはならない」と定めるのは、<b>再販売価格の拘束</b>（独禁法2条9項4号）との関係を整理しておく必要があります。<br>
+      本件は共同でチャータープランを企画・販売する性格が強く、業務委託の枠内の価格協議とも構成できるため、直ちに問題になるとは限りませんが、確認しておきたい点です。</p>
+      <p class="faction"><b>確認事項：</b>本条についてTMI総合法律事務所の独禁法上の整理をご教示いただきたい。ファインワインのブランド維持という趣旨には全面的に賛同しますので、構成の問題としてのご相談です。</p>
+    </div></div>
+
+    <div class="find k-ask"><div class="kind"><span class="chip">確認</span><span class="clause">第2条4項・6項、第5条3項</span></div><div class="fbody">
+      <div class="ftitle">丙（AM）が未特定のまま、価格に意見を述べる権利を持つ</div>
+      <p class="ftext">丙は「【AM】」のままで署名欄も空欄です。それでいて<b>第2条6項で業務内容と価格について、第5条3項で会員利用の飲食基準価格について意見を述べる権利</b>を持ちます。一方、第2条4項で「何らの責任及び義務を負わない」とされ、第6条2項では当社から補償を受ける立場です。<b>権利のみで義務がない当事者</b>という構成になっています。</p>
+      <p class="faction"><b>確認事項：</b>①丙が具体的にどの法人か（会員権発行AMかSub-AMか）。②丙の意見と甲乙の合意が食い違った場合の決定ルール。③当社が丙を免責する範囲を、丙の故意・重過失を除外した形に限定できないか。</p>
+    </div></div>
+
+    <div class="find k-ok"><div class="kind"><span class="chip">良い条項</span><span class="clause">第2条2項・3項</span></div><div class="fbody">
+      <div class="ftitle">運航実務からの完全な切り離し</div>
+      <p class="ftext">「本船舶の操縦、離着岸、安全管理、および航行に付随する一切の『運航実務』については、すべて甲の責任において甲および甲の従業員が自ら執行し、<b>乙はこれら運航実務について一切の権限を持たず、義務も負わない</b>」（第2条2項）。海難・運航に関する責任から当社を切り離す、当社にとって極めて重要な条項です。第2条3項で接客サービスも原則として甲の従業員が主体と整理されている点も一貫しています。</p>
+      <p class="faction">特段の修正要求はありません。</p>
+    </div></div>
+
+    <div class="find k-ok"><div class="kind"><span class="chip">良い条項</span><span class="clause">第6条1項但書</span></div><div class="fbody">
+      <div class="ftitle">甲の給仕・品質管理の過失は甲の責任と明記</div>
+      <p class="ftext">「当該飲食トラブルが、甲の従業員による日々の具体的なサーブ（給仕・配膳）上の過失、不適切な接客対応、または甲による本船舶内の品質管理（保管・温度管理等の不備を含む）の怠慢に起因して発生したものである場合は、その一切の責任は甲が負う」。第2条3項（接客は甲の従業員が主体）と整合しており、責任分界点が明確です。</p>
+      <p class="faction">特段の修正要求はありません。第6条2項に上限を入れれば、責任分配としてバランスが取れます。</p>
+    </div></div>
+
+    <div class="find k-ok"><div class="kind"><span class="chip">良い条項</span><span class="clause">第4条2項</span></div><div class="fbody">
+      <div class="ftitle">個別発注の撤回・取消の制限</div>
+      <p class="ftext">「甲は、前項に基づいて個別のサービス契約が成立後は、乙の同意を得ない限り、撤回・取消はできない」。生鮮food材の仕入とシェフの手配を先行させる当社にとって、直前キャンセルのリスクを抑える実務的な条項です。</p>
+      <p class="faction">キャンセル料の規定（例：出航〇日前以降は実費全額）を料金表側に置いていただければ、さらに実務が回りやすくなります。</p>
+    </div></div>
+
+  </div>
+</section>
+
+<section>
+  <div class="shead">
+    <span class="snum">04</span>
+    <h2>営業リターンの再試算 ─ 前回の数字を訂正します</h2>
+  </div>
+  <p class="lede">契約書を読んで、当社のF&amp;B事業の建て付けが前回の試算前提と異なることが分かりました。前回お示しした営業利益4,428万円は上振れしています。</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th class="txt">論点</th><th class="txt">前回試算（0824資料ベース）</th><th class="txt">契約書の建て付け</th></tr></thead>
+      <tbody>
+        <tr><td class="txt">当社の売上</td><td class="txt">小売売上を計上（10名×3万円×480回＝1.44億円）</td><td class="txt">料金表に基づく請求額＋フィー10%。<b>小売売上は甲が計上</b></td></tr>
+        <tr><td class="txt">当社の立場</td><td class="txt">F&amp;Bの事業主体</td><td class="txt">甲への<b>卸売業者</b>＋業務受託者（第2条1項③）</td></tr>
+        <tr><td class="txt">利益の源泉</td><td class="txt">小売価格−原価（限界利益率35%）</td><td class="txt">料金表のマークアップ＋フィー10%</td></tr>
+        <tr class="total"><td class="txt">年間営業利益（480運航）</td><td>4,428万円</td><td>△660万〜3,065万円</td></tr>
+      </tbody>
+      <caption>マークアップ率0%〜40%のレンジ。前回の4,428万円に到達するにはマークアップ55%が必要で、卸売取引としては現実的ではありません。</caption>
+    </table>
+  </div>
+  <p class="cap">なお<b>損益分岐マークアップ率は7.1%</b>（年480運航時）と低く、事業として成立する余地は十分にあります。ROIも初期投資1,500万円に対しマークアップ20%で80%と、依然としてアセットライトで魅力的です。<b>参入方針そのものは変わりません</b>が、社内決裁の数字は料金表の確定後に置き直す必要があります。</p>
+</section>
+
+<section>
+  <div class="shead">
+    <span class="snum">05</span>
+    <h2>形式面の指摘</h2>
+    <span class="note">条番号・空欄・誤字</span>
+  </div>
+  <p class="lede">「TMI総合法律事務所との確認を終えた最終案に近い状態」とのご説明でしたが、以下は最終化の前に整理が必要と思われます。実質に影響しないものも含めて挙げます。</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>契約書</th><th class="txt">箇所</th><th class="txt">内容</th></tr></thead>
+      <tbody>
+        <tr><td>F&amp;B</td><td class="txt">条番号の重複</td><td class="txt">「第10条（譲渡禁止）」と「第10条（その他協議事項）」が重複。後者は第12条</td></tr>
+        <tr><td>F&amp;B</td><td class="txt">第9条（反社条項）</td><td class="txt">号が ①②④⑤ で <b>③が欠落</b></td></tr>
+        <tr><td>F&amp;B</td><td class="txt">第8条</td><td class="txt">3項以降に項番号が振られていない。解除条項の柱書が2回出現（①〜③と①〜⑥）し構造が重複</td></tr>
+        <tr><td>F&amp;B</td><td class="txt">空欄</td><td class="txt">第4条4項「翌月［●］日までに請求」、第8条3項「●か月前の通知」</td></tr>
+        <tr><td>F&amp;B</td><td class="txt">末尾</td><td class="txt">3者契約なのに「本書<b>２通</b>を作成し、<b>甲乙</b>記名押印」。3通・甲乙丙とすべき</td></tr>
+        <tr><td>F&amp;B</td><td class="txt">準拠法</td><td class="txt">第11条は専属管轄のみで、準拠法条項がない</td></tr>
+        <tr><td>F&amp;B</td><td class="txt">第7条（秘密保持）</td><td class="txt">存続期間3年。<b>会員・顧客の個人情報は期間の定めなし</b>とすべき</td></tr>
+        <tr><td>F&amp;B</td><td class="txt">誤字</td><td class="txt">「前三項基づき」（→前三項に基づき）／「電子 手形」（不要なスペース）／「乙は, 」（半角カンマ）</td></tr>
+        <tr><td>匿名組合</td><td class="txt">条文配置</td><td class="txt">「上記の契約を証するため…」が<b>第1条の前</b>に置かれている（通常は末尾）</td></tr>
+        <tr><td>匿名組合</td><td class="txt">用語</td><td class="txt">第3条は「出資コミットメント<b>総額</b>」、第11条2項は「出資コミットメント<b>額</b>」。定義は前者のみ</td></tr>
+        <tr><td>匿名組合</td><td class="txt">署名欄</td><td class="txt">乙が「氏名／代表」となっており、法人が組合員になる場合の記載に合わない</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="shead">
+    <span class="snum">06</span>
+    <h2>村松様への返信ドラフト</h2>
+  </div>
+  <p class="lede">そのままお使いいただける形で用意しました。修正要求は<b>匿名組合契約3点・F&amp;B契約4点</b>に絞り、残りは確認事項としています。</p>
+  <div class="draft">村松様
+
+お世話になっております。株式会社WineBank の中野でございます。
+このたびはご丁寧なご説明をいただき、誠にありがとうございました。作成プロセスと目線をあらかじめ共有いただけたことで、こちらも検討がしやすくなりました。今後ともどうぞよろしくお願い申し上げます。
+
+いただいた2本のドラフトを拝見し、これまでの事業計画およびCF表と突合いたしました。全体として当社の立場に配慮いただいた内容と受け止めております。とりわけF&amp;B業務委託契約 第4条3項で、コーディネーションフィーを「甲のF&amp;B売上総額（税抜）の10％」と明確にご規定いただき、かつ卸売マージンとは別建ての独立した対価であることまで明記いただいた点は、大変ありがたく存じます。運航実務からの切り離し（第2条2項）と、給仕・品質管理に関する責任分界（第6条1項但書）も明快でした。
+
+その上で、署名前に整理をお願いしたい点と、確認させていただきたい点を以下にまとめました。
+
+■ 匿名組合契約（造船匿名組合）
+
+1. 出資コミットメント額と違約金の整合（第3条1項・5項）
+第3条1項の「金100,000,000円」は、CF表のキャピタルコール総額1.95億円とも、当社の枠2,600万円とも一致しておりません。組合員ごとに金額を差し替えるテンプレートとの理解でよろしいでしょうか。
+その場合、第3条5項の違約金が「出資コミットメント総額の50％」と定めつつ、括弧内で「（金50,000,000円）」と2箇所に金額を直接記載されているため、出資額を差し替えても違約金が連動しない状態になっております。
+当社の枠（2,600万円）でこのまま締結いたしますと、キャピタルコール②の400万円を延滞しただけで、既払込の2,200万円が全額没収され、なお2,800万円の債務が残る読み方が可能です。第3条3項が「損失は出資実行済元本を限度」と定めていることとも整合いたしません。
+つきましては、①「金100,000,000円」を当社の実額に置換、②違約金を「当該組合員の出資コミットメント額の50％」とし括弧内の金額を削除、③「既に払い込まれた出資実行済元本の額を上限とする」旨の追加、をご検討いただけますでしょうか。
+
+2. 事業条件の特定（第2条4項・5項、第5条4項）
+船舶の取得価格・改修費・GK②への転売価格・各アセットマネジメント報酬について、契約書に金額の記載がございません（明示があるのは営業者報酬 年額20万円のみ）。一方で第2条5項により、これらの改定は営業者様の単独裁量とされ、組合員は異議を述べられない建て付けとなっております。
+当社の試算では、転売価格が4.35億円から3.0億円に変動した場合、投資家IRRは114%から11%まで低下いたします。恐れ入りますが、①CF表の事業計画（取得価格・改修費・転売価格・AM報酬）を別紙として契約書に添付いただくこと、②転売価格の重要な変更およびAM報酬の増額については出資割合の過半数の同意を要する旨をご規定いただくこと、をお願いできればと存じます。
+
+3. 利益相反の決定ルール（第7条2項・3項）
+利益相反事項を「造船アセットマネージャーの意見を尊重して決定する」とご規定いただいておりますが、最大の利益相反事項である船舶の取得価格は、その相手方である株式会社東京ウォータウェイズ様が造船アセットマネージャーを兼務されているとの理解です。また通常事項について意見が尊重されるストラクチャリングアセットマネージャーも、報酬の受領者かつ最大の出資者でいらっしゃいます。
+投資家保護の趣旨を実現する観点から、①船舶の取得価格・転売価格については第三者による船舶鑑定評価書の取得を営業者の義務としてご規定いただくこと、②利益相反事項については当該相反の当事者であるアセットマネージャーを除外した上で、利害関係のない組合員の過半数の同意により決定する建て付けへのご変更、をご検討いただけますでしょうか。
+
+【確認事項】
+・第6条2項①に「船舶売買契約（2026年10月13日付）」と確定日付での記載がございますが、本契約は未締結との理解です。「締結される船舶売買契約」へのご修正が可能でしょうか。あわせて、CF表では船舶取得を2026年9月に計上されており、1か月以上の差が生じております。
+・第5条2項の発生主義によるパススルーと、第5条5項の現金分配の関係について。船舶の引渡しが2026年中の場合、第1期（〜2027年2月末）に利益が全額益金として帰属する一方、同期間中の現金回収は限定的となり、納税が現金回収に先行いたします。引渡日と益金計上時期の想定をご教示いただけますでしょうか。
+・第14条1項の「対象除外顧客」について、別表1第2項の要件と、当社が該当するかの判定根拠をご教示ください。
+・第11条1項の追加組合員につき、現時点の組合員全員の出資コミットメント額の一覧をご開示いただけますでしょうか（当社の本件出資割合13.33%の前提確認のため）。
+・第5条1項の計算期間が3月1日〜翌年2月末となっておりますが、会員権発行匿名組合の計算期間もあわせてご教示ください。
+
+■ F&amp;B業務委託契約
+
+4. 賠償責任の上限（第6条2項）
+現在の規定では賠償上限がなく、間接損害の除外もなく、契約当事者ではない「船主、株式会社UMITO等の関係各社」への補償まで負う建て付けとなっております。船内での事故により運航が停止した場合、逸失利益だけで相応の規模となり、当社のF&amp;B事業の収益規模とは釣り合いません。
+①責任上限を「直近12か月間に乙が甲から受領した対価の総額」またはPL保険の填補限度額とすること、②間接損害・逸失利益・機会損失を除外すること、③補償の対象を契約書上特定された当事者に限定すること、をお願いできればと存じます。品質管理と衛生管理に一切手を抜くつもりはございませんが、事業継続の観点から必要な整理と考えております。
+
+5. 料金表の同時締結（第4条1項）
+食材費・飲料調達費・シェフ人件費の算出基準が「別途書面にて定める料金表」とされているため、現状の契約書だけでは当社の採算を確定できない状態です。当社の試算では、料金表のマークアップ率次第で年間営業利益が赤字にも3,000万円超にもなり、社内の投資判断が立てられません。
+料金表を本契約と同時に締結し、別紙として添付する形にしていただけますでしょうか。あわせて、最低乗船人数または1運航あたりの最低保証額、年間の最低発注運航回数、および料金表の改定手続（一方的改定を行わない旨）をご規定いただけますと幸いです。
+
+6. 再裸傭船契約の終了に伴う取扱い（第8条2項）
+当社が当事者ではない甲・株式会社UMITO間の契約の終了により、当社の事業が補償なく終了する建て付けとなっております。当社は什器・食器・グラスおよびワイン在庫に相応の初期投資を行う予定であり、これが回収不能となります。
+①再裸傭船契約の期間・更新条件のご開示、②終了時の未償却初期投資の精算および在庫の簿価買取、③終了が見込まれる場合の3か月前の事前通知、④甲の帰責事由による終了の場合は請求制限の適用除外、をご検討いただけますでしょうか。
+
+7. 契約期間および解約通知期間（第8条1項・3項）
+会員権の権利期間が20年、船主側の事業期間が22年である中で、当社のみ1年契約という点に不均衡を感じております。招聘シェフの体制構築や仕入先との交渉を行う上でも、初回契約期間を3年としていただけますと、相手方への説明がしやすくなります。
+また第8条3項の解約通知期間が「●か月前」のまま空欄となっておりますので、6か月前でご確定いただけますでしょうか。
+
+【確認事項】
+・CF表の「一般販売チャーター価格」シートのF&amp;B例では、販売価格の10%が「投資家の出資割合にて按分」、残余が「オペレーター利益」とされており、当社のコーディネーションフィーが計上されておりません。契約書第4条3項のフィーと併存する前提でしょうか。併存する場合、甲側の採算にご確認が必要かと存じます。
+・第5条の基準販売価格の遵守について。当社は甲への卸売の立場であるため、再販売価格の拘束との関係の整理をTMI総合法律事務所様よりご教示いただけますでしょうか。ファインワインのブランド維持という趣旨には全面的に賛同しておりますので、構成についてのご相談です。
+・丙（アセットマネージャー）が【AM】のまま未特定ですが、第2条6項および第5条3項で価格について意見を述べる権利をお持ちです。具体的にどちらの法人か、また丙の意見と甲乙の合意が異なる場合の決定ルールをご教示ください。
+
+■ 形式面
+恐縮ながら、F&amp;B契約に「第10条」の重複（譲渡禁止・その他協議事項）、第9条の号の欠落（①②④⑤で③がない）、第8条の解除条項の重複、3者契約でありながら「本書2通・甲乙記名押印」となっている点などが残っております。あわせてご確認いただけますと幸いです。
+
+■ お願い
+最後に1点、恐れ入ります。TMI総合法律事務所様は本スキームのどのお立場（営業者側／御社側／スキーム全体）でご関与されているかをご教示いただけますでしょうか。当社としても内容を正確に理解した上で進めたく、当社側でも別途リーガルレビューを行う予定でおります。御社のご負担を増やす意図ではなく、双方の理解を揃えるための手続とご理解いただけますと幸いです。
+
+長くなりまして恐縮です。いずれも事業を前に進めるための確認と考えております。オンラインでも対面でも、一度お打ち合わせの機会をいただけますと、論点を効率的に詰められるかと存じます。ご都合のよい日程をお知らせください。
+
+引き続き、何卒よろしくお願い申し上げます。
+
+株式会社WineBank
+中野 邦人</div>
+</section>
+
+<section>
+  <div class="shead">
+    <span class="snum">07</span>
+    <h2>次のアクション</h2>
+  </div>
+  <ol class="acts">
+    <li><b>匿名組合契約は、第3条の出資額と違約金が修正されるまで署名しない。</b>現行文言のままだと、400万円の払込遅延で2,200万円の没収と2,800万円の追加債務が生じる読み方が可能です。ここは実質論であり、形式の整理ではありません。<span class="who">期限：キャピタルコール①（2026年9月）の前</span></li>
+    <li><b>当社側で独立したリーガルレビューを行う。</b>TMI総合法律事務所は当社の代理人ではありません。少なくとも匿名組合契約の違約金条項とF&amp;B契約の補償条項は、当社側の弁護士に見てもらってください。<span class="who">社内・顧問弁護士</span></li>
+    <li><b>船舶鑑定評価書を出資実行の前提条件として要求する。</b>実原価1.445億円に対し転売価格4.35億円（3.01倍）。契約書に鑑定の義務規定がなく、利益相反の決定ルールも構造上機能しません。<span class="who">匿名組合契約 第7条に追加</span></li>
+    <li><b>F&amp;Bの料金表を契約書と同時に締結する。</b>これが無いと当社の営業リターンが確定せず、社内決裁の数字を置けません。前回お示しした営業利益4,428万円は、契約書の建て付け（卸売＋フィー方式）では過大でした。<span class="who">F&amp;B契約 第4条1項の別紙として</span></li>
+    <li><b>投資（GK①出資）とF&amp;B（営業）の意思決定を分けて進める。</b>F&amp;B契約の修正はGK①出資の前提条件ではありません。料金表の交渉に時間がかかっても、GK①の判断は鑑定書の入手可否で独立に決められます。<span class="who">社内決裁</span></li>
+    <li><b>打ち合わせの場を設定する。</b>論点が20件近くあり、メールの往復では時間がかかります。村松様・TMI・れいわ税理士法人が同席する場で、税務論点（耐用年数区分・益金計上時期）まで一度に詰めるのが効率的です。<span class="who">村松様へ日程照会</span></li>
+  </ol>
+</section>
+
+<footer>
+  本レビューは、いただいた2本のドラフトを、0824事業計画（43p）および収益分配計算_0825_CF表（16シート）と突合したものです。金額の検証はすべて独立に再計算しており、GK①のIRR 113.7%・Multiple 1.811倍、中野さん枠2,600万円・利益2,109万円は資料と一致することを確認済みです。<br>
+  なお本レビューは事業・財務の観点からの整理であり、法的助言ではありません。契約条項の最終的な評価は当社側の弁護士にご確認ください。
+</footer>
+
+</div>
