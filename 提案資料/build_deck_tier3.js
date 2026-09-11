@@ -33,8 +33,8 @@ const GROWTH = 0.06, STORAGE = 0.0105, AUCTION = 0.005, USE = 0.90;
 const MIX = [
   ["グループ直営飲食",   0.278, 1.0, 0.90],
   ["グランメゾン",       0.200, 0.5, 0.90],
-  ["WineBank CLUB 会費", 0.133, 1.0, 0.00],
-  ["オークション参加",   0.133, 1.0, 0.00],
+  ["WineBank CLUB 会費", 0.133, 1.0, 0.10],
+  ["オークション参加",   0.133, 1.0, 0.30],
   ["ワインスクール",     0.100, 1.0, 0.80],
   ["会員交流イベント",   0.070, 1.0, 0.50],
   ["ワイナート年間購読", 0.030, 1.0, 0.50],
@@ -118,11 +118,11 @@ const AUM = 100_000_000;
 
   // 左：交換先別の原価
   const lw = [2.35, 1.15, 1.15, 1.25];
-  const lh = [0.40, ...MIX.map(() => 0.375), 0.42];
+  const lh = [0.38, ...MIX.map(() => 0.345), 0.40];
   const left = [[hdr("交換先"), hdr("構成比"), hdr("当社原価率"), hdr("1マイル原価")]];
   MIX.forEach(([name, w, rate, cost]) => {
     const unit = rate * cost;
-    const tone = unit === 0 ? C.MINT : unit >= 0.8 ? C.AMBER : C.TEXT;
+    const tone = unit <= 0.3 ? C.MINT : unit >= 0.8 ? C.AMBER : C.TEXT;
     left.push([
       lft(name, { fontSize: 10.5 }),
       cel((w * 100).toFixed(1) + "%", { fontSize: 10.5, color: C.MUTE }),
@@ -140,11 +140,11 @@ const AUM = 100_000_000;
   s.addTable(left, Object.assign(tb(), { x: G.M, y: G.BODY_TOP, w: G.C2, colW: lw, rowH: lh }));
 
   const lEnd = tableEnd(G.BODY_TOP, lh);          // 5.60
-  card(s, G.M, lEnd + 0.14, G.C2, 0.86, C.BURG);
+  card(s, G.M, lEnd + 0.12, G.C2, 0.72, C.BURG);
   s.addText(`利用率${(USE * 100).toFixed(0)}%を掛けて、発行1マイル原価は ${MC.toFixed(3)}円`,
-    t({ x: G.M + 0.4, y: lEnd + 0.28, w: G.C2 - 0.8, h: 0.32, fontSize: 14, bold: true, color: C.GOLD_L }));
+    t({ x: G.M + 0.4, y: lEnd + 0.2, w: G.C2 - 0.8, h: 0.3, fontSize: 13.5, bold: true, color: C.GOLD_L }));
   s.addText("残る10%は有効期限切れ。失効益はあてにしない保守的な置き方です。",
-    t({ x: G.M + 0.4, y: lEnd + 0.62, w: G.C2 - 0.8, h: 0.26, fontSize: 10.5, color: C.TEXT }));
+    t({ x: G.M + 0.4, y: lEnd + 0.5, w: G.C2 - 0.8, h: 0.24, fontSize: 10, color: C.TEXT }));
 
   // 右：ティア別の当社収支（保管・オークションは下のカードで明示）
   const X = G.M + G.G2;
@@ -164,7 +164,7 @@ const AUM = 100_000_000;
 
   // 1億合計
   const yA = tableEnd(G.BODY_TOP, rh) + 0.14;     // 3.72
-  card(s, X, yA, G.C2, 1.18, C.PANEL2);
+  card(s, X, yA, G.C2, 1.10, C.PANEL2);
   s.addText("預かり資産1億円の合計（55名・5名・2名）",
     t({ x: X + 0.35, y: yA + 0.16, w: G.C2 - 0.7, h: 0.28, fontSize: 11.5, bold: true, color: C.GOLD_L }));
   [["管理手数料", sum("fee"), C.TEXT], ["保管・保険", -STORAGE * AUM, C.AMBER],
@@ -177,17 +177,25 @@ const AUM = 100_000_000;
   });
 
   // 解説
-  const yB = yA + 1.32;                            // 5.04
-  card(s, X, yB, G.C2, 1.56, C.PANEL);
+  const yB = yA + 1.22;                            // 4.94
+  card(s, X, yB, G.C2, 1.24, C.PANEL);
   s.addText("上位ほど、当社の現金収支は薄くなります",
-    t({ x: X + 0.4, y: yB + 0.22, w: G.C2 - 0.8, h: 0.32, fontSize: 14.5, bold: true, color: C.GOLD_L }));
-  s.addText("管理料は2.50〜2.75%とほぼ一定なのに、マイル還元は4%→6%へ上がるためです。"
-    + "1000万は現金で年83,100円の持ち出しとなり、プロフィットシェア150,000円で回収する設計。"
-    + "ストック単体で黒字化させるには、発行1マイル原価を0.400円まで下げる必要があります。",
-    t({ x: X + 0.4, y: yB + 0.6, w: G.C2 - 0.8, h: 0.86, fontSize: 11, color: C.MUTE, lineSpacing: 16 }));
+    t({ x: X + 0.4, y: yB + 0.18, w: G.C2 - 0.8, h: 0.3, fontSize: 14, bold: true, color: C.GOLD_L }));
+  const top = R[2], beMC = (top.f - STORAGE + AUCTION) / top.m;   // 現金がゼロになる1マイル原価
+  s.addText(`管理料は2.50〜2.75%とほぼ一定なのに、マイル還元は4%→6%へ上がるためです。`
+    + `1000万は現金で年${yen(-top.cash)}円の持ち出しとなり、プロフィットシェア${yen(top.ps)}円で回収する設計です。`,
+    t({ x: X + 0.4, y: yB + 0.52, w: G.C2 - 0.8, h: 0.62, fontSize: 10.5, color: C.MUTE, lineSpacing: 15 }));
 
-  s.addNotes("原価率の根拠：グループ直営飲食90%、ワインスクール80%、会員交流イベント・ワイナート年間購読50%、ワイン追加購入80%、"
-    + "CLUB年会費充当とオークション参加は内部振替のため0%。グランメゾンは交換レート0.5円×原価率90%。"
+  s.addText(
+    `※ 現金収支 ＝ 管理手数料 − 保管・保険料（預かり資産×${(STORAGE * 100).toFixed(2)}%・鈴与実額210円/本）`
+    + ` ＋ オークション手数料（同×${(AUCTION * 100).toFixed(1)}%＝回転10%×当社ルート50%×買い手10%）`
+    + ` − マイル費用（マイル額面×${MC.toFixed(3)}円）\n`
+    + `　 経済収支 ＝ 現金収支 ＋ プロフィットシェア（預かり資産×値上がり${(GROWTH * 100).toFixed(0)}%×当社シェア率）。`
+    + `PSは契約終了時に精算する発生額で、現金化していません。`,
+    t({ x: G.M, y: 6.26, w: G.CW, h: 0.36, fontSize: 8.5, color: C.FOOT, lineSpacing: 12 }));
+
+  s.addNotes(`1000万ティアの現金がゼロになる発行1マイル原価は ${beMC.toFixed(3)}円（現状 ${MC.toFixed(3)}円）。` + "原価率の根拠：グループ直営飲食90%、ワインスクール80%、会員交流イベント・ワイナート年間購読50%、ワイン追加購入80%、"
+    + "WineBank CLUB年会費充当10%、オークション参加30%。グランメゾンは交換レート0.5円×原価率90%。"
     + `利用時の加重平均${COST_USED.toFixed(3)}円に利用率${(USE * 100).toFixed(0)}%を掛けて発行1マイル原価${MC.toFixed(3)}円。`
     + "現金収支には保管・保険▲1.05%とオークション手数料+0.5%を織り込み済み。");
 }
