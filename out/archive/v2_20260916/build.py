@@ -32,122 +32,6 @@ def bar(ws,r,t,span=6):
     for c in range(2,2+span): ws.cell(r,c).fill=HF
     ws.cell(r,2).font=HD
 
-# ============ FY2026着地見込み（先頭シート） ============
-fz=wb.create_sheet('FY2026着地見込み')
-for col,w in zip('ABCDEFG',[3,40,17,17,17,62,2]): fz.column_dimensions[col].width=w
-fz['B1']='FY2026（2026年9月期）着地見込みの修正'; fz['B1'].font=Font(name=F,bold=True,size=15)
-fz['B2']='2026年9月末に私募ファンド3号・4号の組成が間に合い、あわせてFY2027予定案件の一部が前倒し計上となります。単位：円（税別）'; fz['B2'].font=SM
-bar(fz,4,'【1】営業利益の修正',5)
-for j,t in enumerate(['項目','売上','粗利','累計 営業利益','内容']):
-    c=fz.cell(5,2+j,t); c.font=HD; c.fill=HF; c.alignment=Alignment(horizontal='center')
-FZ0=6
-up=[('① 私募ファンド3号',500000000,70000000,'2026年9月末に組成完了。粗利60百万円＋販売手数料10百万円。'),
-    ('② 私募ファンド4号',100000000, 5000000,'同上。粗利率5%。'),
-    ('③ アピシウスM&A仲介（前倒し）',20000000,20000000,'FY2027の上乗せ案件として見込んでいたものが当期計上となる。'),
-    ('④ コンサルティング料（前倒し）',10000000,10000000,'同上。')]
-fz.cell(FZ0,2,'従来見込み 営業利益').font=SB
-c=fz.cell(FZ0,3,None); c=fz.cell(FZ0,4,None)
-c=fz.cell(FZ0,5,-114793431); c.number_format=YEN; c.font=BL; c.fill=YL
-fz.cell(FZ0,6,'★確定値をご入力ください。貴社ご指摘の「営業利益0円＋α」に合わせるには▲105百万円程度となります。').font=RD
-fz.cell(FZ0,6).alignment=Alignment(wrap_text=True,vertical='top'); fz.row_dimensions[FZ0].height=30
-FZ_BASE=FZ0
-for i,(lab,sl,gp,nt) in enumerate(up):
-    r=FZ0+1+i
-    fz.cell(r,2,lab).font=BK
-    for col,v in ((3,sl),(4,gp)):
-        c=fz.cell(r,col,v); c.number_format=YEN; c.font=BL; c.fill=YL
-    c=fz.cell(r,5,f'=E{r-1}+D{r}'); c.number_format=YEN; c.font=SB; c.fill=TF
-    fz.cell(r,6,nt).font=SM
-    fz.cell(r,6).alignment=Alignment(wrap_text=True,vertical='top'); fz.row_dimensions[r].height=26
-FZ_U0,FZ_U1=FZ0+1,FZ0+4
-FZ_UT=FZ_U1+1
-fz.cell(FZ_UT,2,'上積み 計').font=SB
-for col in (3,4):
-    c=fz.cell(FZ_UT,col,f'=SUM({get_column_letter(col)}{FZ_U0}:{get_column_letter(col)}{FZ_U1})')
-    c.number_format=YEN; c.font=SB; c.fill=TF; c.border=TB
-fz.cell(FZ_UT,2).border=TB
-FZ_OP=FZ_UT+1
-fz.cell(FZ_OP,2,'修正後 営業利益').font=SB; fz.cell(FZ_OP,2).fill=OR_
-c=fz.cell(FZ_OP,5,f'=E{FZ_BASE}+D{FZ_UT}'); c.number_format=YEN; c.font=SB; c.fill=OR_; c.border=TB
-for cc in (3,4): fz.cell(FZ_OP,cc).fill=OR_
-fz.cell(FZ_OP,6,'私募2本の粗利75百万円と前倒し30百万円で、営業損益はほぼ均衡まで戻ります。').font=RD
-
-n=FZ_OP+2
-bar(fz,n,'【2】修正後のFY2026 損益',5)
-for j,t in enumerate(['科目','従来見込み','上積み','修正後','内容']):
-    c=fz.cell(n+1,2+j,t); c.font=HD; c.fill=HF; c.alignment=Alignment(horizontal='center')
-L0=n+2
-pl=[('売上高',708205820,f'=C{FZ_UT}','私募600百万円＋前倒し30百万円'),
-    ('売上原価',479066414,f'=C{FZ_UT}-D{FZ_UT}','私募2本の原価525百万円。前倒し2件は原価なし'),
-    ('売上総利益',None,f'=D{FZ_UT}',''),
-    ('　うち 既存事業',None,f'=D{FZ_U0}+D{FZ_U0+1}','私募2本は既存事業の売上として計上'),
-    ('　うち 上乗せ案件（前倒し）',0,f'=D{FZ_U0+2}+D{FZ_U0+3}','M&A仲介20＋コンサルティング料10'),
-    ('販管費',343932836,0,'変更なし'),
-    ('営業利益',None,None,''),
-    ('営業外費用',10000000,0,''),
-    ('経常利益',None,None,'')]
-for i,(lab,b,u,nt) in enumerate(pl):
-    r=L0+i
-    bold=lab in ('売上総利益','営業利益','経常利益')
-    fz.cell(r,2,lab).font=SB if bold else BK
-    c=fz.cell(r,3,b); c.number_format=YEN; c.font=SB if bold else BK
-    c=fz.cell(r,4,u); c.number_format=YEN; c.font=SB if bold else BK
-    c=fz.cell(r,5,f'=C{r}+D{r}'); c.number_format=YEN; c.font=SB; c.fill=OR_ if bold else TF
-    fz.cell(r,6,nt).font=SM
-    if bold:
-        for cc in range(2,6): fz.cell(r,cc).border=TB
-L_S,L_C,L_G,L_GB,L_GA,L_P,L_OP,L_NOE,L_ORD=[L0+i for i in range(9)]
-fz.cell(L_G,3,f'=C{L_S}-C{L_C}').number_format=YEN
-fz.cell(L_GB,3,f'=C{L_G}-C{L_GA}').number_format=YEN
-fz.cell(L_OP,3,f'=C{L_G}-C{L_P}').number_format=YEN
-fz.cell(L_OP,4,f'=D{L_G}-D{L_P}').number_format=YEN
-fz.cell(L_ORD,3,f'=C{L_OP}-C{L_NOE}').number_format=YEN
-fz.cell(L_ORD,4,f'=D{L_OP}-D{L_NOE}').number_format=YEN
-FZ_TL=L_ORD+2
-fz.cell(FZ_TL,2,'繰越欠損金 残高（FY2026末）').font=SB; fz.cell(FZ_TL,2).fill=TF
-c=fz.cell(FZ_TL,3,127364212); c.number_format=YEN; c.font=BL; c.fill=YL
-fz.cell(FZ_TL,4,'FY2025分').font=SM
-c=fz.cell(FZ_TL,5,f'=C{FZ_TL}+MAX(0,-E{L_ORD})'); c.number_format=YEN; c.font=SB; c.fill=OR_
-fz.cell(FZ_TL,6,'FY2025の欠損127.4百万円＋FY2026の経常損失。従来の約252百万円から縮小するため、プランEでは一部に課税が生じます。').font=RD
-fz.cell(FZ_TL,6).alignment=Alignment(wrap_text=True,vertical='top'); fz.row_dimensions[FZ_TL].height=30
-
-n=FZ_TL+2
-bar(fz,n,'【3】それでも計画未達である理由',5)
-rs=[('SBI証券との公募ファンドの大幅遅延',200000000,
-     '★最大の未達要因。計画では売上約700百万円・粗利200百万円超を見込んでいたが、審査・制度対応の長期化により当期中の組成に至らず。'),
-    ('不採算飲食3店舗の営業赤字',0,
-     '★店舗別の確定値をご入力ください。撤退により消滅した固定費は年102.9百万円（月8,577,274円×12）で、こちらは勘定科目レベルで検証済み。')]
-for i,(lab,v,nt) in enumerate(rs):
-    r=n+1+i
-    fz.cell(r,2,lab).font=SB if i==0 else BK
-    c=fz.cell(r,3,v); c.number_format=YEN; c.font=BL; c.fill=YL
-    fz.cell(r,4,'粗利ベース').font=SM
-    fz.cell(r,6,nt).font=RD
-    fz.cell(r,6).alignment=Alignment(wrap_text=True,vertical='top'); fz.row_dimensions[r].height=30
-FZ_SBI=n+1
-r=n+3
-fz.cell(r,2,'これらが計画どおりであった場合の営業利益').font=SB; fz.cell(r,2).fill=OR_
-c=fz.cell(r,5,f'=E{FZ_OP}+C{FZ_SBI}+C{FZ_SBI+1}'); c.number_format=YEN; c.font=SB; c.fill=OR_; c.border=TB
-fz.cell(r,6,'私募が間に合った今も、公募ファンドの遅延という最大の未達要因は解消していません。').font=RD
-
-n=r+2
-bar(fz,n,'【4】FY2027への影響',5)
-im=[('上乗せ案件の減少','M&A仲介20.0百万円とコンサルティング料10.0百万円がFY2026に前倒し計上されるため、'
-     'FY2027の上乗せ案件は132.5百万円→102.5百万円に減少します。'),
-    ('売上の一過性','FY2026の売上1,338.2百万円のうち、私募ファンド600.0百万円と前倒し30.0百万円は一過性です。'
-     'FY2027の基準となる2期平均は、これらを除いた実力値708.2百万円で算定しています。'),
-    ('2期平均は変更なし','（FY2025 752.9＋FY2026実力値 708.2）÷2＝730.5百万円。プランD・Eの既存事業売上のベースは変わりません。'),
-    ('消費税の増加','課税売上高が1,338.2百万円に増えるため、FY2026分の確定納付額が増加します。'
-     'FY2027の資金繰りに影響するため、②前提【6】で私募向け仕入の扱いを入力してください。')]
-for i,(k,v) in enumerate(im):
-    r=n+1+i
-    fz.cell(r,2,k).font=SB; fz.cell(r,2).fill=OR_
-    fz.cell(r,3,v).font=BK
-    fz.merge_cells(start_row=r,start_column=3,end_row=r,end_column=6)
-    fz.cell(r,3).alignment=Alignment(wrap_text=True,vertical='top')
-    fz.row_dimensions[r].height=34
-Z=lambda r,c='E': f"'FY2026着地見込み'!${c}${r}"
-
 # ============ ④FY2026月次実績 ============
 h=wb.create_sheet('④FY2026月次実績')
 h.column_dimensions['A'].width=3; h.column_dimensions['B'].width=26
@@ -219,8 +103,8 @@ for j,t in enumerate(['区分・案件','金額','取引先','損益計上区分
     c=p.cell(12,2+j,t); c.font=SB; c.fill=SF
 items=[('コンサルティング料　間接グループ5社',80000000,'中野出資','営業収益（12か月按分）'),
        ('コンサルティング料　Thierry Marx（2026年4月開業）',2500000,'Apiciusグループ','営業収益（12か月按分）'),
-       ('コンサルティング料　Apicius',0,'中野出資','FY2026に前倒し計上のため0'),
-       ('M&A仲介',0,'外部','FY2026に前倒し計上のため0'),
+       ('コンサルティング料　Apicius',10000000,'中野出資','営業収益（12か月按分）'),
+       ('M&A仲介',20000000,'外部','営業収益（一時）'),
        ('クルーザー×ワイン事業 1回目',10000000,'外部','営業収益（一時）'),
        ('クルーザー×ワイン事業 2回目',10000000,'外部','営業収益（一時）')]
 I0=13
@@ -239,7 +123,7 @@ for lab,f_,rr in [('合計',f'=SUM(C{I0}:C{I1})',TT),('　うち 営業収益',f
 ADV,INV=TT+1,TT+2
 p.cell(TT+2,6,'※クルーザー×ワイン事業は投資業ではなく事業収益のため、全額を営業収益に計上。営業外収益は0。').font=RD
 p.cell(TT,6,'※期間表記は2026/09-2027/08。決算期(2026/10-2027/09)と1か月ズレるため全額FY2027帰属で試算。').font=RD
-p.cell(TT+1,6,'※アピシウスM&A仲介20.0とコンサルティング料10.0はFY2026に前倒し計上となったため0。合計は132.5→102.5百万円。').font=RD
+p.cell(TT+1,6,'※グループ内 92.5百万円（中野出資90.0＋Apiciusグループ2.5）／外部 40.0百万円（M&A仲介20.0＋クルーザー×ワイン事業20.0）。').font=RD
 O0=TT+4
 bar(p,O0,'【3】その他前提')
 oth=[('営業外費用（支払利息等・年額）',15000000,YEN,'事業計画FY2027計画値'),
@@ -258,21 +142,16 @@ for i,(t,v,fmt,nt) in enumerate(oth):
 NOE,MI,MC1,MC2,TGT,PLAN=O0+1,O0+2,O0+3,O0+4,O0+5,O0+6
 SCN,BUYP,BUY26=O0+7,O0+8,O0+9
 rr=O0+10
-p.cell(rr,2,'繰越欠損金 残高（FY2026末）').font=BK
-c=p.cell(rr,3,f'={Z(FZ_TL)}'); c.font=GR; c.number_format=YEN; c.fill=TF
-p.cell(rr,6,'FY2026着地見込みシートから自動参照。資本金1,000万円の中小法人は所得の100%控除可。').font=SM
-p.cell(rr+1,2,'法人実効税率').font=BK
-c=p.cell(rr+1,3,0.34); c.font=BL; c.number_format=PCT; c.fill=YL
-p.cell(rr+1,6,'繰越欠損金を使い切った後の課税所得に適用。プランEでは一部に課税が生じます。').font=SM
-TLOSS,TRATE=rr,rr+1
+p.cell(rr,2,'法人税等').font=BK; p.cell(rr,3,'均等割のみ').font=BL
+p.cell(rr,6,'繰越欠損金 約252百万円（FY2025▲127.4＋FY2026▲124.8）。資本金1,000万円の中小法人は所得の100%控除可。').font=SM
+p.cell(rr,6).alignment=Alignment(wrap_text=True,vertical='top'); p.row_dimensions[rr].height=32
 
 # 【6】消費税の算定（FY2026分＝FY2027の資金繰りに乗る納付額）
 CT0=rr+2
 bar(p,CT0,'【6】消費税の算定　※FY2027の資金繰りに乗るのはFY2026分の確定納付と当期の中間納付')
 ct=[('消費税率',0.10,PCT,True,''),
-    ('FY2026 課税売上高',None,YEN,False,'FY2026着地見込みシートの修正後 売上高（私募600＋前倒し30を含む）'),
-    ('　うち 私募ファンド向けワイン仕入',525000000,YEN,True,'★私募3号・4号の原価相当。当期に仕入れた場合は課税仕入に算入。在庫からの出庫であれば0にしてください。'),
-    ('FY2026 ワイン仕入（課税仕入）',None,YEN,False,'通常仕入419,066,414＋上記の私募向け仕入'),
+    ('FY2026 課税売上高',708205820,YEN,True,'事業計画FY2026見込の売上高'),
+    ('FY2026 ワイン仕入（課税仕入）',None,YEN,False,'売上原価479,066,414＋在庫増減▲60,000,000'),
     ('FY2026 販管費のうち課税仕入',208594315,YEN,True,'販管費343,932,836−人件費・減価償却・租税公課等135,338,521'),
     ('　仮受消費税',None,YEN,False,''),
     ('　仮払消費税',None,YEN,False,''),
@@ -287,19 +166,18 @@ for i,(t,v,fmt,inp,nt) in enumerate(ct):
     if inp: c.font=BL; c.fill=YL
     else: c.font=SB; c.fill=TF
     p.cell(r2,6,nt).font=SM
-CT_RATE,CT_SALES,CT_PFBUY,CT_BUY,CT_SGA=CT0+1,CT0+2,CT0+3,CT0+4,CT0+5
-CT_UKE,CT_HARAI,CT_FIX,CT_MIDPAID,CT_FIN,CT_MID=CT0+6,CT0+7,CT0+8,CT0+9,CT0+10,CT0+11
-p.cell(CT_SALES,3,f'={Z(L_S)}').number_format=YEN
-p.cell(CT_BUY,3,f'=C{O0+9}+C{CT_PFBUY}').number_format=YEN
+CT_RATE,CT_SALES,CT_BUY,CT_SGA=CT0+1,CT0+2,CT0+3,CT0+4
+CT_UKE,CT_HARAI,CT_FIX,CT_MIDPAID,CT_FIN,CT_MID=CT0+5,CT0+6,CT0+7,CT0+8,CT0+9,CT0+10
+p.cell(CT_BUY,3,f'=C{O0+9}').number_format=YEN
 p.cell(CT_UKE,3,f'=C{CT_SALES}*C{CT_RATE}').number_format=YEN
 p.cell(CT_HARAI,3,f'=(C{CT_BUY}+C{CT_SGA})*C{CT_RATE}').number_format=YEN
 p.cell(CT_FIX,3,f'=C{CT_UKE}-C{CT_HARAI}').number_format=YEN
 p.cell(CT_FIN,3,f'=C{CT_FIX}-C{CT_MIDPAID}').number_format=YEN
 p.cell(CT_MID,3,f'=C{CT_FIX}/4').number_format=YEN
-for r2 in (CT_SALES,CT_BUY,CT_UKE,CT_HARAI,CT_FIX,CT_FIN,CT_MID):
+for r2 in (CT_BUY,CT_UKE,CT_HARAI,CT_FIX,CT_FIN,CT_MID):
     p.cell(r2,3).font=SB; p.cell(r2,3).fill=TF
 p.cell(CT_FIX,3).fill=OR_
-p.cell(CT_FIX+4,6,'※私募向け仕入を課税仕入に算入するかで納付額が大きく変わります。算入しない場合は納付額が約52百万円増えるため、実際の仕入時期のご確認をお願いします。').font=RD
+p.cell(CT_FIX+4,6,'※ワイン仕入が課税売上−課税販管費（約499.6百万円）を超えると還付に転じる。FY2026の仕入419.1百万円では納付側。').font=RD
 
 # 【7】プランD・Eの前提
 D0=CT_MID+3
@@ -424,12 +302,12 @@ m.cell(R_CUM+3,2,'※コンサルティング料は12か月按分。M&A仲介と
 m.freeze_panes='D5'
 
 # ============ ①サマリー ============
-s=wb.create_sheet('①サマリー',1)
+s=wb.create_sheet('①サマリー',0)
 s.column_dimensions['A'].width=3; s.column_dimensions['B'].width=38
 for col in 'CDEF': s.column_dimensions[col].width=19
 s.column_dimensions['G'].width=46
 s['B1']='FY2027（2027年9月期）利益予測　プランD（メイン）／プランE（上振れ）'; s['B1'].font=Font(name=F,bold=True,size=15)
-s['B2']='FY2026は2026年9月末の私募ファンド組成を反映した修正後の着地見込み。FY2027は再編後の実力値（2026/04-06実績）からの積み上げ'; s['B2'].font=Font(name=F,size=10,color='8C8C8C')
+s['B2']='ベース：再編後の実力値（2026/04-06 実績3か月平均）を横ばい延伸し、そこから積み上げ'; s['B2'].font=Font(name=F,size=10,color='8C8C8C')
 s['B3']='単位：円（税別）　出典：事業計画202608（銀行様）月次／決算報告書 第54期'; s['B3'].font=SM
 heads=['科目','FY2026 見込','横ばい実力値\n（参考）','プランD\nメインシナリオ','プランE\n上振れシナリオ','コメント']
 for j,t in enumerate(heads):
@@ -437,18 +315,18 @@ for j,t in enumerate(heads):
 s.row_dimensions[5].height=44
 b=lambda rr: f"{Q(rr)}*12"
 spec=[
- ('既存事業 売上',       f'={Z(L_S)}-{Z(L_GA,"C")}-{Z(L_GA,"D")}', f'={b(S_M)}', f'={Q(D_EX)}', f'={Q(E_EX)}','FY2026は私募600百万円を含む。Dは前期・今期の売上平均（私募除外の実力値ベース）'),
- ('売上総利益（既存事業）', f'={Z(L_GB)}', f'={b(G_M)}', f'=D7+{Q(D_DGP)}', f'=D7+{Q(E_DGP)}','横ばいからの差額売上の粗利率は保守的に30%'),
- ('＋上乗せ案件（営業収益）',f'={Z(L_GA)}', 0,            f'={Q(ADV)}',  f'={Q(ADV)}','FY2026は前倒しのM&A仲介20＋コンサル料10。FY2027は102.5'),
- ('売上高（上乗せ含む）',   f'={Z(L_S)}', '=D6',        f'={Q(D_TOT)}',f'={Q(E_TOT)}','D＝833.0百万円、E＝1,133.0百万円'),
- ('売上総利益 合計',       f'={Z(L_G)}', '=D7',        f'={Q(D_GT)}', f'={Q(E_GT)}',''),
- ('販管費',              f'={Z(L_P)}', f'={b(P_M)}', '=D11','=D11','2026/04-06実績の月平均×12。EもDと同額で据置き'),
- ('営業利益',             f'={Z(L_OP)}','=D10-D11',   '=E10-E11','=F10-F11',''),
+ ('既存事業 売上',       708205820, f'={b(S_M)}', f'={Q(D_EX)}', f'={Q(E_EX)}','Dは前期・今期の売上平均そのもの。Eは私募＋オークション300百万円を上積み'),
+ ('売上総利益（既存事業）', 229139405, f'={b(G_M)}', f'=D7+{Q(D_DGP)}', f'=D7+{Q(E_DGP)}','横ばいからの差額売上の粗利率は保守的に30%'),
+ ('＋上乗せ案件（営業収益）',0,        0,            f'={Q(ADV)}',  f'={Q(ADV)}','コンサルティング料92.5＋M&A仲介20＋クルーザー×ワイン事業20'),
+ ('売上高（上乗せ含む）',   708205820, '=D6',        f'={Q(D_TOT)}',f'={Q(E_TOT)}','D＝863.0百万円、E＝1,163.0百万円'),
+ ('売上総利益 合計',       229139405, '=D7',        f'={Q(D_GT)}', f'={Q(E_GT)}',''),
+ ('販管費',              343932836, f'={b(P_M)}', '=D11','=D11','2026/04-06実績の月平均×12。EもDと同額で据置き'),
+ ('営業利益',             -114793431,'=D10-D11',   '=E10-E11','=F10-F11',''),
  ('営業外収益',           0,         0,            0,0,'クルーザー×ワイン事業は営業収益に計上'),
- ('営業外費用',           f'={Z(L_NOE)}',  f'={Q(NOE)}', f'={Q(NOE)}',f'={Q(NOE)}',''),
- ('経常利益',             '=C12+C13-C14','=D12+D13-D14','=E12+E13-E14','=F12+F13-F14',''),
- ('法人税等',             0,0,f'=MAX(0,E15-{Q(TLOSS)})*{Q(TRATE)}',f'=MAX(0,F15-{Q(TLOSS)})*{Q(TRATE)}','繰越欠損金（FY2026末残高）を超える所得に課税'),
- ('当期純利益',           '=C15-C16','=D15-D16',   '=E15-E16','=F15-F16',''),
+ ('営業外費用',           10000000,  f'={Q(NOE)}', f'={Q(NOE)}',f'={Q(NOE)}',''),
+ ('経常利益',             -124793431,'=D12+D13-D14','=E12+E13-E14','=F12+F13-F14',''),
+ ('法人税等',             0,0,0,0,'繰越欠損金 約252百万円により実質非課税'),
+ ('当期純利益',           -124793431,'=D15-D16',   '=E15-E16','=F15-F16',''),
 ]
 bold={9,10,12,15,17}
 for i,(lab,*v) in enumerate(spec):
@@ -456,7 +334,7 @@ for i,(lab,*v) in enumerate(spec):
     c=s.cell(rr,2,lab); c.font=SB if rr in bold else BK
     for j,val in enumerate(v[:-1]):
         cc=s.cell(rr,3+j,val); cc.number_format=YEN
-        cc.font=SB if rr in bold else BK
+        cc.font=SB if rr in bold else (BL if j==0 and isinstance(val,int) else BK)
     s.cell(rr,7,note).font=SM
     if rr in bold:
         for c2 in range(2,8): s.cell(rr,c2).fill=TF; s.cell(rr,c2).border=TB
@@ -478,16 +356,15 @@ for i,(lab,f1,f2) in enumerate(add):
     c=s.cell(rr,3,f1); c.number_format=YEN; c.font=SB; c.fill=YL
     c=s.cell(rr,4,f2); c.number_format=PCT; c.font=SB; c.fill=YL
 notes=['','【判定】',
- 'FY2026：2026年9月末の私募ファンド3号・4号の組成により、営業損益はほぼ均衡まで回復します。',
  '横ばい実力値（参考）：再編後の4-6月実績をそのまま延ばすだけでは営業利益▲99.6百万円・経常利益▲114.6百万円。',
- 'プランD（メインシナリオ）：既存事業を前期・今期の売上平均730.5百万円に戻し、上乗せ案件102.5百万円を外数で加算。',
+ 'プランD（メインシナリオ）：既存事業を前期・今期の売上平均730.5百万円に戻し、契約ベースの上乗せ案件132.5百万円を',
+ '　　外数で加算。売上863.0百万円・営業利益＋135.4百万円・経常利益＋120.4百万円。',
  'プランE（上振れシナリオ）：Dに私募ファンド＋オークションで300百万円（粗利率30%）を上積み。',
+ '　　売上1,163.0百万円・営業利益＋225.4百万円・経常利益＋210.4百万円。',
  '',
- '※FY2026の売上には私募ファンド600百万円と前倒し計上30百万円が含まれますが、いずれも一過性です。',
- '　　プランD・Eの基準となる2期平均730.5百万円は、これらを除いた実力値708.2百万円で算定しています。',
- '※アピシウスM&A仲介20.0とコンサルティング料10.0はFY2026に前倒し計上となるため、FY2027の上乗せ案件は102.5百万円。',
- '※差額売上の粗利率30%はFY2025 26.8%・FY2026 32.4%の実績水準。4-6月実績の51.5%は用いない。',
- '※プランEは繰越欠損金（FY2026末残高）を超える所得に法人税が生じます。']
+ '※Dの既存事業売上730.5百万円は過去2期の実績平均そのもので、新規の前提を置いていない。',
+ '※Eの300百万円は、FY2026にSBI公募の遅延を私募で約300百万円巻き返した実績と同水準。',
+ '※差額売上の粗利率30%はFY2025 26.8%・FY2026 32.4%の実績水準。4-6月実績の51.5%は用いない。']
 for i,n in enumerate(notes):
     c=s.cell(26+i,2,n); c.font=Font(name=F,bold=True,size=12) if n=='【判定】' else Font(name=F,size=10)
     s.merge_cells(start_row=26+i,start_column=2,end_row=26+i,end_column=7)
@@ -496,17 +373,16 @@ for i,n in enumerate(notes):
 br=wb.create_sheet('⑤利益ブリッジ')
 br.column_dimensions['A'].width=3; br.column_dimensions['B'].width=48
 br.column_dimensions['C'].width=20; br.column_dimensions['D'].width=20; br.column_dimensions['E'].width=58
-br['B1']='FY2026（修正後）→ FY2027 営業利益ブリッジ（プランD）'; br['B1'].font=Font(name=F,bold=True,size=14)
+br['B1']='FY2026 → FY2027 営業利益ブリッジ（プランD）'; br['B1'].font=Font(name=F,bold=True,size=14)
 br['B2']='単位：円（税別）'; br['B2'].font=SM
 for j,t in enumerate(['項目','増減','累計','内容']):
     c=br.cell(4,2+j,t); c.font=HD; c.fill=HF
-steps=[('FY2026 営業利益（修正後）',f'={Z(L_OP)}','2026年9月末の私募ファンド組成を反映した着地見込み'),
-       ('① 私募ファンドの剥落',f'=-({Z(FZ_U0,"D")}+{Z(FZ_U0+1,"D")})','FY2026限りの一過性収益。3号70.0＋4号5.0百万円'),
-       ('② 既存事業 粗利の減少（横ばい実力値へ）',f'={Q(G_M)}*12-229139405','FY2026は2025/11・2026/09の大口を含む。撤退後の4-6月実力値ベースでは減少'),
+steps=[('FY2026 営業利益（見込）',-114793431,'現行計画の今期着地見込'),
+       ('① 既存事業 粗利の減少（横ばい実力値ベース）',f'={Q(G_M)}*12-229139405','FY2026は2025/11・2026/09の大口を含む。撤退後の4-6月実力値ベースでは減少'),
+       ('② 販管費の削減',f'=343932836-{Q(P_M)}*12','不採算3店舗の撤退＋固定費削減。10-3月平均比で月▲8.58百万円'),
        ('③ 差額売上の粗利（売上平均への回復）',f'={Q(D_DGP)}','既存事業を前期・今期の売上平均730.5百万円に戻す。差額341.4百万円×粗利率30%'),
-       ('④ 販管費の削減',f'=343932836-{Q(P_M)}*12','不採算3店舗の撤退＋固定費削減。10-3月平均比で月▲8.58百万円'),
-       ('⑤ 上乗せ案件の増加',f'={Q(ADV)}-{Z(L_GA)}','FY2027の102.5百万円と、FY2026に前倒し計上される30.0百万円との差'),
-       ('FY2027 営業利益（プランD）',None,'①〜⑤の合計')]
+       ('④ 上乗せ案件（営業収益）',f'={Q(ADV)}','コンサルティング料92.5＋M&A仲介20＋クルーザー×ワイン事業20'),
+       ('FY2027 営業利益（プランD）',None,'①〜④の合計')]
 for i,(lab,val,note) in enumerate(steps):
     rr=5+i
     c=br.cell(rr,2,lab); c.font=SB if val is None or i==0 else BK
@@ -738,13 +614,13 @@ cf.cell(sr+1,2,'ケース').font=SB; cf.cell(sr+1,2).fill=SF
 for j,t in enumerate(['期末 現預金残高','期中 最低残高','必要調達額']):
     c=cf.cell(sr+1,3+j,t); c.font=SB; c.fill=SF; c.alignment=Alignment(horizontal='center',wrap_text=True)
 cf.cell(sr+1,6,'前提').font=SB; cf.cell(sr+1,6).fill=SF
-cases=[('A. 基本（プランD：仕入FY2026同額・売上833.0百万円）',f'=O{CF_END}',f'=MIN(D{CF_END}:O{CF_END})',
-        '期首現預金30百万円、ワイン仕入FY2026と同額419.1百万円、売上833.0百万円'),
+cases=[('A. 基本（プランD：仕入FY2026同額・売上863.0百万円）',f'=O{CF_END}',f'=MIN(D{CF_END}:O{CF_END})',
+        '期首現預金30百万円、ワイン仕入FY2026と同額419.1百万円、売上863.0百万円'),
        ('B. ワイン仕入を在庫横ばいにした場合',f"=C{sr+2}+({Q(BUY26)}-'③FY2027月次推移'!$P${R_C})*(1+{Y(CF_TAX)})",
         f"=D{sr+2}+({Q(BUY26)}-'③FY2027月次推移'!$P${R_C})*(1+{Y(CF_TAX)})",
         '仕入＝売上原価（②前提のワイン仕入方針を1に変更）。在庫は増えない'),
        ('C. 2027/03・09の一時収益が入らない',f'=C{sr+2}-(P{IN_I}+P{IN_CR})',f'=D{sr+2}-(P{IN_I}+P{IN_CR})',
-        'クルーザー×ワイン事業22.0百万円（税込）が未入金。M&A仲介はFY2026に前倒しのため対象外'),
+        'M&A仲介22.0百万円＋クルーザー×ワイン事業22.0百万円（いずれも税込）が未入金'),
        ('D. 差額売上が未達（横ばい実力値にとどまる）',f"=C{sr+2}-'①サマリー'!$C$23*(1+{Y(CF_TAX)})",
         f"=D{sr+2}-'①サマリー'!$C$23*(1+{Y(CF_TAX)})",
         '差額売上341.4百万円が未達。仕入方針2では仕入額が減らないため全額が資金不足に直結'),
@@ -820,6 +696,60 @@ cf.cell(RQ+2,6,'この月の資金需要が最も大きく、必要売上高を�
 cf.cell(RQ+4,2,'※追加売上は12か月に均等按分し、当月入金する前提。売上が期の前半に寄れば必要額は下がります。').font=RD
 cf.cell(RQ+5,2,'※本算定はワイン仕入方針2（FY2026と同額の固定仕入）を前提としています。方針1では仕入が売上原価に連動するため別途算定が必要です。').font=RD
 cf.cell(RQ+6,2,'※追加売上に係る消費税は翌期（2027/11）の納付となるため、FY2027の資金繰りには現れません。').font=RD
+
+# ============ FY2026未達要因（先頭シート） ============
+fz=wb.create_sheet('FY2026未達要因',0)
+fz.column_dimensions['A'].width=3; fz.column_dimensions['B'].width=46
+fz.column_dimensions['C'].width=20; fz.column_dimensions['D'].width=20
+fz.column_dimensions['E'].width=62
+fz['B1']='FY2026（2026年9月期）が計画未達となった要因'; fz['B1'].font=Font(name=F,bold=True,size=15)
+fz['B2']='単位：円（税別）　経常利益ベース'; fz['B2'].font=SM
+bar(fz,4,'【1】未達要因の内訳',5)
+for j,t in enumerate(['項目','金額','累計','内容']):
+    c=fz.cell(5,2+j,t); c.font=HD; c.fill=HF
+FZ_R=6
+fzs=[('FY2026 経常利益（見込）',-124793431,False,
+      '現行計画の今期着地見込'),
+     ('① SBI証券との公募ファンドの大幅遅延',200000000,True,
+      '★最大の未達要因。計画では売上約700百万円・粗利200百万円超を見込んでいたが、審査・制度対応の長期化により当期中の組成に至らず。'),
+     ('② 私募ファンドの期ズレ',30000000,True,
+      '特殊な契約形態のため当期は原価が先行し粗利率は約5%にとどまる。来期の販売実績に応じ、販売手数料を含め約30百万円の粗利を来期計上。'),
+     ('③ 不採算飲食3店舗の営業赤字',0,True,
+      '★店舗別の確定値をご入力ください。撤退により消滅した固定費は年102.9百万円（月8,577,274円×12）で、こちらは勘定科目レベルで検証済み。')]
+for i,(lab,val,inp,note) in enumerate(fzs):
+    r=FZ_R+i
+    fz.cell(r,2,lab).font=SB if i<=1 else BK
+    c=fz.cell(r,3,val); c.number_format=YEN
+    if inp: c.font=BL; c.fill=YL
+    else: c.font=SB; c.fill=TF
+    c=fz.cell(r,4,f'=C{FZ_R}' if i==0 else f'=D{r-1}+C{r}')
+    c.number_format=YEN; c.font=SB; c.fill=TF
+    fz.cell(r,5,note).font=RD if i in (1,3) else SM
+    fz.cell(r,5).alignment=Alignment(wrap_text=True,vertical='top')
+    fz.row_dimensions[r].height=34
+FZ_E=FZ_R+len(fzs)
+fz.cell(FZ_E,2,'これらが計画どおりであった場合の経常利益').font=SB
+c=fz.cell(FZ_E,4,f'=D{FZ_E-1}'); c.number_format=YEN; c.font=SB; c.fill=OR_; c.border=TB
+for c2 in (2,3,4): fz.cell(FZ_E,c2).fill=OR_
+fz.cell(FZ_E,5,'①〜③はいずれも一過性または期ズレの要因であり、既存事業の収益力そのものの毀損ではない。').font=RD
+fz.cell(FZ_E,5).alignment=Alignment(wrap_text=True,vertical='top')
+
+O2=FZ_E+2
+bar(fz,O2,'【2】挽回策の実績と来期の方針',5)
+pol=[('挽回策（FY2026）','私募ファンドで約300百万円を組成し、公募の遅延分を部分的に巻き返した。ただし着手が後手に回り、通期の未達は補いきれなかった。'),
+     ('来期の方針①','公募ファンドは優先しない。制度対応・審査期間が当社の管理外にあり、資金繰りと収益計画を左右させない。'),
+     ('来期の方針②','私募ファンドを毎年継続的に組成する。FY2026の約300百万円は実績値であり、これを反復可能な収益源として計画の中心に据える。'),
+     ('来期の方針③','オークション事業を私募と並ぶ販売チャネルとして立ち上げ、プランEの上振れ余地とする。'),
+     ('来期の方針④','不採算飲食3店舗の撤退は2026年3月に完了済み。WineBankテラスはWineBank CLUBのフラッグシップ店として改善のうえ継続。')]
+for i,(k,v) in enumerate(pol):
+    r=O2+1+i
+    fz.cell(r,2,k).font=SB
+    fz.cell(r,3,v).font=BK
+    fz.merge_cells(start_row=r,start_column=3,end_row=r,end_column=5)
+    fz.cell(r,3).alignment=Alignment(wrap_text=True,vertical='top')
+    fz.row_dimensions[r].height=32
+fz.cell(O2+len(pol)+2,2,'※①の粗利200百万円超は、公募ファンド組成時に見込んでいた売上約700百万円に対応する粗利。金額は貴社ご確認値。').font=RD
+fz.cell(O2+len(pol)+3,2,'※③は店舗別PLが社内資料から特定できなかったため、確定値のご入力までは0としています（黄色セル）。').font=RD
 
 # ③の追加売上をシナリオ3対応に書き戻す（RQ確定後）
 _as=f"=IF({Q(SCN)}=3,{Q(E_DIFF)}/12,IF({Q(SCN)}=2,{Q(D_DIFF)}/12,0))"
