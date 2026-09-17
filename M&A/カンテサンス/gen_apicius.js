@@ -12,16 +12,16 @@ const SW=13.33, M=0.62;
 const s = p.addSlide();
 
 /* ---------- header ---------- */
-s.addText("TRACK RECORD　／　株式会社アピシウス（東京・有楽町）", {x:M, y:0.34, w:10, h:0.26, isTextBox:true, margin:0,
+s.addText("TRACK RECORD　／　株式会社アピシウス（東京・銀座）", {x:M, y:0.34, w:10, h:0.26, isTextBox:true, margin:0,
   fontFace:SANS, fontSize:11, bold:true, color:GOLD, charSpacing:1.2});
 s.addText("同じことを、すでに一度やっています", {x:M, y:0.62, w:SW-2*M, h:0.52, isTextBox:true, margin:0,
   fontFace:SERIF, fontSize:29, bold:true, color:INK});
-s.addText("2024年6月、創業40年を超え、39年間にわたり赤字が続いた老舗フレンチレストランを取得。2年間で売上30%増・利益250%超の増加を実現し、幹部メンバーは全員が継続しています。",
+s.addText("2024年6月、創業40年を超えるグランメゾンを取得。39年間にわたり赤字が続き、40年目にようやく黒字化した店を引き継ぎ、2年間で売上30%増・営業利益250%超の増加を実現。幹部メンバーは全員が継続しています。",
   {x:M, y:1.19, w:SW-2*M, h:0.36, isTextBox:true, margin:0, fontFace:SANS, fontSize:12.5, color:MUTE, lineSpacing:17});
 
 /* ---------- stat tiles ---------- */
 const tiles=[["売上高","＋30%","取得前比（2年間）"],
-             ["利益","＋250%超","取得前比（2年間）"],
+             ["営業利益","＋250%超","取得前比（2年間）"],
              ["幹部メンバー継続率","100%","一人も欠けていません"]];
 tiles.forEach((t,i)=>{
   const x = M + i*4.08;
@@ -43,7 +43,7 @@ const rows=[
  [hd(""), hd("取得前（〜2024年5月）"), hd("取得後2年（2026年）")],
  [{text:"業績",options:{bold:true,fontSize:10}},
   {text:"39年間にわたり赤字。40年目にようやく黒字化",options:{fontSize:10}},
-  {text:"売上 ＋30%／利益 ＋250%超",options:{fontSize:10,bold:true,color:GRN}}],
+  {text:"売上 ＋30%／営業利益 ＋250%超",options:{fontSize:10,bold:true,color:GRN}}],
  [{text:"人員",options:{bold:true,fontSize:10}},
   {text:"―",options:{fontSize:10,color:MUTE}},
   {text:"幹部メンバーは全員が継続。経営陣の入替えを行っていません",options:{fontSize:10}}],
@@ -81,14 +81,14 @@ keep.forEach((k,i)=>{
 
 /* ---------- 結論バー ---------- */
 s.addShape(p.ShapeType.roundRect, {x:M, y:6.14, w:SW-2*M, h:0.80, rectRadius:0.04, fill:{color:BERRY}});
-s.addText([{text:"アピシウスで実証されたのは、収益改善の手法ではありません。「高級レストランは、引き継いでも壊れない」ということです。\n",
+s.addText([{text:"アピシウスで実証されたのは、収益改善の手法ではありません。「グランメゾンは、引き継いでも壊れない」ということです。\n",
   options:{fontSize:12.5, bold:true, color:W}},
- {text:"カンテサンスに必要なのは再建ではなく承継です。当社は、高級レストランを実際に承継し、人を残し、労働環境を改善したうえで収益を伸ばした実績をもって、本件に臨みます。",
+ {text:"カンテサンスに必要なのは再建ではなく承継です。当社は、グランメゾンを実際に承継し、人を残し、労働環境を改善したうえで収益を伸ばした実績をもって、本件に臨みます。",
   options:{fontSize:10.5, color:"EBDCE1"}}],
  {x:M+0.28, y:6.22, w:SW-2*M-0.56, h:0.64, isTextBox:true, margin:0, lineSpacing:17, valign:"middle"});
 
 s.addText("株式会社WineBank", {x:M, y:7.02, w:6, h:0.25, isTextBox:true, margin:0, fontFace:SANS, fontSize:8, color:MUTE});
 
-s.addNotes("アピシウス：2024年6月取得。創業40年超、39年間赤字が継続し40年目に黒字化した老舗フレンチ。取得後2年で売上+30%、利益+250%超。幹部メンバーは全員継続。サービス残業を撤廃し、12月を除き残業が発生しない体制を構築。店内の一部改装・修繕を実施。");
+s.addNotes("アピシウス：2024年6月取得。東京・銀座、創業40年を超えるグランメゾン。39年間赤字が継続し40年目に黒字化。取得後2年で売上+30%、営業利益+250%超。幹部メンバーは全員継続。サービス残業を撤廃し、12月を除き残業が発生しない体制を構築。店内の一部改装・修繕を実施。");
 
 p.writeFile({fileName:"アピシウス承継実績_1枚.pptx"}).then(f=>console.log("WROTE", f));
