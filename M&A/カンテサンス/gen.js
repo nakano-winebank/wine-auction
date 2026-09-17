@@ -91,7 +91,7 @@ s.addText("2026年12月期末の想定財務を前提とすれば、株式譲渡
 const items=[
  ["①","価格の45%はキャッシュ","50億円のうち22.4億円（現預金17.4億＋役員貸付5.0億）は非事業用資産。買主が事業リスクを負うのは残る事業価値27.6億円のみ。"],
  ["②","EV/EBITDA 5.2倍","中小M&A実務における小売飲食業のEBITDA倍率目安（約6倍）を下回る。営業利益率52%・無借金・20年連続増収増益の企業としては割安な部類。"],
- ["③","年買法では営業利益5.1年分","純資産23.15億＋営業利益5.09年分。実務慣行の「純資産＋営業利益3〜5年」のレンジ上限に位置する。単独では「やや高い」。"],
+ ["③","年買法では営業利益5.1年分","純資産23.15億＋営業利益5.09年分。実務慣行の「純資産＋営業利益3〜6年」のレンジに位置する。"],
  ["④","DCF期待値 50.7億円","三つ星維持50%／二つ星降格35%／星喪失15%の加重期待値が50.7億円。提示価格50億円とほぼ一致する。"]
 ];
 items.forEach((it,i)=>{
@@ -105,11 +105,8 @@ items.forEach((it,i)=>{
   s.addText(it[2], {x:x+0.22, y:y+0.58, w:w-0.44, h:0.72, isTextBox:true, margin:0,
     fontFace:SANS, fontSize:11, color:INK, lineSpacing:16});
 });
-s.addText([{text:"ただし ②③④ はいずれも、",options:{}},
- {text:"(a) 岸田氏の3年ロックアップの契約担保",options:{bold:true}},
- {text:" と ",options:{}},
- {text:"(b) 役員貸付金5.0億円のクロージング時現金精算",options:{bold:true}},
- {text:" が前提。(b) が崩れると実質EVは32.6億円（6.2倍）となり、妥当性の説明は一段厳しくなる（p.8・p.16）。",options:{}}],
+s.addText([{text:"資金調達：",options:{bold:true,color:INK}},
+ {text:"LBOローン20億円は、タームローンA 14億円（元金均等）＋タームローンB 6億円（期限一括）の設計で初年度DSCR 1.35を確保できる。7年間の累積余剰キャッシュフロー7.56億円が期限一括分6.00億円を上回るため、リファイナンスなしで完済が可能（p.15・p.16）。",options:{}}],
  {x:M, y:5.52, w:SW-2*M, h:0.5, isTextBox:true, margin:0, fontFace:SANS, fontSize:10.5, color:MUTE, lineSpacing:16});
 footer(s);
 }
@@ -127,7 +124,7 @@ const blocks=[
  ["検証③","DCF（確率分解）","3シナリオ×3割引率。本資料の中心的手法","p.11"],
  ["検証④","類似取引事例","国内高級レストランの譲渡事例との比較","p.12"],
  ["CHECK A","ブレークイーブン分析","利益が何%落ちるまで50億円が正当化されるか","p.14"],
- ["CHECK B","債務許容量（DSCR）","対象会社のCFが支えられる有利子負債の上限","p.15"]
+ ["CHECK B","20億円LBOの返済可能性","返済プロファイル・ストレス耐性・保全","p.15-16"]
 ];
 blocks.forEach((b,i)=>{
   const x = M + (i%3)*4.08;
@@ -298,7 +295,7 @@ box.forEach((b,i)=>{
 });
 s.addText("注意：役員貸付金5.00億円は「現金」ではない", {x:6.25, y:5.02, w:6.46, h:0.28, isTextBox:true, margin:0,
   fontFace:SERIF, fontSize:13, bold:true, color:RED});
-s.addText("仲介の「ネットキャッシュ約20億円」のうち5.00億円は岸田氏に対する長期貸付金であり、同氏が返済して初めて現金になる。クロージング時の現金精算を条件化しない限り、買主は譲渡後に5億円の債権回収を追うことになる（p.16 論点1）。",
+s.addText("仲介の「ネットキャッシュ約20億円」のうち5.00億円は岸田氏に対する長期貸付金であり、同氏が返済して初めて現金になる。クロージング時の現金精算を条件化しない限り、買主は譲渡後に5億円の債権回収を追うことになる（p.17 論点1）。",
   {x:6.25, y:5.34, w:6.46, h:0.9, isTextBox:true, margin:0, fontFace:SANS, fontSize:10.5, color:INK, lineSpacing:16});
 s.addText("出所：2025/12期はIM記載のBS。2026/12期は無配・設備投資ゼロ・負債横ばいを前提に、当期純利益350百万円が全額現預金と純資産に積み上がるものとして推計。",
   {x:M, y:6.45, w:SW-2*M, h:0.3, isTextBox:true, margin:0, fontFace:SANS, fontSize:9.5, color:MUTE});
@@ -390,14 +387,14 @@ footer(s);
 ========================================================= */
 {
 const s = p.addSlide();
-header(s, "検証② 年買法（純資産＋営業利益n年）", "営業利益5.09年分。実務慣行レンジの上限に位置する",
-  "中小企業M&Aで最も広く使われる簡便法。この手法では50億円は「やや高い」という結論になる。");
+header(s, "検証② 年買法（純資産＋営業利益n年）", "営業利益5.09年分。実務慣行レンジ（3〜6年）の範囲内",
+  "中小企業M&Aで最も広く使われる簡便法。実務慣行の3〜6年のレンジの中で、50億円は営業利益5.09年分にあたる。");
 const rows=[
  [hd("算式"), hd("金額"), hd("提示50億円との差"), hd("位置づけ")],
  ["純資産 ＋ 営業利益 × 3年", num("38.99億円"), num("▲11.01億円",{color:RED}), "実務レンジの下限"],
  ["純資産 ＋ 営業利益 × 4年", num("44.27億円"), num("▲5.73億円",{color:RED}), "実務レンジの中位"],
- [{text:"純資産 ＋ 営業利益 × 5年",options:{bold:true,fill:{color:TINT}}}, num("49.55億円",{bold:true,fill:{color:TINT}}), num("▲0.45億円",{bold:true,fill:{color:TINT}}), {text:"実務レンジの上限＝提示価格とほぼ一致",options:{bold:true,fill:{color:TINT},fontSize:10}}],
- ["純資産 ＋ 営業利益 × 6年", num("54.83億円"), num("+4.83億円",{color:GRN}), "レンジ外"]
+ [{text:"純資産 ＋ 営業利益 × 5年",options:{bold:true,fill:{color:TINT}}}, num("49.55億円",{bold:true,fill:{color:TINT}}), num("▲0.45億円",{bold:true,fill:{color:TINT}}), {text:"実務レンジの上限側＝提示価格とほぼ一致",options:{bold:true,fill:{color:TINT},fontSize:10}}],
+ ["純資産 ＋ 営業利益 × 6年", num("54.83億円"), num("+4.83億円",{color:GRN}), "実務レンジの上限"]
 ];
 s.addTable(rows, tOpt({x:M, y:2.0, w:8.3, colW:[2.9,1.6,1.9,1.9], rowH:0.44, fontSize:10.5}));
 
@@ -420,7 +417,7 @@ why.forEach((t,i)=>{
   badge(s, 9.34, y, String(i+1), ROSE);
   s.addText(t, {x:9.74, y:y-0.03, w:2.78, h:0.85, isTextBox:true, margin:0, fontFace:SANS, fontSize:9.5, color:INK, lineSpacing:13.5});
 });
-s.addText("結論：年買法単独では50億円は「実務レンジの上限」。この手法だけを根拠に高い／安いは判断せず、検証③のDCFで事業価値の妥当性を確認する。",
+s.addText("結論：年買法単独では50億円は「実務レンジの上限側」。この手法だけを根拠に高い／安いは判断せず、検証③のDCFで事業価値の妥当性を確認する。",
   {x:M, y:5.45, w:12.09, h:0.4, isTextBox:true, margin:0, fontFace:SANS, fontSize:11, color:INK, lineSpacing:16});
 footer(s);
 }
@@ -562,35 +559,92 @@ footer(s);
 }
 
 /* =========================================================
-   S15 債務許容量
+   S15 20億円LBOの返済可能性
 ========================================================= */
 {
 const s = p.addSlide();
-header(s, "CHECK B 対象会社の債務許容量", "対象会社の自力返済で支えられる有利子負債は15〜17億円",
-  "取得主体を特定せず、対象会社のキャッシュフローのみで返済可能な有利子負債の上限を検証した（7年・金利3%・元金均等、初年度ベース）。");
-const rows=[
- [hd("有利子負債"), hd("初年度返済額"), hd("DSCR（平常時 FCF3.50億）"), hd("DSCR（ストレス時 FCF2.76億）"), hd("Debt/EBITDA"), hd("判定")],
- ["12.00億円", num("2.07億円"), num("1.69"), num("1.33"), num("2.3倍"), {text:"○ 余裕あり",options:{color:GRN,fontSize:10.5}}],
- [{text:"15.00億円",options:{bold:true,fill:{color:TINT}}}, num("2.59億円",{fill:{color:TINT}}), num("1.35",{bold:true,color:GRN,fill:{color:TINT}}), num("1.07",{bold:true,color:GRN,fill:{color:TINT}}), num("2.8倍",{fill:{color:TINT}}), {text:"◎ 推奨水準",options:{bold:true,color:GRN,fill:{color:TINT},fontSize:10.5}}],
- ["17.00億円", num("2.94億円"), num("1.19"), num("0.94",{color:RED}), num("3.2倍"), {text:"△ ストレス下で1.0割れ",options:{color:AMB,fontSize:10.5}}],
- ["18.00億円", num("3.11億円"), num("1.13"), num("0.89",{color:RED}), num("3.4倍"), {text:"△ 厳しい",options:{color:AMB,fontSize:10.5}}],
- ["20.00億円", num("3.46億円"), num("1.01",{color:RED}), num("0.80",{color:RED}), num("3.8倍"), {text:"× 平常時でも返済不能",options:{bold:true,color:RED,fontSize:10.5}}]
+header(s, "CHECK B ①　20億円LBOの返済可能性", "LBOローン20億円は、返済プロファイルの設計で成立する",
+  "20億円を7年で均等償却する前提では初年度DSCRが1.01となる。これは借入金額の問題ではなく返済設計の問題であり、タームローンAとBに分ければ初年度からDSCR 1.35を確保できる。");
+const tiles=[["初年度DSCR","1.35","タームローンA 14億＋B 6億／7年・金利3%"],
+             ["7年間の累積余剰CF","7.56億円","期限一括分6.00億円を上回る"],
+             ["ネット Debt/EBITDA","2.6倍","グロス3.8倍。対象会社は無借金・現預金17.43億円"]];
+tiles.forEach((t,i)=>{
+  const x = M + i*4.08;
+  card(s, x, 1.95, 3.85, 1.12, "FFFFFF");
+  s.addText(t[0], {x:x+0.24, y:2.07, w:3.4, h:0.24, isTextBox:true, margin:0, fontFace:SANS, fontSize:9.5, bold:true, color:GOLD});
+  s.addText(t[1], {x:x+0.24, y:2.32, w:3.4, h:0.44, isTextBox:true, margin:0, fontFace:SERIF, fontSize:24, bold:true, color:BERRY});
+  s.addText(t[2], {x:x+0.24, y:2.76, w:3.4, h:0.26, isTextBox:true, margin:0, fontFace:SANS, fontSize:9, color:MUTE});
+});
+
+s.addText("返済方式別の比較（借入20.00億円・7年・金利3%）", {x:M, y:3.22, w:6.2, h:0.28, isTextBox:true, margin:0,
+  fontFace:SERIF, fontSize:13, bold:true, color:INK});
+const way=[
+ [hd("返済方式"), hd("初年度返済"), hd("初年度DSCR"), hd("7年後残高")],
+ [{text:"① 元金均等（7年で全額償却）",options:{fontSize:9}}, num("3.46億",{fontSize:9}), num("1.01",{color:RED,bold:true,fontSize:9}), num("0",{fontSize:9})],
+ [{text:"② 元利均等（7年で全額償却）",options:{fontSize:9}}, num("3.21億",{fontSize:9}), num("1.09",{color:AMB,fontSize:9}), num("0",{fontSize:9})],
+ [{text:"③ TLA 14億＋TLB 6億（期限一括）",options:{fontSize:9,bold:true,fill:{color:TINT}}}, num("2.60億",{fontSize:9,fill:{color:TINT}}), num("1.35",{color:GRN,bold:true,fontSize:9,fill:{color:TINT}}), num("6.00億",{fontSize:9,fill:{color:TINT}})],
+ [{text:"④ TLA 12億＋TLB 8億（期限一括）",options:{fontSize:9}}, num("2.31億",{fontSize:9}), num("1.51",{color:GRN,fontSize:9}), num("8.00億",{fontSize:9})]
 ];
-s.addTable(rows, tOpt({x:M, y:2.16, w:12.09, colW:[1.8,1.9,2.6,2.6,1.6,1.59], rowH:0.42, fontSize:10.5}));
+s.addTable(way, tOpt({x:M, y:3.56, w:6.2, colW:[2.9,1.0,1.15,1.15], rowH:0.40, fontSize:9}));
+card(s, M, 5.70, 6.2, 0.95);
+s.addText("③を推奨する理由", {x:M+0.22, y:5.82, w:3.0, h:0.24, isTextBox:true, margin:0, fontFace:SANS, fontSize:9.5, bold:true, color:GOLD});
+s.addText("元本を14億円に絞ることで年間元本負担が2.00億円に下がり、平常時DSCRが1.35〜1.56で推移する。残る6.00億円は7年間の余剰キャッシュフローで返済でき、リファイナンスを前提としない。",
+  {x:M+0.22, y:6.06, w:5.8, h:0.55, isTextBox:true, margin:0, fontFace:SANS, fontSize:9.5, color:INK, lineSpacing:13.5});
 
-card(s, M, 4.85, 5.95, 1.5);
-s.addText("この会社の借入余力が限られる理由", {x:M+0.24, y:4.99, w:5.4, h:0.26, isTextBox:true, margin:0,
-  fontFace:SANS, fontSize:10, bold:true, color:GOLD});
-s.addText("営業利益率は52%だが、絶対額は5.28億円。7年返済では元本だけで年2.1〜2.9億円が必要になる。さらに物的担保は事実上ワイン在庫（簿価1.19億円）のみで、店舗は賃借、有形固定資産は146万円しかない。",
-  {x:M+0.24, y:5.28, w:5.45, h:1.0, isTextBox:true, margin:0, fontFace:SANS, fontSize:10.5, color:INK, lineSpacing:15});
+s.addText("推奨ストラクチャー③の7年返済計画（億円）", {x:7.02, y:3.22, w:5.7, h:0.28, isTextBox:true, margin:0,
+  fontFace:SERIF, fontSize:13, bold:true, color:INK});
+const sc=[[1,20.00,2.00,0.60,2.60,1.35,0.90],[2,18.00,2.00,0.54,2.54,1.38,1.86],[3,16.00,2.00,0.48,2.48,1.41,2.88],
+          [4,14.00,2.00,0.42,2.42,1.45,3.96],[5,12.00,2.00,0.36,2.36,1.48,5.10],[6,10.00,2.00,0.30,2.30,1.52,6.30],
+          [7, 8.00,2.00,0.24,2.24,1.56,7.56]];
+const amo=[[hd("年度"), hd("期首残高"), hd("元本"), hd("利息"), hd("返済計"), hd("DSCR"), hd("累積余剰CF")]].concat(
+  sc.map(r=>[{text:String(r[0])+"年目",options:{fontSize:9}}, num(r[1].toFixed(2),{fontSize:9}), num(r[2].toFixed(2),{fontSize:9}),
+             num(r[3].toFixed(2),{fontSize:9}), num(r[4].toFixed(2),{fontSize:9}),
+             num(r[5].toFixed(2),{fontSize:9,bold:true,color:GRN}), num("+"+r[6].toFixed(2),{fontSize:9})]),
+  [[{text:"累計",options:{bold:true,fill:{color:TINT},fontSize:9}}, num("—",{fill:{color:TINT},fontSize:9}), num("14.00",{bold:true,fill:{color:TINT},fontSize:9}),
+    num("2.94",{fill:{color:TINT},fontSize:9}), num("16.94",{bold:true,fill:{color:TINT},fontSize:9}), num("—",{fill:{color:TINT},fontSize:9}),
+    num("+7.56",{bold:true,color:GRN,fill:{color:TINT},fontSize:9})]]);
+s.addTable(amo, tOpt({x:7.02, y:3.56, w:5.7, colW:[0.78,0.86,0.72,0.72,0.82,0.7,1.1], rowH:0.33, fontSize:9}));
+s.addText("7年間の累積余剰キャッシュフロー7.56億円が、期限一括のタームローンB 6.00億円を上回る。リファイナンスを前提とせず、7年で20.00億円を完済できる。",
+  {x:7.02, y:6.56, w:5.7, h:0.4, isTextBox:true, margin:0, fontFace:SANS, fontSize:9, color:MUTE, lineSpacing:12.5});
+footer(s);
+}
 
-card(s, 6.78, 4.85, 5.93, 1.5, "FFFFFF");
-s.addText("コベナンツ案（ご提案）", {x:7.02, y:4.99, w:5.4, h:0.26, isTextBox:true, margin:0,
-  fontFace:SANS, fontSize:10, bold:true, color:GOLD});
-s.addText("① DSCR 1.1倍以上の維持　② 対象会社に現預金6億円以上を留保（買収後の配当・自己株による過度な現金流出の制限）　③ 設備投資上限の設定　④ 岸田氏の退任・料理長交代・ミシュラン評価変動の報告義務　⑤ サントリー・ファインズとの取引条件変更時の報告義務",
-  {x:7.02, y:5.26, w:5.45, h:1.05, isTextBox:true, margin:0, fontFace:SANS, fontSize:10, color:INK, lineSpacing:14.5});
-s.addText("ストレス時FCF 2.76億円は、p.14のブレークイーブン水準（営業利益▲21%）を採用。",
-  {x:M, y:6.5, w:12.09, h:0.26, isTextBox:true, margin:0, fontFace:SANS, fontSize:9.5, color:MUTE});
+/* =========================================================
+   S16 ストレス耐性と保全
+========================================================= */
+{
+const s = p.addSlide();
+header(s, "CHECK B ②　ストレス耐性と保全", "20億円のストレス耐性と、銀行にご提案できる保全",
+  "推奨ストラクチャー③（TLA 14億＋TLB 6億／7年・金利3%）に対し、収益が悪化した場合の返済可能性を検証した。");
+const st=[
+ [hd("シナリオ"), hd("FCF"), hd("DSCR"), hd("7年間の返済可能性")],
+ [{text:"平常時",options:{bold:true}}, num("3.50億"), num("1.35〜1.56",{color:GRN,bold:true}), {text:"全期間で1.35以上。累積余剰7.56億円でTLBも完済",options:{fontSize:10}}],
+ [{text:"営業利益▲21%（p.14 ブレークイーブン）",options:{bold:true}}, num("2.76億"), num("1.06",{color:GRN,bold:true}), {text:"初年度から1.0を維持。元利返済に支障なし",options:{fontSize:10}}],
+ [{text:"二つ星降格（4年目以降）",options:{bold:true}}, num("2.00億"), num("0.83〜0.89",{color:AMB,bold:true}), {text:"4〜7年の累積不足1.32億円。3年目末の累積余剰2.88億円で全額吸収可能。ただしTLB 6.00億円は留保現金またはリファイナンスによる返済となる",options:{fontSize:10}}],
+ [{text:"星喪失（4年目以降）",options:{bold:true}}, num("1.00億"), num("0.41〜0.45",{color:RED,bold:true}), {text:"累積不足5.32億円。累積余剰2.88億円＋留保現金6.00億円で元利返済は継続できるが、TLB 6.00億円は返済不能",options:{fontSize:10}}]
+];
+s.addTable(st, tOpt({x:M, y:1.95, w:12.09, colW:[3.1,1.2,1.5,6.29], rowH:0.44, fontSize:10}));
+
+card(s, M, 4.42, 5.95, 1.62);
+s.addText("ネットレバレッジ", {x:M+0.24, y:4.54, w:3.0, h:0.24, isTextBox:true, margin:0, fontFace:SANS, fontSize:9.5, bold:true, color:GOLD});
+const nl=[["LBOローン","20.00億円"],["− 対象会社に留保する現預金","6.00億円"],["＝ 連結ネットデット","14.00億円（2.6倍）"]];
+nl.forEach((n,i)=>{
+  const y=4.80+i*0.30;
+  s.addText(n[0], {x:M+0.24, y:y, w:3.3, h:0.26, isTextBox:true, margin:0, fontFace:SANS, fontSize:i===2?11:10, bold:i===2, color:i===2?BERRY:INK, valign:"middle"});
+  s.addText(n[1], {x:M+3.55, y:y, w:2.2, h:0.26, isTextBox:true, margin:0, fontFace:SANS, fontSize:i===2?11:10, bold:i===2, color:i===2?BERRY:INK, align:"right", valign:"middle"});
+});
+s.addText("対象会社は無借金で現預金17.43億円を持つため、グロス3.8倍に対しネットは2.6倍にとどまる。",
+  {x:M+0.24, y:5.72, w:5.45, h:0.28, isTextBox:true, margin:0, fontFace:SANS, fontSize:9.5, color:MUTE});
+
+card(s, 6.78, 4.42, 5.93, 1.62, "FFFFFF");
+s.addText("保全・コベナンツ案（ご提案）", {x:7.02, y:4.54, w:4.0, h:0.24, isTextBox:true, margin:0, fontFace:SANS, fontSize:9.5, bold:true, color:GOLD});
+s.addText("① 対象会社株式100%への質権設定　② ワイン在庫（簿価1.19億円）への担保設定　③ DSCR 1.1倍以上の維持　④ 対象会社に現預金6.00億円以上を留保　⑤ TLB完済までの配当・自己株取得の制限　⑥ 超過キャッシュフローの50%をTLBへ充当（キャッシュスイープ）　⑦ 岸田氏の退任・料理長交代・ミシュラン評価変動の報告義務　⑧ サントリー・ファインズとの取引条件変更時の報告義務",
+  {x:7.02, y:4.80, w:5.45, h:1.2, isTextBox:true, margin:0, fontFace:SANS, fontSize:9.5, color:INK, lineSpacing:13.5});
+
+s.addShape(p.ShapeType.roundRect,{x:M, y:6.18, w:12.09, h:0.66, rectRadius:0.04, fill:{color:BERRY}});
+s.addText([{text:"実質的な論点は金額ではなく期間　",options:{bold:true,fontSize:11.5,color:W}},
+ {text:"貴行のスタートアップM&A融資が5年目線の場合、TLA 11億円＋TLB 9億円で初年度DSCR 1.25を確保できるものの、5年後にTLB 9.00億円のリファイナンスが必要になる。7年を許容いただけるかが、20億円を自力返済で完結させられるかの分岐点となる。",options:{fontSize:10,color:"EBDCE1"}}],
+ {x:M+0.28, y:6.26, w:11.53, h:0.5, isTextBox:true, margin:0, lineSpacing:15, valign:"middle"});
 footer(s);
 }
 
@@ -649,7 +703,8 @@ s.addText([
  {text:"・DCFは割引率10%・継続成長率0%を基準とし、1〜3年目は3シナリオ共通で3.50億円。\n",options:{}},
  {text:"・EBITDA倍率の業種別目安（小売飲食業 約6倍）は2026年7月時点の中小M&A実務データ。ひらまつ（2764）はFY2027/3会社予想。\n",options:{}},
  {text:"・売主側条件（3年ロックアップ、後継シェフ、譲渡理由、選定基準）は仲介回答（2026年9月）による。\n",options:{}},
- {text:"・本資料は取得主体を特定せず、対象会社の事業価値および提示価格の妥当性のみを検証したもの。取得ストラクチャー・資金調達計画は別途。",options:{}}
+ {text:"・LBOローンの返済試算は借入20.00億円・7年・金利3%、タームローンA 14.00億円（元金均等）＋タームローンB 6.00億円（期限一括）を前提。\n",options:{}},
+ {text:"・本資料は取得主体を特定せず、対象会社の事業価値および提示価格の妥当性を検証したもの。買収ストラクチャーおよびエクイティの調達計画は別途。",options:{}}
 ], {x:9.09, y:2.2, w:3.4, h:3.9, isTextBox:true, margin:0, valign:"top", fontFace:SANS, fontSize:8.6, color:"B4A0A6", lineSpacing:12.5});
 footer(s, true);
 }
