@@ -109,11 +109,11 @@ s.addTable([
 
 s.addShape(p.ShapeType.roundRect,{x:8.20,y:1.66,w:4.51,h:3.16,rectRadius:0.05,fill:{color:TINT},line:{color:LINE,width:0.75}});
 s.addText("③ 定常状態（合併後）",{x:8.44,y:1.78,w:4.0,h:0.26,isTextBox:true,margin:0,fontFace:SANS,fontSize:10,bold:true,color:GOLD});
-const fin=[["有利子負債","20.0億円","TLA14.0億（元金均等7年）＋TLB6.0億（期限一括）"],
+const fin=[["有利子負債","20.0億円","TLA14.0億（元金均等7年・毎月返済）＋TLB6.0億（期限一括）"],
            ["現預金","1.0億円","運転資金として留保"],
            ["ネットデット","19.0億円","EBITDA 3.6倍"],
            ["初年度DSCR","1.35倍","返済2.60億円 vs FCF 3.50億円"],
-           ["2027年 最低現金残高","0.44億円","3月末。月次固定費の2.3か月分"]];
+           ["2027年 最低現金残高","0.19億円","2月末。月次固定費の1.0か月分"]];
 fin.forEach((f,i)=>{
   const y=2.14+i*0.54;
   s.addText(f[0],{x:8.44,y:y,w:1.75,h:0.26,isTextBox:true,margin:0,fontFace:SANS,fontSize:10,color:MUTE,valign:"middle"});
@@ -146,23 +146,23 @@ header(s,"SENSITIVITY","対象会社に留保する現金をいくらにする�
 s.addTable([
  [hd("留保する現金"),hd("ブリッジローン"),hd("中野氏の拠出"),hd("合併後の有利子負債"),hd("ネット/EBITDA"),hd("2027年の最低現金残高"),hd("判定")],
  [{text:"1.0億円",options:{bold:true,fill:{color:"EFE6E9"}}},num("21.43億円",{fill:{color:"EFE6E9"}}),num("0.07億円",{bold:true,fill:{color:"EFE6E9"}}),
-  num("20.0億円",{fill:{color:"EFE6E9"}}),num("3.6倍",{fill:{color:"EFE6E9"}}),num("0.44億円",{bold:true,color:AMB,fill:{color:"EFE6E9"}}),
-  {text:"△ 固定費2.3か月分",options:{bold:true,color:AMB,fill:{color:"EFE6E9"},fontSize:10}}],
- [{text:"2.0億円",options:{bold:true}},num("20.43億円"),num("1.07億円"),num("20.0億円"),num("3.4倍"),num("1.44億円",{color:GRN}),
-  {text:"○ 固定費7.5か月分",options:{color:GRN,fontSize:10}}],
- [{text:"3.0億円",options:{bold:true}},num("19.43億円"),num("2.07億円"),num("20.0億円"),num("3.2倍"),num("2.44億円",{color:GRN}),
+  num("20.0億円",{fill:{color:"EFE6E9"}}),num("3.6倍",{fill:{color:"EFE6E9"}}),num("0.19億円",{bold:true,color:RED,fill:{color:"EFE6E9"}}),
+  {text:"× 固定費1.0か月分",options:{bold:true,color:RED,fill:{color:"EFE6E9"},fontSize:10}}],
+ [{text:"2.0億円",options:{bold:true}},num("20.43億円"),num("1.07億円"),num("20.0億円"),num("3.4倍"),num("1.19億円",{color:GRN}),
+  {text:"○ 固定費6.2か月分",options:{color:GRN,fontSize:10}}],
+ [{text:"3.0億円",options:{bold:true}},num("19.43億円"),num("2.07億円"),num("20.0億円"),num("3.2倍"),num("2.19億円",{color:GRN}),
   {text:"◎ 余裕あり",options:{color:GRN,fontSize:10}}],
- [{text:"6.0億円",options:{bold:true}},num("16.43億円"),num("5.07億円"),num("20.0億円"),num("2.6倍"),num("5.44億円",{color:GRN}),
+ [{text:"6.0億円",options:{bold:true}},num("16.43億円"),num("5.07億円"),num("20.0億円"),num("2.6倍"),num("5.19億円",{color:GRN}),
   {text:"◎ 当初案",options:{color:GRN,fontSize:10}}]
 ],tOpt({x:M,y:2.10,w:12.09,colW:[1.55,1.75,1.55,2.00,1.35,2.10,1.79],rowH:0.44,fontSize:10}));
-s.addText("※ 2027年の最低現金残高は3月末。2月に2026年12月期の未払税金1.14億円、8月に2027年度の法人税中間納付0.92億円が発生する。",
+s.addText("※ 最低現金残高は2月末。2月に2026年12月期の未払税金1.14億円を納付する一方、借入の元利返済は毎月発生するため、年間で最も薄くなる。",
   {x:M,y:4.30,w:12.09,h:0.26,isTextBox:true,margin:0,fontFace:SANS,fontSize:9,color:MUTE});
 
 const pts=[
- ["① 1.0億円は「計画どおりなら回る」水準",
-  "2027年の最低現金残高は3月末の0.44億円で、月次固定費の2.3か月分にあたる。計画どおりに推移すれば資金はショートしないが、想定外の支出に対する余裕はほとんどない。ワインの一次価格アロケーションがまとまって入荷する月や、設備の突発的な修繕が重なると、一時的な借入が必要になる。"],
- ["② 銀行にはネット3.6倍で説明することになる",
-  "留保を6.0億円とした当初案ではネットデット14.0億円（EBITDA2.6倍）だったが、1.0億円とするとネットデットは19.0億円（3.6倍）となる。有利子負債の総額とDSCRは変わらないものの、コベナンツとして現預金の最低維持水準を求められた場合、1.0億円では抵触する可能性がある。"],
+ ["① 1.0億円では2月末に1,900万円まで落ちる",
+  "借入の返済が毎月であるため、2026年12月期の未払税金1.14億円を納付する2月に底が来る。残高1,900万円は月次固定費の1.0か月分にすぎず、ワインの一次価格アロケーションがまとまって入荷する月や突発的な修繕が重なれば、一時的な借入が避けられない。留保を2.0億円とすれば底は1.19億円（6.2か月分）となる。"],
+ ["② 資産調整勘定を織り込めば年1.8億円が浮く",
+  "株式譲受代金50.0億円と時価純資産23.15億円の差額26.85億円が税務上ののれんとして5年で損金算入されれば、年5.37億円の損金となり課税所得はマイナスとなる。8月の中間納付0.92億円は仮決算により回避でき、期末残高は1.65億円から2.57億円へ、DSCRは1.25倍から1.61倍へ改善する。ただし2月の納付は2026年12月期に対応するものであり回避できない。"],
  ["③ 中野氏の拠出が700万円になることの副作用",
   "榊原氏が10.0億円を払い込むのに対し、中野氏の拠出は資本金10万円と株主貸付700万円のみとなる。67%／33%という配分は合意によるものだが、その根拠を株主間契約でより丁寧に定める必要が生じる。"]
 ];
@@ -170,7 +170,7 @@ pts.forEach((t,i)=>{
   const x=M+i*4.08;
   s.addShape(p.ShapeType.roundRect,{x,y:4.68,w:3.85,h:2.18,rectRadius:0.05,fill:{color:TINT},line:{color:LINE,width:0.75}});
   s.addText(t[0],{x:x+0.22,y:4.80,w:3.42,h:0.46,isTextBox:true,margin:0,fontFace:SANS,fontSize:10.5,bold:true,color:BERRY,lineSpacing:14});
-  s.addText(t[1],{x:x+0.22,y:5.30,w:3.42,h:1.46,isTextBox:true,margin:0,fontFace:SANS,fontSize:9,color:INK,lineSpacing:12.5});
+  s.addText(t[1],{x:x+0.22,y:5.30,w:3.42,h:1.46,isTextBox:true,margin:0,fontFace:SANS,fontSize:8.5,color:INK,lineSpacing:12});
 });
 footer(s);
 }
