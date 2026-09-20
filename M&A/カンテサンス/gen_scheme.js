@@ -40,7 +40,7 @@ const lab=(s,x,y,w,t,o={})=>s.addText(t,{x,y,w,h:o.h||0.36,isTextBox:true,margin
 {
 const s=p.addSlide();
 header(s,"STRUCTURE","M&Aスキーム（SPC方式）",
-  "資本金10万円のSPCを設立し、みずほ銀行のローンと投資家の出資をもって対象会社の全株式を取得。クロージング後にSPCと対象会社を合併する。");
+  "資本金10万円のSPCを設立し、みずほ銀行のローンと投資家の出資をもって対象会社の全株式を取得。クロージング後にSPCと対象会社を合併する。譲受価額はレンジ（50.0〜55.0億円）で提示する。");
 
 box(s,4.70,1.58,2.20,0.84,"中野 邦人 氏","SPC設立者",{fill:TINT});
 box(s,7.10,1.58,2.20,0.84,"榊原 氏","投資家",{fill:TINT});
@@ -49,7 +49,7 @@ lab(s,5.88,2.48,1.85,"出資10万円（67%）\n＋ 株主貸付 5.1億円");
 lab(s,8.28,2.48,1.70,"出資 10.0億円\n（33%）");
 
 box(s,M,3.06,2.55,0.96,"みずほ銀行","買収ファイナンス",{line:ROSE,lw:1});
-box(s,4.45,3.06,4.40,0.96,"買収目的会社（SPC）","資本金10万円／借入36.4億円",{fill:BERRY,tc:W,sc:"E3D2D7",ts:14});
+box(s,4.45,3.06,4.40,0.96,"買収目的会社（SPC）","資本金10万円／借入36.4億円（ターム20.0＋ブリッジ16.4）",{fill:BERRY,tc:W,sc:"E3D2D7",ts:14});
 box(s,10.05,3.06,2.66,0.96,"岸田 周三 氏","対象会社株式100%を保有",{line:ROSE,lw:1});
 
 lab(s,3.19,3.10,1.24,"ターム 20.0億円\n＋ブリッジ 16.4億円",{c:RED});
@@ -57,7 +57,7 @@ hA(s,3.21,4.43,3.62,ROSE);
 lab(s,8.85,3.12,1.20,"株式 100%",{h:0.20});
 hA(s,10.03,8.87,3.36,ROSE);
 hA(s,8.87,10.03,3.68,BERRY);
-lab(s,8.85,3.74,1.20,"譲受代金\n50.0億円");
+lab(s,8.82,3.74,1.26,"譲受代金\n50.0〜55.0億円",{fs:8});
 
 vA(s,6.65,4.02,4.62);
 lab(s,6.75,4.10,2.40,"100%取得 → クロージング後に合併",{h:0.22,c:MUTE});
@@ -65,16 +65,16 @@ box(s,4.45,4.62,4.40,0.90,"株式会社プティ・ボノム（カンテサン�
 s.addText("合併後、対象会社の余剰現金16.4億円\n（現預金17.4＋役員貸付金5.0−留保6.0）\nをもってブリッジローンを全額返済",
   {x:9.30,y:4.62,w:3.41,h:0.86,isTextBox:true,margin:0,fontFace:SANS,fontSize:9,color:INK,lineSpacing:12});
 
-const chips=[["持分","67％ ／ 33％","中野氏 ／ 榊原氏（合意による配分）"],
-             ["クロージング所要","51.5億円","株価50.0＋費用1.5"],
+const chips=[["譲受価額","50.0〜55.0億円","レンジで提示"],
              ["みずほへの依頼","36.4億円","ターム20.0＋ブリッジ16.4",true],
-             ["中野氏の実弾","5.1億円","これ以下は成立しない",true]];
+             ["中野氏の実弾","5.1億円","これ以下は成立しない",true],
+             ["合併後の有利子負債","20.0億円","DSCR 1.35倍"]];
 chips.forEach((c,i)=>{
   const x=M+i*3.05, hot=c[3];
   s.addShape(p.ShapeType.roundRect,{x,y:5.72,w:2.80,h:1.00,rectRadius:0.05,
     fill:{color:hot?BERRY:TINT},line:{color:hot?BERRY:LINE,width:0.75}});
   s.addText(c[0],{x:x+0.18,y:5.82,w:2.44,h:0.24,isTextBox:true,margin:0,fontFace:SANS,fontSize:9.5,bold:true,color:hot?"E8D6DB":GOLD});
-  s.addText(c[1],{x:x+0.18,y:6.04,w:2.44,h:0.40,isTextBox:true,margin:0,fontFace:SERIF,fontSize:20,bold:true,color:hot?W:BERRY});
+  s.addText(c[1],{x:x+0.18,y:6.04,w:2.50,h:0.40,isTextBox:true,margin:0,fontFace:SERIF,fontSize:i===0?17:20,bold:true,color:hot?W:BERRY});
   s.addText(c[2],{x:x+0.18,y:6.44,w:2.50,h:0.22,isTextBox:true,margin:0,fontFace:SANS,fontSize:8.5,color:hot?"C9AEB6":MUTE});
 });
 footer(s);
@@ -95,16 +95,17 @@ s.addTable([
  ["",num(""),"中野氏　出資10万円＋株主貸付",num("5.1億円")],
  [{text:"合計",options:{bold:true,fill:{color:TINT}}},num("51.5億円",{bold:true,fill:{color:TINT}}),
   {text:"合計",options:{bold:true,fill:{color:TINT}}},num("51.5億円",{bold:true,fill:{color:TINT}})]
-],tOpt({x:M,y:2.00,w:7.30,colW:[1.85,1.15,3.10,1.20],rowH:0.38,fontSize:10}));
+],tOpt({x:M,y:2.00,w:7.30,colW:[1.85,1.15,3.10,1.20],rowH:0.36,fontSize:10}));
 
-s.addText("② 合併直後",{x:M,y:4.42,w:5.0,h:0.28,isTextBox:true,margin:0,fontFace:SERIF,fontSize:13.5,bold:true,color:INK});
+s.addText("※ 譲受価額が55.0億円となる場合、差額5.0億円は追加投資家の第三者割当増資で調達する（p.4）。借入額および合併後の財務は変わらない。",{x:M,y:4.22,w:7.30,h:0.26,isTextBox:true,margin:0,fontFace:SANS,fontSize:9,color:MUTE});
+s.addText("② 合併直後",{x:M,y:4.54,w:5.0,h:0.28,isTextBox:true,margin:0,fontFace:SERIF,fontSize:13.5,bold:true,color:INK});
 s.addTable([
  [hd("対象会社の現預金"),hd("金額"),hd("充当先")],
  ["現預金",num("17.4億円"),{text:"うち6.0億円は運転資金として留保",options:{fontSize:9.5}}],
  ["役員貸付金の精算",num("5.0億円"),{text:"クロージング時に岸田氏が現金返済",options:{fontSize:9.5}}],
  [{text:"ブリッジ返済原資",options:{bold:true,fill:{color:TINT}}},num("16.4億円",{bold:true,fill:{color:TINT}}),
   {text:"ブリッジローンを全額返済",options:{bold:true,fontSize:9.5,fill:{color:TINT}}}]
-],tOpt({x:M,y:4.76,w:7.30,colW:[2.10,1.20,4.00],rowH:0.36,fontSize:10}));
+],tOpt({x:M,y:4.88,w:7.30,colW:[2.10,1.20,4.00],rowH:0.34,fontSize:10}));
 
 s.addShape(p.ShapeType.roundRect,{x:8.20,y:1.66,w:4.51,h:3.16,rectRadius:0.05,fill:{color:TINT},line:{color:LINE,width:0.75}});
 s.addText("③ 定常状態（合併後）",{x:8.44,y:1.78,w:4.0,h:0.26,isTextBox:true,margin:0,fontFace:SANS,fontSize:10,bold:true,color:GOLD});
@@ -121,10 +122,10 @@ fin.forEach((f,i)=>{
   s.addText(f[2],{x:8.44,y:y+0.24,w:4.0,h:0.24,isTextBox:true,margin:0,fontFace:SANS,fontSize:8.5,color:MUTE});
 });
 
-s.addShape(p.ShapeType.roundRect,{x:8.20,y:4.96,w:4.51,h:1.24,rectRadius:0.05,fill:{color:W},line:{color:LINE,width:0.75}});
-s.addText("日程",{x:8.44,y:5.06,w:4.0,h:0.24,isTextBox:true,margin:0,fontFace:SANS,fontSize:10,bold:true,color:GOLD});
-[["意向表明書提出","2026年9月30日"],["DD","10月上旬〜11月中旬"],["クロージング","11月末（最短）〜年末"]].forEach((c,i)=>{
-  const y=5.32+i*0.28;
+s.addShape(p.ShapeType.roundRect,{x:8.20,y:4.90,w:4.51,h:1.36,rectRadius:0.05,fill:{color:W},line:{color:LINE,width:0.75}});
+s.addText("日程",{x:8.44,y:5.00,w:4.0,h:0.24,isTextBox:true,margin:0,fontFace:SANS,fontSize:10,bold:true,color:GOLD});
+[["意向表明書提出","2026年9月30日"],["DD","10月上旬〜11月中旬"],["最終契約締結","2026年12月中旬"],["クロージング","2026年12月末（合意済）"]].forEach((c,i)=>{
+  const y=5.24+i*0.245;
   s.addText(c[0],{x:8.44,y:y,w:2.1,h:0.26,isTextBox:true,margin:0,fontFace:SANS,fontSize:9.5,color:MUTE,valign:"middle"});
   s.addText(c[1],{x:10.50,y:y,w:1.97,h:0.26,isTextBox:true,margin:0,fontFace:SANS,fontSize:9.5,bold:true,color:INK,align:"right",valign:"middle"});
 });
@@ -172,6 +173,60 @@ pts.forEach((t,i)=>{
   s.addText(t[0],{x:x+0.22,y:5.12,w:3.42,h:0.46,isTextBox:true,margin:0,fontFace:SANS,fontSize:10.5,bold:true,color:BERRY,lineSpacing:14});
   s.addText(t[1],{x:x+0.22,y:5.62,w:3.42,h:1.16,isTextBox:true,margin:0,fontFace:SANS,fontSize:9,color:INK,lineSpacing:12.5});
 });
+footer(s);
+}
+
+/* ================= S4 株主構成 ================= */
+{
+const s=p.addSlide();
+header(s,"SHAREHOLDERS","株主構成 ― 譲受価額50.0億円の場合と55.0億円の場合",
+  "上限で決着した場合、差額5.0億円は第三者割当増資により、外部の追加投資家から同一のバリュエーションで調達する。");
+
+function panel(px, title, segs, rows){
+  s.addShape(p.ShapeType.roundRect,{x:px,y:1.70,w:5.90,h:3.30,rectRadius:0.05,fill:{color:W},line:{color:LINE,width:0.75}});
+  s.addText(title,{x:px+0.24,y:1.82,w:5.4,h:0.28,isTextBox:true,margin:0,fontFace:SERIF,fontSize:15,bold:true,color:INK});
+  let bx=px+0.12, BW=5.66;
+  segs.forEach(g=>{
+    const w=g[1]*BW;
+    s.addShape(p.ShapeType.rect,{x:bx,y:2.22,w:w,h:0.50,fill:{color:g[2]}});
+    s.addText(g[3],{x:bx,y:2.22,w:w,h:0.50,isTextBox:true,margin:0,align:"center",valign:"middle",
+      fontFace:SANS,fontSize:g[1]>0.2?11.5:9,bold:true,color:W});
+    bx+=w;
+  });
+  s.addTable(rows,tOpt({x:px+0.12,y:2.92,w:5.66,colW:[1.70,2.76,1.20],rowH:0.40,fontSize:9.5}));
+}
+const NK="出資10万円＋株主貸付5.07億円";
+panel(M,"① 譲受価額 50.0億円",
+ [["中野",0.6667,BERRY,"中野 66.7%"],["榊原",0.3333,ROSE,"榊原 33.3%"]],
+ [[hd("株主"),hd("拠出額"),hd("持分")],
+  [{text:"中野 邦人 氏",options:{bold:true}},{text:NK,options:{fontSize:9}},num("66.7%",{bold:true})],
+  [{text:"榊原 氏",options:{bold:true}},"10.00億円",num("33.3%",{bold:true,color:BERRY})],
+  [{text:"合計",options:{bold:true,fill:{color:TINT}}},{text:"15.07億円",options:{fill:{color:TINT}}},num("100%",{bold:true,fill:{color:TINT}})]]);
+panel(6.81,"② 譲受価額 55.0億円",
+ [["中野",0.5714,BERRY,"中野 57.1%"],["榊原",0.2857,ROSE,"榊原 28.6%"],["追加",0.1429,GOLD,"14.3%"]],
+ [[hd("株主"),hd("拠出額"),hd("持分")],
+  [{text:"中野 邦人 氏",options:{bold:true}},{text:NK,options:{fontSize:9}},num("57.1%",{bold:true})],
+  [{text:"榊原 氏",options:{bold:true}},"10.00億円",num("28.6%",{bold:true,color:AMB})],
+  [{text:"追加投資家",options:{bold:true}},{text:"5.00億円（第三者割当増資）",options:{fontSize:9}},num("14.3%",{bold:true,color:GOLD})],
+  [{text:"合計",options:{bold:true,fill:{color:TINT}}},{text:"20.07億円",options:{fill:{color:TINT}}},num("100%",{bold:true,fill:{color:TINT}})]]);
+
+const cards=[
+ ["銀行から見た財務は、どちらでも変わらない",
+  "差額5.0億円を全額エクイティで吸収するため、みずほ銀行への依頼額36.4億円、合併後の有利子負債20.0億円、初年度DSCR1.35倍は、いずれのケースでも同一となる。"],
+ ["同一バリュエーションでの追加調達",
+  "榊原氏の10.0億円＝33.3%が示すポストマネー30.0億円を基準とし、追加投資家は同じ条件で5.0億円を引き受ける。既存株主は一律に希薄化する（30.0億円 → 35.0億円）。"]
+];
+cards.forEach((c,i)=>{
+  const x=M+i*6.19;
+  s.addShape(p.ShapeType.roundRect,{x,y:5.14,w:5.90,h:1.08,rectRadius:0.05,fill:{color:TINT},line:{color:LINE,width:0.75}});
+  s.addText(c[0],{x:x+0.22,y:5.24,w:5.46,h:0.26,isTextBox:true,margin:0,fontFace:SANS,fontSize:10.5,bold:true,color:BERRY});
+  s.addText(c[1],{x:x+0.22,y:5.50,w:5.46,h:0.62,isTextBox:true,margin:0,fontFace:SANS,fontSize:9,color:INK,lineSpacing:12.5});
+});
+s.addShape(p.ShapeType.roundRect,{x:M,y:6.32,w:SW-2*M,h:0.56,rectRadius:0.04,fill:{color:BERRY}});
+s.addText([{text:"先に握っておくこと　",options:{bold:true,fontSize:11,color:W}},
+ {text:"55.0億円ケースでは榊原氏の持分が28.6%となり、会社法上の特別決議に対する拒否権（1/3超）を失う。中野氏も57.1%となり単独での2/3可決ができなくなる。追加投資家を受け入れる際の優先引受権の扱いを、株主間契約に先に定めておく必要がある。",
+  options:{fontSize:10,color:"EBDCE1"}}],
+ {x:M+0.26,y:6.38,w:SW-2*M-0.52,h:0.44,isTextBox:true,margin:0,lineSpacing:15,valign:"middle"});
 footer(s);
 }
 
