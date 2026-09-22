@@ -1,0 +1,399 @@
+<title>あどばる×スペースマーケット 合併試算</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+:root{
+  --paper:#F5F7F9; --surface:#FFFFFF; --surface-2:#EDF1F5;
+  --ink:#121822; --ink-2:#45566A; --ink-3:#6E7E90;
+  --rule:#DBE2EA; --rule-strong:#BFCAD6;
+  --accent:#6E2639; --accent-soft:#F4E7EB; --accent-ink:#6E2639;
+  --navy:#1D3557; --navy-soft:#E6ECF4;
+  --good:#2C6A4E; --good-soft:#E4F0EA;
+  --warn:#8F5510; --warn-soft:#F8EEDF;
+  --bad:#8A2E26;  --bad-soft:#F8E7E4;
+  --shadow:0 1px 2px rgba(18,24,34,.05), 0 8px 24px rgba(18,24,34,.05);
+  --display:"Zen Old Mincho",'Hiragino Mincho ProN','Yu Mincho',serif;
+  --body:"Noto Sans JP",'Hiragino Sans','Yu Gothic',system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,'SFMono-Regular',monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0F141B; --surface:#161D26; --surface-2:#1D2530;
+    --ink:#E9EEF4; --ink-2:#A6B4C2; --ink-3:#788593;
+    --rule:#293341; --rule-strong:#3A4655;
+    --accent:#D98BA0; --accent-soft:#2B1A20; --accent-ink:#E7A7B8;
+    --navy:#8FB3D9; --navy-soft:#182231;
+    --good:#6FBF95; --good-soft:#152520;
+    --warn:#D9A45B; --warn-soft:#262014;
+    --bad:#E08B80;  --bad-soft:#271816;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.28);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0F141B; --surface:#161D26; --surface-2:#1D2530;
+  --ink:#E9EEF4; --ink-2:#A6B4C2; --ink-3:#788593;
+  --rule:#293341; --rule-strong:#3A4655;
+  --accent:#D98BA0; --accent-soft:#2B1A20; --accent-ink:#E7A7B8;
+  --navy:#8FB3D9; --navy-soft:#182231;
+  --good:#6FBF95; --good-soft:#152520;
+  --warn:#D9A45B; --warn-soft:#262014;
+  --bad:#E08B80;  --bad-soft:#271816;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.28);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);
+  font-size:15px;line-height:1.85;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1060px;margin:0 auto;padding:0 24px 96px}
+.masthead{padding:56px 0 32px;border-bottom:2px solid var(--ink);margin-bottom:8px}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--accent-ink);font-weight:600;margin:0 0 14px}
+h1{font-family:var(--display);font-weight:900;font-size:clamp(28px,4.6vw,42px);
+  line-height:1.25;letter-spacing:.01em;margin:0 0 16px;text-wrap:balance}
+.standfirst{font-size:16px;color:var(--ink-2);margin:0 0 22px;max-width:62ch;line-height:1.9}
+.meta{display:flex;flex-wrap:wrap;gap:8px 28px;font-family:var(--mono);font-size:11.5px;
+  color:var(--ink-3);letter-spacing:.03em;padding-bottom:4px}
+.meta b{color:var(--ink-2);font-weight:500}
+section{padding-top:52px}
+.sec-head{display:flex;align-items:baseline;gap:14px;margin-bottom:6px}
+.sec-num{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--accent-ink);
+  letter-spacing:.1em;flex:none;padding-top:2px}
+h2{font-family:var(--display);font-weight:700;font-size:clamp(21px,3vw,27px);line-height:1.4;
+  margin:0;letter-spacing:.01em;text-wrap:balance}
+.sec-sub{color:var(--ink-2);font-size:14.5px;margin:4px 0 24px 34px;max-width:64ch}
+h3{font-family:var(--body);font-weight:700;font-size:16px;margin:34px 0 12px;
+  letter-spacing:.01em;padding-left:11px;border-left:3px solid var(--accent)}
+p{margin:0 0 14px;max-width:66ch}
+em{font-style:normal;background:var(--accent-soft);color:var(--accent-ink);padding:1px 5px;
+  border-radius:3px;font-weight:500}
+.call{background:var(--surface);border:1px solid var(--rule);border-left:4px solid var(--accent);
+  border-radius:4px;padding:18px 22px;margin:22px 0;box-shadow:var(--shadow)}
+.call.warn{border-left-color:var(--warn);background:var(--warn-soft)}
+.call.good{border-left-color:var(--good);background:var(--good-soft)}
+.call.bad{border-left-color:var(--bad);background:var(--bad-soft)}
+.call p:last-child{margin-bottom:0}
+.call-label{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+  font-weight:600;color:var(--ink-3);display:block;margin-bottom:7px}
+.figs{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:1px;
+  background:var(--rule);border:1px solid var(--rule);border-radius:4px;overflow:hidden;margin:26px 0}
+.fig{background:var(--surface);padding:16px 18px}
+.fig-l{font-size:11.5px;color:var(--ink-3);letter-spacing:.04em;margin-bottom:5px;line-height:1.5}
+.fig-v{font-family:var(--mono);font-size:22px;font-weight:600;letter-spacing:-.02em;
+  line-height:1.25;font-variant-numeric:tabular-nums}
+.fig-n{font-size:11.5px;color:var(--ink-3);margin-top:3px;line-height:1.5}
+.up{color:var(--good)}.down{color:var(--bad)}.neu{color:var(--ink)}
+.scroll{overflow-x:auto;margin:22px 0;border:1px solid var(--rule);border-radius:4px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:13.5px}
+th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+thead th{background:var(--surface-2);font-size:11px;letter-spacing:.07em;font-weight:700;
+  color:var(--ink-2);white-space:nowrap;border-bottom:1px solid var(--rule-strong)}
+tbody tr:last-child td{border-bottom:none}
+td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.total td{font-weight:700;background:var(--surface-2);border-top:1px solid var(--rule-strong)}
+tr.hi td{background:var(--accent-soft)}
+caption{caption-side:top;text-align:left;padding:12px 14px 10px;font-size:12px;color:var(--ink-3);
+  border-bottom:1px solid var(--rule);background:var(--surface-2)}
+.pill{display:inline-block;font-family:var(--mono);font-size:10.5px;font-weight:600;
+  letter-spacing:.06em;padding:2px 8px;border-radius:99px;white-space:nowrap;line-height:1.7}
+.p-good{background:var(--good-soft);color:var(--good)}
+.p-warn{background:var(--warn-soft);color:var(--warn)}
+.p-bad{background:var(--bad-soft);color:var(--bad)}
+.p-neu{background:var(--navy-soft);color:var(--navy)}
+ul.plain{padding-left:20px;margin:12px 0;display:grid;gap:7px}
+ul.plain li{font-size:14px;line-height:1.8;color:var(--ink-2)}
+ul.plain li b{color:var(--ink)}
+ul.check{list-style:none;padding:0;margin:16px 0;display:grid;gap:10px}
+ul.check li{padding-left:26px;position:relative;font-size:14px;line-height:1.8;color:var(--ink-2)}
+ul.check li::before{content:"□";position:absolute;left:2px;top:0;color:var(--accent);font-size:15px}
+ul.check li b{color:var(--ink);font-weight:700}
+footer{margin-top:64px;padding-top:22px;border-top:2px solid var(--ink);font-size:12.5px;
+  color:var(--ink-3);line-height:1.85}
+footer p{max-width:none}
+footer a{color:var(--accent-ink)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media (max-width:560px){.wrap{padding:0 16px 72px}}
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <p class="kicker">スペースマーケット 合併提案 ／ 初期検討</p>
+  <h1>あどばる×スペースマーケット<br>合併後の株主構成と対等化コスト</h1>
+  <p class="standfirst">
+    スペースマーケット(4487)の3ヶ月平均時価総額と、あどばるをLOIの18億円で評価した場合の
+    合併後想定株主名簿。あわせて、中野様が重松大輔氏と持分で対等になるために必要な買付額を算定しました。
+  </p>
+  <div class="meta">
+    <span><b>作成</b> 2026年9月22日</span>
+    <span><b>SM側</b> 公開情報（2026年9月時点）</span>
+    <span><b>あどばる側</b> 株主名簿・潜在前192,616株</span>
+  </div>
+</header>
+
+<!-- ============================================================ -->
+<section>
+  <div class="sec-head"><span class="sec-num">01</span><h2>結論</h2></div>
+
+  <div class="call good">
+    <span class="call-label">中野様と重松氏は、ほぼ並びます</span>
+    <p><strong>合併後の持分は 重松氏 14.90% ／ 中野様 13.25%。その差はわずか1.65ポイントです。</strong>
+    中野様がSO 9,000株を行使すれば<strong>14.41%</strong>となり、差は<em>0.49ポイント</em>まで縮まります。</p>
+    <p style="margin-top:10px"><strong>対等になるために必要な買付は、驚くほど小さい金額です。</strong>
+    SO行使済の前提で、重松氏から相対で買うなら<strong>49,172株・1,131万円</strong>、
+    市場で買い増すなら<strong>98,345株・2,262万円</strong>（合併後発行済のわずか0.49%）。</p>
+  </div>
+
+  <div class="call bad">
+    <span class="call-label">ただし、合併の最大の障害はそこではありません</span>
+    <p><strong>この条件だと、株式会社ビジョンが19.26%で合併後の筆頭株主になります。</strong>
+    重松氏14.90%を大きく上回り、中野様13.25%との合計では32.5%。</p>
+    <p style="margin-top:10px">スペースマーケットの経営陣から見れば、<em>創業者が筆頭株主の座を明け渡し、
+    社外の事業会社（ビジョン）に最大株主を譲る</em>取引です。<strong>これは相手が容易には飲めません。</strong>
+    合併を本気で進めるなら、<strong>ビジョンの持分を事前に整理しておくことが事実上の前提条件</strong>になります。</p>
+  </div>
+
+  <div class="figs">
+    <div class="fig"><div class="fig-l">合併比率</div><div class="fig-v neu">1 : 40.63</div><div class="fig-n">あどばる1株にSM40.63株</div></div>
+    <div class="fig"><div class="fig-l">交付新株</div><div class="fig-v neu">7,826,087<span style="font-size:12px">株</span></div><div class="fig-n">合併後 19,931,987株</div></div>
+    <div class="fig"><div class="fig-l">あどばる株主の持分</div><div class="fig-v neu">39.26<span style="font-size:13px">%</span></div><div class="fig-n">SM既存株主 60.74%</div></div>
+    <div class="fig"><div class="fig-l">合併後 時価総額</div><div class="fig-v up">45.84<span style="font-size:13px">億</span></div><div class="fig-n">SM 27.84億＋AD 18億</div></div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section>
+  <div class="sec-head"><span class="sec-num">02</span><h2>前提に使った公開情報</h2></div>
+  <p class="sec-sub">EDINET・株探・IR BANK等の一次情報サイトがこの環境から直接取得できなかったため、検索結果から復元した数値です。<strong>実際の提示前に必ず原典で確認してください。</strong></p>
+
+  <div class="scroll">
+    <table>
+      <thead><tr><th>項目</th><th class="n">採用値</th><th>確度</th><th>根拠・備考</th></tr></thead>
+      <tbody>
+        <tr><td>SM 発行済株式数</td><td class="n">12,105,900株</td><td><span class="pill p-good">高</span></td><td>時価総額28〜29億円と株価229〜240円の複数時点で整合</td></tr>
+        <tr class="hi"><td><strong>SM 3ヶ月平均株価</strong></td><td class="n"><strong>230円</strong></td><td><span class="pill p-warn">推定</span></td><td>9/21終値229円、8/13時価総額28億（≒231円）、6月中旬229〜230円から推定。<strong>要確認</strong></td></tr>
+        <tr><td>SM 3ヶ月平均時価総額</td><td class="n">27.84億円</td><td><span class="pill p-warn">推定</span></td><td>上記の積</td></tr>
+        <tr><td>重松大輔氏 持株比率</td><td class="n">24.54%</td><td><span class="pill p-warn">中</span></td><td>2024年6月末時点。2021年末は25.76%。資産管理会社ダブルパインズ分を含む。<strong>最新値は要確認</strong></td></tr>
+        <tr><td>重松大輔氏 持株数</td><td class="n">2,970,788株</td><td><span class="pill p-warn">推定</span></td><td>24.54%×12,105,900株</td></tr>
+        <tr><td>あどばる 発行済</td><td class="n">192,616株</td><td><span class="pill p-good">確定</span></td><td>第10期株主総会資料・株主名簿</td></tr>
+        <tr><td>あどばる 評価額</td><td class="n">18.00億円</td><td><span class="pill p-neu">所与</span></td><td>スペースマーケットLOIの中間値</td></tr>
+        <tr><td>中野様 SO</td><td class="n">9,000株</td><td><span class="pill p-good">確定</span></td><td>株主名簿の潜在株式</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>SMの2026年9月期中間は<strong>売上13.85億円（前年同期比+25.0%）・営業利益0.46億円（同▲39.5%）</strong>。
+  一方あどばるの第10期は<strong>売上21.80億円・営業利益1.58億円</strong>で、
+  <em>売上・利益ともあどばるがSMを上回ります</em>。合併比率の交渉ではこれが効きます。</p>
+</section>
+
+<!-- ============================================================ -->
+<section>
+  <div class="sec-head"><span class="sec-num">03</span><h2>合併後の想定株主名簿</h2></div>
+  <p class="sec-sub">あどばる18億円を株式価値として評価し、SM株230円で新株を交付した場合。中野様のSO未行使／行使済の2通り。</p>
+
+  <div class="scroll">
+    <table>
+      <caption>ケース1：中野様のSO未行使／合併比率 あどばる1株 : SM 40.63株</caption>
+      <thead><tr><th>株主</th><th>出身</th><th class="n">合併後株数</th><th class="n">持分</th><th class="n">時価</th></tr></thead>
+      <tbody>
+        <tr><td>その他のSM既存株主</td><td>SM</td><td class="n">9,135,112</td><td class="n">45.83%</td><td class="n">21.01億</td></tr>
+        <tr class="hi"><td><strong>株式会社ビジョン</strong></td><td>あどばる</td><td class="n"><strong>3,839,584</strong></td><td class="n"><strong>19.26%</strong></td><td class="n">8.83億</td></tr>
+        <tr class="hi"><td><strong>重松 大輔</strong>（ダブルパインズ含む）</td><td>SM</td><td class="n"><strong>2,970,788</strong></td><td class="n"><strong>14.90%</strong></td><td class="n">6.83億</td></tr>
+        <tr class="hi"><td><strong>中野 邦人</strong></td><td>あどばる</td><td class="n"><strong>2,640,983</strong></td><td class="n"><strong>13.25%</strong></td><td class="n">6.07億</td></tr>
+        <tr><td>株式会社エアトリ</td><td>あどばる</td><td class="n">654,801</td><td class="n">3.29%</td><td class="n">1.51億</td></tr>
+        <tr><td>KUMAアセットマネジメント</td><td>あどばる</td><td class="n">255,972</td><td class="n">1.28%</td><td class="n">0.59億</td></tr>
+        <tr><td>株式会社フィル・カンパニー</td><td>あどばる</td><td class="n">121,892</td><td class="n">0.61%</td><td class="n">0.28億</td></tr>
+        <tr><td>株式会社ベクトル</td><td>あどばる</td><td class="n">121,892</td><td class="n">0.61%</td><td class="n">0.28億</td></tr>
+        <tr><td>株式会社アンビション・ベンチャーズ</td><td>あどばる</td><td class="n">109,702</td><td class="n">0.55%</td><td class="n">0.25億</td></tr>
+        <tr><td>株式会社BOS</td><td>あどばる</td><td class="n">81,261</td><td class="n">0.41%</td><td class="n">0.19億</td></tr>
+        <tr class="total"><td>合計</td><td></td><td class="n">19,931,987</td><td class="n">100.00%</td><td class="n">45.84億</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="scroll">
+    <table>
+      <caption>ケース2：中野様がSO 9,000株を行使／合併比率 あどばる1株 : SM 38.82株</caption>
+      <thead><tr><th>株主</th><th class="n">合併後株数</th><th class="n">持分</th><th class="n">ケース1との差</th></tr></thead>
+      <tbody>
+        <tr><td>その他のSM既存株主</td><td class="n">9,135,112</td><td class="n">45.83%</td><td class="n">—</td></tr>
+        <tr class="hi"><td><strong>株式会社ビジョン</strong></td><td class="n">3,668,187</td><td class="n"><strong>18.40%</strong></td><td class="n">△0.86pt</td></tr>
+        <tr class="hi"><td><strong>重松 大輔</strong></td><td class="n">2,970,788</td><td class="n"><strong>14.90%</strong></td><td class="n">—</td></tr>
+        <tr class="hi"><td><strong>中野 邦人</strong></td><td class="n">2,872,443</td><td class="n"><strong>14.41%</strong></td><td class="n">+1.16pt</td></tr>
+        <tr><td>株式会社エアトリ</td><td class="n">625,571</td><td class="n">3.14%</td><td class="n">△0.15pt</td></tr>
+        <tr><td>KUMAアセットマネジメント</td><td class="n">244,546</td><td class="n">1.23%</td><td class="n">△0.05pt</td></tr>
+        <tr><td>その他あどばる株主</td><td class="n">415,339</td><td class="n">2.09%</td><td class="n">△0.09pt</td></tr>
+        <tr class="total"><td>合計</td><td class="n">19,931,987</td><td class="n">100.00%</td><td class="n">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p><strong>SO行使は必ず合併前に済ませてください。</strong>払込は900万円（行使価額1,000円想定）にすぎませんが、
+  合併後の持分が13.25%→14.41%に上がり、<em>重松氏との差が1.65ptから0.49ptへ縮まります</em>。
+  費用対効果は圧倒的です。なお税制適格性の確認は必須です（非適格なら行使時に給与所得課税）。</p>
+</section>
+
+<!-- ============================================================ -->
+<section>
+  <div class="sec-head"><span class="sec-num">04</span><h2>重松氏と対等になるコスト</h2></div>
+  <p class="sec-sub">買い方によって必要株数が変わります。重松氏から相対で買えば半分で済みます。</p>
+
+  <div class="scroll">
+    <table>
+      <thead><tr><th>前提</th><th>買い方</th><th class="n">必要株数</th><th class="n">金額<br>（@230円）</th><th>備考</th></tr></thead>
+      <tbody>
+        <tr><td rowspan="2">ケース1<br>SO未行使</td><td>重松氏から相対取得</td><td class="n">164,902</td><td class="n">3,793万円</td><td>買うたび双方が動くので差の半分</td></tr>
+        <tr><td>市場で買い増し</td><td class="n">329,805</td><td class="n">7,586万円</td><td>重松氏の株数は減らないので差の全額</td></tr>
+        <tr class="hi"><td rowspan="2"><strong>ケース2<br>SO行使済</strong></td><td><strong>重松氏から相対取得</strong></td><td class="n"><strong>49,172</strong></td><td class="n"><strong>1,131万円</strong></td><td><strong>最も安い</strong></td></tr>
+        <tr class="hi"><td>市場で買い増し</td><td class="n">98,345</td><td class="n">2,262万円</td><td>合併後発行済の0.49%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="call">
+    <span class="call-label">実務上の注意</span>
+    <p><strong>市場買付は0.49%とはいえ、東証グロースの流動性では数週間かかります。</strong>
+    また中野様は合併により14.41%を保有するため、その時点で<em>大量保有報告書の提出義務</em>が生じ、
+    以降の買い増しは<strong>変更報告書で逐次開示</strong>されます。重松氏や市場に動きが筒抜けになる点はご留意ください。</p>
+    <p style="margin-top:10px">その意味でも、<strong>重松氏からの相対取得（1,131万円）を合併契約とセットで交渉する</strong>のが
+    圧倒的に合理的です。金額が小さいので、合併の条件交渉の中では「端数」に近い扱いにできます。</p>
+  </div>
+
+  <h3>感応度 ─ SM株価と重松氏持分</h3>
+  <div class="scroll">
+    <table>
+      <caption>市場買付で対等にする場合の所要額（あどばる18億＝株式価値・SO行使済）</caption>
+      <thead><tr><th class="n">SM株価</th><th class="n">重松 23%</th><th class="n">重松 24.54%</th><th class="n">重松 26%</th></tr></thead>
+      <tbody>
+        <tr><td class="n">210円</td><td class="n">不要</td><td class="n">不要</td><td class="n">不要</td></tr>
+        <tr><td class="n">220円</td><td class="n">不要</td><td class="n">不要</td><td class="n">0.32億</td></tr>
+        <tr class="hi"><td class="n"><strong>230円</strong></td><td class="n">不要</td><td class="n"><strong>0.23億</strong></td><td class="n">0.63億</td></tr>
+        <tr><td class="n">240円</td><td class="n">0.08億</td><td class="n">0.52億</td><td class="n">0.95億</td></tr>
+        <tr><td class="n">250円</td><td class="n">0.35億</td><td class="n">0.82億</td><td class="n">1.26億</td></tr>
+        <tr><td class="n">260円</td><td class="n">0.63億</td><td class="n">1.12億</td><td class="n">1.58億</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p><strong>SM株価が低いほど中野様に有利です。</strong>あどばるの評価が固定（18億）なら、
+  SM株価が下がるほど交付株数が増え、中野様の持分が上がるためです。
+  <em>株価210〜220円なら買い増しなしで重松氏を上回ります</em>。
+  逆にSM株価が上がると必要額が膨らむので、<strong>合併比率の基準日をどこに置くかが実利に直結します</strong>。</p>
+</section>
+
+<!-- ============================================================ -->
+<section>
+  <div class="sec-head"><span class="sec-num">05</span><h2>18億が「EV」だった場合 ─ 絵が一変します</h2></div>
+  <p class="sec-sub">LOIの18億円が株式価値ではなく事業価値だった場合、あどばるのネットデット11.17億を控除した株式価値は6.83億円になります。</p>
+
+  <div class="scroll">
+    <table>
+      <caption>ケース3：あどばる株式価値 6.83億／合併比率 あどばる1株 : SM 15.42株</caption>
+      <thead><tr><th>株主</th><th class="n">合併後株数</th><th class="n">持分</th><th class="n">ケース1との差</th></tr></thead>
+      <tbody>
+        <tr><td>その他のSM既存株主</td><td class="n">9,135,112</td><td class="n">60.60%</td><td class="n">+14.77pt</td></tr>
+        <tr class="hi"><td><strong>重松 大輔</strong></td><td class="n">2,970,788</td><td class="n"><strong>19.71%</strong></td><td class="n">+4.81pt</td></tr>
+        <tr><td>株式会社ビジョン</td><td class="n">1,456,909</td><td class="n">9.66%</td><td class="n">△9.60pt</td></tr>
+        <tr class="hi"><td><strong>中野 邦人</strong></td><td class="n">1,002,106</td><td class="n"><strong>6.65%</strong></td><td class="n">△6.60pt</td></tr>
+        <tr><td>その他あどばる株主</td><td class="n">510,550</td><td class="n">3.38%</td><td class="n">△2.97pt</td></tr>
+        <tr class="total"><td>合計</td><td class="n">15,075,465</td><td class="n">100.00%</td><td class="n">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="call bad">
+    <span class="call-label">対等化コストが20倍になります</span>
+    <p>重松氏19.71%に対し中野様6.65%。差は<strong>1,968,682株</strong>。
+    市場買付なら<strong>4.53億円</strong>、重松氏からの相対取得でも<strong>2.26億円</strong>が必要です。
+    ケース2の1,131万円と比べて<em>20〜40倍</em>。</p>
+    <p style="margin-top:10px"><strong>LOIの「18億」がEquityかEVかは、この案件で最も金額インパクトの大きい論点です。</strong>
+    合併の議論に入る前に、<strong>LOIの原文で必ず確認してください。</strong>
+    先方が「18億はEVのつもりだった」と言い出した瞬間に、中野様の立ち位置は一桁変わります。</p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section>
+  <div class="sec-head"><span class="sec-num">06</span><h2>交渉上の論点</h2></div>
+
+  <h3>ビジョンの19.26%をどう扱うか ─ 最大の障害</h3>
+  <p>この条件の合併は、スペースマーケットにとって<strong>創業者が筆頭株主でなくなる取引</strong>です。
+  重松氏14.90%に対しビジョン19.26%。上場会社の経営陣がこれを素直に受けるとは考えにくく、
+  <strong>ビジョン持分の事前整理が実質的な前提条件</strong>になります。整理の方法は3つです。</p>
+  <ul class="plain">
+    <li><b>合併前にMBOでビジョン持分を消す。</b>これまで検討してきた自己株式取得スキームを先に実行し、
+    ビジョンが株主名簿から消えた状態で合併に臨む。<em>最もきれいですが時間がかかります</em>。</li>
+    <li><b>合併と同時にビジョン株を第三者へ譲渡する。</b>SM側またはSMの既存株主が引き受ける形。
+    ビジョンは現金でExitでき、SM側は持分をコントロールできます。</li>
+    <li><b>ビジョンに残ってもらい、議決権を制限する。</b>合併対価の一部を議決権制限付種類株にする方法。
+    ただし上場会社の合併対価で種類株を使うのは実務上ハードルが高く、現実的ではありません。</li>
+  </ul>
+
+  <div class="call good">
+    <span class="call-label">ビジョンにとっては悪い話ではありません</span>
+    <p>合併が成立すれば、ビジョンは<strong>8.83億円相当の上場株式</strong>を受け取ります。
+    これまでの議論では「非上場株なのでExitの手段がない」ことが膠着の原因でした。
+    <strong>合併は、ビジョンに流動性のあるExitを提供する唯一の選択肢</strong>かもしれません。
+    交渉の材料としては強力です。</p>
+  </div>
+
+  <h3>合併比率の基準日</h3>
+  <p>SM株価が下がるほど中野様の持分は上がります。<strong>3ヶ月平均を採るなら、その3ヶ月をいつに置くか</strong>で
+  実利が数千万円動きます。先方が「3ヶ月平均」を提案してきたのは、
+  <em>短期の値動きをならして自社に不利な安値を避ける</em>意図と読むのが自然です。
+  こちらからは<strong>1ヶ月平均・直近終値・6ヶ月平均との併記</strong>を求め、最も有利な基準を選べる余地を残してください。</p>
+
+  <h3>あどばるの方が事業規模は大きい</h3>
+  <p>売上はあどばる21.80億に対しSM13.85億（2026年9月期中間の年換算ベースでも約28億）、
+  営業利益はあどばる1.58億に対しSM0.46億（中間）。
+  <strong>「時価総額では小さいが、事業ではこちらが上」という構図</strong>です。
+  時価総額基準の合併比率は必ずしもフェアではない、という主張の根拠になります。
+  <em>ただしあどばるは債務超過（純資産△4.09億）である点は先方も必ず突いてきます。</em></p>
+
+  <h3>MBOとの関係 ─ 二者択一ではありません</h3>
+  <p>これまで検討してきたMBO（自己株式取得で中野陣営50%）と、この合併提案は<strong>両立し得ます</strong>。
+  むしろ<strong>MBOを先に実行してビジョンを整理し、その後に合併に臨む</strong>のが、
+  持分・交渉力・先方の受け入れやすさのすべてで最も有利です。</p>
+  <p>ただしMBOは実行に1年前後かかります。<strong>合併提案に期限があるなら、
+  どちらを先に置くかは早期に決める必要があります。</strong></p>
+</section>
+
+<!-- ============================================================ -->
+<section>
+  <div class="sec-head"><span class="sec-num">07</span><h2>確認すべきこと</h2></div>
+  <ul class="check">
+    <li><b>LOIの「18億」がEquityかEVか。</b>第05章のとおり、中野様の持分が13.25%か6.65%かを分ける最大の論点です。</li>
+    <li><b>スペースマーケットの最新の大株主の状況。</b>本資料は重松氏24.54%（2024年6月末）で試算しています。直近の有価証券報告書で最新値をご確認ください。</li>
+    <li><b>SMの正確な発行済株式数と自己株式数。</b>12,105,900株は推定です。自己株式があれば議決権ベースの比率が変わります。</li>
+    <li><b>3ヶ月平均株価の正確な算定。</b>230円は推定値です。基準日と算定方法（単純平均／出来高加重）で結果が動きます。</li>
+    <li><b>重松氏の持分にダブルパインズ分が含まれるか。</b>相対取得の交渉相手が個人か資産管理会社かで手続きが変わります。</li>
+    <li><b>SM側の新株予約権の有無。</b>潜在株式があれば希薄化後の比率で見る必要があります。</li>
+    <li><b>合併の是非そのもの。</b>本資料は「合併するとどうなるか」の試算であり、合併すべきかの判断は別途必要です。</li>
+  </ul>
+
+  <div class="call warn">
+    <span class="call-label">本資料の限界</span>
+    <p>作成環境からEDINET・株探・IR BANK・Yahoo!ファイナンス等の一次情報サイトに直接アクセスできず、
+    <strong>検索結果の要約から数値を復元しています。</strong>
+    特に<em>3ヶ月平均株価230円</em>と<em>重松氏の持株比率24.54%</em>は確度が中程度です。
+    構造とロジックはそのまま使えますが、<strong>先方に提示する前に必ず原典で数値をご確認ください。</strong>
+    正確な値をいただければ即座に再計算します。</p>
+  </div>
+</section>
+
+<footer>
+  <p><strong>出典</strong>｜スペースマーケット(4487)の株価・時価総額・大株主情報は
+  <a href="https://www.nikkei.com/nkd/company/stockholder/?scode=4487">日経電子版</a>、
+  <a href="https://kabutan.jp/stock/holder?code=4487">株探</a>、
+  <a href="https://irbank.net/E35330/holder">IR BANK</a>、
+  <a href="https://minkabu.jp/stock/4487">みんかぶ</a>、
+  <a href="https://finance.yahoo.co.jp/quote/4487.T">Yahoo!ファイナンス</a>、
+  <a href="https://www.buffett-code.com/company/4487/mainshareholder">Buffett Code</a>
+  の検索結果より。あどばる側は第10回定時株主総会資料および株主名簿（潜在前・発行済192,616株）。</p>
+  <p style="margin-top:10px">合併後株数は「あどばる評価額÷SM株価」で交付新株を算出し、各株主のあどばる持分比率で按分したもの。
+  時価は合併後株数×230円。端数処理により合計が一致しない場合があります。</p>
+  <p style="margin-top:10px">本資料は社内検討用の初期試算であり、法務・税務・会計上の助言ではありません。
+  合併比率の算定は実務上、第三者算定機関によるDCF法・市場株価法・類似会社比較法等の併用により決定されます。</p>
+</footer>
+
+</div>
