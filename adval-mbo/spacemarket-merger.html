@@ -346,7 +346,181 @@ footer a{color:var(--accent-ink)}
 
 <!-- ============================================================ -->
 <section>
-  <div class="sec-head"><span class="sec-num">06</span><h2>交渉上の論点</h2></div>
+  <div class="sec-head"><span class="sec-num">06</span><h2>3ヶ月平均と6ヶ月平均</h2></div>
+  <p class="sec-sub">この環境からは金融サイトへ直接アクセスできず、検索で拾えた実測点からの推定です。確度を明記します。</p>
+
+  <div class="scroll">
+    <table>
+      <caption>収集できた実測点（2026年）</caption>
+      <thead><tr><th>日付</th><th class="n">株価</th><th>出所・備考</th></tr></thead>
+      <tbody>
+        <tr><td>1月20日</td><td class="n">328円</td><td>年初来高値</td></tr>
+        <tr><td>5月27日</td><td class="n">243円</td><td>検索結果</td></tr>
+        <tr><td>6月10日</td><td class="n">230円</td><td>松井証券（前日比△6円・△2.54%）</td></tr>
+        <tr><td>6月中旬</td><td class="n">229〜230円</td><td>検索結果</td></tr>
+        <tr><td>（時期不詳）</td><td class="n">205円</td><td>年初来安値。6月前後とみられる</td></tr>
+        <tr><td>8月13日</td><td class="n">約231円</td><td>時価総額28億から逆算</td></tr>
+        <tr><td>9月18日</td><td class="n">229円</td><td>時価総額2,772百万円から逆算</td></tr>
+        <tr class="hi"><td><strong>9月21日</strong></td><td class="n"><strong>229円</strong></td><td><strong>四季報画面の終値（実測）</strong></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="call">
+    <span class="call-label">推定値</span>
+    <p><strong>3ヶ月平均（2026年6月22日〜9月21日）＝ 約229円</strong>　レンジ225〜235円　<span class="pill p-good">確度：比較的高い</span><br>
+    観測点が229〜231円に集中しており、6月の安値圏を脱してからほぼ横ばいです。</p>
+    <p style="margin-top:10px"><strong>6ヶ月平均（2026年3月23日〜9月21日）＝ 約240円</strong>　レンジ235〜250円　<span class="pill p-warn">確度：低い</span><br>
+    5月27日が243円、6月に205〜230円へ下落、以降229円前後という形。
+    <em>3〜5月の実データが取れていないため、±10円程度の誤差を見込んでください。</em></p>
+  </div>
+
+  <h3>どちらを採るべきか ─ 3ヶ月平均です</h3>
+  <p>あどばるの評価額18億円が固定なら、<strong>SM株価が低いほど交付株数が増え、あどばる株主の持分が上がります。</strong>
+  つまり<em>SM株価が低い基準を採るほど中野様に有利</em>です。</p>
+
+  <div class="scroll">
+    <table>
+      <thead><tr><th>基準</th><th class="n">SM株価</th><th class="n">交付新株</th><th class="n">あどばる株主</th><th class="n">中野様</th><th class="n">ビジョン</th><th class="n">対等化（＋DP）</th></tr></thead>
+      <tbody>
+        <tr class="hi"><td><strong>3ヶ月平均</strong></td><td class="n">229円</td><td class="n">7,860,262</td><td class="n"><strong>39.37%</strong></td><td class="n"><strong>14.45%</strong></td><td class="n">18.45%</td><td class="n">1.99億</td></tr>
+        <tr><td>6ヶ月平均</td><td class="n">240円</td><td class="n">7,500,000</td><td class="n">38.25%</td><td class="n">14.04%</td><td class="n">17.93%</td><td class="n">2.24億</td></tr>
+        <tr><td>（参考）12ヶ月平均</td><td class="n">255円</td><td class="n">7,058,824</td><td class="n">36.83%</td><td class="n">13.52%</td><td class="n">17.26%</td><td class="n">2.59億</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="call good">
+    <span class="call-label">読み解き</span>
+    <p><strong>3ヶ月平均は6ヶ月平均より中野様の持分が0.41pt高く、対等化コストも0.25億円安くなります。</strong>
+    したがって<em>先方が提示してきた3ヶ月平均は、こちらに不利な基準ではありません</em>。そのまま受けてよい条件です。</p>
+    <p style="margin-top:10px">むしろ注意すべきは、<strong>先方が途中で「6ヶ月平均」「1年平均」に変えてくる展開</strong>です。
+    SM株は1月に328円の高値を付けており、<em>遡るほどSM側に有利</em>になります。
+    <strong>3ヶ月平均を早めに書面で固定してください。</strong></p>
+  </div>
+
+  <div class="call warn">
+    <span class="call-label">数値取得の制約について</span>
+    <p>この作業環境からEDINET・株探・IR BANK・Yahoo!ファイナンス・みんかぶ・investing.com・stooq等、
+    <strong>試したすべての金融サイトがネットワーク側で遮断されており、時系列データを直接取得できませんでした。</strong>
+    上記は検索結果に現れた断片的な実測点からの復元です。</p>
+    <p style="margin-top:10px">正確な平均は、証券口座の時系列データ（株探の「日々株価」CSV、Yahoo!ファイナンスの時系列）を
+    ダウンロードして単純平均を取れば5分で出ます。<strong>その数値をいただければ即座に全試算を再計算します。</strong>
+    なお実務では、合併比率の算定は第三者算定機関が出来高加重平均（VWAP）で行うのが通常です。</p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section>
+  <div class="sec-head"><span class="sec-num">07</span><h2>上場廃止にならないか</h2></div>
+  <p class="sec-sub">結論から言えば、即座に上場廃止にはなりません。ただし流通株式比率が基準を割る可能性があり、対策が必要です。</p>
+
+  <div class="call">
+    <span class="call-label">結論</span>
+    <p><strong>危ないのは「流通株式比率25%以上」の1点だけです。</strong>
+    合併後の流通株式比率は<strong>21.62%〜30.59%</strong>と推定され、
+    <em>あどばる側の事業法人株主を「固定的保有」と判定されると25%を割ります。</em></p>
+    <p style="margin-top:10px">ただし基準に抵触しても<strong>即上場廃止ではなく、原則1年の改善期間</strong>が与えられます。
+    その間に大株主の売出しや立会外分売で流通株式を増やせば維持できます。
+    実務上は<strong>合併とセットで流通株式対策を設計する</strong>のが通常です。</p>
+  </div>
+
+  <h3>東証グロース市場の上場維持基準に照らすと</h3>
+  <div class="scroll">
+    <table>
+      <caption>合併後（SM株229円・合併後発行済19,966,162株・時価総額45.72億円）</caption>
+      <thead><tr><th>基準</th><th class="n">基準値</th><th class="n">合併後の見込み</th><th>判定</th></tr></thead>
+      <tbody>
+        <tr class="hi"><td><strong>流通株式比率</strong></td><td class="n">25%以上</td><td class="n"><strong>21.62%〜30.59%</strong></td><td><span class="pill p-bad">抵触の可能性</span></td></tr>
+        <tr><td>流通株式時価総額</td><td class="n">5億円以上</td><td class="n">9.88億〜13.98億</td><td><span class="pill p-good">適合</span></td></tr>
+        <tr><td>株主数</td><td class="n">150人以上</td><td class="n">2,428名＋あどばる株主</td><td><span class="pill p-good">適合</span></td></tr>
+        <tr class="hi"><td><strong>時価総額</strong>（上場10年経過後＝2029年12月〜）</td><td class="n">40億円以上</td><td class="n"><strong>45.72億</strong></td><td><span class="pill p-good">適合</span></td></tr>
+        <tr><td>売買高</td><td class="n">月平均10単位以上</td><td class="n">問題なし</td><td><span class="pill p-good">適合</span></td></tr>
+        <tr><td>債務超過</td><td class="n">2期連続で不可</td><td class="n">のれん計上により回避</td><td><span class="pill p-good">適合</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>流通株式比率の内訳</h3>
+  <p>東証の定義では、流通株式から次のものが除外されます。<strong>①主要株主（10%以上）</strong>、
+  <strong>②役員等（資産管理会社を含む）</strong>、<strong>③自己株式</strong>、
+  <strong>④銀行・保険・事業法人等の固定的保有</strong>。</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>区分</th><th>株主</th><th class="n">持分</th></tr></thead>
+      <tbody>
+        <tr><td rowspan="4">① 主要株主<br>（10%以上）</td><td>株式会社ビジョン</td><td class="n">18.45%</td></tr>
+        <tr><td>重松 大輔</td><td class="n">14.77%</td></tr>
+        <tr><td>中野 邦人</td><td class="n">14.45%</td></tr>
+        <tr><td>TKP</td><td class="n">12.77%</td></tr>
+        <tr><td rowspan="2">② 役員等</td><td>株式会社ダブルパインズ（重松氏資産管理会社）</td><td class="n">8.36%</td></tr>
+        <tr><td>佐々木 正将（副社長）</td><td class="n">0.60%</td></tr>
+        <tr class="total"><td colspan="2">確実に除外される小計</td><td class="n">69.41%</td></tr>
+        <tr class="total"><td colspan="2">→ この時点の流通株式比率</td><td class="n">30.59%</td></tr>
+        <tr><td rowspan="8">④ 事業法人等<br>（固定的と<br>判定されれば除外）</td><td>株式会社エアトリ</td><td class="n">3.15%</td></tr>
+        <tr><td>マイナビ</td><td class="n">1.65%</td></tr>
+        <tr><td>KUMAアセットマネジメント</td><td class="n">1.23%</td></tr>
+        <tr><td>東京建物</td><td class="n">0.85%</td></tr>
+        <tr><td>株式会社フィル・カンパニー</td><td class="n">0.59%</td></tr>
+        <tr><td>株式会社ベクトル</td><td class="n">0.59%</td></tr>
+        <tr><td>株式会社アンビション・ベンチャーズ</td><td class="n">0.53%</td></tr>
+        <tr><td>株式会社BOS</td><td class="n">0.39%</td></tr>
+        <tr class="total"><td colspan="2">小計</td><td class="n">8.97%</td></tr>
+        <tr class="hi"><td colspan="2"><strong>→ すべて固定と判定された場合の流通株式比率</strong></td><td class="n"><strong>21.62%</strong></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>判定の分かれ目は<strong>あどばる側の事業法人株主（エアトリ・KUMA・フィル・ベクトル・アンビション・BOS）の所有目的</strong>です。
+  <em>純投資目的であれば流通株に含まれます</em>が、これらは事業シナジーを見込んだ出資と見られやすく、
+  合併後も保有を続ける前提なら「固定的」と判定される可能性があります。</p>
+
+  <div class="call good">
+    <span class="call-label">対策は取れます</span>
+    <p><strong>①合併と同時に、あどばる側の少数株主に売却してもらう。</strong>
+    エアトリ等は以前からExitを希望しており、上場株になれば売りやすい。
+    合併直後に市場で売却してもらえば流通株式比率は改善します。</p>
+    <p style="margin-top:10px"><strong>②大株主による売出し・立会外分売。</strong>
+    ビジョンが18.45%のうち一部を売り出せば、流通株式比率と株主数が同時に改善します。
+    ビジョンにとってもこれがExitそのものです。</p>
+    <p style="margin-top:10px"><strong>③東証への事前相談。</strong>合併の発表前に必ず実施してください。
+    流通株式の判定は最終的に東証が行うため、<em>こちらの解釈で進めるのは危険</em>です。</p>
+  </div>
+
+  <h3>もう一つの論点 ─ 実質的存続性の喪失（いわゆる裏口上場）</h3>
+  <p>上場会社が非上場会社を合併し、実質的に非上場会社が存続会社となる場合、上場廃止の対象になります。
+  判定要素は<strong>支配株主が異動するか</strong>と<strong>非上場会社の規模が上場会社を大きく上回るか</strong>です。</p>
+  <ul class="plain">
+    <li><b>支配株主の異動はありません。</b>あどばる株主への交付は39.37%で過半に達せず、特定の一者が支配権を取るわけでもありません。</li>
+    <li><b>規模は拮抗しています。</b>売上はSM（通期見込み約28億）があどばる（21.80億）をやや上回り、営業利益はあどばる（1.58億）がSM（中間0.46億）を上回ります。株式価値はSM27.72億 vs あどばる18億。<em>「大きく上回る」とまでは言えません</em>。</li>
+    <li><b>したがって該当しない可能性が高い</b>と考えられますが、<strong>東証の事前相談は必須</strong>です。あどばるが債務超過である点は必ず論点になります。</li>
+  </ul>
+
+  <div class="call bad">
+    <span class="call-label">むしろ深刻なのは、のれんです</span>
+    <p>あどばるの純資産は△4.09億円（第10期末）。18億円で取得すれば<strong>のれんが約22億円</strong>立ちます。
+    日本基準では償却が必要で、<strong>20年償却なら年1.10億円、10年償却なら年2.21億円</strong>が費用計上されます。</p>
+    <p style="margin-top:10px">SMの営業利益は2026年9月期中間で0.46億円。あどばるの1.58億円を単純合算しても年2.6億円程度です。
+    <strong>そこから年1.1〜2.2億円ののれん償却が引かれると、合併後の営業利益はほとんど残りません。</strong>
+    10年償却なら赤字転落も視野に入ります。</p>
+    <p style="margin-top:10px"><strong>これはSM側が18億円という評価を飲めるかどうかに直結します。</strong>
+    のれんの大きさを理由に評価額の引き下げを求めてくる展開は、十分に想定しておいてください。
+    また将来あどばるの業績が計画を下回れば<em>のれんの減損</em>が発生し、SMの株価を直撃します。</p>
+  </div>
+
+  <div class="call">
+    <span class="call-label">逆に、SM側にも合併する必要性があるかもしれません</span>
+    <p>SMは2019年12月上場なので、<strong>2029年12月から「時価総額40億円以上」の上場維持基準が適用</strong>されます。
+    現在のSM単独の時価総額は<strong>27.72億円</strong>で、40億円に届いていません。</p>
+    <p style="margin-top:10px">合併すれば時価総額は<strong>45.72億円</strong>となり、この基準をクリアできます。
+    <em>先方が合併を提案してきた背景に、この期限があるという読み方は十分に成り立ちます。</em>
+    もしそうなら、<strong>「困っているのは先方」という前提で交渉できる</strong>ことになります。
+    SMの直近の開示（決算説明資料や上場維持基準への適合状況）に言及があるはずなので、確認してください。</p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section>
+  <div class="sec-head"><span class="sec-num">08</span><h2>交渉上の論点</h2></div>
 
   <h3>ビジョンの19.26%をどう扱うか ─ 最大の障害</h3>
   <p>この条件の合併は、スペースマーケットにとって<strong>創業者個人が筆頭株主でなくなる取引</strong>です。
@@ -395,7 +569,7 @@ footer a{color:var(--accent-ink)}
 
 <!-- ============================================================ -->
 <section>
-  <div class="sec-head"><span class="sec-num">07</span><h2>確認すべきこと</h2></div>
+  <div class="sec-head"><span class="sec-num">09</span><h2>確認すべきこと</h2></div>
   <ul class="check">
     <li><b>TKPの出資の性格と権利関係。</b>取締役指名権・事前承諾事項・株主間契約の有無。21%は持分法適用水準であり、純投資とは考えにくい比率です。</li>
     <li><b>ダブルパインズの実態。</b>重松氏の資産管理会社という前提で合算していますが、出資者・議決権の帰属を有価証券報告書の「大株主の状況」注記で確認してください。</li>
