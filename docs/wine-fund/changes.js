@@ -1,4 +1,4 @@
-// 山本案：前回資料（デット型）から今回資料（現物出資型）への変更点まとめ（DOCX）
+// 山本案：前回資料（原価卸＋折半）から今回資料（時価−α卸＋プロラタ配分）への変更点（DOCX）
 // 数値は structure.py が書き出す figures.json を読む。手打ちしない。
 const {
   Document, Packer, Paragraph, TextRun, AlignmentType, BorderStyle,
@@ -8,6 +8,7 @@ const {
 const fs = require("fs");
 
 const F = JSON.parse(fs.readFileSync(__dirname + "/figures.json", "utf8"));
+const PA = F.params;
 const L = F.legacy;
 const C1 = F.first, C2 = F.second;
 const P1 = C1.holds["12"], P2 = C2.holds["12"];
@@ -17,7 +18,13 @@ const okuN  = (v) => (v / 1e8).toFixed(0) + "億円";
 const hyaku = (v) => Math.round(v / 1e6) + "百万円";
 const man   = (v) => Math.round(v / 1e4).toLocaleString() + "万円";
 const pc    = (v) => (v * 100).toFixed(1) + "%";
+const pt    = (v) => (v >= 0 ? "＋" : "▲") + Math.abs(v * 100).toFixed(1) + "pt";
 const mon   = (v) => v.toFixed(1) + "ヶ月";
+const f2    = (v) => v.toFixed(2);
+
+// 両者の取り分の合計（パイ）
+const pieOld = L.inv + L.wb_total;
+const pieNew = P1.inv + P1.wb_total;
 
 const SERIF = "Yu Mincho";
 const SANS  = "Yu Gothic";
@@ -28,7 +35,6 @@ function p(text, o = {}) {
   return new Paragraph({
     alignment: o.align || AlignmentType.LEFT,
     spacing: { before: o.before ?? 0, after: o.after ?? 120, line: o.line ?? 300 },
-    indent: o.indent,
     children: [new TextRun({
       text, font: o.font || SERIF, size: o.size || 21,
       bold: o.bold || false, color: o.color || "000000",
@@ -59,7 +65,6 @@ function bullet(text) {
   });
 }
 
-// ── 表
 function cell(text, o = {}) {
   return new TableCell({
     width: { size: o.w || 25, type: WidthType.PERCENTAGE },
@@ -108,150 +113,124 @@ children.push(
   }),
   p("ワインファンド（SPC）組成のご提案", { align: AlignmentType.CENTER, size: 26, bold: true, after: 60 }),
   p("山本案　前回資料からの変更点", { align: AlignmentType.CENTER, size: 36, bold: true, after: 200 }),
-  p("デット型（デット2億円＋エクイティ3億円）から 現物出資型（WineBank現物出資60%＋投資家出資40%）へ",
+  p("原価で卸して出口で折半する方式から、時価−αで卸して出口は出資比率どおりに分ける方式へ",
     { align: AlignmentType.CENTER, size: 20, color: "555555", after: 700 }),
   p("2026年9月", { align: AlignmentType.CENTER, size: 20, color: "555555", after: 60 }),
   p("株式会社WineBank", { align: AlignmentType.CENTER, size: 21, bold: true, after: 700 }),
 );
 
-// ───────────────────────────────── 本書の位置づけ
 children.push(
   h1("本書の位置づけ"),
-  p("本書は、山本様よりご提案いただいた資本構成の変更を反映するにあたり、前回資料（2026年8月・デット型）から今回資料（現物出資型）へ何をどう変更したかを整理したものである。提案資料本体とあわせてご確認いただきたい。"),
+  p("本書は、WineBankの取り分を「出口の成功報酬（折半）」から「SPCへ卸す時点の値入れ」へ移す変更について、前回資料から何をどう変えたかを整理したものである。提案資料本体とあわせてご確認いただきたい。"),
   p("金額・利回りはすべて共通の収益モデル（model.py）から算出しており、前回資料の数値も同一のモデルで再計算して対照している。前提を変えていない項目については、前回資料と完全に同じ数値になることを確認済みである。"),
 );
 
 // ───────────────────────────────── 1. 変更の要旨
 children.push(
   h1("1. 変更の要旨"),
-  p("変更は5点である。うち①が本質的な変更であり、②〜⑤はこれに付随する。"),
+  p("変更は3点である。①が本質的な変更であり、②③はこれに付随する。"),
   tbl([
-    ["変更点", "前回（デット型）", "今回（現物出資型）"],
-    [{ text: "① 資本構成", bold: true },
-     "デット2億円（金利4%・WineBank保証）＋投資家エクイティ3億円。WineBankの現金拠出はなし",
-     { text: "WineBankがワイン現物で総額の60%を出資し、投資家が現金で40%を出資する。デットは廃止", bold: true }],
-    [{ text: "② 募集総額", bold: true },
-     "総額5億円の単一クローズ",
-     `ファーストクローズ${okuN(C1.total)} → 年度内セカンドクローズ${okuN(C2.total)}の段階クローズ`],
-    [{ text: "③ 報酬体系", bold: true },
-     "投資家帰属利益を折半する成功報酬のみ。残高比例フィーは課さない。SPC人件費360万円をSPC費用に計上",
-     "成功報酬（折半）は従来どおり。加えて管理報酬として総額の年2%を計上し、SPC人件費360万円はこれに置き換える"],
-    [{ text: "④ 分配頻度", bold: true }, "半期ごと", "年1回（当初3年はロックアップ、4年目以降は年1回の解約可）"],
-    [{ text: "⑤ 想定利回り", bold: true },
-     `投資家利回り ${pc(L.inv_yld)}（出資3億円に対して）`,
-     { text: `投資家利回り ${pc(P1.inv_yld)}（1stクローズ・出資${okuN(C1.inv_capital)}に対して）`, bold: true }],
+    ["変更点", "前回（原価卸＋折半）", "今回（時価−α卸＋プロラタ）"],
+    [{ text: "① WineBankの取り分", bold: true },
+     `SPCへは原価（定価比${f2(L.spc_cost)}）で卸し、出口でSPC税前利益のうち投資家帰属分（40%）を投資家と折半する`,
+     { text: `SPCへ卸す時点で値入れする。出口で取るのは管理報酬（総額の年2%）のみとし、成功報酬（折半）は取らない`, bold: true }],
+    [{ text: "② 損益の配分", bold: true },
+     "投資家帰属分（40%）を折半したうえで配分する",
+     "SPC税前利益を出資比率どおり60：40でプロラタ配分する"],
+    [{ text: "③ 卸値のルール", bold: true },
+     `市中原価${f2(PA.mkt_cost)}＋現物譲渡1% ＝ ${f2(L.spc_cost)}`,
+     { text: `時価 ×（1−α）。α＝${pc(PA.alpha)}、時価＝取得時の加重平均売値${f2(PA.jika)} → SPC簿価 ${f2(PA.book)}`, bold: true }],
+    [{ text: "結果（回転12ヶ月）", bold: true },
+     { text: `投資家利回り ${pc(L.inv_yld)}`, bold: true },
+     { text: `投資家利回り ${pc(P1.inv_yld)}`, bold: true }],
   ], [16, 42, 42]),
 );
 
-// ───────────────────────────────── 2. 変更点の詳細
+// ───────────────────────────────── 2. 詳細
 children.push(h1("2. 変更点の詳細"));
 
 children.push(
-  h2("① 資本構成：デットを廃止し、WineBankが現物で60%を出資する"),
-  p("前回はWineBankが現金を拠出せず、デット2億円について金利4%と保証責任のみを負う構成であった。今回はWineBankが自己勘定のワイン現物を拠出して総額の60%を出資し、投資家と同じ持分として損益をそのまま負う。"),
-  bullet("WineBankには優先弁済も保証もない。SPCの損益が悪化すれば、WineBankの持分もそのまま毀損する。"),
-  bullet("前回論点となっていた「保証の実効性（WineBankの保証余力）」および「投資家が5億円を拠出した場合の合成利回り」は、デットの廃止により論点そのものが消滅した。"),
-  bullet("WineBankが自ら60%を保有するため、SPCへの拠出価格を吊り上げても自己の持分利益が同額減る。値付けで抜く経済的動機が構造的に生じない点は、本変更の最大の利点である。"),
-  p("なお、現物出資するワインの評価方法（取得原価にどれだけ付加するか）は組成時の別途協議事項とし、本資料の試算ではSPC取得原価を前回と同じ定価比50.50（市中原価50.00＋現物譲渡1%）に置いている。評価方法が確定した時点で、全数値がそれに追随する。", { before: 100 }),
-);
+  h2("① WineBankの取り分を、出口から入口へ移す"),
+  p(`前回はSPCへ原価で卸し、出口でSPC税前利益のうち投資家出資分に帰属する40%を投資家とWineBankで折半していた。今回はSPCへ卸す時点で時価から${pc(PA.alpha)}を控除した価格（定価比${f2(PA.book)}）とし、その値入れをWineBankの取り分とする。出口で取るのは管理報酬のみとなる。`),
+  bullet(`WineBankの値入れは定価比 ${f2(PA.book - PA.mkt_cost)}（簿価比 ${pc(PA.transfer_rate)}）。回転12ヶ月・総額${okuN(C1.total)}の定常状態では年${hyaku(P1.transfer)}となる。`),
+  bullet(`前回の値入れ（現物譲渡1%）は年${hyaku(L.transfer)}にすぎず、WineBankの取り分の大半は出口の成功報酬（年${hyaku(L.fee)}）と持分（年${hyaku(L.wb_equity)}）であった。`),
+  bullet("折半という概念が不要になる。投資家の取分は「SPC税前利益 × 出資比率40%」だけで決まるため、配分の説明が出資比率の一語で済む。"),
 
-children.push(
-  h2("② 募集総額：段階クローズとする"),
-  p("同じ資本構成の比率を保ったまま、規模のみを2段階で拡大する。比率が同一であるため利回りはほぼ変わらない（規模拡大で固定費が薄まるぶん、わずかに改善する）。"),
+  h2("② 損益は出資比率どおりにプロラタ配分する"),
+  p("成功報酬（折半）を廃止し、SPC税前利益を出資比率どおり60：40で分ける。配分がプロラタであるため、投資家利回りは「SPC税前利益 ÷ 総額」に等しくなり、出資比率そのものには依存しない。"),
+
+  h2("③ 卸値は時価に連動して決まる"),
+  p(`卸値を「時価 ×（1−α）」としたことで、仕入価格が動いても売値が動いても、SPCの簿価と時価の関係は変わらない。その結果、投資家利回りはこれらの変動から遮断される。`),
   tbl([
-    ["項目", "ファーストクローズ", "セカンドクローズ（年度内）"],
-    ["総額", { text: okuN(C1.total), bold: true }, { text: okuN(C2.total), bold: true }],
-    ["WineBank現物出資（60%）", okuN(C1.wb_capital), okuN(C2.wb_capital)],
-    ["投資家出資（40%）", okuN(C1.inv_capital), okuN(C2.inv_capital)],
-    ["必要な年間販売額（回転12ヶ月）", oku(P1.sales), { text: oku(P2.sales), color: RED, bold: true }],
-    ["投資家利回り（定常年間）", { text: pc(P1.inv_yld), bold: true }, { text: pc(P2.inv_yld), bold: true }],
-  ], [34, 33, 33]),
-  p("ただし必要な年間販売額は倍増する。現状の販売実力（年5〜7億円）に対しセカンドクローズは2倍を超える水準となるため、セカンドクローズはファーストクローズの回転実績を確認したうえで判断する設計としている。", { before: 140 }),
-);
-
-children.push(
-  h2("③ 報酬体系：管理報酬 年2% を新設する"),
-  p("折半（投資家帰属利益の50%をWineBankが受け取る成功報酬）の定義は一切変更していない。今回新設したのは、これとは別の管理報酬である。"),
-  bullet(`管理報酬は総額の年2%（ファーストクローズで年${man(C1.mgmt)}、セカンドクローズで年${man(C2.mgmt)}）をSPC費用として計上する。`),
-  bullet("従来SPC費用に計上していたSPC人件費360万円は、これに置き換えて廃止する。"),
-  bullet(`管理報酬はWineBankが全額を受領するが、そのうち60%はWineBank自身の出資分に対応する自己負担分の還流である。さらに投資家帰属分は折半されるため、管理報酬を課さない場合と比べたWineBankの純増は年${hyaku(C1.mgmt_net)}（1stクローズ）にとどまる。`),
-  bullet(`一方で投資家利回りは ${pc(P1.inv_yld + F.params.mgmt_rate * F.params.success)} から ${pc(P1.inv_yld)} へ 1.0ポイント低下する。`),
-);
-
-children.push(
-  h2("④ 分配頻度：半期ごと から 年1回 へ"),
-  p("当初3年間はロックアップ、4年目以降は年度ごとの解約日に解約可という設計は前回から変更していない。分配のみ半期から年1回へ変更した。5年通算の累計分配額に対する影響はない。"),
-);
-
-children.push(
-  h2("⑤ 想定利回り：20%目標に対する水準"),
-  p(`前回の${pc(L.inv_yld)}から今回${pc(P1.inv_yld)}へ、0.6ポイント低下した。内訳は次のとおりである。`),
-  tbl([
-    ["段階", "投資家利回り", "内容"],
-    ["前回（デット型）", pc(L.inv_yld), "SPC税前利益 × 出資比率60% × 折半50% ÷ 出資3億円"],
-    ["デットを廃し現物出資60%へ", pc(P1.inv_yld + F.params.mgmt_rate * F.params.success),
-     "SPC人件費360万円を廃止したぶん、いったん上昇する"],
-    [{ text: "管理報酬 年2% を新設", bold: true }, { text: pc(P1.inv_yld), bold: true },
-     "管理報酬をSPC費用に計上したぶん低下する（▲1.0pt）"],
-  ], [30, 18, 52]),
+    ["変動要因", "前回", "今回"],
+    ["市中仕入価格（定価比 50 → 45）", "＋7.7pt", { text: pt(C1.sensitivity.cost45 - C1.sensitivity.base), bold: true }],
+    ["売却価格（売値 ▲5%）", "▲3.5pt", { text: pt(C1.sensitivity.price5 - C1.sensitivity.base), bold: true }],
+    ["ワイン価格上昇率（年6% → 0%）", "▲4.0pt", { text: pt(C1.sensitivity.appr0 - C1.sensitivity.base), color: RED, bold: true }],
+    ["在庫回転期間（12 → 18ヶ月）", "▲6.1pt", { text: pt(C1.sensitivity.hold18 - C1.sensitivity.base), color: RED, bold: true }],
+  ], [40, 30, 30]),
+  p("仕入と売値から遮断される一方、ワイン価格の上昇率への依存は強まる。投資家利回りを動かす要因は「在庫回転期間」と「ワイン価格の上昇率」の2つに絞られた。", { before: 140 }),
 );
 
 // ───────────────────────────────── 3. 数値の対照
 children.push(
-  h1("3. 数値の対照（在庫回転12ヶ月・ニュートラル・ワイン価格上昇 年6%）"),
+  h1("3. 数値の対照（在庫回転12ヶ月・ワイン価格上昇 年6%・総額5億円）"),
   tbl([
-    ["項目", "前回（デット型・5億円）", "今回1stクローズ（5億円）", "今回2ndクローズ（10億円）"],
-    ["投資家の拠出", "エクイティ3億円＋貸付2億円", okuN(C1.inv_capital), okuN(C2.inv_capital)],
-    ["WineBankの拠出", "なし（保証のみ）", `ワイン現物 ${okuN(C1.wb_capital)}`, `ワイン現物 ${okuN(C2.wb_capital)}`],
-    ["必要な年間販売額", oku(L.sales), oku(P1.sales), oku(P2.sales)],
-    ["SPC年間税前利益", oku(L.pretax), oku(P1.pretax), oku(P2.pretax)],
-    ["投資家帰属分", `${hyaku(L.attr)}（5分の3）`, `${hyaku(P1.attr)}（40%）`, `${hyaku(P2.attr)}（40%）`],
-    ["投資家取分（折半後）", hyaku(L.inv), hyaku(P1.inv), hyaku(P2.inv)],
-    [{ text: "投資家利回り（定常年間）", bold: true }, { text: pc(L.inv_yld), bold: true },
-     { text: pc(P1.inv_yld), bold: true }, { text: pc(P2.inv_yld), bold: true }],
-    ["5年通算 年平均利回り", pc(L.avg5), pc(P1.avg5), pc(P2.avg5)],
-    ["WineBank受取", `${hyaku(L.wb)}（成功報酬＋デット分−金利）`,
-     `${hyaku(P1.wb_total)}（持分＋成功報酬＋管理報酬）`, `${hyaku(P2.wb_total)}（同左）`],
+    ["項目", "前回（原価卸＋折半）", "今回（時価−α卸＋プロラタ）"],
+    ["SPC簿価（定価比）", f2(L.spc_cost), { text: f2(PA.book), bold: true }],
+    ["必要な年間販売額", oku(L.sales), { text: oku(P1.sales), bold: true }],
+    ["SPC年間税前利益", oku(L.pretax), oku(P1.pretax)],
+    ["投資家取分", hyaku(L.inv), hyaku(P1.inv)],
+    [{ text: "投資家利回り（定常年間）", bold: true }, { text: pc(L.inv_yld), bold: true }, { text: pc(P1.inv_yld), bold: true }],
+    ["5年通算 年平均利回り", pc(L.avg5), pc(P1.avg5)],
+    ["WineBank：値入れ（前取り）", hyaku(L.transfer), { text: hyaku(P1.transfer), bold: true }],
+    ["WineBank：成功報酬", hyaku(L.fee), { text: "なし", bold: true }],
+    ["WineBank：持分（60%）", hyaku(L.wb_equity), hyaku(P1.wb_equity)],
+    ["WineBank：管理報酬", hyaku(C1.mgmt), hyaku(C1.mgmt)],
+    [{ text: "WineBank受取合計", bold: true }, { text: hyaku(L.wb_total), bold: true }, { text: hyaku(P1.wb_total), bold: true }],
     [{ text: "20%の分岐点（回転期間）", bold: true }, { text: mon(L.breakeven), bold: true },
-     { text: mon(C1.breakeven.neutral), color: RED, bold: true },
-     { text: mon(C2.breakeven.neutral), color: RED, bold: true }],
-    [{ text: "主線12ヶ月からの余裕", bold: true }, { text: (L.breakeven - 12).toFixed(1) + "ヶ月", bold: true },
-     { text: (C1.breakeven.neutral - 12).toFixed(1) + "ヶ月", color: RED, bold: true },
-     { text: (C2.breakeven.neutral - 12).toFixed(1) + "ヶ月", color: RED, bold: true }],
-  ], [26, 26, 24, 24]),
+     { text: mon(C1.breakeven.neutral), color: RED, bold: true }],
+  ], [34, 33, 33]),
+  p(`セカンドクローズ（総額${okuN(C2.total)}）では、投資家利回り ${pc(P2.inv_yld)}、投資家取分 ${hyaku(P2.inv)}、WineBank受取 ${hyaku(P2.wb_total)}、必要な年間販売額 ${oku(P2.sales)} となる。`, { before: 140 }),
 );
 
 // ───────────────────────────────── 4. 変更していない点
 children.push(
   h1("4. 変更していない点"),
-  p("次の各項目は前回資料から一切変更していない。数値も同一のモデルから再計算し、前回と完全に一致することを確認している。"),
-  bullet("折半の定義。折半とは「投資家が得た利益をWineBankと折半する成功報酬」であり、SPC全体の利益を50対50で割るという意味ではない。"),
+  bullet("資本構成。WineBankが現物で総額の60%を出資し、投資家が現金で40%を出資する。"),
+  bullet(`段階クローズ。ファーストクローズ${okuN(C1.total)} → 年度内セカンドクローズ${okuN(C2.total)}。`),
+  bullet("管理報酬。総額の年2%をSPC費用に計上する。"),
   bullet("収益モデルの前提。仕入40／60の半々、売却はB2B70とB2C80の半々、変動販売費6.44%、ワイン価格の年間上昇6%、稼働率95%、仕入展開6ヶ月、運用期間5年。"),
-  bullet("単位経済。SPC取得原価50.50・売却時の売値79.50・手取り74.38・単位粗利23.88・粗利率30.0%・投下原価利益率47.3%（保有12ヶ月・定価100あたり）。"),
-  bullet("粗利の定義。粗利は変動販売費を控除した後の金額としている。"),
+  bullet("解約条件と分配。当初3年間はロックアップ、4年目以降は年度ごとの解約日に申出可。分配は年1回。"),
   bullet("在庫配分の原則。在庫比率によるプロラタ配分を原則とし、プロラタで決し得ない部分についてSPCを優先する。"),
   bullet("提示指標。IRRは用いず、「投資家利回り（定常年間）」と「年平均利回り（5年通算）」の2つに統一している。"),
-  bullet("解約条件。運用期間5年、当初3年間はロックアップ、4年目以降は年度ごとの解約日に申出可。"),
+  bullet("粗利の定義。粗利は変動販売費を控除した後の金額としている。"),
 );
 
 // ───────────────────────────────── 5. ご留意いただきたい点
 children.push(
   h1("5. ご留意いただきたい点"),
-  h2("20%までの余裕がさらに小さくなっている"),
-  p(`投資家利回りが20%を割り込む回転期間は、前回の${mon(L.breakeven)}から今回${mon(C1.breakeven.neutral)}へ縮まった。主線12ヶ月からの余裕は${(L.breakeven - 12).toFixed(1)}ヶ月から${(C1.breakeven.neutral - 12).toFixed(1)}ヶ月へと小さくなっている。管理報酬 年2% を新設したことによる。`),
-  p("回転12ヶ月の達成は「上振れ条件」ではなく、20%を確保するための必要条件である。回転が15ヶ月へ延びれば投資家利回りは" + pc(C1.holds["15"].inv_yld) + "、18ヶ月なら" + pc(C1.holds["18"].inv_yld) + "まで低下する。これが本ファンド最大の管理項目であることは前回から変わらない。"),
 
-  h2("セカンドクローズは販売実力の拡大とセットになる"),
-  p(`総額を${okuN(C1.total)}から${okuN(C2.total)}へ倍増させると、回転12ヶ月を維持するために必要な年間販売額も${oku(P1.sales)}から${oku(P2.sales)}へ倍増する。これは現状の販売実力（年5〜7億円）の2倍を超える水準である。規模の拡大は販売チャネルの拡大とセットで判断する必要がある。`),
+  h2("20%までの余裕がなくなった"),
+  p(`投資家利回りが20%を割り込む回転期間は、前回の${mon(L.breakeven)}から今回${mon(C1.breakeven.neutral)}へ縮まった。主線の回転12ヶ月がそのまま分岐点であり、余裕はない。回転が15ヶ月へ延びれば${pc(C1.holds["15"].inv_yld)}、18ヶ月なら${pc(C1.holds["18"].inv_yld)}まで低下する。`),
+  p(`ただし回転12ヶ月に必要な年間販売額は${oku(L.sales)}から${oku(P1.sales)}へ下がった。卸値が上がったぶん同じ金額で持てるワインが減るためで、現状の販売実力（年5〜7億円）の範囲内に収まる点は前回より条件が良い。`),
 
-  h2("今回確定していない事項"),
-  bullet("現物出資するワインの評価方法（取得原価への付加率）。本資料の試算ではSPC取得原価を前回と同じ定価比50.50に置いている。付加率を引き上げるとSPCの取得原価が上がり、投資家利回りは低下する。"),
-  bullet("酒類の現物出資に係る免許上・消費税上・法人税上の取扱い。現物出資は税務上「時価による譲渡」として扱われるため、拠出時にWineBank側で課税が生じうる点を含め、組成前に専門家と確定させる必要がある。"),
-  bullet("適格機関投資家1名以上の確保。適格機関投資家等特例業務による私募の前提条件であり、組成条件として確保する必要がある。"),
-  bullet("WineBankが現物出資する銘柄の選定基準。現物出資型では「何を拠出するか」が回転期間を大きく左右するため、拠出銘柄の選定ルールを契約上明文化することとしている。"),
+  h2("ワイン価格の上昇率への依存が強まった"),
+  p(`SPCの収益は「αの取り込み」と「保有中の値上がり」の二階建てになる。前回は仕入の安さも収益源だったが、卸値が時価連動になったことでその分が消えた。値上がりを織り込まない場合、投資家利回りは主線でも${pc(C1.sensitivity.appr0)}まで下がり、20%を確保するには回転を${mon(C1.breakeven.appr0)}まで縮める必要がある。`),
 
-  h2("5年通算の年平均利回りについて"),
-  p(`回転15ヶ月（${pc(C1.holds["15"].avg5)}）より回転18ヶ月（${pc(C1.holds["18"].avg5)}）のほうが高くなっている。これは運用期間5年のあいだに何回転が収まるかによる段差であり、両者とも実現回転は3.0回である一方、18ヶ月のほうが1回転あたりの値上がりが大きいために生じる。また本モデルは満期時の残存在庫を簿価で戻す保守的な計算としているため、回転15ヶ月では完了間近の回転に含まれる利益が計上されない。実務上の取扱いは満期時の売却清算条件とあわせて整理する。`),
+  h2("ファンドの実質規模が小さくなる"),
+  p(`SPC簿価が${f2(L.spc_cost)}から${f2(PA.book)}へ上がるため、同じ${okuN(C1.total)}で持てるワインは定価換算で約15%少なくなる。利益は1本あたりで発生するので、ファンドが生む付加価値そのものが年${hyaku(pieOld)}から年${hyaku(pieNew)}へ、約${hyaku(pieOld - pieNew)}小さくなる。WineBankはその分を卸値で前取りしているため自社の損得はおおむね中立だが、投資家から見ると「同じ${okuN(C1.inv_capital)}でより少ないワインを持つ」構造になる。`),
+
+  h2("WineBankの収入が前倒しで確定する"),
+  p(`WineBank受取${hyaku(P1.wb_total)}のうち、値入れ${hyaku(P1.transfer)}と管理報酬${hyaku(C1.mgmt)}の計${hyaku(P1.transfer + C1.mgmt)}は運用成果によらず確定し、成果に連動するのは持分${hyaku(P1.wb_equity)}のみとなる。前回は${hyaku(L.wb_total)}のうち成果連動分が${hyaku(L.fee + L.wb_equity)}であった。持分60%を通じて損益を負う点は変わらないが、「投資家が儲からなければWineBankも儲からない」という説明はそのままでは使えない。提案資料では受取の内訳を明示している。`),
+
+  h2("卸値そのものが最大の利益相反論点になる"),
+  bullet(`αを契約上${pc(PA.alpha)}に固定し、期中の変更には投資家の事前承認を要する設計とする。`),
+  bullet("時価の算定方法（B2B卸値とB2C売値の加重平均）を契約に明記し、算定根拠を四半期ごとに開示する。"),
+  bullet("WineBank出資分に対応する値入れは自己取引となるため、内部利益の消去要否を会計・税務の両面で組成前に確定させる。"),
+  bullet("第三者卸価格との比較資料を年次で整備し、移転価格上の説明責任を果たせる状態を維持する。AUPの検証対象にも含める。"),
+
+  h2("3シナリオの定義を組み替えた"),
+  p("前回は調達価格と売却価格でポジティブ／ネガティブを定義していたが、卸値が時価連動になったことでこれらは投資家利回りに効かなくなった。そのまま用いるとポジティブがニュートラルを下回る逆転が生じるため、今回はワイン価格の上昇率（年10%／6%／0%）でシナリオを定義し直している。"),
 );
 
 const doc = new Document({
@@ -278,7 +257,7 @@ const doc = new Document({
 });
 
 Packer.toBuffer(doc).then((buf) => {
-  const name = "WineBank_ワインファンド_山本案_前回からの変更点_20260906.docx";
+  const name = "WineBank_ワインファンド_山本案_前回からの変更点_20260924.docx";
   fs.writeFileSync(__dirname + "/" + name, buf);
   console.log("written:", name);
 });
