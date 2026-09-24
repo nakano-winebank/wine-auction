@@ -6,7 +6,7 @@ let s;
 s=slide();
 cover(s,'株式会社あどばる','スペースマーケット社からの合併提案',
  '重松氏の会長就任を前提としたストラクチャーの比較検討',
- '2026年9月23日',
+ '2026年9月24日',
  [['ご説明先','株式会社あどばる 中村 新社長'],
   ['作成','株式会社あどばる 代表取締役 中野 邦人'],
   ['基準','会社四季報2026年9月号・株価229円（2026年9月21日終値）']],
@@ -31,7 +31,7 @@ T(s,'合併ルートでは、その6.10億を合併後に重松氏・ビジョ�
 T(s,'この前提で変わること／変わらないこと',{x:0.7,y:3.85,w:11.9,h:0.32,fontSize:14,bold:true,color:C.INK});
 [['変わる','持分を争う必要がない','重松氏側23.14%との対立構図ではなくなり、相対での譲受け交渉になります。',C.POS],
  ['変わる','支配権への道筋ができる','時間をかければ合併後でも過半数に近づけます。急ぐ必要がなくなります。',C.POS],
- ['変わらない','ビジョン社の借入7.90億','合併では返済されません。貸主が株主のまま上場会社に残ります。',C.NEG],
+ ['変わらない','ビジョン社の借入7.90億','子会社でなくなる時点で全額返済が必要です。増資がないため7.90億全額を新規借入で置き換えることになります。',C.NEG],
  ['変わらない','のれん22.09億円の償却','年1.10〜2.21億。合算営業利益4.90億に対し23〜45%を占め、前提が変わっても残ります。',C.NEG]]
 .forEach((r,i)=>{
   const x=0.7+i*3.02;
@@ -51,7 +51,7 @@ T(s,'理由は単純です。MBOでは6.10億が「会社」に入り、合併�
 T(s,'銀行が見るのは株主名簿ではなく貸借対照表です。同じ金額でも、純資産が6.10億増えるか、まったく動かないかの差になります。',
   {x:1.05,y:2.52,w:11.2,h:0.45,fontSize:12,color:C.INK2});
 [['01','MBOは6.10億で支配権と財務改善の両方が手に入る','中野陣営50.0%を確保しつつ、自己資本比率は△18.5%から24.9%へ。合併ルートで同額を投じても27.79%どまりで、会社の財務は1円も改善しません。',C.ACC],
- ['02','合併ではビジョン社の借入7.90億が残る','合併は株式交換なので、借入は返済されません。貸主であるビジョン社が株主として上場会社に残り、関連当事者取引として開示対象になります。',C.ACC],
+ ['02','合併でも借入7.90億は同時に全額返済','子会社でなくなる時点で返済が必要です。合併は株式交換で現金が入らないため、7.90億全額を新規借入で調達することになり、負債は1円も減りません。',C.ACC],
  ['03','中野の借入の性格がまったく違う','MBOは事業会社への増資（返済原資は配当）。合併ルートは上場株を担保にした個人の株式取得資金で、株価下落時に追加担保を求められます。',C.ACC]]
 .forEach((r,i)=>{
   const y=3.3+i*1.12;
@@ -104,7 +104,7 @@ tbl(s,[
  [{text:'6.10億円の行き先',options:{bold:true}},{text:'会社（第三者割当増資）',options:{align:'center',bold:true,color:C.POS}},{text:'売り手（重松氏・ビジョン社）',options:{align:'center',color:C.NEG}}],
  [{text:'会社の純資産への効果',options:{bold:true}},{text:'+6.10億円',options:{align:'center',bold:true,color:C.POS}},{text:'±0',options:{align:'center',color:C.NEG}}],
  [{text:'自己資本比率',options:{bold:true}},{text:'△18.5% → 24.9%',options:{align:'center',bold:true,color:C.POS}},{text:'合算次第（個社は未解消）',options:{align:'center'}}],
- [{text:'ビジョン社借入 7.90億',options:{bold:true}},{text:'全額返済・関係終了',options:{align:'center',bold:true,color:C.POS}},{text:'残存（貸主が株主のまま）',options:{align:'center',color:C.NEG}}],
+ [{text:'ビジョン社借入 7.90億',options:{bold:true}},{text:'全額返済・関係終了',options:{align:'center',bold:true,color:C.POS}},{text:'全額を新規借入で置換',options:{align:'center',color:C.NEG}}],
  [{text:'中野の借入の名目',options:{bold:true}},{text:'事業会社への出資',options:{align:'center'}},{text:'個人の株式取得資金',options:{align:'center',color:C.NEG}}],
  [{text:'その担保',options:{bold:true}},{text:'非上場株（時価変動なし）',options:{align:'center'}},{text:'上場株（追加担保リスクあり）',options:{align:'center',color:C.NEG}}],
  [{text:'返済原資',options:{bold:true}},{text:'配当（分配可能額 17.06億）',options:{align:'center',bold:true,color:C.POS}},{text:'配当（のれん償却後の利益）',options:{align:'center',color:C.NEG}}],
@@ -208,7 +208,7 @@ s.addNotes('229円基準に統一した版。前回230円で作った数値か�
 s=slide(); dark(s);
 head(s,'論点','前提が変わっても残る4点',true);
 [['01','のれん22.09億円の償却','日本基準では定額償却が必要です。20年で年1.10億、10年なら年2.21億。合算営業利益4.90億（SM2.90億＋あどばる2.00億）に対し23〜45%を占め、配当原資にも影響します。'],
- ['02','ビジョン社の借入7.90億が残る','合併は株式交換であり、借入は返済されません。貸主が株主として残るため、関連当事者取引の開示対象になります。'],
+ ['02','借入7.90億の返済原資がない','子会社でなくなる時点で全額返済が必要ですが、合併は株式交換で現金が入りません。7.90億全額を新規借入で調達する必要があります。'],
  ['03','第2位株主が競合TKP社','TKPは現在21.06%の第2位株主。合併後も12.77%で残ります。競合が株主総会で議決権を持つ形になります。'],
  ['04','流通株式比率25%基準','合併後の流通株式比率は東証グロースの上場維持基準に抵触する可能性があります（改善期間1年）。中野が買い増すほど比率は下がります。']]
 .forEach((r,i)=>{
@@ -273,7 +273,7 @@ tbl(s,[
  [{text:'パートナー',options:{bold:true}},{text:'―',options:{align:'center'}},{text:'24.55%',options:{align:'center'}}],
  [{text:'　あどばる側 計',options:{bold:true,fill:'E8EDF2'}},{text:'27.79%',options:{align:'center',color:C.NEG,fill:'E8EDF2'}},{text:'49.09%',options:{align:'center',bold:true,color:C.POS,fill:'E8EDF2'}}],
  [{text:'ビジョン社',options:{bold:true}},{text:'18.43%（筆頭株主）',options:{align:'center',color:C.NEG}},{text:'0%（名簿から消滅）',options:{align:'center',bold:true,color:C.POS}}],
- [{text:'ビジョン社借入 7.90億',options:{bold:true}},{text:'残存',options:{align:'center',color:C.NEG}},{text:'完済済み',options:{align:'center',bold:true,color:C.POS}}],
+ [{text:'ビジョン社借入 7.90億',options:{bold:true}},{text:'全額を新規借入で置換',options:{align:'center',color:C.NEG}},{text:'完済済み',options:{align:'center',bold:true,color:C.POS}}],
  [{text:'中野の自己資金',options:{bold:true}},{text:'6.10億円',options:{align:'center'}},{text:'6.10億円（同額）',options:{align:'center'}}]],
  {x:0.7,y:1.66,w:11.9,colW:[3.7,4.1,4.1],rowH:0.415,fontSize:11});
 T(s,'持分の数字だけを見れば27.79%のほうが高く見えます。しかし中身は、ビジョン社を抱えたままの27.79%と、ビジョン社を清算しパートナーを伴った49.09%の違いです。',
@@ -301,4 +301,4 @@ T(s,'6.10億円は相対取得ではなく第三者割当増資で入れます�
   {x:1.05,y:6.35,w:11.2,h:0.4,fontSize:11.5,color:C.INK2});
 s.addNotes('もし合併を選ぶなら増資で入れる、という代替案を必ず置いておく。');
 
-p.writeFile({fileName:'スペースマーケット社合併提案_検討_20260923.pptx'}).then(()=>console.log('deckB v3 written'));
+p.writeFile({fileName:'スペースマーケット社合併提案_検討_20260924.pptx'}).then(()=>console.log('deckB v3 written'));
