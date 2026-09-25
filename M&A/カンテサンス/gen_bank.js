@@ -241,7 +241,7 @@ const rows=[
  [{text:"開業／星",options:{bold:true}},"2006年開業。2008年以降 19年連続ミシュラン三つ星"],
  [{text:"株主",options:{bold:true}},"岸田周三氏 100%（今回100%譲渡）"],
  [{text:"子会社",options:{bold:true}},"カンテサンスプラス 100%（コンサルティング業・第10期売上593万円）／株式会社BISは対象外"],
- [{text:"規模",options:{bold:true}},"34席・1日平均54名（約1.6回転）・営業日数252日・年間来店 約1.37万人・従業員21名"],
+ [{text:"規模",options:{bold:true}},"34席・1日平均54名（約1.6回転）・営業日数252日・年間来店 約1.37万人・従業員19名（2026年8月給与台帳）"],
  [{text:"有利子負債",options:{bold:true}},"なし（無借金）"]
 ];
 s.addTable(rows.map(r=>[{text:r[0].text,options:{bold:true,fill:{color:TINT},fontSize:10.5}},{text:r[1],options:{fontSize:10.5}}]),
@@ -330,20 +330,20 @@ s.addText("2026年1〜7月の進捗",{x:M,y:4.18,w:6,h:0.28,isTextBox:true,margi
   fontFace:SERIF,fontSize:13.5,bold:true,color:INK});
 s.addTable([
  [hd("項目"),hd("2025年1〜7月"),hd("2026年1〜7月"),hd("前年同期比"),hd("年換算"),hd("会社計画"),hd("計画比")],
- [{text:"売上高",options:{bold:true,fontSize:10}},num("560.8",{fontSize:10}),num("587.6",{fontSize:10}),
-  num("＋4.8%",{fontSize:10,color:GRN}),num("1,023.0",{fontSize:10}),num("1,014.7",{fontSize:10}),
-  num("＋0.8%",{fontSize:10,bold:true,color:GRN})],
+ [{text:"売上高（継続事業）",options:{bold:true,fontSize:10}},num("553.8",{fontSize:10}),num("587.6",{fontSize:10}),
+  num("＋6.1%",{fontSize:10,color:GRN}),num("1,026.5",{fontSize:10}),num("1,014.7",{fontSize:10}),
+  num("＋1.2%",{fontSize:10,bold:true,color:GRN})],
  [{text:"営業利益",options:{bold:true,fontSize:10}},num("247.7",{fontSize:10}),num("255.9",{fontSize:10}),
   num("＋3.3%",{fontSize:10,color:GRN}),num("521.7",{fontSize:10}),num("528.1",{fontSize:10}),
   num("△1.2%",{fontSize:10,bold:true,color:AMB})]
 ],tOpt({x:M,y:4.48,w:12.09,colW:[2.09,1.75,1.75,1.65,1.65,1.65,1.55],rowH:0.38,fontSize:10}));
-s.addText("※ 年換算は、2025年通期に対する1〜7月の構成比（売上57.4%、営業利益49.1%。7月に役員賞与9,540万円を一括計上するため営業利益の構成比が低い）を用いて引き延ばしたもの。",
-  {x:M,y:5.68,w:12.09,h:0.28,isTextBox:true,margin:0,fontFace:SANS,fontSize:8.5,color:MUTE,lineSpacing:11});
+s.addText("※ 年換算は2025年通期に対する1〜7月の構成比（売上57.2%、営業利益49.1%。7月に役員賞与9,540万円を一括計上するため営業利益の構成比が低い）による。売上は継続事業ベース：2025年の売上には月100万円の業務受託収入が9か月分含まれ2025年9月で終了しているため、表面の前年同期比＋4.8%ではなく＋6.1%が実勢。",
+  {x:M,y:5.60,w:12.09,h:0.38,isTextBox:true,margin:0,valign:"top",fontFace:SANS,fontSize:8.5,color:MUTE,lineSpacing:11});
 
 [["① 評価の基礎は会社計画と一致",
   "当社が用いている売上10.15億円・営業利益5.28億円・当期純利益3.50億円は、対象会社作成の2026年12月期計画と一致する。第15期（2025年）の確定決算は売上9.76億円・営業利益5.05億円であり、計画はその延長線上にある。",GRN],
  ["② 売上は計画超、利益はやや未達",
-  "1〜7月は売上が前年同期比＋4.8%と計画を0.8%上回る一方、営業利益は計画を1.2%下回る。要因は原価と人件費で、食材仕入が前年同期比＋19.2%、給料手当が同＋19.2%。粗利率は78.3%から77.0%へ1.3ポイント低下している。",AMB],
+  "1〜7月の売上は継続事業ベースで前年同期比＋6.1%、年換算で計画を1.2%上回る。一方、営業利益は計画を1.2%下回る。要因は原価と人件費で、食材仕入が前年同期比＋19.2%、給料手当が同＋19.2%。粗利率は77.6%から77.0%へ0.6ポイント低下している。",AMB],
  ["③ 当社のDCFは会社計画より保守的",
   "会社計画は2029年まで年3〜5%の増益を見込むが、当社のDCFは岸田氏在任中の3年間をFCF 3.50億円で固定し、成長をゼロとしている。上記②のコスト上昇を踏まえれば、この保守性は妥当である。",BERRY]
 ].forEach((t,i)=>{
@@ -352,6 +352,46 @@ s.addText("※ 年換算は、2025年通期に対する1〜7月の構成比（�
   s.addShape(p.ShapeType.rect,{x,y:6.00,w:0.05,h:0.92,fill:{color:t[2]}});
   s.addText(t[0],{x:x+0.22,y:6.09,w:3.42,h:0.24,isTextBox:true,margin:0,fontFace:SANS,fontSize:10.5,bold:true,color:t[2]});
   s.addText(t[1],{x:x+0.22,y:6.35,w:3.42,h:0.52,isTextBox:true,margin:0,fontFace:SANS,fontSize:7.8,color:INK,lineSpacing:10});
+});
+footer(s);
+}
+
+/* ===== NEW D2  2026年7月末 実績BSによる検証 ===== */
+{
+const s=p.addSlide();
+header(s,"VALIDATION","ネットキャッシュ22.4億円の前提を、実績BSで検証した",
+  "第13期〜第15期の確定決算および第16期（2026年）1〜7月の月次試算表から、BSの実額推移を復元した。");
+const rows=[
+ [hd(""),hd("2024/12末 実績"),hd("2025/12末 実績"),hd("2026/7末 実績"),hd("2026/12末 推計")],
+ [{text:"現預金",options:{bold:true,fontSize:10}},num("1,159",{fontSize:10}),num("1,398",{fontSize:10}),
+   num("1,609",{fontSize:10,bold:true,color:BERRY,fill:{color:TINT}}),num("1,743",{fontSize:10})],
+ [{text:"長期貸付金（役員）",options:{bold:true,fontSize:10}},num("400",{fontSize:10}),num("500",{fontSize:10}),
+   num("500",{fontSize:10,bold:true,color:BERRY,fill:{color:TINT}}),num("500",{fontSize:10})],
+ [{text:"棚卸資産（ワイン・食材）",options:{bold:true,fontSize:10}},num("113",{fontSize:10}),num("119",{fontSize:10}),
+   num("115",{fontSize:10,fill:{color:TINT}}),num("119",{fontSize:10})],
+ [{text:"資産合計",options:{bold:true,fontSize:10}},num("1,768",{fontSize:10}),num("2,106",{fontSize:10}),
+   num("2,351",{fontSize:10,fill:{color:TINT}}),num("2,456",{fontSize:10})],
+ [{text:"負債合計（うち有利子負債）",options:{bold:true,fontSize:10}},num("138（0）",{fontSize:10}),num("141（0）",{fontSize:10}),
+   num("123（0）",{fontSize:10,fill:{color:TINT}}),num("141（0）",{fontSize:10})],
+ [{text:"純資産",options:{bold:true,fontSize:10}},num("1,629",{fontSize:10}),num("1,965",{fontSize:10}),
+   num("2,227",{fontSize:10,bold:true,color:BERRY,fill:{color:TINT}}),num("2,315",{fontSize:10})]
+];
+s.addTable(rows,tOpt({x:M,y:1.78,w:12.09,colW:[3.29,2.20,2.20,2.20,2.20],rowH:0.40,fontSize:10}));
+s.addText("※ 単位：百万円。2024/12末・2025/12末は法人税申告書添付の確定BS、2026/7末は月次試算表（令和8年1月1日〜7月31日）。2026/12末は本資料の推計。第16期は7月時点で税金費用を未計上のため、純資産の推計は通期の法人税等を控除した後の数値。",
+  {x:M,y:4.72,w:12.09,h:0.42,isTextBox:true,margin:0,fontFace:SANS,fontSize:8.5,color:MUTE,lineSpacing:11});
+
+[["① 現預金の推計は実績と整合する",
+  "2026年7月末の実績現預金は16.09億円。8〜12月の税引前利益（約2.7億円）から法人税の中間納付（約0.9億円）と7月役員賞与に係る源泉預り金（0.41億円）の支払を差し引くと、12月末は17.4億円前後となり、本資料の推計17.43億円と一致する。ネットキャッシュ22.4億円の前提は実績で裏づけられている。",GRN],
+ ["② 役員貸付金は2025年3月に1億円増額",
+  "残高は2024年12月末まで4.00億円、2025年3月に5.00億円へ増額され、2026年7月末も5.00億円のまま。利率0.900%、第15期の利息430万円は雑収入に適正計上されている。売却プロセスの直前に増額されている事実は、クロージング時の現金精算を最終契約の前提条件とすべき理由をいっそう強める。",AMB],
+ ["③ 有利子負債ゼロ、担保余力はワイン在庫のみ",
+  "全期間を通じて借入はゼロ。有形固定資産は2026年7月末で141万円にすぎず、物的担保は簿価1.15億円のワイン在庫に限られる。買収ファイナンスの保全は対象会社株式への質権設定とキャッシュフロー・コベナンツが中心となる。",BERRY]
+].forEach((t,i)=>{
+  const x=M+i*4.08;
+  s.addShape(p.ShapeType.roundRect,{x,y:5.20,w:3.85,h:1.66,rectRadius:0.05,fill:{color:TINT},line:{color:LINE,width:0.75}});
+  s.addShape(p.ShapeType.rect,{x,y:5.20,w:0.05,h:1.66,fill:{color:t[2]}});
+  s.addText(t[0],{x:x+0.22,y:5.30,w:3.42,h:0.42,isTextBox:true,margin:0,valign:"top",fontFace:SANS,fontSize:10.5,bold:true,color:t[2],lineSpacing:13});
+  s.addText(t[1],{x:x+0.22,y:5.76,w:3.42,h:1.02,isTextBox:true,margin:0,valign:"top",fontFace:SANS,fontSize:7.8,color:INK,lineSpacing:10});
 });
 footer(s);
 }
@@ -1134,13 +1174,13 @@ const s = p.addSlide();
 header(s, "RISK", "価格の前提を崩しうる8つの論点と、その手当て");
 const rows=[
  [hd("論点"), hd("価格への影響"), hd("手当て")],
- [{text:"1　役員貸付金5.00億円の回収",options:{bold:true}}, {text:"未精算ならEVは27.6→32.6億円（6.2倍）へ",options:{color:RED}}, "クロージング時の現金精算をSPAの前提条件とする"],
+ [{text:"1　役員貸付金5.00億円の回収",options:{bold:true}}, {text:"未精算ならEVは27.6→32.6億円（6.2倍）へ",options:{color:RED}}, "2025年3月に4.00億円から5.00億円へ増額されている。クロージング時の現金精算をSPAの前提条件とする"],
  [{text:"2　後継シェフの不在",options:{bold:true}}, {text:"シナリオB/Cの発生確率が上昇",options:{color:RED}}, "売主は在籍5名につき「料理長を任せられるタイプではない」と回答済み。3年ロックアップ中の招聘を岸田氏の努力義務として契約化"],
  [{text:"3　ミシュラン評価の降格",options:{bold:true}}, {text:"営業利益5.28→2.00億円（シナリオB）",options:{color:RED}}, "星の維持に連動したアーンアウト（価格の一部後払い）を提案"],
  [{text:"4　岸田氏の3年経過後の活動",options:{bold:true}}, "ブランドの希薄化", "「新店舗・ガストロノミーは考えていない／他店監修はあり得る」との回答。競業避止＋監修の事前承諾制を条件化"],
  [{text:"5　「50億円は最低ライン」＋3社競合",options:{bold:true}}, {text:"55億円超で説明困難（p.13）",options:{color:RED}}, "上限55億円の規律。EV固定＋クロージング時ネットキャッシュ実額連動方式とすれば、額面を上げつつ実質負担を抑えられる"],
  [{text:"6　店舗の賃貸借契約",options:{bold:true}}, "賃料は売上比1.97%＝年約1,900万円", "残存期間とオーナーチェンジ条項の確認（ガーデンシティ品川御殿山1F）"],
- [{text:"7　ワイン在庫の簿価",options:{bold:true}}, {text:"上振れ要因",options:{color:GRN}}, "簿価1.19億円。一次価格で継続仕入した希少銘柄を含むため、時価評価で含み益が生じる可能性"],
+ [{text:"7　ワイン在庫の簿価",options:{bold:true}}, {text:"上振れ要因",options:{color:GRN}}, "簿価1.19億円（2026年7月末1.15億円）。一次価格で継続仕入した希少銘柄を含むため、時価評価で含み益が生じる可能性"],
  [{text:"8　仕入先アロケーションの帰属",options:{bold:true}}, "収益構造の前提", "サントリー・ファインズ等の配分が会社に帰属するか岸田氏個人に帰属するか、契約形態を確認"]
 ];
 s.addTable(rows, tOpt({x:M, y:1.42, w:12.09, colW:[3.1,3.0,5.99], rowH:0.42, fontSize:9.8}));
@@ -1238,7 +1278,7 @@ s.addShape(p.ShapeType.roundRect,{x:8.85, y:1.72, w:3.86, h:4.6, rectRadius:0.04
 s.addText("前提条件と出所", {x:9.09, y:1.88, w:3.4, h:0.28, isTextBox:true, margin:0,
   fontFace:SANS, fontSize:10, bold:true, color:GOLD});
 s.addText([
- {text:"・2025/12期まではIM記載の決算数値。2026/12期はIM p.40の会社計画。\n",options:{}},
+ {text:"・2025/12期まではIM記載の決算数値（第13期〜第15期の法人税申告書添付決算書および第15期残高試算表で突合済み）。2026/12期はIM p.40の会社計画（第16期1〜7月の月次試算表で進捗を検証）。\n",options:{}},
  {text:"・2026/12期末BSは、無配・設備投資ゼロ・負債横ばいを前提に当期純利益350百万円が全額現預金と純資産に積み上がるものとして推計。\n",options:{}},
  {text:"・FCF＝当期純利益（減価償却1百万円、設備投資ゼロ、運転資本増減ゼロ）。\n",options:{}},
  {text:"・DCFは割引率10%・継続成長率0%を基準とし、1〜3年目は3シナリオ共通で3.50億円。\n",options:{}},
