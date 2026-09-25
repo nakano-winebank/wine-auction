@@ -78,7 +78,7 @@ s.addText("カンテサンス\n買収案件のご相談", {x:M, y:1.52, w:8.6, h
 s.addText("株式会社プティ・ボノム（Quintessence／東京・御殿山）\n19年連続ミシュラン三つ星・20年連続増収増益・無借金",
   {x:M, y:3.45, w:8.6, h:0.8, isTextBox:true, margin:0, fontFace:SANS, fontSize:14, color:"D9CBCF", lineSpacing:24});
 
-const st=[["譲受価額","50〜55億円","EV/EBITDA 5.2〜6.2倍"],["ご相談額","41.4億円","ターム20.0＋ブリッジ21.4"],["初年度DSCR","1.36倍","合併後の有利子負債20.0億円"]];
+const st=[["譲受価額","50〜55億円","EV/EBITDA 5.2〜6.2倍"],["ご相談額","41.4億円","ターム20.0＋ブリッジ21.4"],["初年度DSCR","1.36倍","当初案。ご相談案（p.24）では1.38倍"]];
 st.forEach((v,i)=>{
   const x = M + i*3.05;
   s.addShape(p.ShapeType.roundRect,{x, y:4.5, w:2.8, h:1.2, rectRadius:0.05, fill:{color:"3B1E2B"}, line:{color:"5A3240", width:0.75}});
@@ -739,7 +739,7 @@ s.addTable([
  [{text:"3.0億円",options:{bold:true}},num("19.43億円"),num("2.07億円"),num("20.0億円"),num("3.2倍"),num("2.19億円",{color:GRN}),
   {text:"◎ 余裕あり",options:{color:GRN,fontSize:10}}],
  [{text:"6.0億円",options:{bold:true}},num("16.43億円"),num("5.07億円"),num("20.0億円"),num("2.6倍"),num("5.19億円",{color:GRN}),
-  {text:"◎ 当初案",options:{color:GRN,fontSize:10}}]
+  {text:"◎ ご相談案（p.24）",options:{color:GRN,fontSize:10}}]
 ],tOpt({x:M,y:2.10,w:12.09,colW:[1.55,1.75,1.55,2.00,1.35,2.10,1.79],rowH:0.44,fontSize:10}));
 s.addText("※ 最低現金残高は2月末。2月に2026年12月期の未払税金1.14億円を納付する一方、借入の元利返済は毎月発生するため、年間で最も薄くなる。",
   {x:M,y:4.30,w:12.09,h:0.26,isTextBox:true,margin:0,fontFace:SANS,fontSize:9,color:MUTE});
@@ -747,8 +747,8 @@ s.addText("※ 最低現金残高は2月末。2月に2026年12月期の未払税
 const pts=[
  ["① 1.0億円では2月末に1,900万円まで落ちる",
   "借入の返済が毎月であるため、2026年12月期の未払税金1.14億円を納付する2月に底が来る。残高1,900万円は月次固定費の1.0か月分にすぎず、ワインの一次価格アロケーションがまとまって入荷する月や突発的な修繕が重なれば、一時的な借入が避けられない。留保を2.0億円とすれば底は1.19億円（6.2か月分）となる。"],
- ["② 資産調整勘定を織り込めば年1.8億円が浮く",
-  "株式譲受代金50.0億円と時価純資産23.15億円の差額26.85億円が税務上ののれんとして5年で損金算入されれば、年5.37億円の損金となり課税所得はマイナスとなる。8月の中間納付0.92億円は仮決算により回避でき、期末残高は1.65億円から2.57億円へ、DSCRは1.25倍から1.61倍へ改善する。ただし2月の納付は2026年12月期に対応するものであり回避できない。"],
+ ["② 留保を厚くしても総ご相談額は増えない",
+  "ブリッジローンは対象会社の現預金を買収後にしか使えないために生じる立替えであり、留保額を増やした分だけブリッジは減る。留保を1.0億円から6.0億円へ引き上げ、恒久タームローンを20.0億円から25.0億円へ振り替えれば、みずほ銀行様への総ご相談額41.4億円は変わらないまま、初年度末の残高は0.66億円から5.81億円になる。詳細は24ページに記載した。"],
  ["③ 中野氏の拠出が700万円になることの副作用",
   "榊原氏が10.0億円を払い込むのに対し、中野氏の拠出は資本金10万円と株主貸付700万円のみとなる。67%／33%という配分は合意によるものだが、その根拠を株主間契約でより丁寧に定める必要が生じる。"]
 ];
@@ -895,13 +895,147 @@ s.addText("※ 端数処理のため、内訳の合計と合計欄が一致し�
   {x:M, y:5.78, w:12.09, h:0.24, isTextBox:true, margin:0, fontFace:SANS, fontSize:8.5, color:MUTE});
 const cards=[["2月に底が来る理由",
   "2026年12月期の未払法人税等・未払消費税1.14億円を2月に納付する一方、借入の元利返済0.22億円は毎月発生する。対象会社に留保する運転資金を1.00億円としているため、2月末の残高は0.19億円となる。留保を2.00億円とすれば底は1.19億円となる。"],
- ["資産調整勘定を織り込む場合",
-  "株式譲受代金と時価純資産の差額26.85億円が税務上ののれんとして5年で損金算入されれば、課税所得はマイナスとなり、8月の中間納付0.92億円は回避できる。期末残高2.57億円、DSCR1.61倍。計上の可否はDDの税務パートで確認する。"]];
+ ["税務上ののれんは織り込んでいない",
+  "譲受代金と時価純資産の差額26.85億円は、事業譲渡型であれば5年で損金算入できるが、本件は適格合併に該当するため計上されない。当社は保守的に、合併による支払利息の損金算入のみを織り込んでいる。詳細は23ページに記載した。"]];
 cards.forEach((c,i)=>{
   const x=M+i*6.19;
   s.addShape(p.ShapeType.roundRect,{x, y:6.06, w:5.90, h:0.86, rectRadius:0.05, fill:{color:TINT}, line:{color:LINE, width:0.75}});
   s.addText(c[0], {x:x+0.22, y:6.14, w:5.46, h:0.24, isTextBox:true, margin:0, fontFace:SANS, fontSize:10, bold:true, color:BERRY});
   s.addText(c[1], {x:x+0.22, y:6.38, w:5.46, h:0.50, isTextBox:true, margin:0, fontFace:SANS, fontSize:8.5, color:INK, lineSpacing:11.5});
+});
+footer(s);
+}
+
+
+/* ===== NEW A  キャッシュフロー計算書 ===== */
+{
+const s=p.addSlide();
+header(s,"CASH FLOW ②","キャッシュフロー計算書 ― 借入返済後も毎期プラスを確保する",
+  "合併後の対象会社の年次資金収支。維持更新投資を年0.30億円、支払利息の損金算入を織り込んだ推奨案（借入25.0億円・10年）ベース。");
+const R=[["営業利益","5.28","5.28","5.28","5.28","5.28","5.28","5.28"],
+ ["減価償却費","0.01","0.01","0.01","0.01","0.01","0.01","0.01"],
+ ["支払利息","△0.75","△0.70","△0.65","△0.59","△0.54","△0.49","△0.43"],
+ ["法人税等の支払","△2.60","△1.55","△1.57","△1.59","△1.61","△1.62","△1.64"],
+ ["営業キャッシュフロー","1.94","3.04","3.07","3.11","3.14","3.18","3.22"],
+ ["設備投資","△0.30","△0.30","△0.30","△0.30","△0.30","△0.30","△0.30"],
+ ["フリーキャッシュフロー","1.64","2.74","2.77","2.81","2.84","2.88","2.92"],
+ ["借入元本の返済","△1.75","△1.75","△1.75","△1.75","△1.75","△1.75","△1.75"],
+ ["現金の増減","△0.11","0.99","1.02","1.06","1.09","1.13","1.17"],
+ ["期末現金残高","5.81","6.79","7.81","8.87","9.96","11.08","12.24"]];
+const EM=new Set([4,6,9]);
+const rows=[[hd(""),hd("2027"),hd("2028"),hd("2029"),hd("2030"),hd("2031"),hd("2032"),hd("2033")]]
+ .concat(R.map((r,ri)=>[{text:r[0],options:{bold:EM.has(ri),fontSize:10,
+     fill:EM.has(ri)?{color:TINT}:undefined}}].concat(r.slice(1).map(v=>num(v,{
+     bold:EM.has(ri),fontSize:10,color:ri===9?BERRY:(v.startsWith("△")?INK:INK),
+     fill:EM.has(ri)?{color:TINT}:undefined})))));
+s.addTable(rows,tOpt({x:M,y:1.72,w:12.09,colW:[3.09,1.29,1.29,1.29,1.29,1.29,1.29,1.26],rowH:0.335,fontSize:10}));
+s.addText("※ 単位：億円。2027年の法人税等には2026年12月期の未払法人税1.14億円の納付を含む。2034年〜2036年も同水準で推移し、期限一括返済分7.50億円は2036年末の現金残高で返済可能（返済後8.42億円）。",
+  {x:M,y:5.50,w:12.09,h:0.40,isTextBox:true,margin:0,fontFace:SANS,fontSize:9,color:MUTE,lineSpacing:12});
+[["借入返済後も毎期プラス","2027年のみ前期未払税金1.14億円の納付により△0.11億円となるが、2028年以降は年約1.0億円ずつ現金が積み上がる。"],
+ ["10年間の利息総額 5.36億円","元本25.00億円に対する支払利息の総額。金利3%・元金均等（期限一括分7.50億円を含む）を前提としている。"],
+ ["最終年度末の手元 8.42億円","期限一括返済分7.50億円を自己資金で完済したうえで、なお8.42億円が残る。借換えを前提としない設計。"]
+].forEach((t,i)=>{
+  const x=M+i*4.08;
+  s.addShape(p.ShapeType.roundRect,{x,y:6.00,w:3.85,h:0.90,rectRadius:0.05,fill:{color:TINT},line:{color:LINE,width:0.75}});
+  s.addText(t[0],{x:x+0.22,y:6.10,w:3.42,h:0.24,isTextBox:true,margin:0,fontFace:SANS,fontSize:10.5,bold:true,color:BERRY});
+  s.addText(t[1],{x:x+0.22,y:6.36,w:3.42,h:0.48,isTextBox:true,margin:0,fontFace:SANS,fontSize:8.5,color:INK,lineSpacing:11.5});
+});
+footer(s);
+}
+
+/* ===== NEW B  税務ストラクチャー ===== */
+{
+const s=p.addSlide();
+header(s,"TAX","税効果の整理 ― 取れるものと、取れないもの",
+  "本件のキャッシュフローに影響する税務論点を2つに切り分けた。当社は保守的に、確実に取れるものだけを織り込んでいる。");
+
+card(s,M,1.68,5.95,2.35,"FFFFFF");
+s.addShape(p.ShapeType.rect,{x:M,y:1.68,w:5.95,h:0.05,fill:{color:GRN}});
+badge(s,M+0.24,1.90,"○",GRN);
+s.addText("取れる：支払利息の損金算入",{x:M+0.66,y:1.90,w:5.0,h:0.30,isTextBox:true,margin:0,
+  fontFace:SERIF,fontSize:15,bold:true,color:INK});
+s.addText("SPCが借り入れ、対象会社が利益を稼ぐ状態では、両者の損益は通算できない。クロージング後にSPCと対象会社を合併することで、支払利息が対象会社の営業利益と相殺され、損金算入が可能となる（デット・プッシュダウン）。",
+  {x:M+0.24,y:2.34,w:5.50,h:0.86,isTextBox:true,margin:0,fontFace:SANS,fontSize:10,color:INK,lineSpacing:14});
+s.addText([{text:"効果　",options:{fontSize:10,color:MUTE}},
+ {text:"初年度0.21億円・10年間で1.82億円。DSCRは1.31倍から1.38倍へ改善する。",options:{fontSize:10,bold:true,color:GRN}}],
+ {x:M+0.24,y:3.28,w:5.50,h:0.50,isTextBox:true,margin:0,fontFace:SANS,lineSpacing:14});
+
+card(s,6.95,1.68,5.76,2.35,"FFFFFF");
+s.addShape(p.ShapeType.rect,{x:6.95,y:1.68,w:5.76,h:0.05,fill:{color:AMB}});
+badge(s,7.19,1.90,"×",AMB);
+s.addText("取れない：資産調整勘定（税務上ののれん）",{x:7.61,y:1.90,w:5.0,h:0.30,isTextBox:true,margin:0,
+  fontFace:SERIF,fontSize:15,bold:true,color:INK});
+s.addText("譲受代金50.0億円と時価純資産23.15億円の差額26.85億円は、税務上ののれんとして5年で損金算入できれば年5.37億円の効果を持つ。しかし資産調整勘定は非適格の組織再編または事業の譲受けにおいてのみ生じる（法人税法62条の8）。",
+  {x:7.19,y:2.34,w:5.30,h:0.86,isTextBox:true,margin:0,fontFace:SANS,fontSize:10,color:INK,lineSpacing:14});
+s.addText([{text:"本件は　",options:{fontSize:10,color:MUTE}},
+ {text:"SPCが100%子会社化したうえでの合併＝適格合併に該当し、資産は帳簿価額で引き継がれる。したがって生じない。",
+  options:{fontSize:10,bold:true,color:AMB}}],
+ {x:7.19,y:3.28,w:5.30,h:0.50,isTextBox:true,margin:0,fontFace:SANS,lineSpacing:14});
+
+s.addText("DSCRの内訳",{x:M,y:4.24,w:6,h:0.28,isTextBox:true,margin:0,fontFace:SERIF,fontSize:13.5,bold:true,color:INK});
+s.addTable([
+ [hd("項目"),hd("初年度DSCR"),hd("内容")],
+ [{text:"当初モデル",options:{fontSize:10}},num("1.34倍",{fontSize:10}),
+  {text:"FCF 3.50億円（営業利益×(1−実効税率34%)）を返済原資とし、税効果も設備投資も織り込まない",options:{fontSize:10}}],
+ [{text:"＋ 支払利息の損金算入",options:{fontSize:10,color:GRN}},num("＋0.08",{fontSize:10,color:GRN}),
+  {text:"合併により支払利息0.75億円が損金となり、法人税が年0.21億円減少する",options:{fontSize:10}}],
+ [{text:"△ 維持更新投資の計上",options:{fontSize:10,color:AMB}},num("△0.11",{fontSize:10,color:AMB}),
+  {text:"開示資料は設備投資ゼロだが、店舗の経年を踏まえ年0.30億円を保守的に見込んだ",options:{fontSize:10}}],
+ [{text:"当社が採用する前提",options:{bold:true,fontSize:10,fill:{color:TINT}}},
+  num("1.38倍",{bold:true,fontSize:10,color:BERRY,fill:{color:TINT}}),
+  {text:"借入25.0億円・10年・金利3%。資産調整勘定は織り込まない",options:{bold:true,fontSize:10,fill:{color:TINT}}}]
+],tOpt({x:M,y:4.58,w:12.09,colW:[2.90,1.75,7.44],rowH:0.42,fontSize:10}));
+s.addText("※ 事業譲渡型とすれば資産調整勘定を計上できるが、売主に多額の譲渡益課税が生じ、飲食店営業許可の再取得と全取引契約の再締結を要するため、本件では採用しない。仮に計上できた場合、初年度DSCRは2.03倍となる。",
+  {x:M,y:6.76,w:12.09,h:0.30,isTextBox:true,margin:0,fontFace:SANS,fontSize:9,color:MUTE,lineSpacing:12});
+footer(s);
+}
+
+/* ===== NEW C  ご融資条件のご相談 ===== */
+{
+const s=p.addSlide();
+header(s,"FUNDING PROPOSAL","ご相談 ― 総額を変えずに、ブリッジを恒久ローンへ",
+  "みずほ銀行様への総ご相談額41.4億円は案1と案2で変わらない。内訳を組み替えるだけで、DSCRと対象会社の手元資金がともに改善する。");
+s.addTable([
+ [hd(""),hd("案1　当初案"),hd("案2　ご相談したい案"),hd("案3　55億円で決着した場合")],
+ [{text:"恒久タームローン",options:{bold:true,fontSize:10}},num("20.0億円",{fontSize:10}),
+  num("25.0億円",{fontSize:10,bold:true,color:BERRY}),num("30.0億円",{fontSize:10})],
+ [{text:"　返済期間",options:{fontSize:10}},num("7年",{fontSize:10}),
+  num("10年",{fontSize:10,bold:true,color:BERRY}),num("10年",{fontSize:10})],
+ [{text:"　内訳",options:{fontSize:10}},num("TLA14.0／TLB6.0",{fontSize:9.5}),
+  num("TLA17.5／TLB7.5",{fontSize:9.5}),num("TLA19.5／TLB10.5",{fontSize:9.5})],
+ [{text:"ブリッジローン",options:{bold:true,fontSize:10}},num("21.4億円",{fontSize:10}),
+  num("16.4億円",{fontSize:10}),num("16.4億円",{fontSize:10})],
+ [{text:"総ご相談額",options:{bold:true,fontSize:10,fill:{color:TINT}}},
+  num("41.4億円",{bold:true,fontSize:10,fill:{color:TINT}}),
+  num("41.4億円",{bold:true,fontSize:10,color:BERRY,fill:{color:TINT}}),
+  num("46.4億円",{bold:true,fontSize:10,fill:{color:TINT}})],
+ [{text:"初年度DSCR",options:{bold:true,fontSize:10}},num("1.31倍",{fontSize:10}),
+  num("1.38倍",{fontSize:10,bold:true,color:GRN}),num("1.23倍",{fontSize:10})],
+ [{text:"Debt／EBITDA",options:{fontSize:10}},num("3.78倍",{fontSize:10}),
+  num("4.73倍",{fontSize:10}),num("5.67倍",{fontSize:10})],
+ [{text:"対象会社に留保する現金",options:{bold:true,fontSize:10}},num("1.0億円",{fontSize:10,color:AMB}),
+  num("6.0億円",{fontSize:10,bold:true,color:GRN}),num("6.0億円",{fontSize:10,color:GRN})],
+ [{text:"初年度末の現金残高",options:{fontSize:10}},num("0.66億円",{fontSize:10,color:AMB}),
+  num("5.81億円",{fontSize:10,color:GRN}),num("5.81億円",{fontSize:10,color:GRN})],
+ [{text:"完済時の現金残高",options:{fontSize:10}},num("0.28億円",{fontSize:10,color:AMB}),
+  num("8.42億円",{fontSize:10,color:GRN}),num("2.61億円",{fontSize:10})],
+ [{text:"中野氏の拠出",options:{fontSize:10}},num("0.07億円",{fontSize:10}),
+  num("0.07億円",{fontSize:10}),num("0.07億円",{fontSize:10})],
+ [{text:"追加投資家の要否",options:{fontSize:10}},{text:"―",options:{fontSize:10,align:"right"}},
+  {text:"―",options:{fontSize:10,align:"right"}},
+  {text:"不要（案2＋5.0億円で対応）",options:{fontSize:9.5,align:"right",bold:true,color:GRN}}]
+],tOpt({x:M,y:1.78,w:12.09,colW:[3.45,2.88,2.88,2.88],rowH:0.30,fontSize:10}));
+[["なぜ総額が変わらないのか",
+  "ブリッジローンは、対象会社の現預金を買収後にしか使えないために生じる一時的な立替えである。恒久ローンを5.0億円増やせば、その分ブリッジが5.0億円減る。みずほ銀行様のエクスポージャーは41.4億円のまま変わらない。"],
+ ["なぜDSCRが上がるのか",
+  "借入額は5.0億円増えるが、返済期間が7年から10年に延びるため、年間の元本返済は2.00億円から1.75億円へ減少する。増加する利息0.15億円を差し引いても、返済負担は年0.10億円軽くなる。"],
+ ["なぜ対象会社の手元が厚くなるのか",
+  "案1では買収時に対象会社の現金をほぼ全額引き上げるため、初年度2月末の残高は0.19億円（固定費1.0か月分）まで落ちる。案2では6.0億円を残せるため、突発的な修繕やワインの一括仕入にも対応できる。"]
+].forEach((t,i)=>{
+  const x=M+i*4.08;
+  s.addShape(p.ShapeType.roundRect,{x,y:5.84,w:3.85,h:0.98,rectRadius:0.05,fill:{color:TINT},line:{color:LINE,width:0.75}});
+  s.addText(t[0],{x:x+0.22,y:5.93,w:3.42,h:0.24,isTextBox:true,margin:0,fontFace:SANS,fontSize:10.5,bold:true,color:BERRY});
+  s.addText(t[1],{x:x+0.22,y:6.19,w:3.42,h:0.58,isTextBox:true,margin:0,fontFace:SANS,fontSize:8,color:INK,lineSpacing:10.5});
 });
 footer(s);
 }
