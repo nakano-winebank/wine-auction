@@ -241,7 +241,7 @@ const rows=[
  [{text:"開業／星",options:{bold:true}},"2006年開業。2008年以降 19年連続ミシュラン三つ星"],
  [{text:"株主",options:{bold:true}},"岸田周三氏 100%（今回100%譲渡）"],
  [{text:"子会社",options:{bold:true}},"カンテサンスプラス 100%（高級スイーツEC）／株式会社BISは対象外"],
- [{text:"規模",options:{bold:true}},"34席・1日平均54名（約1.6回転）・営業日数 約235日・年間来店 約1.27万人・従業員21名"],
+ [{text:"規模",options:{bold:true}},"34席・1日平均54名（約1.6回転）・営業日数252日・年間来店 約1.37万人・従業員21名"],
  [{text:"有利子負債",options:{bold:true}},"なし（無借金）"]
 ];
 s.addTable(rows.map(r=>[{text:r[0].text,options:{bold:true,fill:{color:TINT},fontSize:10.5}},{text:r[1],options:{fontSize:10.5}}]),
@@ -257,7 +257,7 @@ s.addText([{text:"7.2",options:{fontSize:26,bold:true,color:BERRY,fontFace:SERIF
 
 const drv=[
  ["高単価","三つ星ブランドに支えられた客単価7.2万円＋サービス料10%"],
- ["高稼働","34席×約1.6回転×約235日。リピート希望率7割、海外からの問い合わせは半数以上あるが意図的に絞っている"],
+ ["高稼働","34席×約1.6回転×252日。リピート希望率7割、海外からの問い合わせは半数以上あるが意図的に絞っている"],
  ["低原価","卸を使わずサントリー・ファインズ等から直接仕入。中間マージンなし"],
  ["低販管費","1店舗・賃借（賃料は売上比1.97%）・設備投資ほぼゼロ・広告費なし"]
 ];
@@ -304,6 +304,55 @@ s.addText("CAGR（2021→2026）\n売上 +7.7%　営業利益 +11.2%", {x:9.28, 
   fontFace:SANS, fontSize:10, color:INK, lineSpacing:15});
 s.addText("出所：IM記載の決算数値（2021/12期〜2025/12期実績）および2026/12期会社計画（IM p.40）。",
   {x:M, y:6.0, w:SW-2*M, h:0.3, isTextBox:true, margin:0, fontFace:SANS, fontSize:9.5, color:MUTE});
+footer(s);
+}
+
+
+/* ===== NEW D  実績による検証 ===== */
+{
+const s=p.addSlide();
+header(s,"VALIDATION","評価の基礎数値を、確定決算と月次試算表で検証した",
+  "対象会社から開示された第13期〜第15期の確定決算、2026年1〜7月の月次試算表、および2029年までの会社計画を突合した。");
+const yrs=["2023","2024","2025","2026","2027","2028","2029"];
+const R=[["売上高","831.9","891.2","976.4","1,014.7","1,062.2","1,095.4","1,128.6"],
+ ["営業利益","392.8","442.5","505.0","528.1","555.8","576.5","598.2"],
+ ["営業利益率","47.2%","49.7%","51.7%","52.0%","52.3%","52.6%","53.0%"],
+ ["当期純利益","259.0","305.2","335.5","350.4","367.9","381.3","395.6"]];
+const rows=[[hd(""),hd("2023 実績"),hd("2024 実績"),hd("2025 実績"),hd("2026 計画"),hd("2027 計画"),hd("2028 計画"),hd("2029 計画")]]
+ .concat(R.map((r,ri)=>[{text:r[0],options:{bold:true,fontSize:10}}].concat(
+   r.slice(1).map((v,ci)=>num(v,{fontSize:10,bold:ri===1||ci===3,
+     color:(ci===3)?BERRY:INK, fill:(ci===3)?{color:TINT}:undefined})))));
+s.addTable(rows,tOpt({x:M,y:1.78,w:12.09,colW:[2.09,1.43,1.43,1.43,1.43,1.43,1.43,1.42],rowH:0.40,fontSize:10}));
+s.addText("※ 単位：億円ではなく百万円。2023〜2025年は確定決算、2026年以降は対象会社作成の計画（過去3年の費用比率の中央値を売上に乗じた積上げ）。当社が評価の基礎としている2026年12月期の数値は、網掛け列のとおり会社計画と一致する。",
+  {x:M,y:3.84,w:12.09,h:0.32,isTextBox:true,margin:0,fontFace:SANS,fontSize:8.5,color:MUTE,lineSpacing:11});
+
+s.addText("2026年1〜7月の進捗",{x:M,y:4.18,w:6,h:0.28,isTextBox:true,margin:0,
+  fontFace:SERIF,fontSize:13.5,bold:true,color:INK});
+s.addTable([
+ [hd("項目"),hd("2025年1〜7月"),hd("2026年1〜7月"),hd("前年同期比"),hd("年換算"),hd("会社計画"),hd("計画比")],
+ [{text:"売上高",options:{bold:true,fontSize:10}},num("560.8",{fontSize:10}),num("587.6",{fontSize:10}),
+  num("＋4.8%",{fontSize:10,color:GRN}),num("1,023.0",{fontSize:10}),num("1,014.7",{fontSize:10}),
+  num("＋0.8%",{fontSize:10,bold:true,color:GRN})],
+ [{text:"営業利益",options:{bold:true,fontSize:10}},num("247.7",{fontSize:10}),num("255.9",{fontSize:10}),
+  num("＋3.3%",{fontSize:10,color:GRN}),num("521.7",{fontSize:10}),num("528.1",{fontSize:10}),
+  num("△1.2%",{fontSize:10,bold:true,color:AMB})]
+],tOpt({x:M,y:4.48,w:12.09,colW:[2.09,1.75,1.75,1.65,1.65,1.65,1.55],rowH:0.38,fontSize:10}));
+s.addText("※ 年換算は、2025年通期に対する1〜7月の構成比（売上57.4%、営業利益49.1%。7月に役員賞与9,540万円を一括計上するため営業利益の構成比が低い）を用いて引き延ばしたもの。",
+  {x:M,y:5.68,w:12.09,h:0.28,isTextBox:true,margin:0,fontFace:SANS,fontSize:8.5,color:MUTE,lineSpacing:11});
+
+[["① 評価の基礎は会社計画と一致",
+  "当社が用いている売上10.15億円・営業利益5.28億円・当期純利益3.50億円は、対象会社作成の2026年12月期計画と一致する。第15期（2025年）の確定決算は売上9.76億円・営業利益5.05億円であり、計画はその延長線上にある。",GRN],
+ ["② 売上は計画超、利益はやや未達",
+  "1〜7月は売上が前年同期比＋4.8%と計画を0.8%上回る一方、営業利益は計画を1.2%下回る。要因は原価と人件費で、食材仕入が前年同期比＋19.2%、給料手当が同＋19.2%。粗利率は78.3%から77.0%へ1.3ポイント低下している。",AMB],
+ ["③ 当社のDCFは会社計画より保守的",
+  "会社計画は2029年まで年3〜5%の増益を見込むが、当社のDCFは岸田氏在任中の3年間をFCF 3.50億円で固定し、成長をゼロとしている。上記②のコスト上昇を踏まえれば、この保守性は妥当である。",BERRY]
+].forEach((t,i)=>{
+  const x=M+i*4.08;
+  s.addShape(p.ShapeType.roundRect,{x,y:6.00,w:3.85,h:0.92,rectRadius:0.05,fill:{color:TINT},line:{color:LINE,width:0.75}});
+  s.addShape(p.ShapeType.rect,{x,y:6.00,w:0.05,h:0.92,fill:{color:t[2]}});
+  s.addText(t[0],{x:x+0.22,y:6.09,w:3.42,h:0.24,isTextBox:true,margin:0,fontFace:SANS,fontSize:10.5,bold:true,color:t[2]});
+  s.addText(t[1],{x:x+0.22,y:6.35,w:3.42,h:0.52,isTextBox:true,margin:0,fontFace:SANS,fontSize:7.8,color:INK,lineSpacing:10});
+});
 footer(s);
 }
 
