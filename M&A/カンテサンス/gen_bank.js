@@ -241,7 +241,7 @@ const rows=[
  [{text:"開業／星",options:{bold:true}},"2006年開業。2008年以降 19年連続ミシュラン三つ星"],
  [{text:"株主",options:{bold:true}},"岸田周三氏 100%（今回100%譲渡）"],
  [{text:"子会社",options:{bold:true}},"カンテサンスプラス 100%（高級スイーツEC）／株式会社BISは対象外"],
- [{text:"規模",options:{bold:true}},"54席・営業日数252日・年間来店 約1.4万人・従業員22名"],
+ [{text:"規模",options:{bold:true}},"34席・1日平均54名（約1.6回転）・営業日数 約235日・年間来店 約1.27万人・従業員21名"],
  [{text:"有利子負債",options:{bold:true}},"なし（無借金）"]
 ];
 s.addTable(rows.map(r=>[{text:r[0].text,options:{bold:true,fill:{color:TINT},fontSize:10.5}},{text:r[1],options:{fontSize:10.5}}]),
@@ -257,7 +257,7 @@ s.addText([{text:"7.2",options:{fontSize:26,bold:true,color:BERRY,fontFace:SERIF
 
 const drv=[
  ["高単価","三つ星ブランドに支えられた客単価7.2万円＋サービス料10%"],
- ["高稼働","54席×1.6回転×252日。予約は常時充足"],
+ ["高稼働","34席×約1.6回転×約235日。リピート希望率7割、海外からの問い合わせは半数以上あるが意図的に絞っている"],
  ["低原価","卸を使わずサントリー・ファインズ等から直接仕入。中間マージンなし"],
  ["低販管費","1店舗・賃借（賃料は売上比1.97%）・設備投資ほぼゼロ・広告費なし"]
 ];
@@ -438,21 +438,22 @@ const rows=[
 ];
 s.addTable(rows, tOpt({x:M, y:1.72, w:12.09, colW:[2.1,2.1,1.8,1.8,2.49,1.8], rowH:0.44, fontSize:10.5}));
 
-s.addText("比較対象", {x:M, y:4.02, w:5, h:0.3, isTextBox:true, margin:0, fontFace:SERIF, fontSize:14, bold:true, color:INK});
+s.addText("比較対象", {x:M, y:3.94, w:5, h:0.3, isTextBox:true, margin:0, fontFace:SERIF, fontSize:14, bold:true, color:INK});
 const cmp=[
  ["小売飲食業のEBITDA倍率 実務目安","約6倍","中小M&A実務の業種別目安（2026年7月時点）"],
  ["ひらまつ（東証スタンダード・2764）","経常利益率 約3.0%","FY2027/3会社予想 売上105.9億／経常3.2億。国内で唯一の高級レストラン上場企業"],
  ["カンテサンス","営業利益率 52.0%","上場高級外食の約17倍の収益性。ただし1店舗・属人性のディスカウントは別途必要"]
 ];
 cmp.forEach((c,i)=>{
-  const y=4.36+i*0.70;
+  const y=4.26+i*0.64;
   s.addShape(p.ShapeType.rect,{x:M, y:y+0.06, w:0.05, h:0.5, fill:{color:i===2?BERRY:ROSE}});
   s.addText(c[0], {x:M+0.2, y:y, w:3.5, h:0.28, isTextBox:true, margin:0, fontFace:SANS, fontSize:11, bold:true, color:INK});
   s.addText(c[1], {x:M+3.75, y:y, w:1.9, h:0.28, isTextBox:true, margin:0, fontFace:SANS, fontSize:11.5, bold:true, color:BERRY});
   s.addText(c[2], {x:M+0.2, y:y+0.28, w:11.3, h:0.4, isTextBox:true, margin:0, fontFace:SANS, fontSize:10, color:MUTE, lineSpacing:14});
 });
-s.addText("留意：上場外食のマルチプルは多店舗展開による分散を前提としている。1店舗・1名依存のディスカウントは検証③のDCFで織り込む。個社マルチプルは正式提出前に直近株価ベースへ差替えを推奨。",
-  {x:M, y:6.50, w:SW-2*M, h:0.36, isTextBox:true, margin:0, fontFace:SANS, fontSize:9.5, color:MUTE, lineSpacing:14});
+s.addText([{text:"修正営業利益ベースでは4.5倍　",options:{bold:true,color:BERRY}},
+ {text:"売主は「修正営業利益5.8億円」で本件を提示している。会計上の営業利益との差額は岸田氏の役員報酬（月60万円＋役員賞与9,540万円）であり、経営者報酬を一般的な水準に正常化したもの。この基準では2026年12月期は約6.1億円となり、EV27.57億円は4.5倍に相当する。ただし正常化益は岸田氏ご退任後にしか実現しないため、返済原資は会計ベースのFCF 3.50億円で見ている。",options:{color:MUTE}}],
+  {x:M, y:6.30, w:SW-2*M, h:0.62, isTextBox:true, margin:0, fontFace:SANS, fontSize:9, lineSpacing:12.5});
 footer(s);
 }
 
@@ -519,7 +520,7 @@ const asm=[
  ["1〜3年目","3シナリオ共通で3.50億円。岸田氏が毎日厨房に立つ前提（売主回答）"],
  ["4年目以降","A：3.50億円据置／B：二つ星降格により売上▲32%・利益率52%→29%で2.00億円／C：星喪失で1.00億円"],
  ["割引率","10%を基準（リスクフリー1.5%＋株式リスクプレミアム6%×β1.1＋規模・属人性プレミアム2%）"],
- ["継続成長率","0%（54席固定・値上げ以外の成長ドライバーなし）"]
+ ["継続成長率","0%（34席固定・値上げ以外の成長ドライバーなし）"]
 ];
 asm.forEach((a,i)=>{
   const y=2.66+i*0.60;
