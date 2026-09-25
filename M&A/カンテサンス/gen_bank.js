@@ -240,7 +240,7 @@ const rows=[
  [{text:"店舗",options:{bold:true}},"Quintessence（東京都品川区北品川・ガーデンシティ品川御殿山1F／賃借）"],
  [{text:"開業／星",options:{bold:true}},"2006年開業。2008年以降 19年連続ミシュラン三つ星"],
  [{text:"株主",options:{bold:true}},"岸田周三氏 100%（今回100%譲渡）"],
- [{text:"子会社",options:{bold:true}},"カンテサンスプラス 100%（高級スイーツEC）／株式会社BISは対象外"],
+ [{text:"子会社",options:{bold:true}},"カンテサンスプラス 100%（コンサルティング業・第10期売上593万円）／株式会社BISは対象外"],
  [{text:"規模",options:{bold:true}},"34席・1日平均54名（約1.6回転）・営業日数252日・年間来店 約1.37万人・従業員21名"],
  [{text:"有利子負債",options:{bold:true}},"なし（無借金）"]
 ];
