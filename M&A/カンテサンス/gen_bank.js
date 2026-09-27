@@ -78,7 +78,7 @@ s.addText("カンテサンス\n買収案件のご相談", {x:M, y:1.52, w:8.6, h
 s.addText("株式会社プティ・ボノム（Quintessence／東京・御殿山）\n19年連続ミシュラン三つ星・20年連続増収増益・無借金",
   {x:M, y:3.45, w:8.6, h:0.8, isTextBox:true, margin:0, fontFace:SANS, fontSize:14, color:"D9CBCF", lineSpacing:24});
 
-const st=[["譲受価額","50〜55億円","EV/EBITDA 5.2〜6.2倍"],["ご相談額","41.4億円","ターム20.0＋ブリッジ21.4"],["初年度DSCR","1.36倍","当初案。ご相談案（p.24）では1.38倍"]];
+const st=[["譲受価額","50〜55億円","EV/EBITDA 5.2〜6.2倍"],["ご相談額","41.4億円","ターム20.0＋ブリッジ21.4"],["初年度DSCR","1.36倍","当初案。ご相談案（p.28）では1.38倍"]];
 st.forEach((v,i)=>{
   const x = M + i*3.05;
   s.addShape(p.ShapeType.roundRect,{x, y:4.5, w:2.8, h:1.2, rectRadius:0.05, fill:{color:"3B1E2B"}, line:{color:"5A3240", width:0.75}});
@@ -194,8 +194,105 @@ items.forEach((it,i)=>{
     fontFace:SANS, fontSize:11, color:INK, lineSpacing:16});
 });
 s.addText([{text:"資金調達：",options:{bold:true,color:INK}},
- {text:"買収目的会社（SPC）方式により、みずほ銀行41.4億円（タームローン20.0億円＋ブリッジローン21.4億円）と投資家の出資10.0億円で取得する。ブリッジローンは合併直後に対象会社の余剰現金で全額返済し、合併後の有利子負債は20.0億円、初年度DSCRは1.36倍となる（p.16〜p.22）。",options:{}}],
+ {text:"買収目的会社（SPC）方式により、みずほ銀行41.4億円（タームローン20.0億円＋ブリッジローン21.4億円）と投資家の出資10.0億円で取得する。ブリッジローンは合併直後に対象会社の余剰現金で全額返済し、合併後の有利子負債は20.0億円、初年度DSCRは1.36倍となる（p.20〜p.29）。",options:{}}],
  {x:M, y:5.52, w:SW-2*M, h:0.6, isTextBox:true, margin:0, fontFace:SANS, fontSize:10.5, color:MUTE, lineSpacing:16});
+footer(s);
+}
+
+/* ===== NEW W1  WHY WINEBANK ===== */
+{
+const s=p.addSlide();
+header(s,"WHY WINEBANK","シナジーに頼らない。それでも当社が最適な所有者である",
+  "価格にも返済計画にもシナジーは一切織り込んでいない。そのうえで、この資産は当社が持つときに最も価値が保たれる。");
+const rs=[
+ ["1","ワインの「最終地点」を持つ",
+  "当社は調達・保管・流通を担ってきたが、一本のワインが最も高い価値で完結する「消費の頂点」を持っていなかった。対象会社はその日本における頂点である。"],
+ ["2","上流での信用が上がる",
+  "希少ワインの生産者は「どこで飲まれるか」で配分を決める。三つ星と資本関係を持つ流通業者は国内に稀。※対象会社の仕入経路に当社は介入しない。"],
+ ["3","キャッシュの性質が補い合う",
+  "仕入・熟成に資金が寝る在庫型の当社本業に対し、対象会社は運転資本がほぼ不要（「支払より先に入金がある」）でFCF年3.5億円を生む。"],
+ ["4","人材が循環する",
+  "多くの料理人を独立へ送り出してきた「学校」とアピシウスで、グランメゾン2店のキャリアパスを示せる。卒業生網は後継問題への答えでもある。"],
+ ["5","承継に再現性がある",
+  "アピシウスで幹部全員継続・サービス残業撤廃のうえ、売上＋30%・営業利益＋250%超。2件目で再現性を示し、承継を事業モデルにする。"]
+];
+rs.forEach((r,i)=>{
+  const y=1.80+i*0.98;
+  badge(s,M,y+0.02,r[0]);
+  s.addText(r[1],{x:M+0.45,y:y,w:6.30,h:0.30,isTextBox:true,margin:0,
+    fontFace:SERIF,fontSize:13.5,bold:true,color:BERRY,valign:"middle"});
+  s.addText(r[2],{x:M+0.45,y:y+0.32,w:6.30,h:0.60,isTextBox:true,margin:0,valign:"top",
+    fontFace:SANS,fontSize:10,color:INK,lineSpacing:14});
+});
+
+const RX=7.62, RW=SW-M-RX;
+s.addText("誰が持つと、この資産の価値が最も高いか",{x:RX,y:1.80,w:RW,h:0.28,isTextBox:true,margin:0,
+  fontFace:SANS,fontSize:11,bold:true,color:GOLD});
+const cmp=[
+ [hd("買い手"),hd("時間軸・論理"),hd("この資産との相性")],
+ [{text:"投資ファンド",options:{bold:true,fontSize:10}},{text:"3〜5年で売却が前提",options:{fontSize:9.5}},{text:"✕ 承継の時間軸と合わない",options:{fontSize:9.5,color:RED}}],
+ [{text:"大手外食グループ",options:{bold:true,fontSize:10}},{text:"多店舗化・効率化",options:{fontSize:9.5}},{text:"✕ 本店の価値を薄める方向",options:{fontSize:9.5,color:RED}}],
+ [{text:"同業シェフ・個人",options:{bold:true,fontSize:10}},{text:"長期・料理を理解",options:{fontSize:9.5}},{text:"△ 資金と経営体制の持続性",options:{fontSize:9.5,color:AMB}}],
+ [{text:"WineBank",options:{bold:true,fontSize:10,color:BERRY,fill:{color:"EFE6E9"}}},
+  {text:"期限を設けない長期保有",options:{fontSize:9.5,bold:true,fill:{color:"EFE6E9"}}},
+  {text:"◎ 現状維持を約束でき、ワインで価値を正しく評価できる",options:{fontSize:9.5,bold:true,color:GRN,fill:{color:"EFE6E9"}}}]
+];
+s.addTable(cmp,tOpt({x:RX,y:2.14,w:RW,colW:[1.40,1.55,RW-2.95],rowH:0.60,fontSize:9.5}));
+
+s.addShape(p.ShapeType.roundRect,{x:RX,y:5.42,w:RW,h:1.28,rectRadius:0.05,fill:{color:BERRY}});
+s.addText("価格・返済計画に織り込んだシナジー",{x:RX+0.25,y:5.52,w:RW-0.5,h:0.26,isTextBox:true,margin:0,
+  fontFace:SANS,fontSize:10.5,bold:true,color:"E8D6DB"});
+s.addText("ゼロ",{x:RX+0.25,y:5.78,w:1.3,h:0.52,isTextBox:true,margin:0,
+  fontFace:SERIF,fontSize:30,bold:true,color:W});
+s.addText("返済原資は対象会社のキャッシュフローのみで完結する。上記1〜5はすべて上振れ要因として扱う。",
+  {x:RX+1.45,y:5.80,w:RW-1.70,h:0.80,isTextBox:true,margin:0,valign:"top",
+   fontFace:SANS,fontSize:10,color:W,lineSpacing:14});
+footer(s);
+}
+
+/* ===== NEW W2  MEANING & GROWTH ===== */
+{
+const s=p.addSlide();
+header(s,"MEANING & GROWTH","名店を次の20年へ。伸ばすのは本店の外側",
+  "本件の意義は収益にとどまらない。成長は本店に手を入れるのではなく、本店の外側で実現する。");
+s.addText("社会的な意義",{x:M,y:1.76,w:6,h:0.28,isTextBox:true,margin:0,
+  fontFace:SERIF,fontSize:13.5,bold:true,color:INK});
+const mw=(SW-2*M-3*0.16)/4;
+[["事業承継の受け皿","後継者不在による閉店でも、短期売却を前提とする資本への移転でもない第三の道。当社は転売を想定しない。"],
+ ["技術と暗黙知の継承","「美味しいとは何か、良い仕事とは何かを教えられる人は業界にも多くない」（岸田氏）。3年の在任はその移転の時間。"],
+ ["生産者と雇用を守る","20年以上かけて築かれた生産者との関係と、承継対象18名全員の雇用・待遇をそのまま維持する。"],
+ ["承継の前例をつくる","後継者に悩む他の名店のオーナーが、安心して託せる前例となる。1件の買収を超えた業界への貢献。"]
+].forEach((c,i)=>{
+  const x=M+i*(mw+0.16);
+  card(s,x,2.08,mw,1.62);
+  s.addShape(p.ShapeType.rect,{x,y:2.08,w:mw,h:0.05,fill:{color:GOLD}});
+  s.addText(c[0],{x:x+0.18,y:2.22,w:mw-0.36,h:0.28,isTextBox:true,margin:0,
+    fontFace:SANS,fontSize:11.5,bold:true,color:BERRY});
+  s.addText(c[1],{x:x+0.18,y:2.54,w:mw-0.36,h:1.10,isTextBox:true,margin:0,valign:"top",
+    fontFace:SANS,fontSize:10.5,color:INK,lineSpacing:15});
+});
+
+s.addText("成長の方向性",{x:M,y:3.90,w:6,h:0.28,isTextBox:true,margin:0,
+  fontFace:SERIF,fontSize:13.5,bold:true,color:INK});
+const gw=(SW-2*M-2*0.16)/3;
+[["守る","0〜3年",BERRY,["本店は現状維持（値上げ・増席・営業日増なし）","後継料理長の共同探索（岸田氏在任中）","内部統制・勤怠管理の整備"]],
+ ["広げる","3〜5年",ROSE,["チーズケーキの専用製造拠点とEC（直近抽選：応募約470名に枠318個）","一品特化業態（岸田氏も「再現性が高い」と回答）"]],
+ ["つなぐ","5年〜",GOLD,["グランメゾン承継プラットフォーム（アピシウス＋カンテサンス＋次の名店）","オーベルジュ構想（ワイナリー隣接＋温泉）"]]
+].forEach((g,i)=>{
+  const x=M+i*(gw+0.16);
+  card(s,x,4.20,gw,1.80,"FFFFFF");
+  s.addShape(p.ShapeType.rect,{x,y:4.20,w:gw,h:0.44,fill:{color:g[2]}});
+  s.addText([{text:g[0]+"　",options:{fontSize:14,bold:true}},{text:g[1],options:{fontSize:10}}],
+    {x:x+0.18,y:4.20,w:gw-0.36,h:0.44,isTextBox:true,margin:0,valign:"middle",fontFace:SANS,color:W});
+  s.addText(g[3].map((t,j)=>({text:t,options:{bullet:{code:"25AA"},breakLine:j<g[3].length-1}})),
+    {x:x+0.18,y:4.74,w:gw-0.36,h:1.20,isTextBox:true,margin:0,valign:"top",
+     fontFace:SANS,fontSize:11,color:INK,lineSpacing:15.5,paraSpaceAfter:4});
+});
+
+s.addShape(p.ShapeType.roundRect,{x:M,y:6.18,w:SW-2*M,h:0.62,rectRadius:0.04,fill:{color:DARK}});
+s.addText([{text:"成長施策はすべてアップサイド。",options:{bold:true,color:W}},
+ {text:"価格にも返済計画にも1円も織り込んでいない。本店の価値を守ることが、最大の価値保全である。",options:{color:"E8D6DB"}}],
+ {x:M+0.28,y:6.18,w:SW-2*M-0.56,h:0.62,isTextBox:true,margin:0,valign:"middle",fontFace:SANS,fontSize:11.5});
 footer(s);
 }
 
@@ -205,12 +302,12 @@ const s = p.addSlide();
 header(s, "APPROACH", "4つの評価手法と2つのクロスチェックで判断する",
   "年買法だけでは「高い」、マルチプルだけでは「安い」という逆の結論が出る。両者が割れる理由そのものが、この案件の性質を説明している。");
 const blocks=[
- ["検証①","マルチプル法","EV/EBITDA・EV/営業利益。セクター水準との比較","p.9"],
- ["検証②","年買法","純資産＋営業利益n年。中小M&A実務の慣行","p.10"],
- ["検証③","DCF（確率分解）","3シナリオ×3割引率。本資料の中心的手法","p.11"],
- ["検証④","類似取引事例","国内高級レストランの譲渡事例との比較","p.12"],
- ["CHECK A","ブレークイーブン分析","利益が何%落ちるまで50億円が正当化されるか","p.14"],
- ["CHECK B","返済可能性","返済プロファイル・月次資金繰り・ストレス耐性","p.20-22"]
+ ["検証①","マルチプル法","EV/EBITDA・EV/営業利益。セクター水準との比較","p.14"],
+ ["検証②","年買法","純資産＋営業利益n年。中小M&A実務の慣行","p.15"],
+ ["検証③","DCF（確率分解）","3シナリオ×3割引率。本資料の中心的手法","p.16"],
+ ["検証④","類似取引事例","国内高級レストランの譲渡事例との比較","p.17"],
+ ["CHECK A","ブレークイーブン分析","利益が何%落ちるまで50億円が正当化されるか","p.19"],
+ ["CHECK B","返済可能性","返済プロファイル・月次資金繰り・ストレス耐性","p.24-25,29"]
 ];
 blocks.forEach((b,i)=>{
   const x = M + (i%3)*4.08;
@@ -226,7 +323,7 @@ blocks.forEach((b,i)=>{
   s.addText(b[3], {x:x+3.0, y:y+1.44, w:0.6, h:0.24, isTextBox:true, margin:0,
     fontFace:SANS, fontSize:9, color:ROSE, align:"right"});
 });
-s.addText("すべての検証は 2026年12月期（IM記載の会社計画）ベース。2025年12月期実績ベースの数値とは異なる。\n買収ストラクチャーは p.16〜p.19、参考資料としてグランメゾンのM&A後バリューアップ実績を p.24 に掲載している。",
+s.addText("すべての検証は 2026年12月期（IM記載の会社計画）ベース。2025年12月期実績ベースの数値とは異なる。\n買収ストラクチャーは p.16〜p.19、参考資料としてグランメゾンのM&A後バリューアップ実績を p.31 に掲載している。",
   {x:M, y:6.30, w:SW-2*M, h:0.5, isTextBox:true, margin:0, fontFace:SANS, fontSize:10, color:MUTE, lineSpacing:15});
 footer(s);
 }
@@ -241,7 +338,7 @@ const rows=[
  [{text:"開業／星",options:{bold:true}},"2006年開業。2008年以降 19年連続ミシュラン三つ星"],
  [{text:"株主",options:{bold:true}},"岸田周三氏 100%（今回100%譲渡）"],
  [{text:"子会社",options:{bold:true}},"カンテサンスプラス 100%（コンサルティング業・第10期売上593万円）／株式会社BISは対象外"],
- [{text:"規模",options:{bold:true}},"34席・1日平均54名（約1.6回転）・営業日数252日・年間来店 約1.37万人・従業員19名（2026年8月給与台帳）"],
+ [{text:"規模",options:{bold:true}},"34席・1日平均54名（約1.6回転）・営業日数252日・年間来店 約1.37万人・従業員18名（岸田氏を除く、2026年9月17日時点の従業員名簿）"],
  [{text:"有利子負債",options:{bold:true}},"なし（無借金）"]
 ];
 s.addTable(rows.map(r=>[{text:r[0].text,options:{bold:true,fill:{color:TINT},fontSize:10.5}},{text:r[1],options:{fontSize:10.5}}]),
@@ -462,7 +559,7 @@ box.forEach((b,i)=>{
 });
 s.addText("注意：役員貸付金5.00億円は「現金」ではない", {x:6.25, y:5.02, w:6.46, h:0.28, isTextBox:true, margin:0,
   fontFace:SERIF, fontSize:13, bold:true, color:RED});
-s.addText("仲介の「ネットキャッシュ約20億円」のうち5.00億円は岸田氏に対する長期貸付金であり、同氏が返済して初めて現金になる。クロージング時の現金精算を条件化しない限り、買主は譲渡後に5億円の債権回収を追うことになる（p.23 論点1）。",
+s.addText("仲介の「ネットキャッシュ約20億円」のうち5.00億円は岸田氏に対する長期貸付金であり、同氏が返済して初めて現金になる。クロージング時の現金精算を条件化しない限り、買主は譲渡後に5億円の債権回収を追うことになる（p.30 論点1）。",
   {x:6.25, y:5.34, w:6.46, h:0.9, isTextBox:true, margin:0, fontFace:SANS, fontSize:10.5, color:INK, lineSpacing:16});
 s.addText("出所：2025/12期はIM記載のBS。2026/12期は無配・設備投資ゼロ・負債横ばいを前提に、当期純利益350百万円が全額現預金と純資産に積み上がるものとして推計。",
   {x:M, y:6.45, w:SW-2*M, h:0.3, isTextBox:true, margin:0, fontFace:SANS, fontSize:9.5, color:MUTE});
@@ -773,7 +870,7 @@ s.addTable([
   {text:"合計",options:{bold:true,fill:{color:TINT}}},num("51.5億円",{bold:true,fill:{color:TINT}})]
 ],tOpt({x:M,y:2.00,w:7.30,colW:[1.85,1.15,3.10,1.20],rowH:0.36,fontSize:10}));
 
-s.addText("※ 譲受価額が55.0億円となる場合、差額5.0億円は追加投資家の第三者割当増資で調達する（p.19）。借入額および合併後の財務は変わらない。",{x:M,y:4.22,w:7.30,h:0.26,isTextBox:true,margin:0,fontFace:SANS,fontSize:9,color:MUTE});
+s.addText("※ 譲受価額が55.0億円となる場合、差額5.0億円は追加投資家の第三者割当増資で調達する（p.23）。借入額および合併後の財務は変わらない。",{x:M,y:4.22,w:7.30,h:0.26,isTextBox:true,margin:0,fontFace:SANS,fontSize:9,color:MUTE});
 s.addText("② 合併直後",{x:M,y:4.54,w:5.0,h:0.28,isTextBox:true,margin:0,fontFace:SERIF,fontSize:13.5,bold:true,color:INK});
 s.addTable([
  [hd("対象会社の現預金"),hd("金額"),hd("充当先")],
@@ -829,7 +926,7 @@ s.addTable([
  [{text:"3.0億円",options:{bold:true}},num("19.43億円"),num("2.07億円"),num("20.0億円"),num("3.2倍"),num("2.19億円",{color:GRN}),
   {text:"◎ 余裕あり",options:{color:GRN,fontSize:10}}],
  [{text:"6.0億円",options:{bold:true}},num("16.43億円"),num("5.07億円"),num("20.0億円"),num("2.6倍"),num("5.19億円",{color:GRN}),
-  {text:"◎ ご相談案（p.24）",options:{color:GRN,fontSize:10}}]
+  {text:"◎ ご相談案（p.28）",options:{color:GRN,fontSize:10}}]
 ],tOpt({x:M,y:2.10,w:12.09,colW:[1.55,1.75,1.55,2.00,1.35,2.10,1.79],rowH:0.44,fontSize:10}));
 s.addText("※ 最低現金残高は2月末。2月に2026年12月期の未払税金1.14億円を納付する一方、借入の元利返済は毎月発生するため、年間で最も薄くなる。",
   {x:M,y:4.30,w:12.09,h:0.26,isTextBox:true,margin:0,fontFace:SANS,fontSize:9,color:MUTE});
@@ -838,7 +935,7 @@ const pts=[
  ["① 1.0億円では2月末に1,900万円まで落ちる",
   "借入の返済が毎月であるため、2026年12月期の未払税金1.14億円を納付する2月に底が来る。残高1,900万円は月次固定費の1.0か月分にすぎず、ワインの一次価格アロケーションがまとまって入荷する月や突発的な修繕が重なれば、一時的な借入が避けられない。留保を2.0億円とすれば底は1.19億円（6.2か月分）となる。"],
  ["② 留保を厚くしても総ご相談額は増えない",
-  "ブリッジローンは対象会社の現預金を買収後にしか使えないために生じる立替えであり、留保額を増やした分だけブリッジは減る。留保を1.0億円から6.0億円へ引き上げ、恒久タームローンを20.0億円から25.0億円へ振り替えれば、みずほ銀行様への総ご相談額41.4億円は変わらないまま、初年度末の残高は0.66億円から5.81億円になる。詳細は24ページに記載した。"],
+  "ブリッジローンは対象会社の現預金を買収後にしか使えないために生じる立替えであり、留保額を増やした分だけブリッジは減る。留保を1.0億円から6.0億円へ引き上げ、恒久タームローンを20.0億円から25.0億円へ振り替えれば、みずほ銀行様への総ご相談額41.4億円は変わらないまま、初年度末の残高は0.66億円から5.81億円になる。詳細は28ページに記載した。"],
  ["③ 中野氏の拠出が700万円になることの副作用",
   "榊原氏が10.0億円を払い込むのに対し、中野氏の拠出は資本金10万円と株主貸付700万円のみとなる。67%／33%という配分は合意によるものだが、その根拠を株主間契約でより丁寧に定める必要が生じる。"]
 ];
@@ -1139,7 +1236,7 @@ s.addTable([
  [hd("シナリオ"), hd("FCF"), hd("DSCR"), hd("7年間の返済可能性")],
  [{text:"平常時",options:{bold:true}}, num("3.50億"), num("1.36〜1.58",{color:GRN,bold:true}),
   {text:"全期間で1.36以上。累積余剰7.75億円で期限一括6.00億円も完済できる",options:{fontSize:10}}],
- [{text:"営業利益▲21%（p.15 ブレークイーブン）",options:{bold:true}}, num("2.76億"), num("1.07〜1.25",{color:GRN,bold:true}),
+ [{text:"営業利益▲21%（p.19 ブレークイーブン）",options:{bold:true}}, num("2.76億"), num("1.07〜1.25",{color:GRN,bold:true}),
   {text:"元利返済は全期間で継続できる。累積余剰2.57億円のため、期限一括6.00億円はリファイナンスを要する",options:{fontSize:10}}],
  [{text:"二つ星降格（4年目以降）",options:{bold:true}}, num("2.00億"), num("0.84〜1.43",{color:AMB,bold:true}),
   {text:"4〜7年の累積不足1.21億円は、3年目末までの累積余剰2.96億円で吸収できる。期限一括分はリファイナンスを要する",options:{fontSize:10}}],
@@ -1178,7 +1275,7 @@ const rows=[
  [{text:"2　後継シェフの不在",options:{bold:true}}, {text:"シナリオB/Cの発生確率が上昇",options:{color:RED}}, "売主は在籍5名につき「料理長を任せられるタイプではない」と回答済み。3年ロックアップ中の招聘を岸田氏の努力義務として契約化"],
  [{text:"3　ミシュラン評価の降格",options:{bold:true}}, {text:"営業利益5.28→2.00億円（シナリオB）",options:{color:RED}}, "星の維持に連動したアーンアウト（価格の一部後払い）を提案"],
  [{text:"4　岸田氏の3年経過後の活動",options:{bold:true}}, "ブランドの希薄化", "「新店舗・ガストロノミーは考えていない／他店監修はあり得る」との回答。競業避止＋監修の事前承諾制を条件化"],
- [{text:"5　「50億円は最低ライン」＋3社競合",options:{bold:true}}, {text:"55億円超で説明困難（p.13）",options:{color:RED}}, "上限55億円の規律。EV固定＋クロージング時ネットキャッシュ実額連動方式とすれば、額面を上げつつ実質負担を抑えられる"],
+ [{text:"5　「50億円は最低ライン」＋3社競合",options:{bold:true}}, {text:"55億円超で説明困難（p.18）",options:{color:RED}}, "上限55億円の規律。EV固定＋クロージング時ネットキャッシュ実額連動方式とすれば、額面を上げつつ実質負担を抑えられる"],
  [{text:"6　店舗の賃貸借契約",options:{bold:true}}, "賃料は売上比1.97%＝年約1,900万円", "残存期間とオーナーチェンジ条項の確認（ガーデンシティ品川御殿山1F）"],
  [{text:"7　ワイン在庫の簿価",options:{bold:true}}, {text:"上振れ要因",options:{color:GRN}}, "簿価1.19億円（2026年7月末1.15億円）。一次価格で継続仕入した希少銘柄を含むため、時価評価で含み益が生じる可能性"],
  [{text:"8　仕入先アロケーションの帰属",options:{bold:true}}, "収益構造の前提", "サントリー・ファインズ等の配分が会社に帰属するか岸田氏個人に帰属するか、契約形態を確認"]
@@ -1287,7 +1384,7 @@ s.addText([
  {text:"・買収ファイナンスは、クロージング時にタームローン20.00億円＋ブリッジローン21.43億円の計41.43億円。ブリッジは合併直後に対象会社の余剰現金で全額返済し、以後の有利子負債は20.00億円。\n",options:{}},
  {text:"・返済はタームローンA 14.00億円を7年・金利3%・元金均等で毎月、タームローンB 6.00億円は期限一括。対象会社に留保する運転資金は1.00億円。\n",options:{}},
  {text:"・本資料は対象会社の事業価値および提示価格の妥当性を検証したもの。買収ストラクチャーおよびエクイティの調達計画は別途。\n",options:{}},
- {text:"・p.24の株式会社アピシウスに関する計数は、同社の取得時（2024年6月）と2026年時点との比較。売上高・営業利益はいずれも取得前比。",options:{}}
+ {text:"・p.31の株式会社アピシウスに関する計数は、同社の取得時（2024年6月）と2026年時点との比較。売上高・営業利益はいずれも取得前比。",options:{}}
 ], {x:9.09, y:2.2, w:3.4, h:3.9, isTextBox:true, margin:0, valign:"top", fontFace:SANS, fontSize:8.6, color:"B4A0A6", lineSpacing:12.5});
 footer(s, true);
 }
