@@ -275,7 +275,7 @@ const lft=(x,o)=>cel(x,Object.assign({align:"left"},o||{}));
     if(i<2) s.addText("▶", t({x:x+3.94,y:2.88,w:0.36,h:0.4,fontSize:17,color:GOLD,align:"center"}));
   });
   card(s,M,4.6,CW,1.0,PANEL2);
-  s.addText("会員は2.5万円払って、3.5万円分を受け取る。差額の1万円を「貯金」していると考える。",
+  s.addText("会員は2.75万円払って、4万円分を受け取る。差額の1.25万円を「貯金」していると考える。",
     t({x:M+0.45,y:4.82,w:CW-0.9,h:0.42,fontSize:19,bold:true,color:GOLD_L}));
   s.addText("上位ランクは5%・6%。さらに値上がり分の70%も会員のものとして残ります。",
     t({x:M+0.45,y:5.26,w:CW-0.9,h:0.3,fontSize:12.5,color:TEXT}));
@@ -289,7 +289,7 @@ const lft=(x,o)=>cel(x,Object.assign({align:"left"},o||{}));
     "差額をください——ごもっともです。ただ、相殺した世界には、次の1年で何も起きません。");
   card(s,M,1.72,3.5,2.72,PANEL);
   s.addText("相殺した世界", t({x:M+0.32,y:1.9,w:2.86,h:0.3,fontSize:13,bold:true,color:MUTE}));
-  s.addText("3月。口座に25,000円。", t({x:M+0.32,y:2.24,w:2.86,h:0.36,fontSize:15,bold:true,color:TEXT}));
+  s.addText("3月。口座に27,500円。", t({x:M+0.32,y:2.24,w:2.86,h:0.36,fontSize:15,bold:true,color:TEXT}));
   s.addText("明細に一行増える。それだけ。\n誰にも会わず、何も残らない。\n来年また、同じ一行が増える。",
     t({x:M+0.32,y:2.72,w:2.86,h:1.3,fontSize:11.5,color:MUTE,lineSpacing:20}));
   card(s,M+3.66,1.72,8.4,2.72,PANEL2);
@@ -305,7 +305,7 @@ const lft=(x,o)=>cel(x,Object.assign({align:"left"},o||{}));
   s.addText("※ その他、ボルドーマラソン・5大シャトー訪問企画、国内ワイナリーツアー等の年間ワインイベント盛りだくさん",
     t({x:M+3.98,y:3.78,w:7.76,h:0.4,fontSize:10,color:GOLD,lineSpacing:14}));
   card(s,M,4.58,CW,0.8,BURG);
-  s.addText("25,000円は貯金になりません。50,000マイルは、ワインのある一年になります。",
+  s.addText("27,500円は貯金になりません。40,000マイルは、ワインのある一年になります。",
     t({x:M+0.45,y:4.75,w:CW-0.9,h:0.42,fontSize:18,bold:true,color:GOLD_L,align:"center"}));
   [["税務はカードのマイルと同じ","AMEX等のマイレージ還元は法人・個人とも課税されません。ワインマイルも同じ「利用に応じた還元」として設計します。※顧問税理士の確認を前提"],
    ["一般サービスへの交換は 0.5","ワイン関連の一般サービスへは0.5で交換可能。比べたうえで「ワインならWineBank経済圏が一番得だ」と分かる設計にします。"],
@@ -510,7 +510,7 @@ const lft=(x,o)=>cel(x,Object.assign({align:"left"},o||{}));
     [lft("成功報酬（値上がり分）",{fill:{color:PANEL2},bold:true}),cel("30%"),cel("30%"),cel("30%")],
     [lft("グランメゾン交換レート",{fill:{color:PANEL2},bold:true}),cel("0.5円"),cel("0.5円"),cel("0.5円")],
     [lft("未公開ワインの情報",{fill:{color:PANEL2},bold:true}),cel("—"),cel("先行案内"),cel("優先割当",{bold:true,color:GOLD})],
-    [lft("WineBank CLUB",{fill:{color:PANEL2},bold:true}),cel("マイル充当・単月のみ"),cel("マイル充当・単月のみ"),cel("STANDARD 無料付与",{bold:true,color:GOLD})]],
+    [lft("WineBank CLUB",{fill:{color:PANEL2},bold:true}),cel("マイル充当・単月のみ"),cel("マイル充当・単月のみ"),cel("マイル充当・単月のみ")]],
     Object.assign(tb(),{x:M,y:1.8,w:CW,colW:[3.3,2.92,2.92,2.92],rowH:[0.44,0.42,0.42,0.42,0.42,0.42,0.42,0.42]}));
   card(s,M,5.32,5.9,1.3,PANEL);
   s.addText("廃止するもの", t({x:M+0.4,y:5.46,w:5.1,h:0.3,fontSize:14,bold:true,color:AMBER}));
