@@ -96,25 +96,26 @@ for col in "BCD":
     ws[f"{col}{R_VSUM}"]=f"=SUM({col}{V_TOP}:{col}{V_BTM})"
 sec(ws,30,"■ 初期投資（1店舗あたり・百万円）","F")
 S(ws,"A31",bold=True,border=True,fill=TOT); ws["A31"]="項　目"
-S(ws,"B31",bold=True,border=True,fill=TOT,align="center",size=9,wrap=True); ws["B31"]="1〜3号店\n(東京・札幌・大阪)"
-S(ws,"C31",bold=True,border=True,fill=TOT,align="center",size=9,wrap=True); ws["C31"]="4号店以降"
+S(ws,"B31",bold=True,border=True,fill=TOT,align="center",size=9,wrap=True); ws["B31"]="1号店\n(六本木)"
+S(ws,"C31",bold=True,border=True,fill=TOT,align="center",size=9,wrap=True); ws["C31"]="2〜3号店\n(札幌・大阪)"
+S(ws,"D31",bold=True,border=True,fill=TOT,align="center",size=9,wrap=True); ws["D31"]="4号店以降"
 ws.row_dimensions[31].height=28
-for i,(lab,a,b,note) in enumerate([
-    ("契約金",10.0,5.0,"契約金 3店舗3,000万円／以下7店舗3,500万円"),
-    ("事業費（設計・内装施工・OSE/FF&E）",194.25,194.25,"55.5坪×350万"),
-    ("開業準備金（広告・採用等）",4.0,4.0,""),
-    ("保証金",39.0,39.0,"非償却・退去時返還対象"),
-    ("ワイン＋美術品",50.0,50.0,"非償却（棚卸資産・美術品）")]):
+for i,(lab,a,b,c3,note) in enumerate([
+    ("契約金",10.0,10.0,5.0,"契約金 3店舗3,000万円／以下7店舗3,500万円"),
+    ("事業費（設計・内装施工・OSE/FF&E）",194.25,194.25,194.25,"55.5坪×350万"),
+    ("開業準備金（広告・採用等）",4.0,4.0,4.0,""),
+    ("保証金",39.0,39.0,39.0,"非償却・退去時返還対象"),
+    ("ワイン・美術品在庫",50.0,10.0,10.0,"1号店は美術品を含む。2号店以降はワイン1,000万円のみ（非償却）")]):
     r=R_INV0+i
     S(ws,f"A{r}",border=True); ws[f"A{r}"]=lab
-    for col,v in zip("BC",[a,b]):
+    for col,v in zip("BCD",[a,b,c3]):
         S(ws,f"{col}{r}",color=BLUE,fmt=NUM,border=True,align="center",fill=INP); ws[f"{col}{r}"]=v
     S(ws,f"H{r}",size=9,color="7F7F7F"); ws[f"H{r}"]=note
 S(ws,f"A{R_INVTOT}",bold=True,border=True); ws[f"A{R_INVTOT}"]="初期投資　合計"
-S(ws,f"A{R_DEPBASE}",bold=True,border=True); ws[f"A{R_DEPBASE}"]="償却対象資産（＝合計－保証金－ワイン/美術品）"
+S(ws,f"A{R_DEPBASE}",bold=True,border=True); ws[f"A{R_DEPBASE}"]="償却対象資産（＝合計－保証金－ワイン・美術品在庫）"
 S(ws,f"A{R_DEPYR}",border=True); ws[f"A{R_DEPYR}"]="償却年数（年）"
 S(ws,f"A{R_DEPRE}",bold=True,border=True); ws[f"A{R_DEPRE}"]="年間減価償却費／1店（通年）"
-for col in "BC":
+for col in "BCD":
     S(ws,f"{col}{R_INVTOT}",bold=True,fmt=NUM,border=True,align="center",fill=KEY)
     ws[f"{col}{R_INVTOT}"]=f"=SUM({col}{R_INV0}:{col}{R_INV0+4})"
     S(ws,f"{col}{R_DEPBASE}",bold=True,fmt=NUM,border=True,align="center",fill=TOT)
@@ -128,7 +129,7 @@ sec(ws,42,"■ 分割払いスキーム（百万円）","F")
 S(ws,f"A{R_DEF}"); ws[f"A{R_DEF}"]="分割対象額（内装100＋保証金38.9）"
 S(ws,f"B{R_DEF}",color=BLUE,fmt=NUM,border=True,align="center",fill=INP); ws[f"B{R_DEF}"]=138.9
 S(ws,f"A{R_CASH}",bold=True); ws[f"A{R_CASH}"]="開業時 現金支出／1店"
-for col in "BC":
+for col in "BCD":
     S(ws,f"{col}{R_CASH}",bold=True,fmt=NUM,border=True,align="center",fill=TOT)
     ws[f"{col}{R_CASH}"]=f"={col}{R_INVTOT}-$B${R_DEF}"
 S(ws,f"A{R_PAY}"); ws[f"A{R_PAY}"]="年間分割弁済額／1店"
@@ -163,10 +164,10 @@ S(ws2,"B3",bold=True,border=True,fill=TOT,align="center"); ws2["B3"]="店舗数"
 for i,y in enumerate(YEARS):
     S(ws2,f"{YC[i]}3",bold=True,border=True,fill=TOT,align="center"); ws2[f"{YC[i]}3"]=y
 COHORTS=[("① 東京（六本木ミッドタウン）",1,f"$B${R_MON_TKY}","B",[1,2,3,3,3]),
-         ("② 札幌・大阪",2,f"$B${R_MON_NEW}","B",[0,1,2,3,3]),
-         ("③ 首都圏・他政令指定都市",2,f"$B${R_MON_NEW}","C",[0,0,1,2,3]),
-         ("④ FY2030出店（リゾート含む）",2,f"$B${R_MON_NEW}","C",[0,0,0,1,2]),
-         ("⑤ FY2031出店（リゾート含む）",2,f"$B${R_MON_NEW}","C",[0,0,0,0,1])]
+         ("② 札幌・大阪",2,f"$B${R_MON_NEW}","C",[0,1,2,3,3]),
+         ("③ 首都圏・他政令指定都市",2,f"$B${R_MON_NEW}","D",[0,0,1,2,3]),
+         ("④ FY2030出店（リゾート含む）",2,f"$B${R_MON_NEW}","D",[0,0,0,1,2]),
+         ("⑤ FY2031出店（リゾート含む）",2,f"$B${R_MON_NEW}","D",[0,0,0,0,1])]
 blocks=[]; r=5
 for name,n,mref,invcol,yidx in COHORTS:
     sec(ws2,r,f"　{name}","G")
@@ -310,12 +311,12 @@ for c in YC+["H"]: ws5.column_dimensions[c].width=14
 ws5.column_dimensions["I"].width=3; ws5.column_dimensions["J"].width=46
 band(ws5,1,"5か年事業計画　連結キャッシュフロー（百万円）","H")
 S(ws5,"A2",size=9,color="7F7F7F")
-ws5["A2"]="分割払いスキーム反映。1店あたり初期投資297.25百万円のうち138.9百万円を分割（開業時現金支出158.35百万円）。"
+ws5["A2"]="分割払いスキーム反映。初期投資は1号店297.25／2〜3号店257.25／4号店以降252.25百万円。うち138.9百万円を分割。"
 S(ws5,"A3",bold=True,border=True,fill=TOT); ws5["A3"]="項　目"
 for i,y in enumerate(YEARS):
     S(ws5,f"{YC[i]}3",bold=True,border=True,fill=TOT,align="center"); ws5[f"{YC[i]}3"]=y
 S(ws5,"H3",bold=True,border=True,fill=TOT,align="center"); ws5["H3"]="5年累計"
-INV_MAP=["B","B","C","C","C"]
+INV_MAP=["B","C","D","D","D"]
 r=4
 S(ws5,f"A{r}",border=True); ws5[f"A{r}"]="新規出店数（店）"
 for i,cl in enumerate(YC):
@@ -398,7 +399,7 @@ r+=7
 S(ws5,f"A{r}",size=9,color="7F7F7F")
 ws5[f"A{r}"]="※ 簡易FCF＝連結EBITDA－法人税等－投資キャッシュアウト。運転資本増減・借入返済は含まない。"
 S(ws5,f"A{r+1}",size=9,color=RED)
-ws5[f"A{r+1}"]="※ 1店あたり初期投資が247→297.25百万円に増加（ワイン＋美術品50百万円）。9店舗で22.3億→26.8億。"
+ws5[f"A{r+1}"]="※ ワイン・美術品在庫は1号店50百万円（美術品含む）、2号店以降はワインのみ10百万円。9店舗累計の初期投資は23.3億円。"
 
 # ───── サマリー ─────
 ws1=wb.create_sheet("サマリー",0); ws1.sheet_view.showGridLines=False
