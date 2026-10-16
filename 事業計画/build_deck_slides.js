@@ -183,7 +183,7 @@ module.exports = { pres, THEME, pptxgen, BORDEAUX, GOLD, INK, MUTED, TINT, LINE,
 {
   const s = pres.addSlide({ masterName: "CONTENT" });
   s.addText("投資回収と資金計画", { placeholder: "title" });
-  s.addText("内装1億円は家主立替（10年分割）、保証金3,900万円は7年分割。開業時に必要な現金は1.58億円", { placeholder: "sub" });
+  s.addText("内装1億円は家主立替（10年分割）、保証金3,900万円は7年分割。開業時に必要な現金1.58億円に対し調達済は0.90億円", { placeholder: "sub" });
 
   const inv = [
     ["契約金", "10.0", "10.0", "5.0"],
@@ -235,33 +235,32 @@ module.exports = { pres, THEME, pptxgen, BORDEAUX, GOLD, INK, MUTED, TINT, LINE,
     fill: { color: TINT }, line: { color: TINT }, rectRadius: 0.06, shadow: { type: "none" } });
   s.addText("必要資金と調達", { x: 7.5, y: 3.56, w: 5.05, h: 0.3, fontSize: 12, bold: true,
     color: BORDEAUX, fontFace: "Cambria", isTextBox: true, margin: 0 });
+  // kind: 0=通常, 1=内訳(字下げ), 2=注記行(全幅), 3=小計(太字), 4=結論(太字・大)
   const fund = [["① 1号店 開業時に必要な現金", "158.3", INK, 0],
                 ["② FY2027末までに必要な資金", "145.8", INK, 0],
                 ["③ 5年・9店舗の最大資金需要", "541.9", INK, 0],
-                ["調達 既存（従前）", "200.0", INK, 1],
-                ["調達 今回ラウンド（うち90.0調達済）", "180.0", GREEN, 1],
-                ["調達額 計", "380.0", INK, 0],
-                ["過不足　①開業時 ＋221.8／②FY2027末 ＋234.2", "", INK, 2],
-                ["過不足　③5年・9店舗", "▲161.9", RED, 0]];
+                ["調達済（アピシウス70.0＋エニーカラー20.0）", "90.0", GREEN, 1],
+                ["募集中（今回ラウンド残額）", "90.0", INK, 1],
+                ["調達額 計（ラウンド1.8億 完了時）", "180.0", INK, 3],
+                ["現時点の不足　①開業時 － 調達済90.0", "▲68.3", RED, 4],
+                ["ラウンド完了後　①開業時 ＋21.7 ／ ②FY2027末 ＋34.2", "", INK, 2],
+                ["過不足　③5年・9店舗（ラウンド完了後）", "▲361.9", RED, 3]];
   fund.forEach((d, i) => {
     const y = 3.78 + i * 0.300;
-    const ind = d[3] === 1, wide = d[3] === 2;
+    const k = d[3], ind = k === 1, wide = k === 2, strong = k >= 3;
     s.addText(d[0], { x: ind ? 7.66 : 7.5, y, w: wide ? 4.9 : (ind ? 3.34 : 3.5), h: 0.3,
-      fontSize: wide ? 9 : (ind ? 8.8 : 10), color: i === 7 ? INK : MUTED,
-      bold: i === 5 || i === 7, fontFace: "Calibri", isTextBox: true, margin: 0, valign: "middle" });
+      fontSize: wide ? 9 : (ind ? 8.8 : 10), color: strong ? INK : MUTED,
+      bold: strong, fontFace: "Calibri", isTextBox: true, margin: 0, valign: "middle" });
     if (d[1]) s.addText(d[1], { x: 11.0, y, w: 1.55, h: 0.3,
-      fontSize: i === 7 ? 14 : (ind ? 10 : 11.5),
-      bold: i === 5 || i === 7, color: d[2], fontFace: "Cambria", isTextBox: true, margin: 0,
+      fontSize: k === 4 ? 14 : (ind ? 10 : 11.5),
+      bold: strong, color: d[2], fontFace: "Cambria", isTextBox: true, margin: 0,
       align: "right", valign: "middle" });
   });
-  s.addText("※ 今回ラウンド1.8億円のうち9,000万円（アピシウス投資家7,000万・エニーカラー創業者2,000万）はクローズ済。",
-    { x: 7.5, y: 6.25, w: 5.05, h: 0.32, fontSize: 8.5, color: MUTED, fontFace: "Calibri",
-      isTextBox: true, margin: 0 });
 
   s.addText("※ 内装100百万円は家主が立替え月833千円×120回で返済、保証金39百万円は月464千円×84回。いずれも賃貸借契約どおりCFに反映。減価償却は自社で継続。",
     { x: 0.55, y: 6.72, w: 12.2, h: 0.26, fontSize: 9, color: MUTED, fontFace: "Calibri",
       isTextBox: true, margin: 0 });
-  s.addNotes("内装1億円は家主立替で開業時の現金支出を圧縮するが、資産計上・減価償却は自社で継続。1号店の開業は調達3.8億で十分に賄える（開業時+2.22億、FY2027末+2.34億の余剰）。不足が出るのは9店舗展開ベースで1.62億円。");
+  s.addNotes("内装1億円・保証金3,900万円は家主への分割払いのため開業時の現金支出は1.58億円。既存2億円は調達済9,000万円と家主分割分で構成されており、現金として使えるのは9,000万円のみ。現時点で6,830万円不足しており、募集中の9,000万円のクローズが開業の前提。ラウンド完了後は開業時+2,170万円、FY2027末+3,420万円。9店舗展開には追加で約3.6億円が必要。");
 }
 
 /* ───────── Slide 4 : 感応度分析 ───────── */
@@ -334,7 +333,7 @@ module.exports = { pres, THEME, pptxgen, BORDEAUX, GOLD, INK, MUTED, TINT, LINE,
 }
 
 (async () => {
-  const out = "/home/user/wine-auction/事業計画/BRASSERIE_Thierry_Marx_事業収支_差替スライド_20261016_v3.pptx";
+  const out = "/home/user/wine-auction/事業計画/BRASSERIE_Thierry_Marx_事業収支_差替スライド_20261016_v4.pptx";
   await pres.writeFile({ fileName: out });
   await applyTheme(out, THEME);
   console.log("saved:", out);
