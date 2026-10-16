@@ -74,7 +74,7 @@ function tRow(label, vals, o = {}) {
     ["GOP（店舗営業総利益）", 115.2, 27.2, "sub"], ["ロイヤリティ", 16.9, 4.0],
     ["保険・租税公課", 3.0, 0.7], ["地代家賃（固定）", 26.6, 6.3], ["歩合家賃", 6.4, 1.5],
     ["修繕維持費（FFE）", 10.6, 2.5], ["EBITDA", 51.6, 12.2, "hl"],
-    ["減価償却費", 20.8, 4.9], ["営業利益", 30.8, 7.3, "hl"],
+    ["減価償却費", 10.8, 2.6], ["営業利益", 40.8, 9.6, "hl"],
   ];
   const rows = [tHead(["満年度ベース 損益計算（百万円）", "金額", "対売上比"], { fs: 10 })];
   pl.forEach(([l, a, b, k]) => rows.push(tRow(l, [f1(a), pc(b)], { fs: 9.5, hl: k === "hl", sub: k === "sub" })));
@@ -86,8 +86,8 @@ function tRow(label, vals, o = {}) {
     ["売上高", "381.0", "414.9", "423.4"],
     ["EBITDA", "46.1", "56.3", "63.4"],
     ["EBITDA率", "12.1%", "13.6%", "15.0%"],
-    ["営業利益", "25.3", "35.5", "42.6"],
-    ["営業利益率", "6.6%", "8.6%", "10.1%"],
+    ["営業利益", "35.3", "45.5", "52.6"],
+    ["営業利益率", "9.3%", "11.0%", "12.4%"],
   ];
   const r2 = [tHead(["年次推移（百万円）", "1年目", "2年目", "3年目以降"], { fs: 10 })];
   yr.forEach(([l, a, b, c]) => r2.push(tRow(l, [a, b, c],
@@ -106,7 +106,8 @@ function tRow(label, vals, o = {}) {
     { text: "日商 約117万円／月商 約3,530万円／年商 4.23億円", options: { bullet: true, breakLine: true } },
     { text: "売上原価30.0%（料理・飲料とも30.0%）・人件費34.5%／人員26名", options: { bullet: true, breakLine: true } },
     { text: "ロイヤリティ4.0%・歩合家賃7%（閾値超過分）・地代家賃 月222万円", options: { bullet: true, breakLine: true } },
-    { text: "2年目以降は人件費33.5%→32.5%等へ段階改善（本部集中・多能工化）", options: { bullet: true } },
+    { text: "2年目以降は人件費33.5%→32.5%等へ段階改善（本部集中・多能工化）", options: { bullet: true, breakLine: true } },
+    { text: "内装1億円は家主負担（B工事）。自社負担の初期投資は1.97億円", options: { bullet: true, bold: true, color: BORDEAUX } },
   ], { x: 6.72, y: 4.2, w: 5.78, h: 2.3, fontSize: 10, color: INK, fontFace: "Calibri",
        isTextBox: true, margin: 0, paraSpaceAfter: 4, lineSpacingMultiple: 1.05 });
 
@@ -139,9 +140,9 @@ function tRow(label, vals, o = {}) {
     ["本部費", ["15.0", "28.0", "40.0", "48.0", "55.0"]],
     ["連結EBITDA", ["31.1", "85.9", "193.7", "312.6", "432.5"], "hl"],
     ["　EBITDA率", ["8.2%", "9.6%", "11.2%", "12.1%", "12.6%"], "sub"],
-    ["減価償却費", ["20.8", "46.9", "87.9", "128.5", "169.2"]],
-    ["営業利益", ["10.3", "39.1", "105.8", "184.0", "263.3"], "hl"],
-    ["　営業利益率", ["2.7%", "4.4%", "6.1%", "7.1%", "7.7%"], "sub"],
+    ["減価償却費", ["10.8", "36.9", "77.9", "118.5", "159.2"]],
+    ["営業利益", ["20.3", "49.1", "115.8", "194.0", "273.3"], "hl"],
+    ["　営業利益率", ["5.3%", "5.5%", "6.7%", "7.5%", "8.0%"], "sub"],
   ];
   const rows = [tHead(["連結損益計画（百万円）", "FY2027", "FY2028", "FY2029", "FY2030", "FY2031"], { fs: 9.5 })];
   C.forEach(([l, v, k]) => rows.push(tRow(l, v, { fs: 9, hl: k === "hl", sub: k === "sub" })));
@@ -153,10 +154,10 @@ function tRow(label, vals, o = {}) {
   s.addText("計画のポイント", { x: 10.12, y: 1.56, w: 2.5, h: 0.28, fontSize: 11.5, bold: true,
     color: BORDEAUX, fontFace: "Cambria", isTextBox: true, margin: 0 });
   s.addText([
+    { text: "初年度FY2027から営業利益率5%超", options: { bullet: true, bold: true, color: BORDEAUX, breakLine: true } },
     { text: "FY2029に連結EBITDA率10%超", options: { bullet: true, breakLine: true } },
-    { text: "FY2029に営業利益率5%超", options: { bullet: true, breakLine: true } },
-    { text: "FY2031はEBITDA率12.6%・営業利益率7.7%", options: { bullet: true, breakLine: true } },
-    { text: "成熟単店はEBITDA率15.0%・営業利益率10.1%", options: { bullet: true } },
+    { text: "FY2031はEBITDA率12.6%・営業利益率8.0%", options: { bullet: true, breakLine: true } },
+    { text: "成熟単店はEBITDA率15.0%・営業利益率12.4%", options: { bullet: true } },
   ], { x: 10.12, y: 1.88, w: 2.46, h: 1.86, fontSize: 9.5, color: INK, fontFace: "Calibri",
        isTextBox: true, margin: 0, paraSpaceAfter: 5, lineSpacingMultiple: 1.05 });
 
@@ -164,7 +165,7 @@ function tRow(label, vals, o = {}) {
     fill: { color: TINT }, line: { color: TINT }, rectRadius: 0.06, shadow: { type: "none" } });
   s.addText("5年累計", { x: 10.12, y: 4.12, w: 2.5, h: 0.28, fontSize: 11.5, bold: true,
     color: BORDEAUX, fontFace: "Cambria", isTextBox: true, margin: 0 });
-  [["売上高", "9,000.6"], ["連結EBITDA", "1,055.7"], ["営業利益", "602.4"]].forEach((d, i) => {
+  [["売上高", "9,000.6"], ["連結EBITDA", "1,055.7"], ["営業利益", "652.4"]].forEach((d, i) => {
     s.addText(d[0], { x: 10.12, y: 4.5 + i * 0.72, w: 2.46, h: 0.22, fontSize: 9,
       color: MUTED, fontFace: "Calibri", isTextBox: true, margin: 0 });
     s.addText(d[1] + " 百万円", { x: 10.12, y: 4.7 + i * 0.72, w: 2.46, h: 0.4, fontSize: 17,
@@ -182,77 +183,82 @@ module.exports = { pres, THEME, pptxgen, BORDEAUX, GOLD, INK, MUTED, TINT, LINE,
 {
   const s = pres.addSlide({ masterName: "CONTENT" });
   s.addText("投資回収と資金計画", { placeholder: "title" });
-  s.addText("分割払いスキーム活用により、1号店の開業時現金支出を2.97億円 → 1.58億円に圧縮", { placeholder: "sub" });
+  s.addText("内装1億円の家主負担と、内装・保証金の分割払い（賃貸借契約記載）により、1号店の開業時現金支出は1.58億円", { placeholder: "sub" });
 
   const inv = [
     ["契約金", "10.0", "10.0", "5.0"],
     ["事業費（設計・内装施工・OSE/FF&E）", "194.3", "194.3", "194.3"],
+    ["　うち 内装 家主負担（B工事）", "▲100.0", "—", "—"],
     ["開業準備金（広告・採用等）", "4.0", "4.0", "4.0"],
     ["保証金（非償却・返還対象）", "39.0", "39.0", "39.0"],
     ["ワイン・美術品在庫（非償却）", "50.0", "10.0", "10.0"],
   ];
   const r1 = [tHead(["初期投資（1店あたり・百万円）", "1号店", "2〜3号店", "4号店〜"], { fs: 9.5 })];
-  inv.forEach((d) => r1.push(tRow(d[0], d.slice(1), { fs: 9.5 })));
-  r1.push(tRow("初期投資 合計", ["297.3", "257.3", "252.3"], { fs: 9.5, hl: true }));
-  r1.push(tRow("分割対象額（内装100＋保証金38.9）", ["138.9", "138.9", "138.9"], { fs: 9.5 }));
-  r1.push(tRow("開業時 現金支出", ["158.4", "118.4", "113.4"], { fs: 9.5, hl: true }));
-  s.addTable(r1, { x: 0.55, y: 1.42, w: 6.35, colW: [3.05, 1.1, 1.1, 1.1], rowH: 0.3,
+  inv.forEach((d) => r1.push(tRow(d[0], d.slice(1), { fs: 9.5, sub: d[0].indexOf("家主") >= 0 })));
+  r1.push(tRow("初期投資 合計（自社負担）", ["197.3", "257.3", "252.3"], { fs: 9.5, hl: true }));
+  r1.push(tRow("分割対象額（内装＋保証金）", ["39.0", "139.0", "139.0"], { fs: 9.5 }));
+  r1.push(tRow("開業時 現金支出", ["158.3", "118.3", "113.3"], { fs: 9.5, hl: true }));
+  s.addTable(r1, { x: 0.55, y: 1.42, w: 6.35, colW: [3.05, 1.1, 1.1, 1.1], rowH: 0.288,
     border: { type: "solid", color: LINE, pt: 0.5 }, autoPage: false });
 
   const cf = [
     ["EBITDA", "—", "46.1", "56.3", "63.4", "63.4", "63.4"],
-    ["開業時 現金支出", "▲158.4", "—", "—", "—", "—", "—"],
-    ["分割弁済", "—", "▲15.6", "▲15.6", "▲15.6", "▲15.6", "▲15.6"],
-    ["単店FCF", "▲158.4", "30.5", "40.7", "47.8", "47.8", "47.8"],
+    ["開業時 現金支出", "▲158.3", "—", "—", "—", "—", "—"],
+    ["分割弁済（保証金）", "—", "▲5.6", "▲5.6", "▲5.6", "▲5.6", "▲5.6"],
+    ["単店FCF", "▲158.3", "40.5", "50.7", "57.9", "57.9", "57.9"],
   ];
   const r2 = [tHead(["1号店CF（百万円）", "開業時", "1年目", "2年目", "3年目", "4年目", "5年目"], { fs: 9 })];
   cf.forEach((d) => r2.push(tRow(d[0], d.slice(1), { fs: 9, sub: d[0] === "単店FCF" })));
-  r2.push(tRow("累計FCF", ["▲158.4", "▲127.9", "▲87.2", "▲39.3", "8.5", "56.4"], { fs: 9, hl: true }));
-  s.addTable(r2, { x: 0.55, y: 4.22, w: 6.35, colW: [1.7, 0.775, 0.775, 0.775, 0.775, 0.775, 0.775],
-    rowH: 0.275, border: { type: "solid", color: LINE, pt: 0.5 }, autoPage: false });
+  r2.push(tRow("累計FCF", ["▲158.3", "▲117.7", "▲67.0", "▲9.1", "48.8", "106.6"], { fs: 9, hl: true }));
+  s.addTable(r2, { x: 0.55, y: 4.44, w: 6.35, colW: [1.7, 0.775, 0.775, 0.775, 0.775, 0.775, 0.775],
+    rowH: 0.258, border: { type: "solid", color: LINE, pt: 0.5 }, autoPage: false });
 
   s.addShape(pres.ShapeType.roundRect, { x: 0.55, y: 6.0, w: 6.35, h: 0.5,
     fill: { color: TINT }, line: { color: TINT }, rectRadius: 0.06, shadow: { type: "none" } });
   s.addText([
     { text: "開業4年目に累計FCFが黒字転換", options: { bold: true, color: GREEN } },
-    { text: "　／　投資回収 約3.8年　／　定常期FCF 47.8百万円", options: { color: INK } },
+    { text: "　／　投資回収 約3.2年　／　定常期FCF 57.9百万円", options: { color: INK } },
   ], { x: 0.78, y: 6.08, w: 5.95, h: 0.34, fontSize: 10, fontFace: "Calibri",
        isTextBox: true, margin: 0, valign: "middle" });
 
   const r3 = [tHead(["連結CF（百万円）", "FY2027", "FY2028", "FY2029", "FY2030", "FY2031"], { fs: 8.5 })];
-  [["投資キャッシュアウト", ["▲174.0", "▲271.8", "▲293.0", "▲324.2", "▲355.4"]],
+  [["投資キャッシュアウト", ["▲163.8", "▲261.5", "▲282.7", "▲313.8", "▲345.0"]],
    ["連結EBITDA", ["31.1", "85.9", "193.7", "312.6", "432.5"]],
-   ["法人税等（推計）", ["▲3.1", "▲11.7", "▲31.7", "▲55.2", "▲79.0"]],
-   ["簡易フリーCF", ["▲145.9", "▲197.6", "▲131.1", "▲66.8", "▲1.9"]],
+   ["法人税等（推計）", ["▲6.1", "▲14.7", "▲34.7", "▲58.2", "▲82.0"]],
+   ["簡易フリーCF", ["▲138.8", "▲190.3", "▲123.7", "▲59.5", "5.5"]],
   ].forEach(([l, v]) => r3.push(tRow(l, v, { fs: 9 })));
-  r3.push(tRow("累計フリーCF", ["▲145.9", "▲343.5", "▲474.6", "▲541.5", "▲543.4"], { fs: 9, hl: true }));
+  r3.push(tRow("累計フリーCF", ["▲138.8", "▲329.1", "▲452.9", "▲512.4", "▲506.9"], { fs: 9, hl: true }));
   s.addTable(r3, { x: 7.25, y: 1.42, w: 5.53, colW: [1.53, 0.8, 0.8, 0.8, 0.8, 0.8],
     rowH: 0.3, border: { type: "solid", color: LINE, pt: 0.5 }, autoPage: false });
 
-  s.addShape(pres.ShapeType.roundRect, { x: 7.25, y: 3.42, w: 5.53, h: 3.16,
+  s.addShape(pres.ShapeType.roundRect, { x: 7.25, y: 3.38, w: 5.53, h: 3.24,
     fill: { color: TINT }, line: { color: TINT }, rectRadius: 0.06, shadow: { type: "none" } });
   s.addText("必要資金と調達", { x: 7.5, y: 3.56, w: 5.05, h: 0.3, fontSize: 12, bold: true,
     color: BORDEAUX, fontFace: "Cambria", isTextBox: true, margin: 0 });
-  const fund = [["最大資金需要（税引後・5年）", "543.4", INK],
-                ["既存調達額（エクイティ＋デット）", "200.0", INK],
-                ["第三者割当①（2026年10月）", "150.0", INK],
-                ["調達額 計", "350.0", INK],
-                ["過不足", "▲193.4", RED]];
+  const fund = [["最大資金需要（税引後・5年）", "512.4", INK, 0],
+                ["既存調達額（従前）", "200.0", INK, 0],
+                ["今回ラウンド アピシウス投資家（調達済）", "70.0", GREEN, 1],
+                ["今回ラウンド エニーカラー創業者（調達済）", "20.0", GREEN, 1],
+                ["今回ラウンド 募集中", "90.0", INK, 1],
+                ["調達額 計", "380.0", INK, 0],
+                ["過不足", "▲132.4", RED, 0]];
   fund.forEach((d, i) => {
-    const y = 3.96 + i * 0.44;
-    s.addText(d[0], { x: 7.5, y, w: 3.5, h: 0.32, fontSize: 10, color: i === 4 ? INK : MUTED,
-      bold: i >= 3, fontFace: "Calibri", isTextBox: true, margin: 0, valign: "middle" });
-    s.addText(d[1], { x: 11.0, y, w: 1.55, h: 0.32, fontSize: i === 4 ? 14 : 11.5, bold: i >= 3,
-      color: d[2], fontFace: "Cambria", isTextBox: true, margin: 0, align: "right", valign: "middle" });
+    const y = 3.84 + i * 0.335;
+    s.addText(d[0], { x: d[3] ? 7.66 : 7.5, y, w: d[3] ? 3.34 : 3.5, h: 0.3,
+      fontSize: d[3] ? 8.8 : 10, color: i === 6 ? INK : MUTED,
+      bold: i >= 5, fontFace: "Calibri", isTextBox: true, margin: 0, valign: "middle" });
+    s.addText(d[1], { x: 11.0, y, w: 1.55, h: 0.3, fontSize: i === 6 ? 14 : (d[3] ? 10 : 11.5),
+      bold: i >= 5, color: d[2], fontFace: "Cambria", isTextBox: true, margin: 0,
+      align: "right", valign: "middle" });
   });
-  s.addText("※ p11記載の調達1.8億円で確定する場合、不足は▲163.4百万円。デット元本返済・分割払い金利は未考慮。",
-    { x: 7.5, y: 6.16, w: 5.05, h: 0.34, fontSize: 8.5, color: MUTED, fontFace: "Calibri",
+  s.addText("※ 今回ラウンドは総額1.8億円。うち9,000万円はクローズ済。デット元本返済・分割払い金利は未考慮。",
+    { x: 7.5, y: 6.22, w: 5.05, h: 0.36, fontSize: 8.5, color: MUTED, fontFace: "Calibri",
       isTextBox: true, margin: 0 });
 
-  s.addText("※ 簡易FCF＝連結EBITDA－法人税等－投資キャッシュアウト。運転資本増減・借入返済は含まない。保証金（9店で3.5億円）は退去時返還対象。",
+  s.addText("※ 内装（2号店以降100百万円・120回）と保証金（39百万円・84回）はいずれも賃貸借契約どおり分割払いでCFに反映。保証金は退去時返還対象。",
     { x: 0.55, y: 6.72, w: 12.2, h: 0.26, fontSize: 9, color: MUTED, fontFace: "Calibri",
       isTextBox: true, margin: 0 });
-  s.addNotes("1号店は開業4年目に累計FCFが黒字転換、回収約3.8年。9店舗展開では5年で最大5.43億円の資金需要があり、既存2億＋今回1.5億の3.5億に対し1.93億円の不足。追加調達またはデットでの手当てが必要。");
+  s.addNotes("六本木は内装1億円を家主負担。自社負担の初期投資は1.97億円に圧縮され、1号店は開業4年目に黒字転換、回収約3.2年。9店舗展開の最大資金需要5.12億円に対し調達3.8億で、1.32億円の不足。");
 }
 
 /* ───────── Slide 4 : 感応度分析 ───────── */
@@ -267,11 +273,11 @@ module.exports = { pres, THEME, pptxgen, BORDEAUX, GOLD, INK, MUTED, TINT, LINE,
                  ["75%", "372.7", "398.0", "423.4", "448.7", "474.0"],
                  ["80%", "391.1", "418.1", "445.1", "472.1", "499.1"],
                  ["85%", "409.5", "438.2", "466.9", "495.6", "524.3"]];
-  const OPM  = [["65%", "5.8%", "6.2%", "6.6%", "7.0%", "7.3%"],
-                ["70%", "6.2%", "6.6%", "7.0%", "7.3%", "7.6%"],
-                ["75%", "6.5%", "6.9%", "7.3%", "7.6%", "7.9%"],
-                ["80%", "6.8%", "7.2%", "7.5%", "7.9%", "8.1%"],
-                ["85%", "7.1%", "7.5%", "7.8%", "8.1%", "8.4%"]];
+  const OPM  = [["65%", "8.8%", "9.0%", "9.2%", "9.4%", "9.6%"],
+                ["70%", "9.0%", "9.2%", "9.4%", "9.6%", "9.8%"],
+                ["75%", "9.2%", "9.4%", "9.6%", "9.8%", "10.0%"],
+                ["80%", "9.4%", "9.6%", "9.8%", "10.0%", "10.1%"],
+                ["85%", "9.5%", "9.7%", "9.9%", "10.1%", "10.3%"]];
 
   function grid(data, x, y, title) {
     const rows = [tHead([title].concat(TURNS), { fs: 9.5 })];
@@ -299,9 +305,9 @@ module.exports = { pres, THEME, pptxgen, BORDEAUX, GOLD, INK, MUTED, TINT, LINE,
     color: MUTED, fontFace: "Calibri", isTextBox: true, margin: 0 });
 
   const notes = [
-    ["下振れ耐性", "最も保守的な前提（席効率65%・回転0.70）でも年商3.36億円・営業利益率5.8%を確保し、黒字を維持"],
-    ["上振れ余地", "席効率85%・回転1.10では年商5.24億円・営業利益率8.4%。テラスの通年稼働が進めばさらに上振れ"],
-    ["固定費の効き", "地代家賃と減価償却は売上に連動しないため、売上が伸びるほど利益率は加速的に改善"],
+    ["下振れ耐性", "最も保守的な前提（席効率65%・回転0.70）でも年商3.36億円・営業利益率8.8%を確保"],
+    ["上振れ余地", "席効率85%・回転1.10では年商5.24億円・営業利益率10.3%。テラスの通年稼働が進めばさらに上振れ"],
+    ["固定費の効き", "内装の家主負担で減価償却が年20.8→10.8百万円に半減。固定費が軽く、下振れ耐性が高い"],
   ];
   s.addShape(pres.ShapeType.roundRect, { x: 0.55, y: 4.16, w: 12.23, h: 2.3,
     fill: { color: TINT }, line: { color: TINT }, rectRadius: 0.06, shadow: { type: "none" } });
@@ -325,7 +331,7 @@ module.exports = { pres, THEME, pptxgen, BORDEAUX, GOLD, INK, MUTED, TINT, LINE,
 }
 
 (async () => {
-  const out = "/home/user/wine-auction/事業計画/BRASSERIE_Thierry_Marx_事業収支_差替スライド_20261016.pptx";
+  const out = "/home/user/wine-auction/事業計画/BRASSERIE_Thierry_Marx_事業収支_差替スライド_20261016_v2.pptx";
   await pres.writeFile({ fileName: out });
   await applyTheme(out, THEME);
   console.log("saved:", out);
