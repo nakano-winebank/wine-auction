@@ -52,15 +52,24 @@ def edit(para, target, new=None, after=False):
             return
     raise AssertionError(f"文字列なし: {target} / {para}")
 
-def para_like(model_needle, text):
-    """model_needle を含む段落と同じ段落書式・文字書式で、挿入扱いの新段落 XML を作る。"""
+def para_like(model_needle, text, num=None):
+    """model_needle を含む段落と同じ段落書式・文字書式で、挿入扱いの新段落 XML を作る。
+    num を渡すと「番号＋タブ＋本文」の形にする。"""
     a, b = find(model_needle); p = x[a:b]
     ppr = re.search(r'<w:pPr>(.*?)</w:pPr>', p, re.S); ppr = ppr.group(1) if ppr else ""
-    ppr = re.sub(r'<w:rPr>.*?</w:rPr>', '', ppr, flags=re.S)
+    ppr = re.sub(r'<w:rPr>.*?</w:rPr>|<w:rPr/>', '', ppr, flags=re.S)
     rpr = re.search(r'<w:r(?: [^>]*)?>(<w:rPr>.*?</w:rPr>)', p, re.S); rpr = rpr.group(1) if rpr else ""
     mark = f'<w:rPr>{TAG("ins")[:-1]}/></w:rPr>'
     return (f'<w:p><w:pPr>{ppr}{mark}</w:pPr>{TAG("ins")}<w:r>{rpr}'
-            f'<w:t xml:space="preserve">{esc(text)}</w:t></w:r></w:ins></w:p>')
+            + (f'<w:t xml:space="preserve">{esc(num)}</w:t><w:tab/>' if num is not None else '')
+            + f'<w:t xml:space="preserve">{esc(text)}</w:t></w:r></w:ins></w:p>')
+
+def tidy():
+    """描画キャッシュの改ページ印を除き、同一 run 内で分断された w:t を結合する（内容は不変）。"""
+    global x
+    x = x.replace('<w:lastRenderedPageBreak/>', '')
+    x = re.sub(r'</w:t><w:t(?: xml:space="preserve")?>', '', x)
+    x = x.replace('<w:t>', '<w:t xml:space="preserve">')
 
 def insert_after(needle, xml):
     global x
