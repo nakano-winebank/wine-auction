@@ -12,17 +12,27 @@
   ・段階クローズ：ファーストクローズ5億円 → 年度内のセカンドクローズ10億円
 
 配分がプロラタであるため、投資家利回りは「SPC税前利益 ÷ 総額」に等しく、出資比率によらない。
+
+2026年10月（高山様10/1付ご指摘への対応）で次を改めた。
+  ・αの算定基礎を定常年間から5年通算の年平均20%へ（回転12ヶ月）。α＝24.5%
+  ・自社EC・オークション（第三者販路を含む）の手数料を決済込み13%（楽天市場での当社実績12〜13%）とする
+  ・AUPに銀行残高確認・関連当事者取引の確認・棚卸立会を追加し、年150万円に見直す
+  ・5年通算は、満期に残る在庫を清算期間で時価の10%引きで売却したものとして計上する
+    （従前は満期の残存在庫を簿価償還＝値上がり益ゼロとしており、15ヶ月と18ヶ月で逆転が生じていた）
 """
 import json
 import model as M
 from model import unit, steady, pct
 
-FIXED_BASE = 2_000_000 + 500_000 + 500_000   # 維持費200万＋AUP50万＋予備費50万
+FIXED_BASE = 2_000_000 + 1_500_000 + 500_000   # 維持費200万＋AUP150万（追加手続込み）＋予備費50万
+LEGACY_FIXED = 2_000_000 + 500_000 + 500_000  # 前回資料の固定費（AUP50万）
 
 WB_RATIO  = 0.60      # WineBank現物出資の比率
 INV_RATIO = 0.40      # 投資家出資の比率
 MGMT_RATE = 0.02      # 管理報酬（総額に対する年率）
-ALPHA     = 0.2083    # 時価からの控除率。SPC簿価 ＝ 時価 ×（1−α）
+ALPHA     = 0.245     # 時価からの控除率。SPC簿価 ＝ 時価 ×（1−α）。5年通算20%（回転12ヶ月）を基礎に設定
+RATE_B2C_Y = 0.155    # B2C変動販売費：販路手数料13%（決済込み）＋出庫・梱包・クール便2.5%
+RESID_HAIRCUT = 0.10  # 満期の残存在庫を清算期間で売却する際の時価からの値引き
 TARGET    = 0.20      # 先方の投資基準
 
 CLOSES = [("ファーストクローズ", 5e8), ("セカンドクローズ", 10e8)]
@@ -30,7 +40,12 @@ HOLDS  = (9, 12, 15, 18)
 APPR   = [("positive", 0.10, "ポジティブ"), ("neutral", None, "ニュートラル"),
           ("negative", 0.0, "ネガティブ")]
 
-BASE = M.SCENARIOS["ニュートラル"]          # 仕入・売却チャネルの前提は主線で固定
+def SC(name):
+    """model.py のシナリオに山本案の販路手数料を載せる（model.py の既定値は倉持案と共通のため変えない）。"""
+    return dict(M.SCENARIOS[name], rate_b2c=RATE_B2C_Y)
+
+
+BASE = SC("ニュートラル")                    # 仕入・売却チャネルの前提は主線で固定
 JIKA = unit(**BASE)["price"]                # 時価＝取得時点の加重平均売値
 BOOK = JIKA * (1 - ALPHA)                   # SPC簿価
 
@@ -69,15 +84,56 @@ def split(total, hold, rate=None, util=0.95, uu=None, book=None):
     )
 
 
-def avg5(total, hold, rate=None):
-    """5年通算の年平均利回り（投資家出資額ベース・年1回分配）。"""
+def residual_gain(total, hold, u, alpha, rate=None, haircut=RESID_HAIRCUT):
+    """満期に売却が終わっていない在庫（最終回転分）を、清算期間で時価から haircut 引きで売却したときの益。
+    model.monthly と同じ日次の仕入・売却スケジュールを再現し、満期を越える売却分だけを拾う。"""
+    r = M.APPRECIATION if rate is None else rate
+    D = int(round(M.TERM_YEARS * 12 * M.DAYS_PER_MONTH))
+    hd = max(1, int(round(hold * M.DAYS_PER_MONTH)))
+    rd = max(1, int(round(M.RAMP_MONTHS * M.DAYS_PER_MONTH)))
+    daily, pend, gain = total * M.UTIL / rd, {}, 0.0
+    for t in range(1, D + 1):
+        buy = (daily if t <= rd else 0.0) + pend.pop(t, 0.0)
+        if buy <= 0: continue
+        if t + hd <= D:
+            pend[t + hd] = pend.get(t + hd, 0.0) + buy
+        else:
+            held = (D - t) / M.DAYS_PER_MONTH
+            price = buy / (1 - alpha) * (1 + r) ** (held / 12)      # 簿価 → 時価 → 保有期間分の値上がり
+            gain += price * (1 - u["var_rate"]) * (1 - haircut) - buy
+    return gain
+
+
+def avg5(total, hold, rate=None, alpha=None):
+    """5年通算の年平均利回り（投資家出資額ベース・年1回分配）。満期の残存在庫は清算期間で売却したものとする。"""
+    a = ALPHA if alpha is None else alpha
+    u = spc_unit(book=JIKA * (1 - a))
     M.SPC_FIXED_TOTAL = fixed_for(total)
-    m = M.monthly(U, hold, capital=total, rate=rate,
+    m = M.monthly(u, hold, capital=total, rate=rate,
                   share=INV_RATIO, period_days=360)
+    dist = m["total_distributed"] + residual_gain(total, hold, u, a, rate) * INV_RATIO
+    return dist / (total * INV_RATIO) / 5
+
+
+def avg5_old(total, hold):
+    """従前の計算（満期の残存在庫を簿価償還）。p11の逆転の説明用。"""
+    M.SPC_FIXED_TOTAL = fixed_for(total)
+    m = M.monthly(U, hold, capital=total, share=INV_RATIO, period_days=360)
     return m["total_distributed"] / (total * INV_RATIO) / 5
 
 
 def breakeven(total, rate=None, target=TARGET):
+    """5年通算の年平均が目標を割る回転期間。"""
+    lo, hi = 3.0, 30.0
+    for _ in range(40):
+        mid = (lo + hi) / 2
+        if avg5(total, mid, rate) > target: lo = mid
+        else: hi = mid
+    return (lo + hi) / 2
+
+
+def breakeven_steady(total, rate=None, target=TARGET):
+    """定常年間利回りが目標を割る回転期間（参考）。"""
     lo, hi = 3.0, 60.0
     for _ in range(90):
         mid = (lo + hi) / 2
@@ -86,8 +142,18 @@ def breakeven(total, rate=None, target=TARGET):
     return (lo + hi) / 2
 
 
+def solve_alpha5(total, target=TARGET):
+    """回転12ヶ月の5年通算年平均が目標ちょうどになるα。"""
+    lo, hi = 0.0, 0.5
+    for _ in range(40):
+        mid = (lo + hi) / 2
+        if avg5(total, 12, alpha=mid) > target: hi = mid
+        else: lo = mid
+    return (lo + hi) / 2
+
+
 def solve_alpha(total, target=TARGET):
-    """投資家利回りが目標ちょうどになるα。利回りはαについて増加する。"""
+    """定常年間の投資家利回りが目標ちょうどになるα（参考）。利回りはαについて増加する。"""
     lo, hi = 0.0, 0.5
     for _ in range(90):
         mid = (lo + hi) / 2
@@ -99,8 +165,8 @@ def solve_alpha(total, target=TARGET):
 # ───────────────────────────── 旧スキーム（原価卸＋折半）＝ 変更点資料の対照用
 def legacy(hold=12, rate=None):
     """前回資料。SPC簿価50.50・投資家帰属分（40%）を折半・管理報酬2%。"""
-    M.SPC_FIXED_TOTAL = fixed_for(5e8)
-    u = unit(**BASE)                           # markup は既定の1%
+    M.SPC_FIXED_TOTAL = LEGACY_FIXED + 5e8 * MGMT_RATE
+    u = unit(**M.SCENARIOS["ニュートラル"])      # 前回の前提。markup は既定の1%
     r = steady(u, hold, capital=5e8, rate=rate)
     pretax = r["pretax"]
     attr = pretax * INV_RATIO
@@ -114,8 +180,8 @@ def legacy(hold=12, rate=None):
 
 def legacy_avg5(hold=12):
     """前回スキームの5年通算年平均利回り（投資家出資額ベース）。"""
-    M.SPC_FIXED_TOTAL = fixed_for(5e8)
-    m = M.monthly(unit(**BASE), hold, capital=5e8,
+    M.SPC_FIXED_TOTAL = LEGACY_FIXED + 5e8 * MGMT_RATE
+    m = M.monthly(unit(**M.SCENARIOS["ニュートラル"]), hold, capital=5e8,
                   share=INV_RATIO * 0.5, period_days=360)
     return m["total_distributed"] / (5e8 * INV_RATIO) / 5
 
@@ -139,7 +205,8 @@ if __name__ == "__main__":
     print(f"  SPC簿価 ＝ 時価 ×（1−α）           定価比 {BOOK:.2f}"
           f"　（市中原価{BASE['mkt_cost']:.2f}に対し ＋{(BOOK/BASE['mkt_cost']-1)*100:.1f}%）")
     print(f"  WineBankの値入れ（簿価比）          {(BOOK-BASE['mkt_cost'])/BOOK*100:.1f}%")
-    print(f"  参考：投資家{TARGET:.0%}ちょうどとなるα  {solve_alpha(5e8):.2%}")
+    print(f"  5年通算{TARGET:.0%}ちょうどとなるα    1st {solve_alpha5(5e8):.2%} ／ 2nd {solve_alpha5(10e8):.2%}")
+    print(f"  参考：定常年間{TARGET:.0%}ちょうどとなるα  {solve_alpha(5e8):.2%}")
 
     print()
     print("=" * 104)
@@ -197,16 +264,16 @@ if __name__ == "__main__":
             ("在庫回転 12 → 18ヶ月",      split(total, 18)["inv_yld"]),
             ("ワイン価格上昇 6% → 0%",    split(total, 12, rate=0.0)["inv_yld"]),
             ("稼働率 95% → 85%",          split(total, 12, util=0.85)["inv_yld"]),
-            ("B2Cのモール手数料 5.5→8.0%",
-             split(total, 12, uu=spc_unit(sc=dict(BASE, rate_b2c=0.137)))["inv_yld"]),
+            ("販路手数料 13→15%（決済込み）",
+             split(total, 12, uu=spc_unit(sc=dict(BASE, rate_b2c=RATE_B2C_Y + 0.02)))["inv_yld"]),
             ("ワイン価格上昇 6% → 10%",   split(total, 12, rate=0.10)["inv_yld"]),
-            ("αを1pt下げる（20.8→19.8%）",
+            (f"αを1pt下げる（{ALPHA:.1%}→{ALPHA-0.01:.1%}）",
              split(total, 12, book=JIKA*(1-ALPHA+0.01))["inv_yld"]),
             ("【遮断】市中仕入 50 → 45",
              split(total, 12, uu=spc_unit(sc=dict(BASE, mkt_cost=45)))["inv_yld"]),
             ("【遮断】売値 ▲5%",
-             split(total, 12, uu=spc_unit(book=unit(**M.SCENARIOS["ネガティブ"])["price"]*(1-ALPHA),
-                                          sc=M.SCENARIOS["ネガティブ"]))["inv_yld"]),
+             split(total, 12, uu=spc_unit(book=unit(**SC("ネガティブ"))["price"]*(1-ALPHA),
+                                          sc=SC("ネガティブ")))["inv_yld"]),
         ]
         for n, v in cases:
             print(f"  {n:28s} {pct(v):>7s}  ({(v-b)*100:+.1f}pt)")
@@ -251,7 +318,8 @@ if __name__ == "__main__":
                         wb_equity=d["wb_equity"], transfer=d["transfer"],
                         wb_total=d["wb_total"], inv_yld=d["inv_yld"],
                         gross=d["gross"], selling=d["selling"], cost=d["cost"],
-                        avg5=avg5(total, h), appr0=split(total, h, 0.0)["inv_yld"],
+                        avg5=avg5(total, h), avg5_old=avg5_old(total, h),
+                        appr0=split(total, h, 0.0)["inv_yld"], appr0_avg5=avg5(total, h, 0.0),
                         k=M.appr(h))
         return dict(
             total=total, wb_capital=total*WB_RATIO, inv_capital=total*INV_RATIO,
@@ -261,7 +329,8 @@ if __name__ == "__main__":
                         sales=split(total, h, rate)["sales"],
                         pretax=split(total, h, rate)["pretax"],
                         inv=split(total, h, rate)["inv"],
-                        inv_yld=split(total, h, rate)["inv_yld"]) for h in HOLDS}
+                        inv_yld=split(total, h, rate)["inv_yld"],
+                        avg5=avg5(total, h, rate)) for h in HOLDS}
                        for key, rate, _ in APPR},
             sensitivity=dict(
                 base=x12["inv_yld"],
@@ -269,15 +338,17 @@ if __name__ == "__main__":
                 appr0=split(total, 12, rate=0.0)["inv_yld"],
                 appr10=split(total, 12, rate=0.10)["inv_yld"],
                 util85=split(total, 12, util=0.85)["inv_yld"],
-                mall8=split(total, 12, uu=spc_unit(sc=dict(BASE, rate_b2c=0.137)))["inv_yld"],
+                mall8=split(total, 12, uu=spc_unit(sc=dict(BASE, rate_b2c=RATE_B2C_Y + 0.02)))["inv_yld"],
                 alpha1=split(total, 12, book=JIKA*(1-ALPHA+0.01))["inv_yld"],
                 cost45=split(total, 12, uu=spc_unit(sc=dict(BASE, mkt_cost=45)))["inv_yld"],
                 price5=split(total, 12,
-                             uu=spc_unit(book=unit(**M.SCENARIOS["ネガティブ"])["price"]*(1-ALPHA),
-                                         sc=M.SCENARIOS["ネガティブ"]))["inv_yld"],
+                             uu=spc_unit(book=unit(**SC("ネガティブ"))["price"]*(1-ALPHA),
+                                         sc=SC("ネガティブ")))["inv_yld"],
             ),
             breakeven=dict(neutral=breakeven(total), appr0=breakeven(total, 0.0),
                            appr10=breakeven(total, 0.10)),
+            breakeven_steady=dict(neutral=breakeven_steady(total), appr0=breakeven_steady(total, 0.0)),
+            alpha5=solve_alpha5(total),
             cost_detail={k: v for k, v in x12["cost_detail"].items()},
         )
 
@@ -291,7 +362,8 @@ if __name__ == "__main__":
                     mkt_cost=BASE["mkt_cost"], util=M.UTIL,
                     appreciation=M.APPRECIATION, term_years=M.TERM_YEARS,
                     ramp_months=M.RAMP_MONTHS, fixed_base=FIXED_BASE,
-                    transfer_rate=(BOOK-BASE["mkt_cost"])/BOOK),
+                    transfer_rate=(BOOK-BASE["mkt_cost"])/BOOK,
+                    rate_b2c=RATE_B2C_Y, resid_haircut=RESID_HAIRCUT),
         unit={k: v for k, v in U.items()}, unit_held=held,
         first=close_block(5e8), second=close_block(10e8),
         legacy=dict(**{k: v for k, v in legacy().items()},
