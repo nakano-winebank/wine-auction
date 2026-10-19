@@ -1,6 +1,6 @@
 """投資家優先回収（キャッシュ・スイープ）の試算。販売不振時に売却代金をまず投資家の元本＋年10%に充て、
 WineBankの現物出資分は劣後させた場合の回収期間と必要売上を求める。"""
-import sys, os; sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import sys, os, json; sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import model as M, structure as S
 U = S.U; VAR = U["var_rate"]; RATIO = S.JIKA / S.BOOK      # 時価/簿価
 STOR = M.STORAGE_PER_LOT_YEAR / U["lot_cost"]             # 簿価1円あたり年保管料
@@ -28,19 +28,39 @@ def solve_S(total, months, **kw):
         if r["done"] is not None and r["done"] <= months: hi=mid
         else: lo=mid
     return hi
-for total in (5e8, 10e8):
-    r = sweep(total, 3e8)
-    print(f"総額{total/1e8:.0f}億 売上3億/年: 投資家元本+10%回収完了 {r['done']}ヶ月 支払{r['paid']/1e6:.0f}百万 残在庫簿価{r.get('left_book',0)/1e6:.0f}百万 (売却手取{r.get('left_val',0)/1e6:.0f}百万) WB出資{total*0.6/1e6:.0f}")
-    for mo in (12, 18, 24):
-        s=solve_S(total, mo); r=sweep(total,s)
-        print(f"   {mo}ヶ月で完済に必要な年間売上 {s/1e8:.2f}億（{mo}ヶ月累計 {s*mo/12/1e8:.2f}億） 支払{r['paid']/1e6:.0f}百万 WB残(手取){(r['left_val']+r['left_cash'])/1e6:.0f}百万")
-    s=solve_S(total,24,mgmt_on=False); print(f"   [管理報酬劣後時] 24ヶ月完済の年売上 {s/1e8:.2f}億")
-# 通常（プロラタ）で年3億しか売れない場合
-for total in (5e8,10e8):
-    lo,hi=12,120
-    for _ in range(50):
-        mid=(lo+hi)/2
-        if S.split(total,mid)["sales"]>3e8: lo=mid
-        else: hi=mid
-    h=(lo+hi)/2
-    print(f"総額{total/1e8:.0f}億: 年売上3億＝回転{h:.0f}ヶ月相当 定常{S.split(total,h)['inv_yld']:.1%} 5年{S.avg5(total,min(h,59)):.1%}")
+
+TRIGGER = 0.6     # 優先回収事由：直近12ヶ月の売上 ＜ 総額 × 0.6（1st 3億円／2nd 6億円）
+
+
+def true_up(total, S_year=3e8, fire=1.0):
+    """優先回収の完了後、残在庫を時価×fire で売却して最終精算したときの投資家の過不足（＋は追加分配、−は精算で返す額）。"""
+    r = sweep(total, S_year)
+    net = r["left_book"] * RATIO * (1 + M.APPRECIATION) ** (r["done"] / 12) * (1 - VAR) * fire + r["left_cash"]
+    T = r["paid"] + net
+    return dict(paid=r["paid"], rest=net, total=T, prorata=T * S.INV_RATIO, diff=T * S.INV_RATIO - r["paid"])
+
+
+def export():
+    out = dict(trigger=TRIGGER, pref=0.10, closes={})
+    for key, total in (("first", 5e8), ("second", 10e8)):
+        r3 = sweep(total, 3e8)
+        out["closes"][key] = dict(
+            total=total, inv=total * S.INV_RATIO, trigger_sales=total * TRIGGER,
+            s3=dict(months=r3["done"], paid=r3["paid"], left_val=r3["left_val"] + r3["left_cash"]),
+            need={str(m): solve_S(total, m) for m in (12, 18, 24)},
+            prorata3=None,
+            trueup={k: true_up(total, 3e8, f) for k, f in (("full", 1.0), ("p80", 0.8), ("p50", 0.5))},
+        )
+    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "priority.json"), "w", encoding="utf-8") as fp:
+        json.dump(out, fp, ensure_ascii=False, indent=1)
+    return out
+
+
+if __name__ == "__main__":
+    o = export()
+    for k, c in o["closes"].items():
+        print(f"{k}: 売上3億/年 → 投資家 元本＋年10%の回収 {c['s3']['months']}ヶ月（{c['s3']['paid']/1e6:.0f}百万）")
+        for m, v in c["need"].items():
+            print(f"   {m}ヶ月で回収に必要な年間売上 {v/1e8:.2f}億")
+        for n, t in c["trueup"].items():
+            print(f"   最終精算（残在庫 {n}）: 投資家 受取済{t['paid']/1e8:.2f} → プロラタ{t['prorata']/1e8:.2f}（{t['diff']/1e8:+.2f}億）")

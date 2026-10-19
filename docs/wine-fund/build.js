@@ -4,6 +4,7 @@ const fs = require("fs");
 const pptxgen = require("pptxgenjs");
 
 const F = JSON.parse(fs.readFileSync(__dirname + "/figures.json", "utf8"));
+const PR = JSON.parse(fs.readFileSync(__dirname + "/priority.json", "utf8"));   // priority.py が書き出す優先回収の試算
 const PA = F.params;
 const C1 = F.first;                 // ファーストクローズ 5億円
 const C2 = F.second;                // セカンドクローズ 10億円
@@ -999,6 +1000,41 @@ const CHART_BASE = {
   s.addNotes("卸値が時価連動になったことで、仕入リスクは遮断され、価格変動リスクの比重が上がった。");
 }
 
+// ═══════════════════════════════════════════════════════════ 20b 優先回収と最終精算
+{
+  const s = chrome(base(), "PRIORITY RECOVERY", "販売不振時の投資家優先回収と最終精算",
+    "販売が想定を大きく下回った場合、売却代金をまず投資家へ回す。ただし保証ではなく、最終の清算では全期間の損益を出資比率どおりに精算する。");
+  const R1 = PR.closes.first, R2 = PR.closes.second;
+  const sw = (CW - 0.24 * 3) / 4, sy = 1.74, sh = 1.86;
+  const steps = [
+    ["01", "発動", `入庫2年目以降、直近12ヶ月の売上が総額の${Math.round(PR.trigger * 100)}%（1st ${okuN(R1.trigger_sales)}円／2nd ${okuN(R2.trigger_sales)}円）を下回ったら、新たな仕入を止める。`],
+    ["02", "優先回収", `売却代金は費用（管理報酬を含む）を払った後、①投資家に年${Math.round(PR.pref * 100)}% → ②投資家の元本 → ③WineBankの元本 → ④残余を出資比率で分配。`],
+    ["03", "最終精算", "換価の完了後、全期間の損益を出資比率どおりに配分し直す。優先回収で多く受け取った分は相殺または返還（上限は優先回収額）、少ない場合は追加分配。"],
+    ["04", "保証ではない", "WineBankは元本・利回りを保証せず、買取義務も負わない。投資家の損失は出資額が上限。分配の順序と時期を投資家優先にする仕組みである。"],
+  ];
+  steps.forEach((st, i) => {
+    const x = M + (sw + 0.24) * i;
+    card(s, x, sy, sw, sh, { fill: i === 1 ? CARD2 : CARD, line: i === 1 ? GOLD_D : LINE });
+    badge(s, x + 0.22, sy + 0.20, 0.34, st[0]);
+    s.addText(st[1], { x: x + 0.66, y: sy + 0.22, w: sw - 0.88, h: 0.30, margin: 0, valign: "middle", fontFace: SANS, fontSize: 12, bold: true, color: i === 1 ? GOLD_L : IVORY });
+    s.addText(st[2], { x: x + 0.22, y: sy + 0.66, w: sw - 0.44, h: 1.10, margin: 0, fontFace: SANS, fontSize: 9, color: MUTED, lineSpacingMultiple: 1.2 });
+  });
+  const sg = (v) => (v >= 0 ? "＋" : "▲") + Math.abs(v / 1e8).toFixed(2) + "億円";
+  const T1 = R1.trueup, T2 = R2.trueup;
+  const rows = [
+    [th("試算（ワイン価格上昇6%・費用と管理報酬は先払い）"), th(`ファーストクローズ（投資家${okuN(R1.inv)}円）`), th(`セカンドクローズ（投資家${okuN(R2.inv)}円）`)],
+    [td("年3億円しか売れない場合：投資家の元本＋年10%の回収", { align: "left" }), td(`約${R1.s3.months}ヶ月（${oku(R1.s3.paid)}円）`, { color: GOLD_L, bold: true }), td(`約${R2.s3.months}ヶ月（${oku(R2.s3.paid)}円）`, { color: GOLD_L, bold: true })],
+    [td("2年で元本＋年10%を回収するのに必要な年間売上", { align: "left" }), td(oku(R1.need["24"]) + "円"), td(oku(R2.need["24"]) + "円")],
+    [td("最終精算：残在庫を通常の販路で売り切った場合", { align: "left" }), td(sg(T1.full.diff) + "（追加分配）"), td(sg(T2.full.diff) + "（追加分配）")],
+    [td("最終精算：残在庫を時価の8割で清算した場合", { align: "left" }), td(sg(T1.p80.diff)), td(sg(T2.p80.diff))],
+    [td("最終精算：残在庫を時価の5割で清算した場合", { align: "left" }), td(sg(T1.p50.diff) + "（精算で返還）", { color: RED }), td(sg(T2.p50.diff) + "（精算で返還）", { color: RED })],
+  ];
+  table(s, rows, M, 3.84, CW, [5.29, 3.30, 3.30], { rowH: 0.36, fontSize: 9.5 });
+  s.addText("※ 回収期間は優先回収の開始からの月数。年3億円の売上は1stで回転29ヶ月相当（出資比率どおりのままなら年平均 約10%）、2ndで回転71ヶ月相当（同 約7%）にあたる。最終精算の過不足は、優先回収で受け取った額と、全期間の損益を出資比率どおりに配分した場合の受取額との差。満期後の換価が長引く場合、最終精算は最長で運用開始から10年程度となる。", {
+    x: M, y: 6.10, w: CW, h: 0.56, margin: 0, fontFace: SANS, fontSize: 8.5, color: DIM, lineSpacingMultiple: 1.2 });
+  s.addNotes("優先回収は保証ではなく分配の順序。最終はプロラタで精算する。");
+}
+
 // ═══════════════════════════════════════════════════════════ 21 条件
 {
   const s = chrome(base(), "TERMS", "ファンド設計条件（ドラフト）",
@@ -1017,11 +1053,12 @@ const CHART_BASE = {
     [td("運用期間"), td("5年。満期時に在庫を売却清算のうえ元本償還", { align: "left" })],
     [td("中途解約"), td("3年経過後、年度ごとの解約日に申出可（90日前通知）。当初3年間はロックアップ", { align: "left", color: GOLD_L, bold: true })],
     [td("分配"), td("年1回。元本はSPC内に留保し継続運用（複利再投資は行わない）", { align: "left" })],
+    [td("販売不振時"), td(`直近12ヶ月の売上が総額の${Math.round(PR.trigger * 100)}%未満で仕入停止・優先回収（投資家に年${Math.round(PR.pref * 100)}%→投資家元本→WB元本）。最終清算はプロラタで精算`, { align: "left", color: GOLD_L, bold: true })],
   ];
   const right = [
     [th("項目"), th("内容")],
     [td("SPCへの卸値"), td(`時価 ×（1−α）。α＝${pc(PA.alpha)}、時価＝取得時の加重平均売値${f2(PA.jika)} → SPC簿価 ${f2(PA.book)}`, { align: "left", color: GOLD_L, bold: true })],
-    [td("WineBankの報酬"), td("卸値の値入れ（卸した時点で確定）と管理報酬（総額の年2%）の二本のみ", { align: "left", color: GOLD_L, bold: true })],
+    [td("WineBankの報酬"), td("卸値の値入れ（卸した時点で確定）と管理報酬（総額の年2%、半期ごとに1%）の二本のみ", { align: "left", color: GOLD_L, bold: true })],
     [td("資金配分"), td("総額の95%をワイン購入、5%を現金保有", { align: "left" })],
     [td("販売チャネル"), td("酒販店卸（B2B）と自社EC・オークション（B2C）を半々", { align: "left" })],
     [td("在庫回転目標"), td("12ヶ月。最短9ヶ月、延びても15〜18ヶ月を想定レンジとする", { align: "left", color: GOLD_L, bold: true })],
