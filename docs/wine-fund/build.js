@@ -4,7 +4,6 @@ const fs = require("fs");
 const pptxgen = require("pptxgenjs");
 
 const F = JSON.parse(fs.readFileSync(__dirname + "/figures.json", "utf8"));
-const PR = JSON.parse(fs.readFileSync(__dirname + "/priority.json", "utf8"));   // priority.py が書き出す優先回収の試算
 const PA = F.params;
 const C1 = F.first;                 // ファーストクローズ 5億円
 const C2 = F.second;                // セカンドクローズ 10億円
@@ -1000,40 +999,6 @@ const CHART_BASE = {
   s.addNotes("卸値が時価連動になったことで、仕入リスクは遮断され、価格変動リスクの比重が上がった。");
 }
 
-// ═══════════════════════════════════════════════════════════ 20b 投資家元本の優先
-{
-  const s = chrome(base(), "INVESTOR PROTECTION", "投資家元本の優先とWineBank出資の劣後",
-    "平時は出資比率どおり。販売不振時や損失が出た場合はWineBankの出資分が先に負担する。利回りではなく元本の返る順序を定める。");
-  const R1 = PR.closes.first, R2 = PR.closes.second;
-  const sw = (CW - 0.24 * 3) / 4, sy = 1.74, sh = 1.86;
-  const steps = [
-    ["01", "平時", "売却代金のうち元本相当（取得価額）はワインの再購入に充て、利益だけを年1回、出資比率40：60で分配する。元本は満期まで返さない。"],
-    ["02", "販売不振時", `半期末に直近12ヶ月の売上を判定。1st（2026/12/1）は2028/9末以後${okuN(R1.trigger_sales)}円、2nd（2027/6/1）後は2029/3末以後${okuN(R2.trigger_sales)}円を下回ったら再購入を止め、半期ごとに投資家元本から返す。`],
-    ["03", "分配の順序", "費用・管理報酬の後、①投資家の元本 → ②WineBankの元本 → ③残余を当初出資比率40：60で分配。最終の分配も同じ順序で、損失はWineBank出資分が先に負担する。"],
-    ["04", "保証ではない", "利回りの優先はなく、利益は常に出資比率どおり。WineBankは元本・利回りを保証せず買取義務も負わない。投資家の損失は出資額が上限。"],
-  ];
-  steps.forEach((st, i) => {
-    const x = M + (sw + 0.24) * i;
-    card(s, x, sy, sw, sh, { fill: i === 2 ? CARD2 : CARD, line: i === 2 ? GOLD_D : LINE });
-    badge(s, x + 0.22, sy + 0.20, 0.34, st[0]);
-    s.addText(st[1], { x: x + 0.66, y: sy + 0.22, w: sw - 0.88, h: 0.30, margin: 0, valign: "middle", fontFace: SANS, fontSize: 12, bold: true, color: i === 2 ? GOLD_L : IVORY });
-    s.addText(st[2], { x: x + 0.22, y: sy + 0.62, w: sw - 0.44, h: 1.18, margin: 0, fontFace: SANS, fontSize: 9, color: MUTED, lineSpacingMultiple: 1.18 });
-  });
-  const pair = (w) => `投資家 ${oku(w.inv)}円 ／ WB ${oku(w.wb)}円`;
-  const rows = [
-    [th("試算（費用・管理報酬は先払い）"), th(`ファーストクローズ（投資家${okuN(R1.inv)}円・WB${okuN(R1.wb)}円）`), th(`セカンドクローズ（投資家${okuN(R2.inv)}円・WB${okuN(R2.wb)}円）`)],
-    [td("年3億円しか売れない場合：投資家元本の回収", { align: "left" }), td(`約${R1.s3.months}ヶ月`, { color: GOLD_L, bold: true }), td(`約${R2.s3.months}ヶ月`, { color: GOLD_L, bold: true })],
-    [td("2年で投資家元本を回収するのに必要な年間売上", { align: "left" }), td(oku(R1.need["24"]) + "円"), td(oku(R2.need["24"]) + "円")],
-    [td("最終の手取りが総額の6割の場合", { align: "left" }), td(pair(R1.wf["0.6"]), { color: RED }), td(pair(R2.wf["0.6"]), { color: RED })],
-    [td("最終の手取りが総額と同額の場合", { align: "left" }), td(pair(R1.wf["1.0"])), td(pair(R2.wf["1.0"]))],
-    [td("最終の手取りが総額の1.1倍の場合", { align: "left" }), td(pair(R1.wf["1.1"]) + "（両者＋10%）", { color: GOLD_L }), td(pair(R2.wf["1.1"]) + "（両者＋10%）", { color: GOLD_L })],
-  ];
-  table(s, rows, M, 3.84, CW, [4.29, 3.80, 3.80], { rowH: 0.36, fontSize: 9.5 });
-  s.addText(`※ 回収期間は再購入停止からの月数（分配は半期ごと）。年3億円の売上は1stで回転29ヶ月相当、2ndで回転71ヶ月相当にあたる。投資家の元本が欠けるのは、最終の手取りが総額の${Math.round(PA.inv_ratio * 100)}%（1st ${okuN(R1.inv)}円／2nd ${okuN(R2.inv)}円）を下回った場合に限られる。主線（回転12ヶ月）では出資比率どおり年平均${pc(P1.avg5)}となり、平時の条件は変わらない。`, {
-    x: M, y: 6.10, w: CW, h: 0.56, margin: 0, fontFace: SANS, fontSize: 8.5, color: DIM, lineSpacingMultiple: 1.2 });
-  s.addNotes("利回りの優先はなく、元本の返る順序だけを投資家優先にする。平時は出資比率どおり。");
-}
-
 // ═══════════════════════════════════════════════════════════ 21 条件
 {
   const s = chrome(base(), "TERMS", "ファンド設計条件（ドラフト）",
@@ -1052,7 +1017,6 @@ const CHART_BASE = {
     [td("運用期間"), td("5年。満期時に在庫を売却清算のうえ元本償還", { align: "left" })],
     [td("中途解約"), td("3年経過後、年度ごとの解約日に申出可（90日前通知）。当初3年間はロックアップ", { align: "left", color: GOLD_L, bold: true })],
     [td("分配"), td("年1回・利益のみ。売却代金の元本相当は再購入に充て満期まで留保（利益の複利再投資は行わない）", { align: "left" })],
-    [td("元本の優先"), td(`投資家元本→WB元本→残余40：60。売上が総額の${Math.round(PR.trigger * 100)}%未満なら再購入を止め投資家元本から返す（利回り優先なし）`, { align: "left", color: GOLD_L, bold: true })],
   ];
   const right = [
     [th("項目"), th("内容")],
