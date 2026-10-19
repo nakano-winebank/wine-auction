@@ -1000,39 +1000,38 @@ const CHART_BASE = {
   s.addNotes("卸値が時価連動になったことで、仕入リスクは遮断され、価格変動リスクの比重が上がった。");
 }
 
-// ═══════════════════════════════════════════════════════════ 20b 優先回収と最終精算
+// ═══════════════════════════════════════════════════════════ 20b 投資家元本の優先
 {
-  const s = chrome(base(), "PRIORITY RECOVERY", "販売不振時の投資家優先回収と最終精算",
-    "販売が想定を大きく下回った場合、売却代金をまず投資家へ回す。ただし保証ではなく、最終の清算では全期間の損益を出資比率どおりに精算する。");
+  const s = chrome(base(), "INVESTOR PROTECTION", "投資家元本の優先とWineBank出資の劣後",
+    "平時は出資比率どおり。販売不振時や損失が出た場合はWineBankの出資分が先に負担する。利回りではなく元本の返る順序を定める。");
   const R1 = PR.closes.first, R2 = PR.closes.second;
   const sw = (CW - 0.24 * 3) / 4, sy = 1.74, sh = 1.86;
   const steps = [
-    ["01", "発動", `半期末ごとに直近12ヶ月の売上を判定。1st（2026/12/1）は2028/9末以後${okuN(R1.trigger_sales)}円、2nd（2027/6/1）後は2029/3末以後${okuN(R2.trigger_sales)}円を下回ったら仕入を止める。`],
-    ["02", "優先回収", `半期ごとに、売却代金から費用（管理報酬を含む）を払った後、①投資家に年${Math.round(PR.pref * 100)}% → ②投資家の元本 → ③WineBankの元本 → ④残余を出資比率で分配。`],
-    ["03", "最終精算", "換価の完了後、全期間の損益を出資比率どおりに配分し直し、投資家に不足があれば追加分配する。優先回収で多く受け取った分は返還不要で、WineBankの分配から差し引く。"],
-    ["04", "保証ではない", "WineBankは元本・利回りを保証せず、買取義務も負わない。投資家の損失は出資額が上限。分配の順序と時期を投資家優先にする仕組みである。"],
+    ["01", "平時", "売却代金のうち元本相当（取得価額）はワインの再購入に充て、利益だけを年1回、出資比率40：60で分配する。元本は満期まで返さない。"],
+    ["02", "販売不振時", `半期末に直近12ヶ月の売上を判定。1st（2026/12/1）は2028/9末以後${okuN(R1.trigger_sales)}円、2nd（2027/6/1）後は2029/3末以後${okuN(R2.trigger_sales)}円を下回ったら再購入を止め、半期ごとに投資家元本から返す。`],
+    ["03", "分配の順序", "費用・管理報酬の後、①投資家の元本 → ②WineBankの元本 → ③残余を当初出資比率40：60で分配。最終の分配も同じ順序で、損失はWineBank出資分が先に負担する。"],
+    ["04", "保証ではない", "利回りの優先はなく、利益は常に出資比率どおり。WineBankは元本・利回りを保証せず買取義務も負わない。投資家の損失は出資額が上限。"],
   ];
   steps.forEach((st, i) => {
     const x = M + (sw + 0.24) * i;
-    card(s, x, sy, sw, sh, { fill: i === 1 ? CARD2 : CARD, line: i === 1 ? GOLD_D : LINE });
+    card(s, x, sy, sw, sh, { fill: i === 2 ? CARD2 : CARD, line: i === 2 ? GOLD_D : LINE });
     badge(s, x + 0.22, sy + 0.20, 0.34, st[0]);
-    s.addText(st[1], { x: x + 0.66, y: sy + 0.22, w: sw - 0.88, h: 0.30, margin: 0, valign: "middle", fontFace: SANS, fontSize: 12, bold: true, color: i === 1 ? GOLD_L : IVORY });
-    s.addText(st[2], { x: x + 0.22, y: sy + 0.66, w: sw - 0.44, h: 1.10, margin: 0, fontFace: SANS, fontSize: 9, color: MUTED, lineSpacingMultiple: 1.2 });
+    s.addText(st[1], { x: x + 0.66, y: sy + 0.22, w: sw - 0.88, h: 0.30, margin: 0, valign: "middle", fontFace: SANS, fontSize: 12, bold: true, color: i === 2 ? GOLD_L : IVORY });
+    s.addText(st[2], { x: x + 0.22, y: sy + 0.62, w: sw - 0.44, h: 1.18, margin: 0, fontFace: SANS, fontSize: 9, color: MUTED, lineSpacingMultiple: 1.18 });
   });
-  const sg = (v) => (v >= 0 ? "＋" : "▲") + Math.abs(v / 1e8).toFixed(2) + "億円";
-  const T1 = R1.trueup, T2 = R2.trueup;
+  const pair = (w) => `投資家 ${oku(w.inv)}円 ／ WB ${oku(w.wb)}円`;
   const rows = [
-    [th("試算（ワイン価格上昇6%・費用と管理報酬は先払い）"), th(`ファーストクローズ（投資家${okuN(R1.inv)}円）`), th(`セカンドクローズ（投資家${okuN(R2.inv)}円）`)],
-    [td("年3億円しか売れない場合：投資家の元本＋年10%の回収", { align: "left" }), td(`約${R1.s3.months}ヶ月（${oku(R1.s3.paid)}円）`, { color: GOLD_L, bold: true }), td(`約${R2.s3.months}ヶ月（${oku(R2.s3.paid)}円）`, { color: GOLD_L, bold: true })],
-    [td("2年で元本＋年10%を回収するのに必要な年間売上", { align: "left" }), td(oku(R1.need["24"]) + "円"), td(oku(R2.need["24"]) + "円")],
-    [td("最終精算：残在庫を通常の販路で売り切った場合", { align: "left" }), td(sg(T1.full.diff) + "（追加分配）"), td(sg(T2.full.diff) + "（追加分配）")],
-    [td("最終精算：残在庫を時価の8割で清算した場合", { align: "left" }), td(sg(T1.p80.diff) + "（追加分配）"), td(sg(T2.p80.diff) + "（追加分配）")],
-    [td("最終精算：残在庫を時価の5割で清算した場合", { align: "left" }), td("返還不要（WineBank負担 " + sg(T1.p50.diff).replace("▲", "") + "）", { color: RED }), td("返還不要（WineBank負担 " + sg(T2.p50.diff).replace("▲", "") + "）", { color: RED })],
+    [th("試算（費用・管理報酬は先払い）"), th(`ファーストクローズ（投資家${okuN(R1.inv)}円・WB${okuN(R1.wb)}円）`), th(`セカンドクローズ（投資家${okuN(R2.inv)}円・WB${okuN(R2.wb)}円）`)],
+    [td("年3億円しか売れない場合：投資家元本の回収", { align: "left" }), td(`約${R1.s3.months}ヶ月`, { color: GOLD_L, bold: true }), td(`約${R2.s3.months}ヶ月`, { color: GOLD_L, bold: true })],
+    [td("2年で投資家元本を回収するのに必要な年間売上", { align: "left" }), td(oku(R1.need["24"]) + "円"), td(oku(R2.need["24"]) + "円")],
+    [td("最終の手取りが総額の6割の場合", { align: "left" }), td(pair(R1.wf["0.6"]), { color: RED }), td(pair(R2.wf["0.6"]), { color: RED })],
+    [td("最終の手取りが総額と同額の場合", { align: "left" }), td(pair(R1.wf["1.0"])), td(pair(R2.wf["1.0"]))],
+    [td("最終の手取りが総額の1.1倍の場合", { align: "left" }), td(pair(R1.wf["1.1"]) + "（両者＋10%）", { color: GOLD_L }), td(pair(R2.wf["1.1"]) + "（両者＋10%）", { color: GOLD_L })],
   ];
-  table(s, rows, M, 3.84, CW, [5.29, 3.30, 3.30], { rowH: 0.36, fontSize: 9.5 });
-  s.addText("※ 回収期間は優先回収の開始からの月数（分配は半期ごと）。年3億円の売上は1stで回転29ヶ月相当（出資比率どおりのままなら年平均 約10%）、2ndで回転71ヶ月相当（同 約7%）にあたる。最終精算の過不足は、優先回収で受け取った額と、全期間の損益を出資比率どおりに配分した場合の受取額との差。投資家の受取は両者のいずれか多い方となる。満期後の換価が長引く場合、最終精算は最長で運用開始から10年程度となる。", {
+  table(s, rows, M, 3.84, CW, [4.29, 3.80, 3.80], { rowH: 0.36, fontSize: 9.5 });
+  s.addText(`※ 回収期間は再購入停止からの月数（分配は半期ごと）。年3億円の売上は1stで回転29ヶ月相当、2ndで回転71ヶ月相当にあたる。投資家の元本が欠けるのは、最終の手取りが総額の${Math.round(PA.inv_ratio * 100)}%（1st ${okuN(R1.inv)}円／2nd ${okuN(R2.inv)}円）を下回った場合に限られる。主線（回転12ヶ月）では出資比率どおり年平均${pc(P1.avg5)}となり、平時の条件は変わらない。`, {
     x: M, y: 6.10, w: CW, h: 0.56, margin: 0, fontFace: SANS, fontSize: 8.5, color: DIM, lineSpacingMultiple: 1.2 });
-  s.addNotes("優先回収は保証ではなく分配の順序。最終はプロラタで精算する。");
+  s.addNotes("利回りの優先はなく、元本の返る順序だけを投資家優先にする。平時は出資比率どおり。");
 }
 
 // ═══════════════════════════════════════════════════════════ 21 条件
@@ -1052,8 +1051,8 @@ const CHART_BASE = {
     [td("損益の配分"), td("SPC税前利益を出資比率どおり60：40で配分。成功報酬（折半）は取らない", { align: "left", color: GOLD_L, bold: true })],
     [td("運用期間"), td("5年。満期時に在庫を売却清算のうえ元本償還", { align: "left" })],
     [td("中途解約"), td("3年経過後、年度ごとの解約日に申出可（90日前通知）。当初3年間はロックアップ", { align: "left", color: GOLD_L, bold: true })],
-    [td("分配"), td("年1回。元本はSPC内に留保し継続運用（複利再投資は行わない）", { align: "left" })],
-    [td("販売不振時"), td(`直近12ヶ月の売上が総額の${Math.round(PR.trigger * 100)}%未満で仕入停止・優先回収（投資家に年${Math.round(PR.pref * 100)}%→投資家元本→WB元本）。最終清算はプロラタで精算（返還は求めない）`, { align: "left", color: GOLD_L, bold: true })],
+    [td("分配"), td("年1回・利益のみ。売却代金の元本相当は再購入に充て満期まで留保（利益の複利再投資は行わない）", { align: "left" })],
+    [td("元本の優先"), td(`投資家元本→WB元本→残余40：60。売上が総額の${Math.round(PR.trigger * 100)}%未満なら再購入を止め投資家元本から返す（利回り優先なし）`, { align: "left", color: GOLD_L, bold: true })],
   ];
   const right = [
     [th("項目"), th("内容")],
