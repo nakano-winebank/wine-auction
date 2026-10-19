@@ -9,6 +9,7 @@ const C1 = F.first;                 // ファーストクローズ 5億円
 const C2 = F.second;                // セカンドクローズ 10億円
 const P1 = C1.holds["12"];          // 主線（回転12ヶ月）
 const P2 = C2.holds["12"];
+const A1 = P1.avg5d, A2 = P2.avg5d;   // 5年間の年平均（SPC利益・値入れ・WineBank受取）
 const U  = F.unit;                  // SPC簿価ベースの単位経済
 const UH = F.unit_held.neutral;     // 保有12ヶ月・上昇6%
 const HOLDS = ["9", "12", "15", "18"];
@@ -207,13 +208,13 @@ const CHART_BASE = {
     "在庫回転期間（主線）",
     "最短9ヶ月、延びても15〜18ヶ月を想定レンジとする");
   stat(s, M + (tw + 0.30) * 3, 1.82, tw, 1.62, pc(P1.avg5).replace("%", ""), "%",
-    "投資家利回り（5年通算）",
-    `出資${okuN(C1.inv_capital)}円に対する5年間の分配の年平均。定常年間では${pc(P1.inv_yld)}`,
+    "投資家利回り（年平均）",
+    `出資${okuN(C1.inv_capital)}円に対する5年間の分配の年平均。フル稼働時の単年では${pc(P1.inv_yld)}`,
     { vs: 30, fill: CARD2, line: GOLD_D });
 
   const pts = [
     ["WineBankの取り分は、SPCへ卸す時点の値入れに一本化する。",
-     `時価から${pc(PA.alpha)}を控除した定価比${f2(PA.book)}でSPCへ卸し、その値入れ（年${hyaku(P1.transfer)}円）を卸した時点で受け取る。αは投資家の5年通算の年平均20%を基礎に定める。売却時に取るのは管理報酬（総額の年2%）のみとする。`],
+     `時価から${pc(PA.alpha)}を控除した定価比${f2(PA.book)}でSPCへ卸し、その値入れ（年平均${hyaku(A1.transfer)}円）を卸した時点で受け取る。αは投資家の年平均20%を基礎に定める。売却時に取るのは管理報酬（総額の年2%）のみとする。`],
     ["SPCの利益は出資比率どおり 60：40 で分ける。",
      "成功報酬（折半）は廃止する。投資家の取分は「SPC税前利益 × 出資比率40%」であり、配分は出資比率だけで決まる。"],
     ["投資家の利回りは、仕入価格と売値の変動から遮断される。",
@@ -228,7 +229,7 @@ const CHART_BASE = {
     s.addText(p[1], { x: M + 0.46, y: y + 0.24, w: CW - 0.46, h: 0.34, margin: 0, fontFace: SANS, fontSize: 9.5, color: MUTED, lineSpacingMultiple: 1.12 });
     y += 0.70;
   });
-  s.addNotes(`主線は回転12ヶ月で5年通算${pc(P1.avg5)}（定常年間${pc(P1.inv_yld)}）。折半は廃止し出資比率でプロラタ配分。`);
+  s.addNotes(`主線は回転12ヶ月で年平均${pc(P1.avg5)}（フル稼働時の単年${pc(P1.inv_yld)}）。折半は廃止し出資比率でプロラタ配分。`);
 }
 
 // ═══════════════════════════════════════════════════════════ 03 資本構成
@@ -240,10 +241,10 @@ const CHART_BASE = {
   const tranches = [
     ["現物出資｜WineBank", (C1.wb_capital / 1e8).toFixed(1), "億円", "総額の60%（ワイン現物）",
      ["自己勘定のワイン現物を拠出", "現金の拠出ではない", "利益は持分60%を受け取る"], false],
-    ["出資｜投資家", (C1.inv_capital / 1e8).toFixed(1), "億円", "SPC税前利益の40%を受領",
+    ["出資｜投資家", (C1.inv_capital / 1e8).toFixed(1), "億円", `SPC利益の40%を受領（年平均${pc(P1.avg5)}）`,
      ["匿名組合出資（1口5,000万円以上）", "満期に元本償還", "年1回分配（4年目以降は解約可）"], true],
-    ["WineBank受取", String(Math.round(P1.wb_total / 1e6)), "百万円",
-     `持分${Math.round(P1.wb_equity / 1e6)}＋値入れ${Math.round(P1.transfer / 1e6)}＋管理報酬${Math.round(C1.mgmt / 1e6)}（百万円）`,
+    ["WineBank受取（年平均）", String(Math.round(A1.wb_total / 1e6)), "百万円",
+     `持分${Math.round(A1.wb_equity / 1e6)}＋値入れ${Math.round(A1.transfer / 1e6)}＋管理報酬${Math.round(C1.mgmt / 1e6)}（百万円）`,
      ["値入れは卸した時点で受領", "出口の成功報酬はなし", "管理報酬は総額の年2%"], false],
   ];
   tranches.forEach((t, i) => {
@@ -260,32 +261,32 @@ const CHART_BASE = {
 
   const rows = [
     [th("項目"), th("金額"), th("内容")],
-    [td("① WineBankの値入れ"), td(hyaku(P1.transfer) + "円", { color: GOLD_L }),
-     td(`時価${f2(PA.jika)}から${pc(PA.alpha)}を控除した定価比${f2(PA.book)}でSPCへ卸す。卸した時点で受領しSPCの費用には計上しない`, { align: "left" })],
-    [td("② 年間税前利益（SPC）"), td(oku(P1.pretax) + "円", { bold: true }),
-     td(`在庫回転12ヶ月・年間売上${oku(P1.sales)}円。管理報酬${hyaku(C1.mgmt)}円を費用計上した後の金額`, { align: "left" })],
-    [td("　├ 投資家（出資比率40%）"), td(hyaku(P1.inv) + "円", { bold: true, color: GOLD_L }),
-     td(`出資${okuN(C1.inv_capital)}円に対し 定常年間 ${pc(P1.inv_yld)}（5年通算の年平均 ${pc(P1.avg5)}）`, { align: "left", color: GOLD_L, bold: true })],
-    [td("　└ WineBank（出資比率60%）"), td(hyaku(P1.wb_equity) + "円"),
+    [td("① WineBankの値入れ"), td(hyaku(A1.transfer) + "円", { color: GOLD_L }),
+     td(`時価${f2(PA.jika)}から${pc(PA.alpha)}控除の定価比${f2(PA.book)}で卸す。組入れ・入替えの都度受領し、SPC費用には計上しない`, { align: "left" })],
+    [td("② SPCの利益"), td(oku(A1.pretax) + "円", { bold: true }),
+     td(`在庫回転12ヶ月。管理報酬${hyaku(C1.mgmt)}円ほか費用控除後。②の40%が投資家の年平均${pc(P1.avg5)}となる水準から逆算`, { align: "left" })],
+    [td("　├ 投資家（出資比率40%）"), td(hyaku(A1.inv) + "円", { bold: true, color: GOLD_L }),
+     td(`出資${okuN(C1.inv_capital)}円に対し 年平均利回り ${pc(P1.avg5)}`, { align: "left", color: GOLD_L, bold: true })],
+    [td("　└ WineBank（出資比率60%）"), td(hyaku(A1.wb_equity) + "円"),
      td("現物出資分に対する持分。成功報酬（折半）は取らない", { align: "left" })],
     [td("③ 管理報酬"), td(hyaku(C1.mgmt) + "円"),
      td("総額の年2%。売却時に取るのはこれのみ", { align: "left" })],
-    [td("WineBank受取合計（①＋②の60%＋③）"), td(hyaku(P1.wb_total) + "円"),
+    [td("WineBank受取合計（①＋②の60%＋③）"), td(hyaku(A1.wb_total) + "円"),
      td("現金の拠出はなく、ワイン現物の拠出と実務の遂行で受け取る", { align: "left" })],
   ];
   table(s, rows, M, 3.74, CW, [3.06, 1.62, 7.21], { rowH: 0.315, fontSize: 8.5 });
 
   card(s, M, 6.02, CW, 0.94, { fill: CARD2, line: GOLD_D });
-  s.addText("前回資料（原価卸＋折半）からの変更（回転12ヶ月）", { x: M + 0.30, y: 6.10, w: 6.2, h: 0.22, margin: 0, fontFace: SANS, fontSize: 10.5, bold: true, color: GOLD_L });
+  s.addText("前回資料（原価卸＋折半）からの変更（回転12ヶ月・投資家の年平均利回り）", { x: M + 0.30, y: 6.10, w: 6.2, h: 0.22, margin: 0, fontFace: SANS, fontSize: 10.5, bold: true, color: GOLD_L });
   s.addText([
-    { text: `① 前回：原価${f2(F.legacy.spc_cost)}で卸し出口で折半（定常年間） `, options: { fontFace: SANS, fontSize: 9.5, color: MUTED } },
-    { text: pc(F.legacy.inv_yld), options: { fontFace: LATIN, fontSize: 12, bold: true, color: IVORY } },
-    { text: `　→　② 今回：時価▲${pc(PA.alpha)}＝${f2(PA.book)}で卸し出口はプロラタ（定常年間） `, options: { fontFace: SANS, fontSize: 9.5, color: MUTED } },
-    { text: pc(P1.inv_yld), options: { fontFace: LATIN, fontSize: 12, bold: true, color: GOLD_L } },
+    { text: `① 前回：原価${f2(F.legacy.spc_cost)}で卸し出口で折半 `, options: { fontFace: SANS, fontSize: 9.5, color: MUTED } },
+    { text: pc(F.legacy.avg5), options: { fontFace: LATIN, fontSize: 12, bold: true, color: IVORY } },
+    { text: `　→　② 今回：時価▲${pc(PA.alpha)}＝${f2(PA.book)}で卸し出口はプロラタ `, options: { fontFace: SANS, fontSize: 9.5, color: MUTED } },
+    { text: pc(P1.avg5), options: { fontFace: LATIN, fontSize: 12, bold: true, color: GOLD_L } },
   ], { x: M + 0.30, y: 6.34, w: CW - 0.60, h: 0.24, margin: 0, valign: "middle" });
-  s.addText(`※ 報酬体系が「出口の折半」から「卸す時点の値入れ」へ移り、投資家の取分は「SPC税前利益×出資比率40%」だけで決まる。αは5年通算の年平均20%を基礎に定めたため、定常年間では前回を上回る。なおSPC簿価が${f2(F.legacy.spc_cost)}→${f2(PA.book)}へ上がるため、同じ${okuN(C1.total)}円で持てるワインは定価換算で約${Math.round((1 - F.legacy.spc_cost / PA.book) * 100)}%少なくなる。`, {
+  s.addText(`※「年平均利回り」＝5年間の分配総額÷5÷出資額（仕入展開と最初の売却までの空白、満期の在庫清算を含む。表の金額も5年間の年平均）。「フル稼働時の単年利回り」${pc(P1.inv_yld)}は在庫が回り切った1年だけを切り出した参考値。`, {
     x: M + 0.30, y: 6.60, w: CW - 0.60, h: 0.24, margin: 0, fontFace: SANS, fontSize: 8, color: DIM });
-  s.addNotes(`税前利益${oku(P1.pretax)}円を60:40で配分。投資家${hyaku(P1.inv)}円＝定常${pc(P1.inv_yld)}、5年通算${pc(P1.avg5)}。`);
+  s.addNotes(`投資家の年平均${pc(P1.avg5)}から逆算：SPC利益${oku(A1.pretax)}円を60:40で配分。投資家${hyaku(A1.inv)}円、WineBank${hyaku(A1.wb_equity)}円。`);
 }
 
 // ═══════════════════════════════════════════════════════════ 04 段階クローズ
@@ -309,7 +310,7 @@ const CHART_BASE = {
       { text: okuN(C.total) + "円", options: { fontFace: LATIN, fontSize: 26, bold: true, color: GOLD_L } },
       { text: "　＝　WineBank現物 " + okuN(C.wb_capital) + "円 ＋ 投資家 " + okuN(C.inv_capital) + "円", options: { fontFace: SANS, fontSize: 11, color: IVORY } },
     ], { x: x + 0.28, y: 2.50, w: cwid - 0.56, h: 0.48, margin: 0, valign: "middle" });
-    s.addText("必要な年間販売額　" + oku(P.sales) + "円　／　投資家利回り（5年通算）　" + pc(P.avg5), {
+    s.addText("必要な年間販売額　" + oku(P.sales) + "円　／　投資家利回り（年平均）　" + pc(P.avg5), {
       x: x + 0.28, y: 3.04, w: cwid - 0.56, h: 0.26, margin: 0, fontFace: SANS, fontSize: 10.5, bold: true, color: GOLD_L });
     s.addText(c[4], { x: x + 0.28, y: 3.32, w: cwid - 0.56, h: 0.34, margin: 0, fontFace: SANS, fontSize: 9.5, color: MUTED, lineSpacingMultiple: 1.18 });
   });
@@ -322,10 +323,10 @@ const CHART_BASE = {
     [td("必要な年間販売額"), td(oku(P1.sales) + "円", { color: GOLD_L }), td(oku(P2.sales) + "円", { color: RED, bold: true }), td("回転12ヶ月を実現するために必要な販売額", { align: "left" })],
     [td("年間税前利益（SPC）"), td(oku(P1.pretax) + "円"), td(oku(P2.pretax) + "円"), td("管理報酬控除後", { align: "left" })],
     [td("投資家取分（出資比率40%）"), td(hyaku(P1.inv) + "円"), td(hyaku(P2.inv) + "円"), td("プロラタ配分。成功報酬は控除しない", { align: "left" })],
-    [td("投資家利回り（5年通算・年平均）"), td(pc(P1.avg5), { bold: true, color: GOLD_L }), td(pc(P2.avg5), { bold: true, color: GOLD_L }), td("仕入展開6ヶ月の立ち上がりと満期の残存在庫の清算売却を含む。αの算定基礎", { align: "left" })],
-    [td("投資家利回り（定常年間）"), td(pc(P1.inv_yld)), td(pc(P2.inv_yld)), td("規模拡大で固定費が薄まりわずかに改善する", { align: "left" })],
-    [td("WineBank受取"), td(hyaku(P1.wb_total) + "円"), td(hyaku(P2.wb_total) + "円"), td("値入れ＋持分＋管理報酬", { align: "left" })],
-    [td("20%の分岐点（5年通算）"), td("回転" + mon(C1.breakeven.neutral)), td("回転" + mon(C2.breakeven.neutral)), td("これを超えると貴社基準を下回る", { align: "left" })],
+    [td("投資家利回り（年平均）"), td(pc(P1.avg5), { bold: true, color: GOLD_L }), td(pc(P2.avg5), { bold: true, color: GOLD_L }), td("仕入展開6ヶ月の立ち上がりと満期の残存在庫の清算売却を含む。αの算定基礎", { align: "left" })],
+    [td("フル稼働時の単年利回り"), td(pc(P1.inv_yld)), td(pc(P2.inv_yld)), td("規模拡大で固定費が薄まりわずかに改善する", { align: "left" })],
+    [td("WineBank受取（年平均）"), td(hyaku(A1.wb_total) + "円"), td(hyaku(A2.wb_total) + "円"), td("値入れ＋持分＋管理報酬（5年間の年平均）", { align: "left" })],
+    [td("20%の分岐点（年平均）"), td("回転" + mon(C1.breakeven.neutral)), td("回転" + mon(C2.breakeven.neutral)), td("これを超えると貴社基準を下回る", { align: "left" })],
   ];
   table(s, rows, M, 3.90, CW, [2.62, 2.10, 2.10, 5.07], { rowH: 0.238, fontSize: 8.5 });
 
@@ -352,11 +353,11 @@ const CHART_BASE = {
       td(oku(d.pretax) + "円"),
       td(hyaku(d.inv) + "円"),
       td(pc(d.avg5), { bold: true, color: ok ? GOLD_L : RED }),
-      td(hyaku(d.wb_total) + "円"),
+      td(hyaku(d.avg5d.wb_total) + "円"),
       td(pos, { align: "left", color: ok ? (main ? GOLD_L : IVORY) : RED }),
     ];
   };
-  const rows = [[th("在庫回転期間"), th("必要な年間販売額"), th("年間税前利益"), th("投資家取分"), th("利回り（5年通算）"), th("WineBank受取"), th("位置づけ")]]
+  const rows = [[th("在庫回転期間"), th("必要な年間販売額"), th("年間税前利益"), th("投資家取分"), th("年平均利回り"), th("WB受取（年平均）"), th("位置づけ")]]
     .concat(HOLDS.map(mk));
   table(s, rows, M, 1.80, CW, [1.74, 1.72, 1.44, 1.62, 1.42, 1.72, 2.23], { rowH: 0.42 });
 
@@ -374,7 +375,7 @@ const CHART_BASE = {
     s.addText(c[2], { x: x + 0.26, y: 5.04, w: cw3 - 0.52, h: 0.98, margin: 0, fontFace: SANS, fontSize: 9, color: MUTED, lineSpacingMultiple: 1.24 });
   });
 
-  s.addText(`※ 回転12ヶ月に必要な年間販売額${oku(P1.sales)}円は、現状の販売実力（年5〜7億円）の範囲内にある。銘柄の大半はSPCと自己勘定で重複しないため配分の判断自体が生じず、回転期間は「何を組み入れるか」でほぼ決まる。重複銘柄の取扱いは在庫配分の公平性の頁を参照。投資家利回り（5年通算）が20%を割り込むのは回転が${mon(C1.breakeven.neutral)}を超えた場合であり、主線12ヶ月に余裕はない。回転12ヶ月の達成が貴社基準を満たすための必須条件となる。`, {
+  s.addText(`※ 回転12ヶ月に必要な年間販売額${oku(P1.sales)}円は、現状の販売実力（年5〜7億円）の範囲内にある。銘柄の大半はSPCと自己勘定で重複しないため配分の判断自体が生じず、回転期間は「何を組み入れるか」でほぼ決まる。重複銘柄の取扱いは在庫配分の公平性の頁を参照。投資家利回り（年平均）が20%を割り込むのは回転が${mon(C1.breakeven.neutral)}を超えた場合であり、主線12ヶ月に余裕はない。回転12ヶ月の達成が貴社基準を満たすための必須条件となる。`, {
     x: M, y: 6.22, w: CW, h: 0.44, margin: 0, fontFace: SANS, fontSize: 8.5, color: DIM, lineSpacingMultiple: 1.2 });
   s.addNotes(`回転12ヶ月＝年間${oku(P1.sales)}円。20%の分岐点は回転${mon(C1.breakeven.neutral)}で余裕なし。`);
 }
@@ -655,18 +656,18 @@ const CHART_BASE = {
       td(pc(d.avg5), { bold: true, color: ok ? GOLD_L : RED }),
     ];
   };
-  const rows = [[th("在庫回転期間"), th("年間売上"), th("年間粗利※"), th("粗利率"), th("年間税前利益"), th("投資家（40%）"), th("WineBank（60%）"), th("定常年間利回り"), th("5年累計分配"), th("投資家 年平均利回り 5年通算")]]
+  const rows = [[th("在庫回転期間"), th("年間売上"), th("年間粗利※"), th("粗利率"), th("年間税前利益"), th("投資家（40%）"), th("WineBank（60%）"), th("フル稼働時の単年利回り"), th("5年累計分配"), th("年平均利回り")]]
     .concat(HOLDS.map(mk));
   table(s, rows, M, 1.82, CW, [1.52, 0.94, 0.94, 0.80, 1.14, 1.34, 1.42, 1.10, 1.06, 1.63], { rowH: 0.40 });
 
   card(s, M, 4.06, 6.05, 1.98, { fill: CARD2, line: GOLD_D });
-  s.addText(`粗利率${pc(UH.gm)}が定常年間${pc(P1.inv_yld)}になる理由`, { x: M + 0.28, y: 4.20, w: 5.5, h: 0.26, margin: 0, fontFace: SANS, fontSize: 11.5, bold: true, color: GOLD_L });
+  s.addText(`粗利率${pc(UH.gm)}がフル稼働時の単年${pc(P1.inv_yld)}になる理由`, { x: M + 0.28, y: 4.20, w: 5.5, h: 0.26, margin: 0, fontFace: SANS, fontSize: 11.5, bold: true, color: GOLD_L });
   const bridge = [
     ["定価100あたり", `簿価${f2(PA.book)}で取得し、手取り${f2(UH.net)}で回収 → 単位粗利${f2(UH.gross)}`, false],
     [`粗利率 ${pc(UH.gm)}`, `分母は売却時の売値${f2(UH.price)}`, false],
     [`投下簿価利益率 ${pc(UH.gross / UH.spc_cost)}`, `分母は投下資本であるSPC簿価${f2(PA.book)}`, true],
     [`税前利益 ${oku(P1.pretax)}円`, `SPC費用 計${man(P1.cost)}円を控除した後の年間税前利益`, false],
-    [`定常年間 ${pc(P1.inv_yld)}`, `税前利益の40%＝${hyaku(P1.inv)}円 ÷ 出資${okuN(C1.inv_capital)}円。5年通算では${pc(P1.avg5)}`, true],
+    [`フル稼働時の単年 ${pc(P1.inv_yld)}`, `税前利益の40%＝${hyaku(P1.inv)}円 ÷ 出資${okuN(C1.inv_capital)}円。年平均では${pc(P1.avg5)}`, true],
   ];
   let by = 4.52;
   bridge.forEach((b) => {
@@ -677,21 +678,21 @@ const CHART_BASE = {
 
   card(s, M + 6.35, 4.06, CW - 6.35, 1.98, { fill: CARD2, line: GOLD_D });
   s.addText("想定レンジのご提示", { x: M + 6.63, y: 4.24, w: 4, h: 0.26, margin: 0, fontFace: SANS, fontSize: 12, bold: true, color: GOLD_L });
-  s.addText("投資家利回り（5年通算・年平均・税引前）", { x: M + 6.63, y: 4.54, w: CW - 6.95, h: 0.24, margin: 0, fontFace: SANS, fontSize: 10.5, color: IVORY });
+  s.addText("投資家利回り（年平均・税引前）", { x: M + 6.63, y: 4.54, w: CW - 6.95, h: 0.24, margin: 0, fontFace: SANS, fontSize: 10.5, color: IVORY });
   s.addText([
     { text: `${pc(minAvg5).replace("%", "")} – ${pc(C1.holds["9"].avg5).replace("%", "")}`, options: { fontFace: LATIN, fontSize: 30, bold: true, color: GOLD_L } },
     { text: " %", options: { fontFace: SANS, fontSize: 15, bold: true, color: GOLD_L } },
   ], { x: M + 6.63, y: 4.78, w: CW - 6.95, h: 0.50, margin: 0, valign: "middle" });
-  s.addText(`主線の回転12ヶ月で${pc(P1.avg5)}と貴社基準20%を満たす（定常年間では${pc(P1.inv_yld)}）。20%の分岐点は回転${mon(C1.breakeven.neutral)}であり、主線に余裕はない。15ヶ月まで延びると${pc(C1.holds["15"].avg5)}となり基準を下回る。`, {
+  s.addText(`主線の回転12ヶ月で${pc(P1.avg5)}と貴社基準20%を満たす（フル稼働時の単年では${pc(P1.inv_yld)}）。20%の分岐点は回転${mon(C1.breakeven.neutral)}であり、主線に余裕はない。15ヶ月まで延びると${pc(C1.holds["15"].avg5)}となり基準を下回る。`, {
     x: M + 6.63, y: 5.34, w: CW - 6.95, h: 0.58, margin: 0, fontFace: SANS, fontSize: 10, color: MUTED, lineSpacingMultiple: 1.2 });
-  s.addText(`※ 年間粗利は変動販売費控除後。5年通算は仕入展開6ヶ月の立ち上がりを含み、満期に残る在庫（最終回転分）は清算期間に時価の${Math.round(PA.resid_haircut * 100)}%引きで売却したものとして計上する（従前は簿価償還としていたため15ヶ月と18ヶ月で逆転が生じていた）。`, { x: M, y: 6.14, w: CW, h: 0.22, margin: 0, fontFace: SANS, fontSize: 8, color: DIM });
-  s.addNotes(`主線は5年通算${pc(P1.avg5)}（定常${pc(P1.inv_yld)}）。20%の分岐点は回転${mon(C1.breakeven.neutral)}。`);
+  s.addText(`※ 年間粗利は変動販売費控除後。年平均は仕入展開6ヶ月の立ち上がりを含み、満期に残る在庫（最終回転分）は清算期間に時価の${Math.round(PA.resid_haircut * 100)}%引きで売却したものとして計上する（従前は簿価償還としていたため15ヶ月と18ヶ月で逆転が生じていた）。`, { x: M, y: 6.14, w: CW, h: 0.22, margin: 0, fontFace: SANS, fontSize: 8, color: DIM });
+  s.addNotes(`主線は年平均${pc(P1.avg5)}（フル稼働時の単年${pc(P1.inv_yld)}）。20%の分岐点は回転${mon(C1.breakeven.neutral)}。`);
 }
 
 // ═══════════════════════════════════════════════════════════ 13 回転とリターン
 {
   const s = chrome(base(), "BASE CASE ｜ 主線", "在庫回転期間と投資家リターンの関係",
-    `いずれも投資家出資${okuN(C1.inv_capital)}円に対する数値。5年通算20%の分岐点は回転${mon(C1.breakeven.neutral)}であり、主線12ヶ月に余裕はない。`);
+    `いずれも投資家出資${okuN(C1.inv_capital)}円に対する数値。年平均20%の分岐点は回転${mon(C1.breakeven.neutral)}であり、主線12ヶ月に余裕はない。`);
 
   const cats = HOLDS.map((h) => h + "ヶ月");
   const v1 = HOLDS.map((h) => +(C1.holds[h].inv_yld * 100).toFixed(1));
@@ -701,20 +702,20 @@ const CHART_BASE = {
   s.addChart(pres.ChartType.bar, [{ name: "投資家利回り", labels: cats, values: v1 }],
     Object.assign({}, CHART_BASE, {
       x: M + 0.14, y: 1.90, w: cwid - 0.28, h: 2.66, barDir: "col", barGapWidthPct: 55,
-      title: "投資家利回り（定常年間・％）", valAxisMaxVal: Math.ceil(Math.max(...v1) * 1.2),
+      title: "投資家利回り（フル稼働時の単年・％）", valAxisMaxVal: Math.ceil(Math.max(...v1) * 1.2),
       chartColors: [GOLD], plotArea: { fill: { color: CARD } }, chartArea: { fill: { color: CARD } },
     }));
   card(s, M + cwid + 0.32, 1.80, cwid, 2.86);
   s.addChart(pres.ChartType.bar, [{ name: "投資家 年平均利回り", labels: cats, values: v2 }],
     Object.assign({}, CHART_BASE, {
       x: M + cwid + 0.46, y: 1.90, w: cwid - 0.28, h: 2.66, barDir: "col", barGapWidthPct: 55,
-      title: "投資家 年平均利回り（5年通算・％）", valAxisMaxVal: Math.ceil(Math.max(...v2) * 1.2),
+      title: "投資家 年平均利回り（年平均・％）", valAxisMaxVal: Math.ceil(Math.max(...v2) * 1.2),
       chartColors: [GOLD_D], plotArea: { fill: { color: CARD } }, chartArea: { fill: { color: CARD } },
     }));
 
   const notes = [
-    ["回転12ヶ月が必須条件", `5年通算20%の分岐点は回転${mon(C1.breakeven.neutral)}。主線12ヶ月に余裕はなく、回転12ヶ月の達成が貴社基準を満たすための必須条件となる。ただし必要な年間販売額は${oku(P1.sales)}円と、現状の販売実力（年5〜7億円）の範囲内にある。`],
-    ["値上がりが利回りの主たる変動要因になる", `卸値が時価に連動するため、仕入価格と売値の変動は投資家利回りにほとんど効かない。代わりに保有中の値上がりが効き、年6%を織り込まない場合は主線でも定常年間${pc(C1.sensitivity.appr0)}・5年通算${pc(P1.appr0_avg5)}まで下がる（次頁）。`],
+    ["回転12ヶ月が必須条件", `年平均20%の分岐点は回転${mon(C1.breakeven.neutral)}。主線12ヶ月に余裕はなく、回転12ヶ月の達成が貴社基準を満たすための必須条件となる。ただし必要な年間販売額は${oku(P1.sales)}円と、現状の販売実力（年5〜7億円）の範囲内にある。`],
+    ["値上がりが利回りの主たる変動要因になる", `卸値が時価に連動するため、仕入価格と売値の変動は投資家利回りにほとんど効かない。代わりに保有中の値上がりが効き、年6%を織り込まない場合は主線でもフル稼働時の単年${pc(C1.sensitivity.appr0)}・年平均${pc(P1.appr0_avg5)}まで下がる（次頁）。`],
   ];
   notes.forEach((n, i) => {
     const x = M + i * (CW / 2 + 0.15);
@@ -748,7 +749,7 @@ const CHART_BASE = {
     s.addText(l[3], { x: x + 0.28, y: 3.02, w: cwid - 0.56, h: 0.32, margin: 0, valign: "middle", fontFace: SANS, fontSize: 13, bold: true, color: GOLD_L });
   });
 
-  const rows = [[th("在庫回転期間"), th("売値の上昇倍率"), th("① αの取り込みのみ（上昇0%）"), th("② 値上がりによる上乗せ"), th("定常年間利回り（①＋②）")]]
+  const rows = [[th("在庫回転期間"), th("売値の上昇倍率"), th("① αの取り込みのみ（上昇0%）"), th("② 値上がりによる上乗せ"), th("フル稼働時の単年利回り（①＋②）")]]
     .concat(HOLDS.map((h) => {
       const d = C1.holds[h], main = h === "12";
       return [
@@ -761,7 +762,7 @@ const CHART_BASE = {
   table(s, rows, M, 3.66, CW, [2.25, 2.05, 3.05, 2.35, 2.19], { rowH: 0.375 });
 
   card(s, M, 5.66, 6.05, 1.12);
-  s.addText("上昇率を変えた場合（主線・定常年間）", { x: M + 0.26, y: 5.77, w: 4.2, h: 0.24, margin: 0, fontFace: SANS, fontSize: 10.5, bold: true, color: GOLD_L });
+  s.addText("上昇率を変えた場合（主線・フル稼働時の単年）", { x: M + 0.26, y: 5.77, w: 4.2, h: 0.24, margin: 0, fontFace: SANS, fontSize: 10.5, bold: true, color: GOLD_L });
   const rates = [["0%（横ばい）", pc(C1.sensitivity.appr0)], ["6%（主線）", pc(C1.sensitivity.base)], ["10%（会社資料水準）", pc(C1.sensitivity.appr10)]];
   rates.forEach((r, i) => {
     const x = M + 0.26 + i * 1.86;
@@ -783,7 +784,7 @@ const CHART_BASE = {
 
   const scTable = (key, hot) => {
     const sc = C1.scenarios[key];
-    return [[th("回転期間"), th("必要年間売上"), th("定常年間"), th("投資家取分"), th("5年通算")]]
+    return [[th("回転期間"), th("必要年間売上"), th("フル稼働時の単年"), th("投資家取分"), th("年平均")]]
       .concat(HOLDS.map((h) => {
         const d = sc[h], ok = meets(d.avg5);
         return [td(h + "ヶ月"), td(oku(d.sales)), td(pc(d.inv_yld)), td(hyaku(d.inv)),
@@ -795,7 +796,7 @@ const CHART_BASE = {
   s.addText("ポジティブ｜ワイン価格上昇 年10%（会社資料水準）", {
     x: M + 0.28, y: 1.98, w: CW / 2 - 0.71, h: 0.28, margin: 0, fontFace: SANS, fontSize: 11.5, bold: true, color: GOLD_L });
   table(s, scTable("positive", true), M + 0.28, 2.32, 5.23, [0.90, 1.05, 0.98, 0.98, 1.32], { rowH: 0.315, fontSize: 9.5 });
-  s.addText(`会社資料はFine Wineのリセールバリューを年率10%程度としており、主線の6%はこれに対し保守的に置いたもの。10%が実現すれば回転が18ヶ月へ延びても5年通算${pc(C1.scenarios.positive["18"].avg5)}と貴社基準を満たし、20%の分岐点は回転${mon(C1.breakeven.appr10 || 0)}まで後ろ倒しになる。`, {
+  s.addText(`会社資料はFine Wineのリセールバリューを年率10%程度としており、主線の6%はこれに対し保守的に置いたもの。10%が実現すれば回転が18ヶ月へ延びても年平均${pc(C1.scenarios.positive["18"].avg5)}と貴社基準を満たし、20%の分岐点は回転${mon(C1.breakeven.appr10 || 0)}まで後ろ倒しになる。`, {
     x: M + 0.28, y: 4.00, w: CW / 2 - 0.71, h: 0.52, margin: 0, fontFace: SANS, fontSize: 9, color: MUTED, lineSpacingMultiple: 1.2 });
 
   const nx = M + CW / 2 + 0.15;
@@ -803,7 +804,7 @@ const CHART_BASE = {
   s.addText("ネガティブ｜ワイン価格が横ばい（上昇0%）", {
     x: nx + 0.28, y: 1.98, w: CW / 2 - 0.71, h: 0.28, margin: 0, fontFace: SANS, fontSize: 11.5, bold: true, color: IVORY });
   table(s, scTable("negative", false), nx + 0.28, 2.32, 5.23, [0.90, 1.05, 0.98, 0.98, 1.32], { rowH: 0.315, fontSize: 9.5 });
-  s.addText(`値上がりを一切織り込まない場合。SPCの収益がαの取り込みだけになるため、5年通算20%を確保するには回転を${mon(C1.breakeven.appr0)}まで縮める必要があり、主線の12ヶ月では${pc(C1.scenarios.negative["12"].avg5)}にとどまる。`, {
+  s.addText(`値上がりを一切織り込まない場合。SPCの収益がαの取り込みだけになるため、年平均20%を確保するには回転を${mon(C1.breakeven.appr0)}まで縮める必要があり、主線の12ヶ月では${pc(C1.scenarios.negative["12"].avg5)}にとどまる。`, {
     x: nx + 0.28, y: 4.00, w: CW / 2 - 0.71, h: 0.52, margin: 0, fontFace: SANS, fontSize: 9, color: MUTED, lineSpacingMultiple: 1.2 });
 
   card(s, M, 4.74, CW, 1.42, { fill: CARD2, line: GOLD_D });
@@ -815,7 +816,7 @@ const CHART_BASE = {
 
 // ═══════════════════════════════════════════════════════════ 16 3シナリオ比較
 {
-  const s = chrome(base(), "COMPARISON", "3シナリオ比較：投資家 5年通算 年平均利回り",
+  const s = chrome(base(), "COMPARISON", "3シナリオ比較：投資家の年平均利回り",
     `投資家出資${okuN(C1.inv_capital)}円に対する5年間の分配の年平均。SPC税前利益を出資比率どおり60：40で配分し、満期の残存在庫は清算期間で売却したものとする。`);
 
   const cats = HOLDS.map((h) => h + "ヶ月");
@@ -828,7 +829,7 @@ const CHART_BASE = {
     { name: "ネガティブ（上昇0%）", labels: cats, values: vg },
   ], Object.assign({}, CHART_BASE, {
     x: M + 0.14, y: 1.92, w: CW - 0.28, h: 2.74, barDir: "col", barGapWidthPct: 45,
-    title: "在庫回転期間別 投資家 年平均利回り（5年通算・％）",
+    title: "在庫回転期間別 投資家 年平均利回り（年平均・％）",
     chartColors: [GOLD_L, GOLD, GOLD_D],
     showLegend: true, legendPos: "b", legendColor: MUTED, legendFontFace: SANS, legendFontSize: 9.5,
     valAxisMaxVal: Math.ceil(Math.max(...vp) * 1.12),
@@ -836,7 +837,7 @@ const CHART_BASE = {
   }));
 
   const cols = [
-    ["主線の提示レンジ", `回転12ヶ月・上昇6%で5年通算${pc(P1.avg5)}。想定レンジ9〜18ヶ月では${pc(minAvg5)}〜${pc(C1.holds["9"].avg5)}となり、20%を確保できるのは回転${mon(C1.breakeven.neutral)}までとなる。`, true],
+    ["主線の提示レンジ", `回転12ヶ月・上昇6%で年平均${pc(P1.avg5)}。想定レンジ9〜18ヶ月では${pc(minAvg5)}〜${pc(C1.holds["9"].avg5)}となり、20%を確保できるのは回転${mon(C1.breakeven.neutral)}までとなる。`, true],
     ["上振れの条件", `ワイン価格が会社資料水準の年10%で上昇した場合。回転が18ヶ月へ延びても${pc(C1.scenarios.positive["18"].avg5)}と基準を満たす。`, false],
     ["下振れの限界", `価格が横ばいの場合、20%に届くのは回転${mon(C1.breakeven.appr0)}までとなり、想定レンジでは基準を満たせない。回転の短縮が唯一の対抗手段となる。`, false],
   ];
@@ -853,7 +854,7 @@ const CHART_BASE = {
 // ═══════════════════════════════════════════════════════════ 17 感応度
 {
   const s = chrome(base(), "SENSITIVITY", "感応度：何が崩れると利回りがどう動くか",
-    `主線（在庫回転12ヶ月・定常年間${pc(P1.inv_yld)}）を基準とした、各変数の単独変動による影響（定常年間ベース）。`);
+    `主線（在庫回転12ヶ月・フル稼働時の単年${pc(P1.inv_yld)}）を基準とした、各変数の単独変動による影響（フル稼働時の単年ベース）。`);
 
   const S = C1.sensitivity, b = S.base;
   const mv = (v) => `${pc(b)} → ${pc(v)}（${pt(v - b)}）`;
@@ -871,7 +872,7 @@ const CHART_BASE = {
   table(s, rows, M, 1.78, CW, [1.96, 2.42, 2.58, 0.96, 3.97], { rowH: 0.355 });
 
   card(s, M, 5.08, CW, 1.16, { fill: CARD2, line: GOLD_D });
-  s.addText(`結論：卸値を時価−αにしたことで、投資家利回りを動かす要因は「ワイン価格の上昇率」と「在庫回転期間」の2つに絞られた。仕入価格と売値の変動は簿価が連動するため遮断される。5年通算20%の分岐点は回転${mon(C1.breakeven.neutral)}（上昇6%前提）であり、主線12ヶ月に余裕はない。上昇0%の場合は回転${mon(C1.breakeven.appr0)}まで縮めないと20%に届かないため、値上がりが止まる局面では回転の短縮が唯一の対抗手段となる。組入銘柄を流動性上位に絞り込み、B2B卸とB2Cを併走させて販売量を確保する設計とする。`, {
+  s.addText(`結論：卸値を時価−αにしたことで、投資家利回りを動かす要因は「ワイン価格の上昇率」と「在庫回転期間」の2つに絞られた。仕入価格と売値の変動は簿価が連動するため遮断される。年平均20%の分岐点は回転${mon(C1.breakeven.neutral)}（上昇6%前提）であり、主線12ヶ月に余裕はない。上昇0%の場合は回転${mon(C1.breakeven.appr0)}まで縮めないと20%に届かないため、値上がりが止まる局面では回転の短縮が唯一の対抗手段となる。組入銘柄を流動性上位に絞り込み、B2B卸とB2Cを併走させて販売量を確保する設計とする。`, {
     x: M + 0.30, y: 5.20, w: CW - 0.60, h: 0.92, margin: 0, valign: "middle",
     fontFace: SANS, fontSize: 10.5, color: IVORY, lineSpacingMultiple: 1.22 });
   s.addNotes(`効く変数は値上がりと回転の2つ。20%の分岐点は回転${mon(C1.breakeven.neutral)}。`);
@@ -975,7 +976,7 @@ const CHART_BASE = {
   const s = chrome(base(), "RISK", "想定されるリスクと対応策", null);
 
   const risks = [
-    ["価格変動リスク", "Fine Wine市況の下落・停滞", `本スキームで最も効く要因。主線は年6%上昇を織り込むが、横ばい（0%）では投資家利回り（5年通算）が${pc(P1.appr0_avg5)}まで低下する。会社資料の年率10%に対し保守的な前提を置いている。`],
+    ["価格変動リスク", "Fine Wine市況の下落・停滞", `本スキームで最も効く要因。主線は年6%上昇を織り込むが、横ばい（0%）では投資家利回り（年平均）が${pc(P1.appr0_avg5)}まで低下する。会社資料の年率10%に対し保守的な前提を置いている。`],
     ["在庫リスク", "想定価格で売り切れず滞留する", "銘柄をLiv-ex掲載の流通量の多い銘柄に限定。半期ごとに保有12ヶ月超の滞留在庫を洗い出し、時価が簿価を下回るものは評価減して報告する。"],
     ["流動性リスク", "現物のため即時換金できない", "当初3年間はロックアップ。4年目以降は年度ごとの解約日に対応し、解約枠に応じて現金比率を引き上げる。"],
     ["調達リスク", "想定価格・数量で仕入れられない", "インポーター・酒販店との年間調達枠を事前に締結。卸値は時価連動のため、仕入価格の上昇は投資家利回りには及ばない。"],
@@ -1025,7 +1026,7 @@ const CHART_BASE = {
     [td("販売チャネル"), td("酒販店卸（B2B）と自社EC・オークション（B2C）を半々", { align: "left" })],
     [td("在庫回転目標"), td("12ヶ月。最短9ヶ月、延びても15〜18ヶ月を想定レンジとする", { align: "left", color: GOLD_L, bold: true })],
     [td("SPC負担費用"), td("契約で限定列挙：保管・保険・入出庫・変動販売費／維持費200万・管理報酬・AUP150万・予備費50万。自社販路の手数料は決済込み13%上限", { align: "left" })],
-    [td("想定リターン"), td(`投資家利回り（5年通算・年平均）${pc(P1.avg5)}（回転12ヶ月）。定常年間は${pc(P1.inv_yld)}`, { align: "left", color: GOLD_L, bold: true })],
+    [td("想定リターン"), td(`投資家利回り（年平均）${pc(P1.avg5)}（回転12ヶ月）。フル稼働時の単年は${pc(P1.inv_yld)}`, { align: "left", color: GOLD_L, bold: true })],
     [td("報告・在庫配分"), td("半期：在庫明細・簿価・卸値・売上・試算表（データルームで常時参照）／在庫比率によるプロラタ配分を原則とする", { align: "left" })],
   ];
   table(s, left,  M, 1.74, tw2, colW, { rowH: 0.335, fontSize: 8.5 });
@@ -1033,7 +1034,7 @@ const CHART_BASE = {
 
   card(s, M, 5.96, CW, 0.94, { fill: CARD2, line: GOLD_D });
   s.addText("3年ロックアップが稼働率95%を可能にしている", { x: M + 0.30, y: 6.06, w: 6, h: 0.24, margin: 0, fontFace: SANS, fontSize: 11, bold: true, color: GOLD_L });
-  s.addText(`半期解約を前提とすると常時1〜3割を現金または即時換金可能な在庫で保有する必要があり、稼働率が下がって利回りも下がる（稼働率95%→85%で定常年間の投資家利回りは${pc(C1.sensitivity.base)}→${pc(C1.sensitivity.util85)}）。当初3年ロックアップ・4年目以降は年度ごとの解約という設計により、現金保有を5%に抑え、総額の95%をワインに充当できる。`, {
+  s.addText(`半期解約を前提とすると常時1〜3割を現金または即時換金可能な在庫で保有する必要があり、稼働率が下がって利回りも下がる（稼働率95%→85%でフル稼働時の単年の投資家利回りは${pc(C1.sensitivity.base)}→${pc(C1.sensitivity.util85)}）。当初3年ロックアップ・4年目以降は年度ごとの解約という設計により、現金保有を5%に抑え、総額の95%をワインに充当できる。`, {
     x: M + 0.30, y: 6.32, w: CW - 0.60, h: 0.48, margin: 0, fontFace: SANS, fontSize: 9, color: MUTED, lineSpacingMultiple: 1.16 });
   s.addNotes("卸値ルールと報酬二本立てを条件表に明記した。");
 }
@@ -1043,7 +1044,7 @@ const CHART_BASE = {
   const s = chrome(base(), "NEXT STEPS", "今後の進め方", null);
 
   const steps = [
-    ["01", "前提条件のすり合わせ", `想定回転期間・販売チャネル構成・解約条件、および卸値の控除率α（${pc(PA.alpha)}。5年通算20%を基礎）と管理報酬2%の水準についてご意見をいただく。`],
+    ["01", "前提条件のすり合わせ", `想定回転期間・販売チャネル構成・解約条件、および卸値の控除率α（${pc(PA.alpha)}。年平均20%を基礎）と管理報酬2%の水準についてご意見をいただく。`],
     ["02", "卸値ルールの確定", "時価の算定方法（B2B卸値とB2C売値の加重平均）とαを契約上固定する。第三者卸価格との比較資料を整備し、移転価格上の説明責任を果たせる状態にする。"],
     ["03", "免許・税務の確定", "SPCの免許要否と売買形態、酒類の現物出資の取扱い、WineBank出資分に対応する内部利益の会計処理を所轄税務署・顧問弁護士・公認会計士と確認する。"],
     ["04", "調達枠の確保と実証", "インポーター・酒販店との年間調達枠を締結し、小規模ロットで回転期間とチャネル別手数料の実証を行う。"],
@@ -1097,11 +1098,11 @@ const CHART_BASE = {
 
   const checks = [
     ["想定利回り20%（実績）に対して",
-     `回転12ヶ月・上昇6%の主線で5年通算${pc(P1.avg5)}（定常${pc(P1.inv_yld)}）。分岐点は回転${mon(C1.breakeven.neutral)}で余裕はない。`,
+     `主線（回転12ヶ月・上昇6%）で年平均${pc(P1.avg5)}。分岐点は回転${mon(C1.breakeven.neutral)}で余裕はない。`,
      `回転12ヶ月の達成が20%確保の必要条件となる。必要な年間販売額は${oku(P1.sales)}円で現状の販売実力（年5〜7億円）の範囲内にあり、流動性上位の銘柄に絞って組み入れる。`],
     ["解約条件に対して",
      "運用期間5年・当初3年ロックアップ・4年目以降は年度ごとの解約。分配は毎年1回。",
-     `この設計により現金保有を5%に抑え、総額の95%をワインに充当できる。半期解約を前提とすると稼働率が下がり定常年間で${pc(C1.sensitivity.base)}→${pc(C1.sensitivity.util85)}に低下する。`],
+     `この設計により現金保有を5%に抑え、総額の95%をワインに充当できる。半期解約を前提とすると稼働率が下がりフル稼働時の単年で${pc(C1.sensitivity.base)}→${pc(C1.sensitivity.util85)}に低下する。`],
     ["リスク分散に対して",
      `伝統的資産と相関の低い実物資産。既存30億円のポートフォリオに対し出資${okuN(C1.inv_capital)}円は約7%。`,
      "単一銘柄ではなく複数産地・複数ヴィンテージへの分散となり、ポートフォリオ内での分散効果が働く。"],
@@ -1116,7 +1117,7 @@ const CHART_BASE = {
   });
 
   card(s, M, 6.26, CW, 0.62);
-  s.addText(`ワインは飲めば消える嗜好品ではなく、正規流通の価格差という再現性のある収益源です。本ファンドでは、その価格差のうち時価に対する${pc(PA.alpha)}分をSPCに残し、残りをWineBankが卸値の中で受け取ります。WineBank受取${hyaku(P1.wb_total)}円のうち値入れ${hyaku(P1.transfer)}円と管理報酬${hyaku(C1.mgmt)}円は運用成果によらず確定し、持分${hyaku(P1.wb_equity)}円が成果に連動します。`, {
+  s.addText(`正規流通の価格差のうち時価に対する${pc(PA.alpha)}分をSPCに残し、残りをWineBankが卸値の中で受け取ります。WineBank受取（年平均）${hyaku(A1.wb_total)}円のうち値入れ${hyaku(A1.transfer)}円と管理報酬${hyaku(C1.mgmt)}円は運用成果によらず確定し、持分${hyaku(A1.wb_equity)}円が成果に連動します。`, {
     x: M + 0.30, y: 6.36, w: CW - 0.60, h: 0.42, margin: 0, valign: "middle",
     fontFace: SANS, fontSize: 10, color: IVORY, lineSpacingMultiple: 1.2 });
 

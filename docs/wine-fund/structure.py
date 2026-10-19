@@ -115,6 +115,20 @@ def avg5(total, hold, rate=None, alpha=None):
     return dist / (total * INV_RATIO) / 5
 
 
+def avg5_detail(total, hold, rate=None, alpha=None):
+    """5年間の年平均の内訳（SPC利益・WineBank値入れ）。値入れは当初の組入れと売却に伴う入替えの全量に対して計上する。"""
+    a = ALPHA if alpha is None else alpha
+    u = spc_unit(book=JIKA * (1 - a))
+    M.SPC_FIXED_TOTAL = fixed_for(total)
+    m = M.monthly(u, hold, capital=total, rate=rate, share=1.0, period_days=360)
+    profit = m["total_distributed"] + residual_gain(total, hold, u, a, rate)
+    tr = (u["spc_cost"] - BASE["mkt_cost"]) / u["spc_cost"]
+    transfer = (total * M.UTIL + m["total_cogs"]) * tr
+    return dict(pretax=profit / 5, inv=profit * INV_RATIO / 5, wb_equity=profit * WB_RATIO / 5,
+                transfer=transfer / 5, mgmt=total * MGMT_RATE,
+                wb_total=(profit * WB_RATIO + transfer) / 5 + total * MGMT_RATE)
+
+
 def avg5_old(total, hold):
     """従前の計算（満期の残存在庫を簿価償還）。p11の逆転の説明用。"""
     M.SPC_FIXED_TOTAL = fixed_for(total)
@@ -318,7 +332,7 @@ if __name__ == "__main__":
                         wb_equity=d["wb_equity"], transfer=d["transfer"],
                         wb_total=d["wb_total"], inv_yld=d["inv_yld"],
                         gross=d["gross"], selling=d["selling"], cost=d["cost"],
-                        avg5=avg5(total, h), avg5_old=avg5_old(total, h),
+                        avg5=avg5(total, h), avg5_old=avg5_old(total, h), avg5d=avg5_detail(total, h),
                         appr0=split(total, h, 0.0)["inv_yld"], appr0_avg5=avg5(total, h, 0.0),
                         k=M.appr(h))
         return dict(
