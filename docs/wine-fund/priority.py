@@ -5,7 +5,10 @@ import model as M, structure as S
 U = S.U; VAR = U["var_rate"]; RATIO = S.JIKA / S.BOOK      # 時価/簿価
 STOR = M.STORAGE_PER_LOT_YEAR / U["lot_cost"]             # 簿価1円あたり年保管料
 INS = M.INSURANCE_RATE; FIX = S.FIXED_BASE
-def sweep(total, S_year, pref=0.10, appr=M.APPRECIATION, mgmt_on=True, months=120):
+PAY_EVERY = 6     # 優先回収の分配は半期ごと（報告対象期間の末日）
+
+
+def sweep(total, S_year, pref=0.10, appr=M.APPRECIATION, mgmt_on=True, months=120, pay_every=PAY_EVERY):
     inv_cap = total*S.INV_RATIO; wb_cap = total*S.WB_RATIO
     book = total*M.UTIL; cash = total*(1-M.UTIL); prin = inv_cap; acc = 0.0; paid = 0.0; t_done=None
     for m in range(1, months+1):
@@ -15,6 +18,7 @@ def sweep(total, S_year, pref=0.10, appr=M.APPRECIATION, mgmt_on=True, months=12
         cost = sale*VAR + book*(STOR+INS)/12 + FIX/12 + (mgmt_on and (prin+wb_cap)*S.MGMT_RATE/12 or 0)
         cash += sale - cost
         acc += prin*pref/12
+        if m % pay_every: continue
         pay = min(cash, acc); cash -= pay; acc -= pay; paid += pay
         pay = min(cash, prin); cash -= pay; prin -= pay; paid += pay
         if prin <= 1 and acc <= 1 and t_done is None:
@@ -33,7 +37,8 @@ TRIGGER = 0.6     # 優先回収事由：直近12ヶ月の売上 ＜ 総額 × 0
 
 
 def true_up(total, S_year=3e8, fire=1.0):
-    """優先回収の完了後、残在庫を時価×fire で売却して最終精算したときの投資家の過不足（＋は追加分配、−は精算で返す額）。"""
+    """優先回収の完了後、残在庫を時価×fire で売却して最終精算したときの投資家の過不足。
+    ＋はプロラタまでの追加分配。−は投資家が多く受け取った額で、返還は求めずWineBankの分配から差し引く。"""
     r = sweep(total, S_year)
     net = r["left_book"] * RATIO * (1 + M.APPRECIATION) ** (r["done"] / 12) * (1 - VAR) * fire + r["left_cash"]
     T = r["paid"] + net
