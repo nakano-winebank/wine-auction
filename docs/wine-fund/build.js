@@ -1015,7 +1015,7 @@ const CHART_BASE = {
     [td("資本構成"), td(`WineBank現物出資60%（${okuN(C1.wb_capital)}円）＋投資家出資40%（${okuN(C1.inv_capital)}円）。1口5,000万円以上`, { align: "left", color: GOLD_L, bold: true })],
     [td("損益の配分"), td("SPC税前利益を出資比率どおり60：40で配分。成功報酬（折半）は取らない", { align: "left", color: GOLD_L, bold: true })],
     [td("運用期間"), td("5年。満期時に在庫を売却清算のうえ元本償還", { align: "left" })],
-    [td("中途解約"), td("当初3年間はロックアップ。以後は通知から90日経過後の半期末に解約、支払は2ヶ月後（換価が遅れる場合も残額は6ヶ月以内）", { align: "left", color: GOLD_L, bold: true })],
+    [td("中途解約"), td("当初3年間はロックアップ。以後は通知から90日経過後の半期末に解約、支払は3ヶ月後の月末（換価が遅れる場合も残額は6ヶ月以内）", { align: "left", color: GOLD_L, bold: true })],
     [td("分配"), td("年1回・利益のみ。売却代金の元本相当は再購入に充て満期まで留保（利益の複利再投資は行わない）", { align: "left" })],
   ];
   const right = [

@@ -86,3 +86,72 @@ def comment(needle, text):
     p = (p[:k] + f'<w:commentRangeStart w:id="{cid}"/>' + p[k:-6] + f'<w:commentRangeEnd w:id="{cid}"/>'
          f'<w:r><w:rPr><w:rStyle w:val="CommentReference"/></w:rPr><w:commentReference w:id="{cid}"/></w:r></w:p>')
     x = x[:a] + p + x[b:]; save()
+
+
+TOP_RUN = re.compile(r'<w:r(?: [^>]*)?>(?:(?!</w:r>).)*</w:r>', re.S)
+def _top_runs(p):
+    """段落 p の、w:ins / w:del の外にある run を (start, end) で返す。"""
+    out = []
+    for m in TOP_RUN.finditer(p):
+        pre = p[:m.start()]
+        if len(re.findall(r'<w:(?:ins|del) [^>]*[^/]>', pre)) != pre.count('</w:ins>') + pre.count('</w:del>'):
+            continue
+        out.append((m.start(), m.end()))
+    return out
+
+def _as_del(run):
+    r = run.replace('<w:t>', '<w:delText xml:space="preserve">').replace('<w:t xml:space="preserve">', '<w:delText xml:space="preserve">').replace('</w:t>', '</w:delText>')
+    return f'{TAG("del")}{r}</w:del>'
+
+def delete_span(para, start, end, new=None):
+    """段落 para の中で、文字列 start から end（を含む）までを、run をまたいで削除扱いにし、new を挿入する。"""
+    global x
+    a, b = find(para); p = x[a:b]
+    runs = _top_runs(p)
+    texts = [''.join(html.unescape(s) for s in re.findall(r'<w:t(?: [^>]*)?>([^<]*)</w:t>', p[s:e])) for s, e in runs]
+    full = ''.join(texts)
+    s0 = full.index(start); e0 = full.index(end, s0) + len(end)
+    pos, pieces, last = 0, [], None
+    for (rs, re_), t in zip(runs, texts):
+        r0, r1 = pos, pos + len(t); pos = r1
+        if r1 <= s0 or r0 >= e0 or not t:
+            continue
+        run = p[rs:re_]
+        if r0 >= s0 and r1 <= e0:
+            rep = _as_del(run)
+        else:
+            m = re.match(r'(<w:r(?: [^>]*)?>)(<w:rPr>.*?</w:rPr>)?(.*?)<w:t(?: [^>]*)?>([^<]*)</w:t>(.*)</w:r>$', run, re.S)
+            assert m and m.group(4) is not None and html.unescape(m.group(4)) == t, "部分削除は単一の w:t の run のみ対応"
+            ro, rpr, before, _, after = m.group(1), m.group(2) or "", m.group(3), m.group(4), m.group(5)
+            i, j = max(s0 - r0, 0), min(e0 - r0, len(t))
+            pre, cut, post = t[:i], t[i:j], t[j:]
+            rep = ""
+            if pre or before: rep += f'{ro}{rpr}{before}<w:t xml:space="preserve">{esc(pre)}</w:t></w:r>'
+            rep += f'{TAG("del")}{ro}{rpr}<w:delText xml:space="preserve">{esc(cut)}</w:delText></w:r></w:del>'
+            if post or after: rep += f'{ro}{rpr}<w:t xml:space="preserve">{esc(post)}</w:t>{after}</w:r>'
+        pieces.append((rs, re_, rep))
+    if new:
+        rs, re_, rep = pieces[-1]
+        m = re.match(r'<w:r(?: [^>]*)?>(<w:rPr>.*?</w:rPr>)?', p[rs:re_], re.S)
+        ins = f'{TAG("ins")}<w:r>{m.group(1) or ""}<w:t xml:space="preserve">{esc(new)}</w:t></w:r></w:ins>'
+        k = rep.rfind('</w:del>') + len('</w:del>')
+        pieces[-1] = (rs, re_, rep[:k] + ins + rep[k:])
+    for rs, re_, rep in reversed(pieces):
+        p = p[:rs] + rep + p[re_:]
+    x = x[:a] + p + x[b:]
+
+def delete_para(needle):
+    """needle を含む段落を、本文と段落記号ごと削除扱いにする。"""
+    global x
+    a, b = find(needle); p = x[a:b]
+    for rs, re_ in reversed(_top_runs(p)):
+        p = p[:rs] + _as_del(p[rs:re_]) + p[re_:]
+    mark = f'{TAG("del")[:-1]}/>'
+    if '<w:pPr>' in p:
+        if re.search(r'<w:pPr>.*?<w:rPr>.*?</w:pPr>', p, re.S):
+            p = re.sub(r'(<w:pPr>.*?<w:rPr>)', r'\1' + mark, p, count=1, flags=re.S)
+        else:
+            p = p.replace('</w:pPr>', f'<w:rPr>{mark}</w:rPr></w:pPr>', 1)
+    else:
+        p = re.sub(r'^(<w:p[^>]*>)', r'\1' + f'<w:pPr><w:rPr>{mark}</w:rPr></w:pPr>', p)
+    x = x[:a] + p + x[b:]
