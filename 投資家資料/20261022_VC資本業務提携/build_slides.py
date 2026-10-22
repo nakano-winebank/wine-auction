@@ -238,12 +238,14 @@ def seg_sum(keys, kind):
     return [sum(E[k][kind][i] for k in keys) for i in range(4)]
 
 
-# ═══════════ p.34 ビジネスモデルに伴う組織再編 ═══════════
-s = new_slide("ビジネスモデルに伴う組織再編",
+# ═══════════ p.41 ファインダイニング ～ビジネスモデルに伴う組織再編～ ═══════════
+EX = M["total_ex"]
+Q = M["quint"]
+s = new_slide("ファインダイニング ～ビジネスモデルに伴う組織再編～",
               f"持分をWineBankへ集約し連結運営へ ― 連結売上 {oku(TOT['rev'][0], 0)}億円（2026年度予算）→ "
               f"{oku(TOT['rev'][3], 0)}億円（2029年度）", band_size=12)
 
-# 左：再編後のグループ構成
+# 左：再編後のグループ構成（2026/10/22 デック上の修正を反映）
 tb(s, 0.30, 1.19, 4.40, 0.18,
    "株主：中野邦人／マネーフォワードVP／PrivateBANK／ベクトル／寺田倉庫 ほか",
    size=6.5, color=GREY)
@@ -258,14 +260,13 @@ CXS = [0.30, 1.42, 2.54, 3.66]
 CW = 1.04
 line(s, CXS[0] + CW / 2, 2.29, CXS[3] + CW / 2, 2.29, color=GREY)
 cols = [
-    ("グランメゾン", COPPER, [("アピシウス", "100%", "銀座・創業41年"),
-                         ("カンテサンス", "50〜66.7%", "SPC経由（外部33.3〜50%）\n三つ星／取得協議中")]),
+    ("グランメゾン", COPPER, [("アピシウス", "70%", "銀座・創業41年"),
+                         ("カンテサンス", "51%", "SPC経由（外部49%）\n三つ星／取得協議中")]),
     ("ブラッスリー", COPPER, [("Brasserie\nThierry Marx", "66.7%", "外部投資家33.3%\n2027年4月 六本木開業"),
                          ("ティエリーマルクス×TBS", "ライセンス", "サブライセンスで\nWineBankが運営")]),
     ("レストラン運営", COPPER, [("バリューキッチン", "60%", "Prime42・oto ほか"),
-                           ("バリューテーブル\n・エルネット等", "60〜75%", "飲食・不動産管理")]),
-    ("持分法等（連結外）", "9E9E9E", [("あどばる", "37%", "ビジョングループ\n（東証プライム）"),
-                               ("KINKA／バーガー\nレボリューション", "20%／49%", "持分法の対象")]),
+                           ("その他", "60〜75%", "飲食")]),
+    ("持分法等（連結外）", "9E9E9E", [("あどばる", "37%", "ビジョングループ\n（東証プライム）")]),
 ]
 for (head, hc, items), x in zip(cols, CXS):
     line(s, x + CW / 2, 2.29, x + CW / 2, 2.36, color=GREY)
@@ -284,49 +285,52 @@ boxtext(flow, [[("WineBank → 各社　", {"b": True, "c": NAVY2}), ("ワイン
                 ("ワイン代金・経営指導料・AM報酬／ライセンスフィー（TM）", {})]],
         size=6.5, color=NAVY, align=PP_ALIGN.LEFT, space=1.15, margin=0.10)
 
-# 右：連結業績計画（億円）
+# 右：連結業績計画（億円）。カンテサンスを含む場合・除く場合を分けて記載
 tb(s, 4.90, 1.19, 4.80, 0.18, "連結業績計画（億円）", size=8.5, bold=True, color=NAVY2)
 rows = [["セグメント", "", *YL]]
 styles = {}
 merges = [(0, 0, 0, 1)]
-for name, keys in SEG:
-    r_ = seg_sum(keys, "rev")
-    o_ = seg_sum(keys, "op")
+for sg in M["segments"]:
     i0 = len(rows)
-    rows.append([name, "売上高", *[oku(v) for v in r_]])
-    rows.append(["", "営業利益", *[oku(v) for v in o_]])
+    rows.append([sg["name"], "売上高", *[oku(v) for v in sg["rev"]]])
+    rows.append(["", "営業利益", *[oku(v) for v in sg["op"]]])
     merges.append((i0, 0, i0 + 1, 0))
     styles[(i0, 0)] = dict(bold=True, color=NAVY2, align=PP_ALIGN.LEFT)
     styles[(i0 + 1, None)] = dict(fill=CARD)
     styles[(i0 + 1, 0)] = dict(fill=WHITE, bold=True, color=NAVY2, align=PP_ALIGN.LEFT)
     for j in range(2, 6):
         styles[(i0 + 1, j)] = dict(fill=CARD, color=COPPER, bold=True)
-for lab, vals, fmt in (("連結売上高", TOT["rev"], oku), ("連結営業利益", TOT["op"], oku),
-                       ("営業利益率", [o / r for o, r in zip(TOT["op"], TOT["rev"])], pct),
-                       ("（参考）持分按分後 営業利益", TOT["attrib_op"], oku)):
+TOTAL_ROWS = (
+    ("連結売上高（カンテサンス含む）", TOT["rev"], NAVY2, WHITE, True),
+    ("連結営業利益（カンテサンス含む）", TOT["op"], NAVY2, WHITE, True),
+    ("連結売上高（カンテサンス除く）", EX["rev"], COPPER, WHITE, True),
+    ("連結営業利益（カンテサンス除く）", EX["op"], COPPER, WHITE, True),
+    ("（参考）持分按分後 営業利益　含む", TOT["attrib_op"], BEIGE, NAVY, False),
+    ("（参考）持分按分後 営業利益　除く", EX["attrib_op"], BEIGE, NAVY, False),
+)
+for lab, vals, fill, fc, bold in TOTAL_ROWS:
     i0 = len(rows)
-    rows.append([lab, "", *[fmt(v) for v in vals]])
+    rows.append([lab, "", *[oku(v) for v in vals]])
     merges.append((i0, 0, i0, 1))
-    big = lab in ("連結売上高", "連結営業利益")
-    styles[(i0, None)] = dict(fill=NAVY2 if big else BEIGE, color=WHITE if big else NAVY, bold=big)
-    styles[(i0, 0)] = dict(fill=NAVY2 if big else BEIGE, color=WHITE if big else NAVY, bold=True,
-                           align=PP_ALIGN.LEFT, size=7.5 if not big else 8)
-for j in range(1, 6):
-    for i in range(1, 9):
-        styles.setdefault((i, j), {})
+    styles[(i0, None)] = dict(fill=fill, color=fc, bold=bold)
+    styles[(i0, 0)] = dict(fill=fill, color=fc, bold=True, align=PP_ALIGN.LEFT, size=7)
 for i in range(1, 9):
     styles[(i, 1)] = dict(styles.get((i, 1), {}), align=PP_ALIGN.CENTER, size=7, color=GREY)
 table(s, 4.90, 1.40, [1.12, 0.64, 0.76, 0.76, 0.76, 0.76],
-      [0.34] + [0.215] * 8 + [0.25, 0.25, 0.22, 0.22], rows, size=8, merges=merges, styles=styles)
-tb(s, 0.30, 4.62, 9.40, 0.60,
-   [[("年度＝WineBank決算期（10月〜翌9月）。2026年度＝2027年9月期の予算。", {"b": True})],
-    [("決算期が異なる子会社は月割りで組替え。カンテサンスは期初取得を仮定したプロフォーマ（IM計画値。取得後の報酬見直し等の改善と"
-      "役員退職金等の一時費用は含まず）。グループ内取引の消去は未反映（WineBankのグループ内コンサル料は消去済）。"
-      "持分按分後営業利益はカンテサンス50%・TM66.7%・バリューキッチン60%等の下限持分で按分。事業別の内訳と出所は次頁。", {})]],
-   size=6.3, color=GREY, space=1.1)
+      [0.30] + [0.20] * 8 + [0.21] * 6, rows, size=8, merges=merges, styles=styles)
+qtxt = "／".join(f"{oku(r)}・{oku(o)}" for r, o in zip(Q["rev"], Q["op"]))
+tb(s, 0.30, 4.64, 9.40, 0.58,
+   [[("年度＝WineBank決算期（10月〜翌9月）。2026年度＝2027年9月期の予算。", {"b": True}),
+     ("ワイン・WineTechとレストラン運営の営業利益は経営判断による修正値。億円未満を四捨五入しているため、内訳の和と合計は一致しない場合がある。",
+      {})],
+    [(f"カンテサンス（売上・営業利益、億円）：{qtxt}。期初取得を仮定したプロフォーマ（IM計画値。取得後の報酬見直し等の改善と"
+      "役員退職金等の一時費用は含まず）。決算期が異なる子会社は月割りで組替え。グループ内取引の消去は未反映"
+      "（WineBankのグループ内コンサル料は消去済）。持分按分はアピシウス70%・カンテサンス51%・TM66.7%・バリューキッチン60%等。", {})]],
+   size=6.0, color=GREY, space=1.1)
 s.notes_slide.notes_text_frame.text = (
-    "元のp.34（売上4⇒30億・スキーム図追加予定）の差替。外部投資家以外の持分をWineBankへ集約した後の連結PL。"
-    "数値は 組織再編_連結PL_2026-2029.xlsx と一致。")
+    "2026/10/22：p.41で修正したセグメント営業利益（ワイン・WineTech 0.1/1.0/1.5/2.0、レストラン運営 1.3/1.0/1.0/1.0）"
+    "を反映し、連結合計を再計算。時価総額をカンテサンスの有無で分けるため、含む・除くを別掲。"
+    "数値は 組織再編_連結PL_2026-2029.xlsx（セグメント集計_含む除く）と一致。")
 
 # ═══════════ p.35 連結損益計画（事業別） ═══════════
 s = new_slide("組織再編後の連結損益計画（事業別）",
@@ -409,7 +413,7 @@ tb(s, 0.30, 4.66, 9.40, 0.55,
    size=6.3, color=GREY, space=1.1)
 
 # ═══════════ ワインマイル経済圏 ═══════════
-s = new_slide("ワインマイル経済圏 ―「ワイン貯金」",
+s = new_slide("01 ワインマイル経済圏 ～「ワイン貯金」～",
               "持つ・貯める・開ける・贈る・譲る。ワインにまつわる体験を、ひとつの通貨でつなぐ")
 CX = [0.587, 3.677, 6.855]
 CWD = 2.559
@@ -469,7 +473,7 @@ s.notes_slide.notes_text_frame.text = (
     "最新レートカードで再計算した値（参考_ワインマイル3か年PL_最新レートカード再計算.xlsx）。")
 
 # ═══════════ 国内オーベルジュ構想 ═══════════
-s = new_slide("国内オーベルジュ構想", "ワイナリーに隣接し、温泉を持つ。日本にまだ無いオーベルジュをつくります")
+s = new_slide("その先へ… 滞在型体験 ～国内オーベルジュ構想～", "ワイナリーに隣接し、温泉を持つ。日本にまだ無いオーベルジュをつくります")
 cards = [("料理", "一日十数名だけ", "その土地の生産者と、同じテーブルに", False),
          ("ワイン", "ワイナリー隣接", "造り手の畑が、窓の外にある", False),
          ("滞在", "温泉 ＋ 10室", "食後に、移動しなくていい", True)]
@@ -529,33 +533,39 @@ for k, x in enumerate(XS):
 for k, x in enumerate(XS):
     h = rect(s, x, 1.60, WW, 0.42, fill=NAVY2)
     boxtext(h, [[(YT[k], {"sz": 10, "b": True})], [(YP[k], {"sz": 6.5, "c": SAND})]], space=1.0)
-    rect(s, x, 2.06, WW, 1.08, fill=CARD)
+    rect(s, x, 2.06, WW, 1.26, fill=CARD)
     tb(s, x + 0.12, 2.12, WW - 0.24, 0.18, "連結売上高", size=7, color=GREY)
     tb(s, x + 0.12, 2.28, WW - 0.24, 0.36,
        [[(oku(TOT["rev"][k]), {"sz": 20, "b": True, "c": COPPER}), (" 億円", {"sz": 9, "b": True, "c": NAVY2})]])
-    tb(s, x + 0.12, 2.70, WW - 0.24, 0.18, "連結営業利益", size=7, color=GREY)
-    tb(s, x + 0.12, 2.84, WW - 0.24, 0.28,
+    tb(s, x + 0.12, 2.68, WW - 0.24, 0.18, "連結営業利益（カンテサンス含む）", size=7, color=GREY)
+    tb(s, x + 0.12, 2.82, WW - 0.24, 0.28,
        [[(oku(TOT["op"][k]), {"sz": 14, "b": True, "c": NAVY2}), (" 億円", {"sz": 8, "b": True, "c": NAVY2}),
          (f"（{pct(TOT['op'][k] / TOT['rev'][k])}）", {"sz": 7, "c": GREY})]])
+    tb(s, x + 0.12, 3.12, WW - 0.24, 0.18,
+       [[("カンテサンス除く　", {"sz": 7, "c": GREY}), (oku(EX["op"][k]), {"sz": 10, "b": True, "c": COPPER}),
+         (" 億円", {"sz": 7, "b": True, "c": COPPER}), (f"（{pct(EX['op'][k] / EX['rev'][k])}）", {"sz": 6.5, "c": GREY})]])
     for m, txt in enumerate(MS[k]):
-        yy = 3.22 + m * 0.36
-        rect(s, x, yy, WW, 0.32, fill=WHITE, line=LINE)
-        rect(s, x, yy, 0.05, 0.32, fill=COPPER)
-        tb(s, x + 0.12, yy + 0.02, WW - 0.18, 0.28, txt, size=7, bold=True, color=NAVY2,
+        yy = 3.40 + m * 0.34
+        rect(s, x, yy, WW, 0.30, fill=WHITE, line=LINE)
+        rect(s, x, yy, 0.05, 0.30, fill=COPPER)
+        tb(s, x + 0.12, yy + 0.01, WW - 0.18, 0.28, txt, size=7, bold=True, color=NAVY2,
            anchor=MSO_ANCHOR.MIDDLE, space=1.0)
 for k in range(3):
     tb(s, XS[k] + WW, 2.40, XS[k + 1] - XS[k] - WW, 0.30, "▶", size=10, color=COPPER, align=PP_ALIGN.CENTER)
-tb(s, 0.45, 4.72, 9.10, 0.50,
-   "連結数値は組織再編後のプロフォーマ（組織再編の頁・事業別内訳の頁を参照）。年度＝WineBank決算期（10月〜翌9月）。"
-   "カンテサンスは期初取得を仮定。",
+tb(s, 0.45, 4.82, 9.10, 0.40,
+   "連結数値は組織再編後のプロフォーマ（ファインダイニング～組織再編～の頁を参照）。年度＝WineBank決算期（10月〜翌9月）。"
+   "カンテサンスは期初取得を仮定し、取得しない場合を「カンテサンス除く」として併記。",
    size=6.3, color=GREY, space=1.1)
 
 s.notes_slide.notes_text_frame.text = (
-    "元のp.44（WineBank単体 売上11→17→25億円・レストラン売上30→40→50億円）を、組織再編後のグループ連結数値に置き換えた。")
+    "2026/10/22：p.41のセグメント営業利益の修正を反映。連結営業利益はカンテサンス含む・除くを併記。")
 
-# ───────── 元スライドを削除して保存 ─────────
+# ───────── 元スライドと、出力しないスライドを削除して保存 ─────────
+# 作成順：0=組織再編(p.41) 1=事業別 2=ワインマイル 3=オーベルジュ 4=ロードマップ(p.42)
+KEEP = [int(x) for x in (sys.argv[4] if len(sys.argv) > 4 else "0,4").split(",")]
 lst = pr.slides._sldIdLst
-for el in list(lst)[:N_ORIG]:
+drop = list(lst)[:N_ORIG] + [el for k, el in enumerate(list(lst)[N_ORIG:]) if k not in KEEP]
+for el in drop:
     pr.part.drop_rel(el.get(R + "id"))
     lst.remove(el)
 pr.save(OUT)
