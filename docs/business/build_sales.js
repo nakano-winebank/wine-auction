@@ -159,6 +159,49 @@ async function icon(name, hex, px = 256) {
   k.bar(s, 6.05, "最終判断・交渉・責任は人（コンサルタントと中野）が持つ", "AIで1人あたりの担当社数を増やし、価格を抑えながら品質を保つ", { h: 0.85 });
   s.addNotes("AIは道具。差は、49戦のルールでAIの出した答えを判定するところにある。");
 
+  // ===== 7b. IMデータベース =====
+  s = k.content({ section: "サービス", kicker: "IM DATABASE", title: "関東圏×4業種のIMデータベースで「適正価格」を語る", sub: "成約データまでは持てなくても、IM（企業概要書）なら集められる。地域と業種を絞って、M&A版REINSの土台をつくる" });
+  const stepLbl = (y, n, t, fill) => {
+    s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: M, y, w: 0.95, h: 1.75, rectRadius: 0.06, fill: { color: fill }, line: { color: fill }, objectName: "step label " + n });
+    T(s, [{ text: "STEP", options: { fontSize: 9.5, breakLine: true } }, { text: n, options: { fontSize: 24, breakLine: true } }, { text: t, options: { fontSize: 10.5 } }], { x: M, y, w: 0.95, h: 1.75, bold: true, color: C.background1, align: "center", valign: "middle" });
+  };
+  const chev = (x, y) => s.addShape(pres.shapes.CHEVRON, { x, y, w: 0.22, h: 0.3, fill: { color: C.accent1 }, line: { color: C.accent1 }, objectName: "flow arrow" });
+  stepLbl(2.2, "1", "支援前", C.text1);
+  const st1 = [
+    ["集める", "提携FA・仲介から受け取ったIM、顧問先・士業経由、自社49戦の案件、公開案件"],
+    ["AIで構造化", "業種・地域・売上・営業利益・EBITDA・純資産・希望価格・人員・設備を自動で抽出"],
+    ["IMデータベース", "関東圏（一都三県）×4業種にまず特化"],
+    ["適正価格の幅", "業種×規模ごとのEBITDA倍率・純資産倍率で「高い／妥当／安い」を判定"],
+  ];
+  for (let i = 0; i < 4; i++) {
+    const x = 1.9 + i * 2.7, dk = i === 2;
+    if (dk) s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x, y: 2.2, w: 2.38, h: 1.75, rectRadius: 0.06, fill: { color: C.text1 }, line: { color: C.text1 }, objectName: "im database" });
+    else k.card(s, x, 2.2, 2.38, 1.75, { name: "step1 " + st1[i][0] });
+    T(s, st1[i][0], { x: x + 0.18, y: 2.3, w: 2.05, h: 0.4, fontSize: 14, bold: true, color: dk ? C.accent4 : C.text1 });
+    T(s, st1[i][1], { x: x + 0.18, y: 2.72, w: 2.05, h: dk ? 0.6 : 1.15, fontSize: 10.5, color: dk ? C.accent3 : C.accent2 });
+    if (dk) ["生産", "卸", "飲食", "不動産"].forEach((g, j) => k.pill(s, x + 0.18 + j * 0.52, 3.45, 0.48, g, { fill: C.accent1 }));
+    if (i < 3) chev(x + 2.43, 2.92);
+  }
+  stepLbl(4.15, "2", "支援中・後", C.accent1);
+  k.card(s, 1.9, 4.15, 2.3, 0.8, { name: "input im" });
+  T(s, [{ text: "検討した全IM", options: { bold: true, breakLine: true } }, { text: "NDA後に受け取った資料をすべて", options: { fontSize: 10, color: C.accent2 } }], { x: 2.08, y: 4.15, w: 2.0, h: 0.8, fontSize: 12.5, valign: "middle" });
+  k.card(s, 1.9, 5.1, 2.3, 0.8, { name: "input own" });
+  T(s, [{ text: "自社のBS/PL・強み", options: { bold: true, breakLine: true } }, { text: "顧客基盤・拠点・人材・仕入・技術", options: { fontSize: 10, color: C.accent2 } }], { x: 2.08, y: 5.1, w: 2.0, h: 0.8, fontSize: 12.5, valign: "middle" });
+  chev(4.3, 4.88);
+  s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: 4.62, y: 4.15, w: 2.75, h: 1.75, rectRadius: 0.06, fill: { color: C.accent1 }, line: { color: C.accent1 }, objectName: "cross analysis" });
+  T(s, [{ text: "AIで掛け合わせ分析", options: { bold: true, fontSize: 14, breakLine: true } }, { text: " ", options: { fontSize: 5, breakLine: true } }, { text: "相手のIM×自社の数字と強みを突き合わせ、データベースの相場と比べる", options: { fontSize: 10.5 } }], { x: 4.8, y: 4.15, w: 2.4, h: 1.75, color: C.background1, valign: "middle" });
+  chev(7.47, 4.88);
+  k.card(s, 7.8, 4.15, 4.78, 1.75, { name: "outputs" });
+  T(s, "アウトプット", { x: 8.0, y: 4.22, w: 2, h: 0.32, fontSize: 11, bold: true, color: C.accent1 });
+  ["適正価格と交渉の上限", "シナジー試算（売上・コスト）", "借入余力と資金計画", "レッドフラグとPMIの論点"].forEach((t, i) => {
+    const x = 8.0 + (i % 2) * 2.25, y = 4.6 + Math.floor(i / 2) * 0.6;
+    s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x, y, w: 2.13, h: 0.5, rectRadius: 0.05, fill: { color: C.background1 }, line: { color: C.accent3 }, objectName: "out " + (i + 1) });
+    T(s, t, { x, y, w: 2.13, h: 0.5, fontSize: 10, bold: true, align: "center", valign: "middle" });
+  });
+  k.pill(s, 10.2, 4.0, 2.25, "↑ 匿名化してDBへ還元", { fill: C.accent3, color: C.text1 });
+  k.note(s, 6.15, "使うほど相場の精度が上がる。守秘義務：IMはNDAの範囲内でのみ利用し、DB化は開示元の同意を得た項目を社名が分からない形に加工して行う");
+  s.addNotes("成約データは持てないが、IMなら集められる。関東の生産・卸・飲食・不動産に絞って相場をつくり、適正価格をアドバイスする。支援が始まったら、受け取ったIMをすべて取り込み、お客様のBS/PLと強みに掛け合わせて分析する。分析したIMは匿名化してデータベースに戻すので、使うほど精度が上がる。");
+
   // ===== 8. 競合との違い =====
   s = k.content({ section: "サービス", kicker: "POSITIONING", title: "仲介でもマッチングサイトでもない、第三の選択肢", sub: "「買い手の味方」として「成功まで伴走する」のは、ここだけ" });
   // マップ
