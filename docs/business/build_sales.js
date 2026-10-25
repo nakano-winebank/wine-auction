@@ -88,25 +88,27 @@ async function icon(name, hex, px = 256) {
   s.addNotes("ここが一番伝えたいところ。自分も負けた。だから、同じ負け方をする人を減らしたい。");
 
   // ===== 5. 実績 =====
-  s = k.content({ section: "課題と原点", kicker: "TRACK RECORD", title: "49戦の実績：勝ちも負けも、すべて自社の実案件", sub: "2011年3月〜現在。仲介ではなく、自分のお金で買い、売り、立て直してきた" });
-  const rec = [["約50", "案件", "買収28／売却21／出資2"], ["25.2", "億円", "支払った買収総額（回収16.7億円）"], ["0.34", "倍", "売上74億円分の事業を25.2億円で取得"], ["2.9", "倍", "グループ売上 23億円→66億円（2019→2026予想）"]];
-  for (let i = 0; i < 4; i++) k.stat(s, M + i * 3.03, 2.2, 2.8, 2.2, rec[i][0], rec[i][1], rec[i][2], { size: 36 });
+  s = k.content({ section: "課題と原点", kicker: "TRACK RECORD", title: "49戦の実績：安く買い、利益と資産で回収する", sub: "買収額を「いくらの利益と資産が手に入ったか」で測る。2011年3月〜現在、すべて自社の実案件" });
+  const rec = [["約50", "案件", "買収28／売却21／出資2。発掘はほぼ自分"], ["1.4", "倍", "第1期の回収倍率。投じた10.8億円が14.9億円で戻った"], ["2.4", "億円／年", "第2期の買収先の営業利益（ランレート、2026年予想）"], ["約6", "年", "第2期の回収年数（買収額14.4億円÷年間営業利益）"]];
+  for (let i = 0; i < 4; i++) k.stat(s, M + i * 3.03, 2.2, 2.8, 2.08, rec[i][0], rec[i][1], rec[i][2], { size: 36 });
   s.addChart(pres.charts.BAR, [
-    { name: "投じた額", labels: ["第1期 2011–19", "第2期 2020–"], values: [10.8, 14.4] },
-    { name: "回収＋事業利益／取得純資産", labels: ["第1期 2011–19", "第2期 2020–"], values: [9.4, 15.9] },
+    { name: "投じた額", labels: ["第1期 投じた額", "第1期 戻った額", "第2期 投じた額", "第2期 得た資産＋1年分の利益"], values: [10.8, 0, 14.4, 0] },
+    { name: "営業利益", labels: ["第1期 投じた額", "第1期 戻った額", "第2期 投じた額", "第2期 得た資産＋1年分の利益"], values: [0, 7.6, 0, 2.4] },
+    { name: "売却回収", labels: ["第1期 投じた額", "第1期 戻った額", "第2期 投じた額", "第2期 得た資産＋1年分の利益"], values: [0, 5.3, 0, 0] },
+    { name: "手元の純資産", labels: ["第1期 投じた額", "第1期 戻った額", "第2期 投じた額", "第2期 得た資産＋1年分の利益"], values: [0, 2.0, 0, 15.9] },
   ], {
-    x: M, y: 4.55, w: 6.6, h: 2.15, barDir: "bar", barGapWidthPct: 45,
-    chartColors: [H.accent3, H.accent1], showValue: true, dataLabelPosition: "outEnd", dataLabelFormatCode: "0.0\"億\"", dataLabelColor: H.dk1, dataLabelFontSize: 10, dataLabelFontFace: "+mn-lt",
-    showLegend: true, legendPos: "b", legendFontSize: 9, legendFontFace: "+mn-lt", legendColor: H.accent2,
-    catAxisLabelColor: H.dk1, catAxisLabelFontSize: 10, catAxisLabelFontFace: "+mn-lt", valAxisHidden: true, valGridLine: { style: "none" }, catGridLine: { style: "none" },
-    catAxisLineShow: false, objectName: "two phase chart",
+    x: M, y: 4.4, w: 7.0, h: 2.2, barDir: "bar", barGrouping: "stacked", barGapWidthPct: 35, catAxisOrientation: "maxMin",
+    chartColors: [H.accent5, H.dk1, H.accent4, H.accent1], showValue: true, dataLabelPosition: "ctr", dataLabelFormatCode: "0.0;;;", dataLabelColor: "FFFFFF", dataLabelFontSize: 9, dataLabelFontFace: "+mn-lt",
+    showLegend: true, legendPos: "r", legendFontSize: 9, legendFontFace: "+mn-lt", legendColor: H.accent2,
+    catAxisLabelColor: H.dk1, catAxisLabelFontSize: 9, catAxisLabelFontFace: "+mn-lt", valAxisHidden: true, valGridLine: { style: "none" }, catGridLine: { style: "none" },
+    objectName: "invest vs return chart",
   });
-  k.card(s, 7.6, 4.5, 4.98, 0.98, { fill: "FFFFFF", name: "phase1 note" });
-  T(s, [{ text: "第1期：授業料を払った　", options: { bold: true, color: C.accent2 } }, { text: "10.8億円を投じ、回収と利益で9.4億円。前半は赤字" }], { x: 7.85, y: 4.5, w: 4.5, h: 0.98, fontSize: 12, valign: "middle" });
-  k.card(s, 7.6, 5.62, 4.98, 0.98, { name: "phase2 note" });
-  T(s, [{ text: "第2期：買った瞬間に勝つ　", options: { bold: true, color: C.accent1 } }, { text: "14.4億円で純資産15.9億円を取得。値づけを変えただけで反転" }], { x: 7.85, y: 5.62, w: 4.5, h: 0.98, fontSize: 12, valign: "middle" });
-  k.source(s, "出典：中野邦人 M&A勝敗一覧表、グループ売上管理表（自社実データ）");
-  s.addNotes("負けた前半も隠さない。値づけのルールを変えたら、後半は買った瞬間に勝てるようになった。このルールがサービスの中身です。");
+  k.card(s, 8.0, 4.42, 4.58, 1.02, { fill: "FFFFFF", name: "phase1 note" });
+  T(s, [{ text: "第1期 2011–19：数で獲りにいった", options: { bold: true, color: C.accent2, breakLine: true } }, { text: "売上の0.25倍で買い、保有中の営業利益7.6億＋売却5.3億＋純資産2.0億で回収", options: { fontSize: 10.5 } }], { x: 8.2, y: 4.42, w: 4.2, h: 1.02, fontSize: 12, valign: "middle" });
+  k.card(s, 8.0, 5.56, 4.58, 1.02, { name: "phase2 note" });
+  T(s, [{ text: "第2期 2020–：純資産より安く買う", options: { bold: true, color: C.accent1, breakLine: true } }, { text: "純資産の9割の価格で取得し、毎年2.4億円の営業利益が上乗せされていく", options: { fontSize: 10.5 } }], { x: 8.2, y: 5.56, w: 4.2, h: 1.02, fontSize: 12, valign: "middle" });
+  k.source(s, "単位：億円。第1期の営業利益は保有期間中の累計。第2期のランレートはM&Aで取得したグループ会社の2026年予想営業利益。出典：中野邦人 M&A勝敗一覧表、グループ売上管理表");
+  s.addNotes("第1期は投じた10.8億が14.9億で戻った。第2期は純資産より安く買えているので、買った瞬間に資産で元が取れていて、そのうえ毎年2.4億の営業利益が乗る。約6年で買収額を利益だけで回収できる計算。");
 
   // ===== 6. 勝ち筋5原則 → サービス =====
   pres.addSection({ title: "サービス" });
