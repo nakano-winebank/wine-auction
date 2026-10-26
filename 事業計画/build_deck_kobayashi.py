@@ -152,7 +152,7 @@ def cell(text, kind, first, algn, sz=700, color=None):
     return (f'<a:tc><a:txBody><a:bodyPr/><a:lstStyle/>{para(run(text, sz, fc, b), algn=algn, ln=100000, bu_sz=sz)}</a:txBody>'
             f'<a:tcPr marL="45725" marR="45725" marT="0" marB="0" anchor="ctr"><a:solidFill><a:srgbClr val="{fill}"/></a:solidFill></a:tcPr></a:tc>')
 
-def table(x, y, colw, rows, rh=0.213, sz=700, first_algn="l"):
+def table(x, y, colw, rows, rh=0.213, sz=700, first_algn="l", rest_algn="r"):
     """rows: [(kind, [cells...]) or (kind, [cells...], {col: color})]"""
     i = nid()
     grid = "".join(
@@ -164,7 +164,7 @@ def table(x, y, colw, rows, rh=0.213, sz=700, first_algn="l"):
         kind, vals = r[0], r[1]
         colors = r[2] if len(r) > 2 else {}
         tcs = "".join(cell(str(v), kind, j == 0,
-                           (first_algn if j == 0 else ("ctr" if kind == "h" else "r")), sz, colors.get(j))
+                           (first_algn if j == 0 else ("ctr" if kind == "h" else rest_algn)), sz, colors.get(j))
                       for j, v in enumerate(vals))
         trs.append(f'<a:tr h="{E(rh)}">{tcs}<a:extLst><a:ext uri="{{0D108BD9-81ED-4DB2-BD59-A6C34878D82A}}">'
                    f'<a16:rowId xmlns:a16="http://schemas.microsoft.com/office/drawing/2014/main" val="{10000 + ri}"/></a:ext></a:extLst></a:tr>')
@@ -202,6 +202,7 @@ eb, op, sl = yr("EBITDA"), yr("営業利益"), yr("売上高")
 right = [("h", ["項目", "1年目", "2年目", "3年目以降"]),
          ("n", ["売上立上り率"] + [pct(x, 0) for x in u("立上り率")[1:4]]),
          ("n", ["売上高"] + [mm(x) for x in sl]),
+         ("n", ["人件費率"] + [pct(a / b) for a, b in zip(yr("人件費"), sl)]),
          ("b", ["EBITDA"] + [mm(x) for x in eb]),
          ("b", ["EBITDA率"] + [pct(a / b) for a, b in zip(eb, sl)]),
          ("b", ["営業利益"] + [mm(x) for x in op]),
@@ -221,13 +222,15 @@ pts12 = [
 write_slide(12, [
     title("六本木ミッドタウン店　単体事業収支"),
     subtitle(f"2026年10月 事業収支統合モデル準拠（最新平面図反映）　｜　183.59㎡(55.5坪)・{seats['all']}席・年間363日営業"),
-    bar(0.48, 0.86, 4.35, "満年度ベース 損益計算（百万円）"),
+    bar(0.48, 0.86, 4.35, "立上げ期間後100%ベース 損益計算（コスト改善前・百万円）"),
     table(0.48, 1.16, [2.15, 1.1, 1.1], left, rh=0.213),
-    bar(5.27, 0.86, 4.25, "立上りを織り込んだ年次推移（百万円）"),
-    table(5.27, 1.16, [1.45, 0.93, 0.93, 0.94], right, rh=0.24),
+    bar(5.27, 0.86, 4.25, "立上り・コスト改善を織り込んだ年次推移（百万円）"),
+    table(5.27, 1.16, [1.45, 0.93, 0.93, 0.94], right, rh=0.215),
     bar(5.27, 3.00, 4.25, "主要前提"),
     bullets(5.35, 3.32, 4.15, 1.70, pts12, sz=700, ln=135000),
-    footnote(f"※ 満年度ベースは店内席効率{pct(eff_in, 0)}・ディナー店内回転率{S['E26'].value:.2f}回の標準値。新店初年度は保守的に売上90%で計画。金利・税金は含まない。"),
+    footnote(f"※ 左表は売上100%（店内席効率{pct(eff_in, 0)}・ディナー回転率{S['E26'].value:.2f}回）に到達後も開業当初のコスト構造のままとした保守的な水準。"
+             f"右表の3年目以降は人件費{pct(u('人件費')[0] / sales)}→{pct(u('人件費')[3] / u('売上高')[3])}・水道光熱{pct(u('水道光熱費')[0] / sales)}→{pct(u('水道光熱費')[3] / u('売上高')[3])}・"
+             f"業務委託{pct(u('業務委託費・消耗品他')[0] / sales)}→{pct(u('業務委託費・消耗品他')[3] / u('売上高')[3])}の改善を織り込むため、売上は同額でもEBITDAが約{mm(u('EBITDA')[3] - u('EBITDA')[0])}百万円高い。金利・税金は含まない。", y=5.03),
     confidential(), slidenum()])
 
 
@@ -517,3 +520,46 @@ for old, new in [
     s11 = s11.replace(old, new)
 open(p11, "w", encoding="utf8").write(s11)
 print("slide11 updated")
+
+
+# ═════════ slide29：その先へ… 国内オーベルジュ構想（事業計画には未反映） ═════════
+def box(x, y, w, h, fill=None, line=None, lw=9525, paras=None, anchor="ctr", ins=0.06):
+    i = nid()
+    f = f'<a:solidFill><a:srgbClr val="{fill}"/></a:solidFill>' if fill else "<a:noFill/>"
+    l = f'<a:ln w="{lw}"><a:solidFill><a:srgbClr val="{line}"/></a:solidFill></a:ln>' if line else "<a:ln><a:noFill/></a:ln>"
+    tx = (f'<p:txBody><a:bodyPr wrap="square" lIns="{E(ins)}" tIns="{E(ins)}" rIns="{E(ins)}" bIns="{E(ins)}" anchor="{anchor}" anchorCtr="0"><a:noAutofit/></a:bodyPr>'
+          f'<a:lstStyle/>{"".join(paras or [para("")])}</p:txBody>')
+    return (f'<p:sp><p:nvSpPr><p:cNvPr id="{i}" name="Box {i}"/><p:cNvSpPr/><p:nvPr/></p:nvSpPr>'
+            f'<p:spPr><a:xfrm><a:off x="{E(x)}" y="{E(y)}"/><a:ext cx="{E(w)}" cy="{E(h)}"/></a:xfrm>'
+            f'<a:prstGeom prst="rect"><a:avLst/></a:prstGeom>{f}{l}</p:spPr>{tx}</p:sp>')
+
+LIGHT = "F6EEE9"
+pillars = [("料理", "一日十数名だけ", "その土地の生産者と、同じテーブルに"),
+           ("ワイン", "ワイナリー隣接", "造り手の畑が、窓の外にある"),
+           ("滞在", "温泉＋10室", "食後に、移動しなくていい")]
+shapes29 = [title("その先へ… 滞在型体験｜国内オーベルジュ構想"),
+            subtitle("ワイナリーに隣接し、温泉を持つ。日本にまだ無いオーベルジュをつくります"),
+            box(6.55, 0.20, 2.97, 0.30, fill=None, line="C00000", lw=12700,
+                paras=[para(run("本事業計画（5か年・9店舗）には未反映のアップサイド", 700, "C00000", True), algn="ctr", ln=100000)], ins=0.03)]
+pw_ = (9.04 - 0.24) / 3
+for k, (h1, big, sub) in enumerate(pillars):
+    x = 0.48 + k * (pw_ + 0.12)
+    shapes29 += [bar(x, 0.86, pw_, h1),
+                 box(x, 1.10, pw_, 0.72, fill=LIGHT,
+                     paras=[para(run(big, 1100, "6D3B1F", True), algn="ctr", ln=110000, bu_sz=1100),
+                            para(run(sub, 750, BLACK), algn="ctr", ln=120000, bu_sz=750)])]
+core = [("h", ["項目", "一般的なオーベルジュ", "当社が考えるオーベルジュ"]),
+        ("n", ["立地", "景勝地・観光地に単独で建つ", "ワイナリーに隣接。造り手が徒歩圏にいる"]),
+        ("n", ["ワイン", "地元ワインが中心", "グループ在庫（管理含む32億円）から、世界のファインワインを産地価格で"]),
+        ("n", ["滞在", "宿泊機能のみ", "温泉を併設。地下に大型カーヴとワインバーも備える"]),
+        ("n", ["運営", "オーナーシェフの個人事業", "グランメゾン「アピシウス」を擁する当社グループが担う"]),
+        ("n", ["集客", "開業後に一から集める", "ワインマイルの交換先・会員イベントの舞台として、開業前から送客できる"])]
+shapes29 += [bar(0.48, 2.00, 9.04, "構想の骨子"),
+             table(0.48, 2.30, [1.00, 2.70, 5.34], core, rh=0.27, sz=700, rest_algn="l"),
+             bullets(0.56, 4.08, 8.90, 0.80, [
+                 ("● ブラッスリー出店計画（2027年4月 六本木 → 2028年 札幌・大阪 → 2030年〜 リゾート含め年2店舗）の先に着手。候補地：北海道", BLACK, False),
+                 ("● 料理人が、一日の終わりまでお客様と過ごせる場所を。長い時間をかけて積み上げられたものを、更に発展させ次の世代へ渡す", "6D3B1F", True)],
+                 sz=750, ln=150000),
+             footnote("※ 構想段階のため、本資料の事業収支・資金計画・出資リターン試算には含めていません。WineBank会社紹介資料（2026年10月）より転載。", y=5.10),
+             confidential(), slidenum()]
+write_slide(29, shapes29)
