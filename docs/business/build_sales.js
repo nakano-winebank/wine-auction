@@ -88,27 +88,42 @@ async function icon(name, hex, px = 256) {
   s.addNotes("ここが一番伝えたいところ。自分も負けた。だから、同じ負け方をする人を減らしたい。");
 
   // ===== 5. 実績 =====
-  s = k.content({ section: "課題と原点", kicker: "TRACK RECORD", title: "49戦の実績：安く買い、利益と資産で回収する", sub: "買収額を「いくらの利益と資産が手に入ったか」で測る。2011年3月〜現在、すべて自社の実案件" });
-  const rec = [["1.4", "倍", "第1期の回収倍率。投じた10.8億円が14.9億円で戻った"], ["0.9", "倍", "第2期の純資産倍率。14.4億円で純資産15.9億円を取得"], ["1.3億", "円／年", "飲食A社の今期営業利益。8.2億円で取得、純資産13.0億円"], ["8,000万", "円／年", "飲食B事業の今期営業利益。1,400万円で取得"]];
-  for (let i = 0; i < 4; i++) k.stat(s, M + i * 3.03, 2.2, 2.8, 2.08, rec[i][0], rec[i][1], rec[i][2], { size: 36 });
-  s.addChart(pres.charts.BAR, [
-    { name: "投じた額", labels: ["第1期 投じた額", "第1期 戻った額", "第2期 投じた額", "第2期 得た資産＋1年分の利益"], values: [10.8, 0, 14.4, 0] },
-    { name: "営業利益", labels: ["第1期 投じた額", "第1期 戻った額", "第2期 投じた額", "第2期 得た資産＋1年分の利益"], values: [0, 7.6, 0, 2.4] },
-    { name: "売却回収", labels: ["第1期 投じた額", "第1期 戻った額", "第2期 投じた額", "第2期 得た資産＋1年分の利益"], values: [0, 5.3, 0, 0] },
-    { name: "手元の純資産", labels: ["第1期 投じた額", "第1期 戻った額", "第2期 投じた額", "第2期 得た資産＋1年分の利益"], values: [0, 2.0, 0, 15.9] },
-  ], {
-    x: M, y: 4.4, w: 7.0, h: 2.2, barDir: "bar", barGrouping: "stacked", barGapWidthPct: 35, catAxisOrientation: "maxMin",
-    chartColors: [H.accent5, H.dk1, H.accent4, H.accent1], showValue: true, dataLabelPosition: "ctr", dataLabelFormatCode: "0.0;;;", dataLabelColor: "FFFFFF", dataLabelFontSize: 9, dataLabelFontFace: "+mn-lt",
-    showLegend: true, legendPos: "r", legendFontSize: 9, legendFontFace: "+mn-lt", legendColor: H.accent2,
-    catAxisLabelColor: H.dk1, catAxisLabelFontSize: 9, catAxisLabelFontFace: "+mn-lt", valAxisHidden: true, valGridLine: { style: "none" }, catGridLine: { style: "none" },
-    objectName: "invest vs return chart",
-  });
-  k.card(s, 8.0, 4.42, 4.58, 1.02, { fill: "FFFFFF", name: "phase1 note" });
-  T(s, [{ text: "第1期 2011–19：数で獲りにいった", options: { bold: true, color: C.accent2, breakLine: true } }, { text: "売上の0.25倍で買い、保有中の営業利益7.6億＋売却5.3億＋純資産2.0億で回収", options: { fontSize: 10.5 } }], { x: 8.2, y: 4.42, w: 4.2, h: 1.02, fontSize: 12, valign: "middle" });
-  k.card(s, 8.0, 5.56, 4.58, 1.02, { name: "phase2 note" });
-  T(s, [{ text: "第2期 2020–：純資産より安く買う", options: { bold: true, color: C.accent1, breakLine: true } }, { text: "主要2件だけで今期営業利益2.1億円。買収額8.3億円を約4年で回収し、純資産は買値以上", options: { fontSize: 10.5 } }], { x: 8.2, y: 5.56, w: 4.2, h: 1.02, fontSize: 12, valign: "middle" });
-  k.source(s, "単位：億円。第1期の営業利益は保有期間中の累計。グラフの第2期の利益はM&Aで取得したグループ会社全体の2026年予想。出典：中野邦人 M&A勝敗一覧表、グループ売上管理表");
-  s.addNotes("第1期は投じた10.8億が14.9億で戻った。第2期は純資産より安く買っているので、買った瞬間に資産で元が取れている。飲食A社は8.2億で買って今期の営業利益1.3億、飲食B事業は1,400万で買って今期8,000万。この2件だけで年2.1億、約4年で買収額を利益で回収できる。");
+  s = k.content({ section: "課題と原点", kicker: "TRACK RECORD", title: "49戦の実績：純資産より安く買い、営業利益を積み上げる", sub: "買った値段に対して「手元に残った資産（売却額を含む）」と「育った営業利益」で測る。すべて自社の実案件" });
+  const SC = 2.0 / 18.2; // 1億円あたりの棒の長さ
+  const panel = (x, o) => {
+    if (o.dark) s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x, y: 2.2, w: 5.85, h: 4.42, rectRadius: 0.06, fill: { color: C.text1 }, line: { color: C.text1 }, objectName: "panel " + o.tag });
+    else k.card(s, x, 2.2, 5.85, 4.42, { name: "panel " + o.tag });
+    const fg = o.dark ? C.background1 : C.text1, sub = o.dark ? C.accent3 : C.accent2;
+    k.pill(s, x + 0.3, 2.42, 1.55, o.tag, { fill: C.accent1 });
+    T(s, o.head, { x: x + 2.0, y: 2.38, w: 3.6, h: 0.38, fontSize: 14, bold: true, color: o.dark ? C.accent4 : C.text1, valign: "middle" });
+    // 購入額 vs 資産
+    const bars = [["購入額", o.buy, H.accent5], ["純資産＋売却", o.asset, H.accent1]];
+    bars.forEach(([lbl, v, col], i) => {
+      const y = 3.0 + i * 0.55;
+      T(s, lbl, { x: x + 0.3, y, w: 1.15, h: 0.42, fontSize: 11, bold: true, color: sub, valign: "middle" });
+      s.addShape(pres.shapes.RECTANGLE, { x: x + 1.45, y: y + 0.04, w: v * SC, h: 0.34, fill: { color: col }, line: { color: col }, objectName: o.tag + " bar " + lbl });
+      T(s, v.toFixed(1) + "億", { x: x + 1.53 + v * SC, y, w: 0.9, h: 0.42, fontSize: 12, bold: true, color: fg, valign: "middle" });
+    });
+    T(s, [{ text: o.mult, options: { fontSize: 28, bold: true, color: C.accent1, breakLine: true } }, { text: "購入額に対する資産", options: { fontSize: 9, color: sub } }], { x: x + 4.3, y: 2.9, w: 1.35, h: 1.15, align: "right", valign: "middle" });
+    s.addShape(pres.shapes.LINE, { x: x + 0.3, y: 4.2, w: 5.25, h: 0, line: { color: o.dark ? "4E443C" : H.accent3, width: 0.75 } });
+    // 営業利益
+    T(s, o.opLabel, { x: x + 0.3, y: 4.3, w: 2.6, h: 0.3, fontSize: 11, bold: true, color: sub });
+    T(s, [{ text: o.op, options: { fontSize: 30, bold: true, color: o.dark ? C.accent4 : C.text1 } }, { text: o.opUnit, options: { fontSize: 12, bold: true, color: sub } }], { x: x + 0.3, y: 4.6, w: 2.7, h: 0.7, valign: "middle" });
+    T(s, o.opNote, { x: x + 0.3, y: 5.3, w: 2.6, h: 0.5, fontSize: 9.5, color: sub });
+    // 代表案件
+    o.deals.forEach((d, i) => {
+      const y = 4.35 + i * 0.75;
+      s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: x + 3.05, y, w: 2.5, h: 0.65, rectRadius: 0.05, fill: { color: o.dark ? "3A322C" : C.background1 }, line: { color: o.dark ? "4E443C" : H.accent3 }, objectName: o.tag + " deal " + (i + 1) });
+      T(s, [{ text: d[0], options: { bold: true, fontSize: 10.5, color: fg, breakLine: true } }, { text: d[1], options: { fontSize: 9, color: sub } }], { x: x + 3.15, y, w: 2.35, h: 0.65, valign: "middle" });
+    });
+    T(s, o.msg, { x: x + 0.3, y: 5.95, w: 5.25, h: 0.55, fontSize: 11.5, bold: true, color: o.dark ? C.accent4 : C.accent1, valign: "middle" });
+  };
+  panel(M, { tag: "第1期 2011–19", head: "数で獲りにいき、授業料も払った", buy: 10.8, asset: 7.3, mult: "0.7倍", opLabel: "保有期間中の営業利益", op: "累計7.6", opUnit: " 億円", opNote: "資産と合わせると14.9億円が戻った",
+    deals: [["多店舗飲食C社（25店舗）", "3.3億円で取得 → 累計営業利益3.9億円"], ["ポータル事業D", "1,100万円で取得 → 累計1.7億円"]], msg: "負けも含めて、この9年がいまの判断ルールになった" });
+  panel(M + 6.0, { dark: true, tag: "第2期 2020–", head: "純資産より安く買う", buy: 14.4, asset: 18.2, mult: "1.3倍", opLabel: "単年度の営業利益（2026年予想）", op: "2.4", opUnit: " 億円／年", opNote: "M&Aで取得したグループ会社の合計",
+    deals: [["飲食A社", "8.2億円 → 純資産13.0億＋営業利益1.3億／年"], ["飲食B事業", "1,400万円 → 純資産7,000万＋営業利益8,000万／年"]], msg: "買った時点で資産が買値を上回り、利益は毎年積み上がる" });
+  k.source(s, "第2期の純資産＋売却は、売却済み案件を売却額に置き換えて算出（あどばる株式の売却は含めない）。出典：中野邦人 M&A勝敗一覧表");
+  s.addNotes("見るのは2つ。買った値段に対して資産がいくら残ったか、営業利益がいくらに育ったか。第1期は資産では0.7倍、ただ保有中に7.6億の営業利益を出した。第2期は純資産より安く買っているので、資産は買値の1.3倍。そのうえ単年度で2.4億の営業利益に育っている。飲食A社は8.2億で買って純資産13億、今期の営業利益1.3億。飲食B事業は1,400万で買って純資産7,000万、今期8,000万。");
 
   // ===== 6. 勝ち筋5原則 → サービス =====
   pres.addSection({ title: "サービス" });
