@@ -5,160 +5,157 @@ let s;
 /* 1 表紙 */
 s=slide();
 cover(s,'株式会社あどばる','夢展望（3185）の買収検討',
- 'RIZAP社の保有株取得・7億円の債権放棄・あどばるとの合併の採算とシナジー',
+ '面談結果を反映した改訂版 ─ RIZAP社保有株30%の取得と、あどばるとの関係',
  '2026年10月29日',
  [['作成','株式会社あどばる 代表取締役 中野 邦人'],
-  ['前提','あどばる15億円評価／夢展望は株価80円（2026年10月28日）'],
-  ['出所','夢展望社の公開情報（2026年3月期決算・2026年6月末・適時開示・大量保有報告書）']],
- '公開情報にもとづく試算です。稲田様との協議内容は反映していません');
-s.addNotes('RIZAPから出てきた案件。スマサポ案（PlanD）と並べて評価する。');
+  ['前提','面談で出た条件（30%を約3億円・8億円の債権放棄）と夢展望社の公開情報'],
+  ['注記','面談記録は音声の文字起こしのため、数字の一部は聞き取りの解釈を含みます']],
+ '試算であり、法務・税務・会計上の助言ではありません');
+s.addNotes('面談で条件が具体化した。前回の「44.68%をTOBで」から「30%を3億で」に変わった。');
 
-/* 2 結論 */
+/* 2 面談で分かったこと */
 s=slide(); light(s);
-head(s,'結論','夢展望は「シナジー案件」ではなく「器の案件」です');
+head(s,'面談結果','前回の想定から、ここが変わりました');
+tbl(s,[
+ [{text:'項目',options:TH},{text:'前回の想定',options:THC},{text:'面談で出た内容',options:Object.assign({align:'center'},TH,{fill:C.ACC})},{text:'影響',options:THC}],
+ [{text:'RIZAP株の売り方',options:{bold:true}},{text:'44.68%全部（TOBが必要）',options:{align:'center',color:C.MUT}},{text:'30%ブロックを約3億円',options:{align:'center',bold:true}},{text:'3分の1未満のためTOB不要',options:{align:'center',color:C.POS}}],
+ [{text:'取得の時期',options:{bold:true}},{text:'すぐに',options:{align:'center',color:C.MUT}},{text:'新株予約権の行使後（12月以降）',options:{align:'center',bold:true}},{text:'時価総額10億円前後を想定',options:{align:'center'}}],
+ [{text:'借入金',options:{bold:true}},{text:'13.5億円（推定）',options:{align:'center',color:C.MUT}},{text:'17億円（銀行9億＋RIZAP 8億）',options:{align:'center',bold:true}},{text:'総資産18億円に対し過大',options:{align:'center',color:C.NEG}}],
+ [{text:'債権放棄',options:{bold:true}},{text:'7億円',options:{align:'center',color:C.MUT}},{text:'RIZAP分の8億円',options:{align:'center',bold:true}},{text:'要確認（7億か8億か）',options:{align:'center',color:C.WARN}}],
+ [{text:'今期の業績',options:{bold:true}},{text:'会社予想 営業△0.30億円',options:{align:'center',color:C.MUT}},{text:'今期の黒字化は難しい',options:{align:'center',bold:true}},{text:'販管費0.5〜1億削減でトントン',options:{align:'center'}}],
+ [{text:'現預金',options:{bold:true}},{text:'6.29億円',options:{align:'center',color:C.MUT}},{text:'約6億円',options:{align:'center',bold:true}},{text:'資金繰りは当面回る',options:{align:'center',color:C.POS}}]],
+ {x:0.7,y:1.68,w:11.9,colW:[2.2,3.0,3.5,3.2],rowH:0.44,fontSize:11});
+card(s,0.7,4.95,5.85,1.55,C.TINT_B,C.TINT_BL);
+T(s,'面談で出た再建の打ち手',{x:1.0,y:5.12,w:5.2,h:0.3,fontSize:13,bold:true,color:C.BLUE});
+T(s,'・各地の店舗の解約・集約（第三者が入ったほうが進めやすい）\n・VTuberやアイドルとのIPコラボ、海外展開\n・RIZAP社による8億円の放棄を前提に、みずほ銀行の融資で回す',
+  {x:1.0,y:5.48,w:5.25,h:0.95,fontSize:10.5,color:C.INK2,lineSpacingMultiple:1.2});
+card(s,6.75,4.95,5.85,1.55,C.TINT_W,C.TINT_WL);
+T(s,'面談での評価',{x:7.05,y:5.12,w:5.2,h:0.3,fontSize:13,bold:true,color:C.WARN});
+T(s,'「RIZAP社からのお土産（放棄）がないと厳しい」「株価が下がり、現金も入り、トントンまで持っていけるなら可能性はある」という見立てでした。',
+  {x:7.05,y:5.48,w:5.25,h:0.95,fontSize:10.5,color:C.INK2,lineSpacingMultiple:1.2});
+s.addNotes('放棄額は7億と8億で食い違い。文字起こしの聞き違いの可能性もあるので確認する。');
+
+/* 3 結論 */
+s=slide(); light(s);
+head(s,'結論','3億円で30%は「買える値段」です');
 card(s,0.7,1.62,11.9,1.45,C.TINT_A,C.TINT_AL);
-T(s,'安く持分を取れる一方、合併後の利益はスマサポ案の半分以下です',
-  {x:1.05,y:1.84,w:11.2,h:0.4,fontSize:19,bold:true,color:C.ACC});
-T(s,'RIZAP社の44.68%を1株純資産相当（35〜40円）で取得できれば、中野の負担は2.9〜3.3億円で合併後40.7%を握れます。ただし合算の営業利益は1.70億円にとどまり、夢展望を時価総額15億円のまま合併比率に使うと、あどばる株主にとっては価値の目減りになります。',
+T(s,'30%ブロックならTOBが不要で、放棄後の純資産に対してPBR1.1〜1.3倍です',
+  {x:1.05,y:1.84,w:11.2,h:0.4,fontSize:18,bold:true,color:C.ACC});
+T(s,'8億円の放棄後、1株純資産は40〜43円。時価総額10億円で30%を取得すれば約3億円で、純資産に近い水準です。中野は単独の筆頭株主（30%）となり、RIZAP社の残りは10〜15%に下がります。ただし利益は出ていないため、この3億円が報われるかは、中野が再建を担えるかで決まります。',
   {x:1.05,y:2.3,w:11.2,h:0.65,fontSize:11.5,color:C.INK2,lineSpacingMultiple:1.2});
 tbl(s,[
- [{text:'',options:TH},{text:'夢展望案',options:Object.assign({align:'center'},TH,{fill:C.ACC})},{text:'スマサポ案（PlanD）',options:THC}],
- [{text:'中野の負担',options:{bold:true}},{text:'2.9〜6.7億円（RIZAP株の取得単価次第）',options:{align:'center',bold:true,color:C.POS}},{text:'0〜6.2億円',options:{align:'center'}}],
- [{text:'中野の持分',options:{bold:true}},{text:'40.7%（3分の1超）',options:{align:'center',bold:true,color:C.POS}},{text:'15.7〜33.3%',options:{align:'center'}}],
- [{text:'合算の営業利益',options:{bold:true}},{text:'1.70億円（のれん償却なし）',options:{align:'center',color:C.NEG}},{text:'3.42億円（のれん償却後）',options:{align:'center',bold:true,color:C.POS}}],
- [{text:'事業シナジー',options:{bold:true}},{text:'限定的（ブライダル・女性顧客）',options:{align:'center',color:C.NEG}},{text:'強い（物件の仕入れ）',options:{align:'center',bold:true,color:C.POS}}],
- [{text:'有利子負債/EBITDA',options:{bold:true}},{text:'約5.4倍',options:{align:'center',color:C.NEG}},{text:'約2.2倍',options:{align:'center',bold:true,color:C.POS}}],
- [{text:'固有のリスク',options:{bold:true}},{text:'実質的存続性の審査・MSワラント',options:{align:'center',color:C.NEG}},{text:'スマサポの通期未達',options:{align:'center'}}]],
- {x:0.7,y:3.3,w:11.9,colW:[2.9,4.5,4.5],rowH:0.4,fontSize:11});
-T(s,'結論：PlanDを置き換える案ではなく、RIZAP株を安く取れる場合に限って並走させる候補です。',
-  {x:0.7,y:6.3,w:11.9,h:0.4,fontSize:13,bold:true,color:C.ACC});
-s.addNotes('値段次第。純資産相当で取れるなら面白い。時価なら見送り。');
+ [{text:'',options:TH},{text:'夢展望 30%取得',options:Object.assign({align:'center'},TH,{fill:C.ACC})},{text:'スマサポ案（PlanD）',options:THC}],
+ [{text:'中野の負担',options:{bold:true}},{text:'約3.0億円（時価総額10億円の場合）',options:{align:'center',bold:true,color:C.POS}},{text:'0〜6.2億円',options:{align:'center'}}],
+ [{text:'中野の持分',options:{bold:true}},{text:'30%（単独の筆頭）',options:{align:'center',bold:true,color:C.POS}},{text:'15.7〜33.3%',options:{align:'center'}}],
+ [{text:'公開買付け',options:{bold:true}},{text:'不要（3分の1未満）',options:{align:'center',bold:true,color:C.POS}},{text:'33%超を狙う場合は売出し応募等の工夫が必要',options:{align:'center'}}],
+ [{text:'相手の利益',options:{bold:true}},{text:'営業△0.3億〜＋0.7億円（コスト削減次第）',options:{align:'center',color:C.NEG}},{text:'営業2.30億円（会社予想）',options:{align:'center',bold:true,color:C.POS}}],
+ [{text:'事業シナジー',options:{bold:true}},{text:'限定的（IPコラボ・店舗の知見）',options:{align:'center',color:C.NEG}},{text:'強い（物件の仕入れ）',options:{align:'center',bold:true,color:C.POS}}]],
+ {x:0.7,y:3.3,w:11.9,colW:[2.6,4.65,4.65],rowH:0.42,fontSize:11});
+T(s,'両方を同時に進めるには資金が足りません。夢展望は「再建して売る」投資、スマサポは「一緒に伸ばす」合併。どちらを本筋にするかを先に決める必要があります。',
+  {x:0.7,y:5.95,w:11.9,h:0.6,fontSize:12,bold:true,color:C.ACC,lineSpacingMultiple:1.15});
+s.addNotes('値段は悪くない。問題は再建の手間と、スマサポ案との資金の取り合い。');
 
-/* 3 現状 */
-s=slide(); light(s);
-head(s,'現状','夢展望の姿');
-stat(s,0.7,1.68,2.9,'売上（2026年3月期）','35.34','億円','前期比 △21.4%',C.NEG);
-stat(s,3.8,1.68,2.9,'営業損益','△3.85','億円','今期予想は△0.30億',C.NEG);
-stat(s,6.9,1.68,2.9,'純資産（2026年6月末）','△0.47','億円','債務超過',C.NEG);
-stat(s,10.0,1.68,2.6,'時価総額','14.9','億円','株価80円・年初来高値280円',C.INK);
-card(s,0.7,3.1,5.85,3.4);
-T(s,'事業の内訳（2026年3月期）',{x:1.0,y:3.3,w:5.2,h:0.3,fontSize:13,bold:true,color:C.INK});
-[['アパレル（10〜30代女性向けEC）','24.34億','68%'],
- ['ジュエリー（トレセンテ・婚約／結婚指輪）','約6.75億','19%'],
- ['トイ（IPコラボ商品）','4.25億','12%']].forEach((r,i)=>{
-  const y=3.75+i*0.48;
-  T(s,r[0],{x:1.0,y:y,w:3.3,h:0.3,fontSize:10.5,color:C.INK2});
-  T(s,r[1],{x:4.3,y:y,w:1.1,h:0.3,fontSize:11.5,bold:true,color:C.INK,align:'right'});
-  T(s,r[2],{x:5.45,y:y,w:0.8,h:0.3,fontSize:10.5,color:C.MUT,align:'right'});
-});
-T(s,'上期はトイが営業利益0.45億円で唯一の黒字、ジュエリーは営業損失0.36億円。アパレルの縮小が赤字の主因です。会計基準はIFRSです。',
-  {x:1.0,y:5.25,w:5.25,h:1.05,fontSize:10,color:C.INK2,lineSpacingMultiple:1.2});
-card(s,6.75,3.1,5.85,3.4,C.TINT_W,C.TINT_WL);
-T(s,'資本の状況',{x:7.05,y:3.3,w:5.2,h:0.3,fontSize:13,bold:true,color:C.WARN});
-[['RIZAPグループ','8,330,400株','44.68%'],
- ['Long Corridor（MSワラント）','普通株250,000株','潜在192万株'],
- ['発行済株式数','18,642,500株','']].forEach((r,i)=>{
-  const y=3.75+i*0.44;
-  T(s,r[0],{x:7.05,y:y,w:2.6,h:0.3,fontSize:10.5,color:C.INK2});
-  T(s,r[1],{x:9.55,y:y,w:1.6,h:0.3,fontSize:10.5,bold:true,color:C.INK,align:'right'});
-  T(s,r[2],{x:11.15,y:y,w:1.25,h:0.3,fontSize:10,color:C.MUT,align:'right'});
-});
-T(s,'2026年9月に第12回新株予約権（行使価額修正条項付・下限73円・217万株）を発行。株価は280円から80円まで下落し、下限に近づいています。\n\n2026年8月に資本金を10.3億円から5,000万円へ減資しています。',
-  {x:7.05,y:5.1,w:5.25,h:1.3,fontSize:10,color:C.INK2,lineSpacingMultiple:1.2});
-s.addNotes('債務超過・赤字・MSワラント。RIZAPが手放したい理由がそろっている。');
-
-/* 4 債権放棄の効果 */
+/* 4 放棄後の姿 */
 s=slide(); dark(s);
-head(s,'7億円の債権放棄','何が変わり、何が変わらないか',true);
-[['BS','債務超過が解消する','純資産は△0.47億円から6.53億円へ。1株純資産は35.0円になります。グロース市場の債務超過による上場廃止の懸念も消えます。','○'],
- ['税務','課税はほぼ生じない見込み','債務免除益は課税所得になりますが、8月の減資で資本金5,000万円の中小法人となったため、繰越欠損金で100%相殺できます。減資はこの放棄の準備だったと読めます。','○'],
- ['会計','PLには利益として出ない可能性','IFRSでは、株主が株主の立場で行う債権放棄は資本取引として扱われます。連結PLに7億円の特別利益は立たず、資本剰余金が増える形になる見込みです。','△'],
- ['収益力','利益体質は変わらない','放棄で消えるのは支払利息（年0.2億円程度）だけです。アパレルの赤字という本業の問題は残ります。','×']]
+head(s,'8億円の債権放棄','放棄後の夢展望',true);
+[['純資産','7.53','億円','△0.47億円から回復',C.ACC2],['1株純資産','40〜43','円','新株予約権の行使前〜後','8FB0CC'],
+ ['借入金','9','億円','17億円からRIZAP分8億円が消える','8FB0CC'],['ネット有利子負債','約3','億円','現預金約6億円を差し引き',C.ACC2]]
 .forEach((r,i)=>{
-  const x=0.7+(i%2)*6.05, y=1.85+Math.floor(i/2)*2.3;
-  dcard(s,x,y,5.85,2.05);
-  badge(s,x+0.3,y+0.24,0.8,r[0],C.ACC,0.32);
-  T(s,r[1],{x:x+1.3,y:y+0.22,w:3.8,h:0.36,fontSize:14,bold:true,color:C.WHITE});
-  T(s,r[3],{x:x+5.05,y:y+0.2,w:0.5,h:0.4,fontSize:18,bold:true,color:r[3]==='○'?'7FD1A4':(r[3]==='△'?'E8B96B':'E89B8F'),align:'center'});
-  T(s,r[2],{x:x+0.3,y:y+0.72,w:5.25,h:1.2,fontSize:10.5,color:C.DKTXT,lineSpacingMultiple:1.2});
+  const x=0.7+i*3.02;
+  dcard(s,x,1.75,2.85,1.7);
+  T(s,r[0],{x:x+0.25,y:1.92,w:2.4,h:0.26,fontSize:10.5,color:C.DKTXT});
+  T(s,[{text:r[1],options:{fontSize:30,bold:true,color:r[4]}},{text:r[2],options:{fontSize:13,bold:true,color:r[4]}}],{x:x+0.25,y:2.2,w:2.4,h:0.6});
+  T(s,r[3],{x:x+0.25,y:2.9,w:2.4,h:0.45,fontSize:9.5,color:C.DKTXT,lineSpacingMultiple:1.1});
 });
-T(s,'放棄はBSを直すが、稼ぐ力は直さない。買収価格は「放棄後の純資産6.53億円」を基準に考えるべきです。',
-  {x:0.7,y:6.6,w:11.9,h:0.35,fontSize:12.5,bold:true,color:C.ACC2});
-s.addNotes('債務免除益は会計上は資本取引の可能性。税務は減資で中小法人化して欠損金100%控除。');
+[['税務','債務免除益への課税はほぼ生じない見込み','8月の減資で資本金5,000万円の中小法人となったため、繰越欠損金で全額相殺できる見込みです。欠損金の残高は要確認です。'],
+ ['会計','連結PLの利益にはならない可能性','IFRSでは、株主の立場で行う債権放棄は資本取引として扱われます。面談では「特別利益が立つ」との話でしたが、連結では資本剰余金の増加になる見込みです。'],
+ ['収益力','本業の赤字は残る','消えるのは借入8億円分の利息（年0.2億円程度）だけです。トントンにするには販管費を0.5〜1億円削る必要があります。']]
+.forEach((r,i)=>{
+  const x=0.7+i*4.0;
+  dcard(s,x,3.7,3.85,2.75);
+  badge(s,x+0.25,3.9,0.8,r[0],C.ACC,0.3);
+  T(s,r[1],{x:x+0.25,y:4.32,w:3.35,h:0.6,fontSize:12.5,bold:true,color:C.WHITE,lineSpacingMultiple:1.1});
+  T(s,r[2],{x:x+0.25,y:5.0,w:3.35,h:1.35,fontSize:9.8,color:C.DKTXT,lineSpacingMultiple:1.2});
+});
+T(s,'借入17億円は総資産18億円とほぼ同額です。放棄がなければ、この会社は買えません。',
+  {x:0.7,y:6.65,w:11.9,h:0.32,fontSize:12,bold:true,color:C.ACC2});
+s.addNotes('放棄はBSの前提条件。8億か7億かで純資産が1億違う。');
 
-/* 5 ストラクチャーと採算 */
+/* 5 30%ブロックの採算 */
 s=slide(); light(s);
-head(s,'買収の採算','RIZAP株をいくらで取れるかが、すべてです');
-T(s,'手順：①RIZAP株をディスカウントTOBで取得 → ②7億円の放棄 → ③あどばると合併 → ④ビジョン社・旧あどばる6社は市場で売却',
-  {x:0.7,y:1.62,w:11.9,h:0.3,fontSize:11.5,bold:true,color:C.INK});
+head(s,'30%ブロックの採算','時価総額がいくらで取得するか');
 tbl(s,[
- [{text:'RIZAP株の取得単価',options:TH},{text:'中野の負担',options:THR},{text:'合併後の中野の持分',options:THR},{text:'完全希薄化後',options:THR},{text:'評価',options:TH}],
- [{text:'80円（市場株価）',options:{bold:true}},{text:'6.66億円',options:{align:'right'}},{text:'40.68%',options:{align:'right'}},{text:'38.70%',options:{align:'right'}},{text:'スマサポ案の33%取得とほぼ同額',options:{color:C.MUT}}],
- [{text:'60円',options:{bold:true}},{text:'5.00億円',options:{align:'right'}},{text:'40.68%',options:{align:'right'}},{text:'38.70%',options:{align:'right'}},{text:'',options:{}}],
- [{text:'40円',options:{bold:true,fill:'F3E7EA'}},{text:'3.33億円',options:{align:'right',bold:true,fill:'F3E7EA'}},{text:'40.68%',options:{align:'right',bold:true,fill:'F3E7EA'}},{text:'38.70%',options:{align:'right',fill:'F3E7EA'}},{text:'ここなら採算が合う',options:{bold:true,color:C.POS,fill:'F3E7EA'}}],
- [{text:'35円（1株純資産相当）',options:{bold:true,fill:'F3E7EA'}},{text:'2.92億円',options:{align:'right',bold:true,fill:'F3E7EA'}},{text:'40.68%',options:{align:'right',bold:true,fill:'F3E7EA'}},{text:'38.70%',options:{align:'right',fill:'F3E7EA'}},{text:'RIZAP社が説明しやすい下限',options:{bold:true,color:C.POS,fill:'F3E7EA'}}]],
- {x:0.7,y:2.05,w:11.9,colW:[2.7,1.8,2.2,1.8,3.4],rowH:0.42,fontSize:11});
-card(s,0.7,4.75,5.85,1.75,C.TINT_P,C.TINT_PL);
-T(s,'なぜ安く取れる可能性があるか',{x:1.0,y:4.93,w:5.2,h:0.3,fontSize:13,bold:true,color:C.POS});
-T(s,'RIZAP社は7億円を放棄してでも出ていきたい売り手です。放棄後の1株純資産は35円で、赤字会社の株を純資産相当で手放すのは取締役会でも説明がつきます。',
-  {x:1.0,y:5.27,w:5.25,h:1.1,fontSize:10.5,color:C.INK2,lineSpacingMultiple:1.2});
-card(s,6.75,4.75,5.85,1.75,C.TINT_W,C.TINT_WL);
-T(s,'ディスカウントTOBが必要です',{x:7.05,y:4.93,w:5.2,h:0.3,fontSize:13,bold:true,color:C.WARN});
-T(s,'3分の1を超える相対取得は公開買付けが義務です。市場株価より低い価格でTOBをかければ、応募するのは実質RIZAP社だけになります。手続き費用は0.3〜0.5億円を見込みます。',
-  {x:7.05,y:5.27,w:5.25,h:1.1,fontSize:10.5,color:C.INK2,lineSpacingMultiple:1.2});
-T(s,'中野の持分は取得単価に関係なく40.68%です（あどばる分18.40%＋RIZAP株22.28%）。単価が変えるのは負担額だけです。',
-  {x:0.7,y:6.68,w:11.9,h:0.3,fontSize:9.5,color:C.MUT});
-s.addNotes('40円以下で取れれば、スマサポ案より少ない負担で多くの持分。');
+ [{text:'取得時の時価総額',options:TH},{text:'1株',options:THR},{text:'30%の取得額',options:THR},{text:'PBR（放棄後）',options:THR},{text:'RIZAP社の残り',options:THR}],
+ [{text:'10億円',options:{bold:true,fill:'F3E7EA'}},{text:'48.6円',options:{align:'right',fill:'F3E7EA'}},{text:'3.00億円',options:{align:'right',bold:true,color:C.POS,fill:'F3E7EA'}},{text:'1.12倍',options:{align:'right',bold:true,fill:'F3E7EA'}},{text:'10.5%',options:{align:'right',fill:'F3E7EA'}}],
+ [{text:'12億円',options:{bold:true}},{text:'58.4円',options:{align:'right'}},{text:'3.60億円',options:{align:'right'}},{text:'1.34倍',options:{align:'right'}},{text:'10.5%',options:{align:'right'}}],
+ [{text:'15億円（現在の水準）',options:{bold:true}},{text:'72.9円',options:{align:'right'}},{text:'4.50億円',options:{align:'right',color:C.NEG}},{text:'1.68倍',options:{align:'right',color:C.NEG}},{text:'10.5%',options:{align:'right'}}]],
+ {x:0.7,y:1.68,w:11.9,colW:[3.1,1.8,2.4,2.3,2.3],rowH:0.44,fontSize:11.5});
+T(s,'新株予約権が全部行使された後（発行済20,562,500株）で計算。30%は6,168,750株です。',
+  {x:0.7,y:3.5,w:11.9,h:0.3,fontSize:9.5,color:C.MUT});
+card(s,0.7,3.95,5.85,2.55,C.TINT_W,C.TINT_WL);
+T(s,'「時価総額10億円」と「全部行使」は両立しません',{x:1.0,y:4.13,w:5.2,h:0.3,fontSize:13,bold:true,color:C.WARN});
+T(s,'Long Corridor社の新株予約権は下限が73円です。全部行使されるなら株価は73円以上で、時価総額は15億円前後になります。株価が下がって10億円（約49円）になれば行使は止まり、未行使分が売り圧力として残ります。\n\nまた開示上のコミットは「12月末までに10,000個（100万株）」で、217万株全部ではありません。',
+  {x:1.0,y:4.5,w:5.25,h:1.9,fontSize:10.2,color:C.INK2,lineSpacingMultiple:1.2});
+card(s,6.75,3.95,5.85,2.55,C.TINT_P,C.TINT_PL);
+T(s,'交渉のポイント',{x:7.05,y:4.13,w:5.2,h:0.3,fontSize:13,bold:true,color:C.POS});
+T(s,'・価格は「時価総額」ではなく「1株あたり約50円」で固定する\n・8億円の放棄をクロージングの前提条件にする\n・未行使の新株予約権の取得・消却を求める\n・取得は3分の1未満（30%）にとどめ、TOBを避ける\n・RIZAP社の残り10〜15%の売却方法（市場か相対か）を決めておく',
+  {x:7.05,y:4.5,w:5.25,h:1.9,fontSize:10.2,color:C.INK2,lineSpacingMultiple:1.25});
+s.addNotes('時価総額で決めると株価次第で変わる。1株単価で握るべき。');
 
-/* 6 合算PL・BS */
+/* 6 単体で持つか、合併するか */
 s=slide(); light(s);
-head(s,'合算のPL・BS','スマサポ案と並べると');
+head(s,'出口の考え方','単体で再建して売るか、あどばると合併するか');
+card(s,0.7,1.66,5.85,4.85);
+badge(s,1.0,1.88,2.2,'A　単体で再建',C.BLUE,0.34);
+T(s,'中野が30%を持ち、夢展望単体の再建で株価を上げる',{x:1.0,y:2.35,w:5.25,h:0.55,fontSize:12.5,bold:true,color:C.INK,lineSpacingMultiple:1.1});
 tbl(s,[
- [{text:'',options:TH},{text:'夢展望＋あどばる',options:Object.assign({align:'center'},TH,{fill:C.ACC})},{text:'スマサポ＋あどばる',options:THC},{text:'差',options:THC}],
- [{text:'合算 売上',options:{bold:true}},{text:'55.8億円',options:{align:'center',bold:true}},{text:'約53億円',options:{align:'center'}},{text:'ほぼ同規模',options:{align:'center',color:C.MUT}}],
- [{text:'合算 営業利益',options:{bold:true}},{text:'1.70億円',options:{align:'center',color:C.NEG}},{text:'4.30億円',options:{align:'center',bold:true}},{text:'△2.60億円',options:{align:'center',color:C.NEG}}],
- [{text:'のれん償却',options:{bold:true}},{text:'なし（IFRS）',options:{align:'center',bold:true,color:C.POS}},{text:'△0.88億円（日本基準）',options:{align:'center'}},{text:'＋0.88億円',options:{align:'center',color:C.POS}}],
- [{text:'償却後 営業利益',options:{bold:true,fill:'F3E7EA'}},{text:'1.70億円',options:{align:'center',bold:true,color:C.NEG,fill:'F3E7EA'}},{text:'3.42億円',options:{align:'center',bold:true,fill:'F3E7EA'}},{text:'△1.72億円',options:{align:'center',bold:true,color:C.NEG,fill:'F3E7EA'}}],
- [{text:'のれん控除後の自己資本比率',options:{bold:true}},{text:'11.8%',options:{align:'center'}},{text:'11.8%',options:{align:'center'}},{text:'同水準',options:{align:'center',color:C.MUT}}],
- [{text:'有利子負債',options:{bold:true}},{text:'約17.5億円',options:{align:'center',color:C.NEG}},{text:'約11億円',options:{align:'center'}},{text:'＋6.5億円',options:{align:'center',color:C.NEG}}],
- [{text:'有利子負債/EBITDA',options:{bold:true}},{text:'約5.4倍',options:{align:'center',color:C.NEG}},{text:'約2.2倍',options:{align:'center',bold:true}},{text:'',options:{}}],
- [{text:'現預金',options:{bold:true}},{text:'6.69億円',options:{align:'center',bold:true,color:C.POS}},{text:'スマサポ分は未入手',options:{align:'center',color:C.MUT}},{text:'',options:{}}]],
- {x:0.7,y:1.68,w:11.9,colW:[3.3,3.2,3.2,2.2],rowH:0.39,fontSize:11});
-card(s,0.7,5.35,11.9,1.15,C.TINT_A,C.TINT_AL);
-T(s,'合併比率に要注意',{x:1.05,y:5.52,w:6,h:0.3,fontSize:13,bold:true,color:C.ACC});
-T(s,'合算の税引後利益1.31億円をPER17倍で評価すると22.3億円で、単純合算30億円を下回ります。夢展望の繰越欠損金で税負担が消えれば31.9億円です。夢展望を時価15億円のまま比率に使うと、赤字会社を黒字会社と同じ値段で数えることになります。',
-  {x:1.05,y:5.86,w:11.2,h:0.55,fontSize:10.5,color:C.INK2,lineSpacingMultiple:1.15});
-T(s,'夢展望の有利子負債は2025年9月末の13.5億円（リース負債を含む見込み）から7億円を引いた推定値です。EBITDAは夢展望の償却費を0.9億円と仮定しています。',
-  {x:0.7,y:6.68,w:11.9,h:0.3,fontSize:9,color:C.MUT});
-s.addNotes('IFRSでのれん非償却は効くが、利益の差が大きすぎる。欠損金の残高が鍵。');
+ [{text:'営業利益',options:TH},{text:'時価総額（PER17倍）',options:THR},{text:'30%の価値',options:THR},{text:'取得比',options:THR}],
+ [{text:'0.5億円',options:{bold:true}},{text:'5.9億円',options:{align:'right'}},{text:'1.78億円',options:{align:'right',color:C.NEG}},{text:'0.6倍',options:{align:'right',color:C.NEG}}],
+ [{text:'1.0億円',options:{bold:true}},{text:'11.9億円',options:{align:'right'}},{text:'3.57億円',options:{align:'right'}},{text:'1.2倍',options:{align:'right'}}],
+ [{text:'2.5億円',options:{bold:true}},{text:'29.8億円',options:{align:'right'}},{text:'8.92億円',options:{align:'right',color:C.POS}},{text:'3.0倍',options:{align:'right',bold:true,color:C.POS}}]],
+ {x:1.0,y:3.05,w:5.25,colW:[1.2,1.65,1.35,1.05],rowH:0.38,fontSize:10.5});
+T(s,'営業利益1億円で元が取れ、2.5億円まで伸ばせれば3倍。再建の手腕がそのまま投資成果になります。',
+  {x:1.0,y:4.75,w:5.25,h:0.7,fontSize:10.5,color:C.INK2,lineSpacingMultiple:1.2});
+card(s,6.75,1.66,5.85,4.85,C.TINT_A,C.TINT_AL);
+badge(s,7.05,1.88,2.6,'B　あどばると合併',C.ACC,0.34);
+T(s,'30%取得の後に、あどばるを合併させる',{x:7.05,y:2.35,w:5.25,h:0.55,fontSize:12.5,bold:true,color:C.INK});
+tbl(s,[
+ [{text:'夢展望の評価',options:TH},{text:'あどばる側',options:THR},{text:'中野の持分',options:THR}],
+ [{text:'10億円',options:{bold:true}},{text:'60.0%',options:{align:'right',color:C.NEG}},{text:'34.0%',options:{align:'right',bold:true}}],
+ [{text:'12億円',options:{bold:true}},{text:'55.6%',options:{align:'right',color:C.NEG}},{text:'33.7%',options:{align:'right',bold:true}}],
+ [{text:'15億円',options:{bold:true}},{text:'50.0%',options:{align:'right'}},{text:'33.4%',options:{align:'right',bold:true}}]],
+ {x:7.05,y:3.05,w:5.25,colW:[1.95,1.65,1.65],rowH:0.38,fontSize:10.5});
+T(s,'中野は3分の1超を確保できますが、夢展望が安いほどあどばる側が50%を超え、東証の実質的存続性の審査（裏口上場の扱い）にかかる可能性が高まります。合算の営業利益は1.7〜2.7億円で、スマサポ案の4.3億円に届きません。',
+  {x:7.05,y:4.75,w:5.25,h:1.65,fontSize:10.2,color:C.INK2,lineSpacingMultiple:1.2});
+s.addNotes('Aは純投資、Bは事業統合。Bは裏口上場の審査が論点。');
 
 /* 7 シナジー */
 s=slide(); dark(s);
-head(s,'あどばるとのシナジー','事業面は限定的、財務・税務面に妙味があります',true);
-[['事業','トレセンテ × パーティースペース','婚約・結婚指輪の購入者に、プロポーズ・前撮り・二次会の会場を案内できます。顧客の動線は自然ですが、規模は数千万円にとどまる見込みです。','小'],
- ['事業','女性向けEC × レンタルスペース','10〜30代女性という顧客層は、女子会や撮影でスペースを使う層と重なります。EC会員への送客は低コストでできます。','小'],
- ['事業','トイ（IPコラボ） × スペース','IPコラボのポップアップや物販イベントを自社スペースで開けます。唯一黒字のトイ事業の販路が広がります。','小〜中'],
- ['税務','夢展望の繰越欠損金','合併後のあどばる事業の利益を、夢展望に残る繰越欠損金で相殺できる可能性があります。欠損金1億円あたり約0.3億円の節税です。','大'],
- ['会計','のれんを償却しない','合併後もIFRSを使えば、のれんは償却されず減損テストのみです。スマサポ案の年0.88億円の償却負担がありません。','中'],
- ['財務','上場の器と現預金6.29億円','債務超過が解消された上場会社と、ビジョン社への返済の一部に充てうる手元資金が手に入ります。','中']]
+head(s,'シナジー','面談で出た打ち手と、あどばるが持ち込めるもの',true);
+[['再建','店舗の解約・集約','各地の店舗に地域ごとの費用がかかっています。創業以来のしがらみがない第三者のほうが、解約や集約を進めやすいとの指摘でした。','販管費0.5〜1億円'],
+ ['事業','IPコラボの拡大','10〜30代女性の顧客層に、VTuberやアイドルとのコラボ商品を当てる。唯一黒字のトイ事業と同じ型です。海外にも販路があります。','売上の上積み'],
+ ['事業','あどばるのスペースでの体験','コラボカフェやポップアップを自社スペースで開けます。トレセンテの顧客にはプロポーズや二次会の会場を案内できます。','小〜中'],
+ ['税務','繰越欠損金','8億円の放棄で使った後に残る欠損金で、再建後の利益や合併後のあどばる事業の利益を相殺できる可能性があります。','残高次第'],
+ ['会計','IFRS','のれんを償却しないため、合併した場合もスマサポ案のような年0.88億円の償却負担がありません。','中'],
+ ['財務','みずほ銀行との関係','放棄後は借入9億円・現預金6億円。面談でも、みずほ銀行の融資で回しながら再建する形が想定されていました。','中']]
 .forEach((r,i)=>{
   const x=0.7+(i%3)*4.0, y=1.8+Math.floor(i/3)*2.45;
-  dcard(s,x,y,3.85,2.25,r[0]==='事業'?null:C.ACC);
+  dcard(s,x,y,3.85,2.25,i<2?C.ACC:null);
   T(s,r[0],{x:x+0.25,y:y+0.2,w:1.0,h:0.26,fontSize:10,bold:true,color:C.ACC2});
-  T(s,'効果 '+r[3],{x:x+2.2,y:y+0.2,w:1.4,h:0.26,fontSize:10,bold:true,color:r[3]==='大'?'7FD1A4':(r[3]==='小'?'B9C4CF':'E8B96B'),align:'right'});
+  T(s,r[3],{x:x+1.4,y:y+0.2,w:2.2,h:0.26,fontSize:9.5,bold:true,color:'E8B96B',align:'right'});
   T(s,r[1],{x:x+0.25,y:y+0.5,w:3.35,h:0.34,fontSize:12.5,bold:true,color:C.WHITE});
   T(s,r[2],{x:x+0.25,y:y+0.92,w:3.35,h:1.25,fontSize:9.5,color:C.DKTXT,lineSpacingMultiple:1.2});
 });
-s.addNotes('事業シナジーは弱い。税務と会計の妙味で買う案件。');
+s.addNotes('本命は上段の2つ（店舗の集約とIPコラボ）。あどばるとの直接のシナジーは小さい。');
 
 /* 8 リスク */
 s=slide(); light(s);
 head(s,'リスク','この案件に固有の論点');
-[['01','実質的存続性の審査（裏口上場）','夢展望を時価14.9億円で比率を組むと、あどばる側は50.14%になります。非上場会社の株主が過半数を握ると、東証の審査で新規上場に準じた審査を求められる可能性があります。あどばる側を50%未満に設計し、東証へ事前相談します。',C.NEG],
- ['02','MSワラントによる希薄化','Long Corridor社の第12回新株予約権が192万株残っています（下限73円）。株価は80円で下限に近く、売り圧力が続いています。取引の前提条件として、取得条項による取得・消却を求めます。',C.NEG],
- ['03','インサイダー取引規制','RIZAP社が放棄と売却を検討しているという情報は、夢展望の未公表の重要事実にあたりえます。中野は公表まで夢展望株を市場で買えません。RIZAP社との相対取引・TOBの扱いは弁護士の確認が要ります。',C.WARN],
- ['04','市場への売却圧力','合併後、ビジョン社23.5%と旧あどばる6社8.3%の計31.7%（約9.5億円）が市場に出ます。時価総額30億円の会社には重い量です。',C.WARN],
- ['05','繰越欠損金の使用制限','一人の株主が50%超を握ったうえで旧事業を縮小し大きな資金を入れると、法人税法57条の2で欠損金が使えなくなります。中野の持分を50%未満にとどめ、アパレルの急な撤退は避けます。',C.WARN]]
+[['01','再建が進まなければ、3億円は目減りする','10年連続の赤字で、第1四半期も営業損失0.51億円。会社予想の△0.30億円も楽観的な可能性があります。営業利益0.5億円どまりなら、30%の価値は1.8億円程度です。',C.NEG],
+ ['02','新株予約権の売り圧力','Long Corridor社の未行使分が残る限り、株価は下限73円付近で重くなります。取得の前提条件として、取得・消却を求めます。',C.NEG],
+ ['03','インサイダー取引規制','RIZAP社の放棄と売却の意向は、夢展望の未公表の重要事実にあたりえます。公表まで市場で夢展望株は買えません。RIZAP社との相対取引の扱いは弁護士の確認が要ります。',C.WARN],
+ ['04','実質的存続性の審査（合併する場合）','夢展望の評価が15億円を下回ると、あどばる側が50%を超えます。合併を選ぶなら比率の設計と東証への事前相談が必要です。',C.WARN],
+ ['05','資金と時間の取り合い','中野の手元資金と再建に割く時間は、スマサポ案と重なります。両方を同時に進めるのは現実的ではありません。',C.WARN]]
 .forEach((r,i)=>{
   const y=1.66+i*0.98;
   card(s,0.7,y,11.9,0.9);
@@ -166,18 +163,18 @@ head(s,'リスク','この案件に固有の論点');
   T(s,r[1],{x:1.65,y:y+0.08,w:10.7,h:0.28,fontSize:12.5,bold:true,color:C.INK});
   T(s,r[2],{x:1.65,y:y+0.38,w:10.7,h:0.46,fontSize:9.3,color:C.INK2,lineSpacingMultiple:1.05});
 });
-T(s,'いずれも事前の設計と前提条件で対処できる論点です。ただし01と03は、着手の前に専門家の確認が必要です。',
+T(s,'01と05が判断の分かれ目です。03は着手の前に専門家の確認が必要です。',
   {x:0.7,y:6.68,w:11.9,h:0.3,fontSize:10.5,bold:true,color:C.ACC});
-s.addNotes('01と03が要注意。特にインサイダー。稲田さんの話の段階で中野はもう重要事実を知っている。');
+s.addNotes('最大のリスクは再建が進まないこと。資金と時間の取り合いも見落とせない。');
 
 /* 9 次のステップ */
 s=slide(); light(s);
-head(s,'次のステップ','判断に必要な5つの情報');
-[['01','RIZAP社の希望価格と手順','保有株をいくらで、どの順番で手放したいのか。7億円の放棄は株式譲渡の前か後か。',C.ACC,'最優先'],
- ['02','夢展望の税務上の繰越欠損金','残高と期限。7億円の放棄で使った後にいくら残るかで、合併後の節税効果が決まります。',C.ACC,'要入手'],
- ['03','有利子負債の内訳','リース負債とRIZAP社からの借入、銀行借入の内訳。放棄後に残る借入の条件。',C.BLUE,'要入手'],
- ['04','RIZAPグループとの取引関係','グループへの経営指導料や共通費の負担があれば、離脱後に消える費用として利益の上振れ要因になります。',C.BLUE,'要確認'],
- ['05','第12回新株予約権の扱い','RIZAP社またはLong Corridor社が、取得・消却に応じるか。',C.BLUE,'要交渉']]
+head(s,'次のステップ','RIZAP社に確認すること');
+[['01','放棄額は7億円か8億円か','借入17億円のうちRIZAP社分は8億円と聞いています。放棄は全額か、クロージングの前か後か。',C.ACC,'最優先'],
+ ['02','価格を1株単価で','「時価総額10億円で30%を3億円」ではなく、1株約50円で固定できるか。',C.ACC,'最優先'],
+ ['03','銀行借入9億円の条件','RIZAP社の連帯保証が外れた後も、借り換えなしで継続できるか。',C.BLUE,'要確認'],
+ ['04','店舗の契約一覧と粗利・販管費','解約できる店舗と違約金。面談で出た「粗利4億円・販管費5億円」がどの期間の数字か。',C.BLUE,'要入手'],
+ ['05','繰越欠損金の残高と期限','放棄で使った後にいくら残るか。再建後の利益をどこまで相殺できるか。',C.BLUE,'要入手']]
 .forEach((r,i)=>{
   const y=1.7+i*0.92;
   card(s,0.7,y,11.9,0.8);
@@ -186,9 +183,9 @@ head(s,'次のステップ','判断に必要な5つの情報');
   T(s,r[2],{x:1.72,y:y+0.42,w:9.0,h:0.32,fontSize:9.8,color:C.INK2});
   T(s,r[4],{x:10.9,y:y+0.26,w:1.4,h:0.28,fontSize:11,bold:true,color:r[3],align:'right'});
 });
-card(s,0.7,6.38,11.9,0.62,C.TINT_W,C.TINT_WL);
-T(s,'稲田様との協議内容（希望価格・手順・時期）をいただければ、本資料の前提を差し替えて再計算します。',
-  {x:1.05,y:6.52,w:11.2,h:0.34,fontSize:11.5,bold:true,color:C.WARN});
-s.addNotes('稲田さんの録音の要点を共有してもらって数字を差し替える。');
+card(s,0.7,6.38,11.9,0.62,C.TINT_A,C.TINT_AL);
+T(s,'あわせて、夢展望を「単体で再建する純投資」とするか「あどばるとの合併」とするかを、スマサポ案との優先順位とともに決めます。',
+  {x:1.05,y:6.52,w:11.2,h:0.34,fontSize:11,bold:true,color:C.ACC});
+s.addNotes('01と02を先に握る。そのうえでスマサポ案との優先順位を決める。');
 
-p.writeFile({fileName:'あどばる_夢展望買収検討_20261029.pptx'}).then(()=>console.log('deckH written'));
+p.writeFile({fileName:'あどばる_夢展望買収検討_20261029.pptx'}).then(()=>console.log('deckH v2 written'));
