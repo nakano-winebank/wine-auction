@@ -55,6 +55,16 @@ def build_goui(name, sign):
     date_pat = r"(<w:t>年</w:t></w:r>(?:(?!</w:p>).)*?<w:t>)9(</w:t></w:r>(?:(?!</w:p>).)*?<w:t>月</w:t>)"
     x, n = re.subn(date_pat, r"\g<1>11\g<2>", x, count=1, flags=re.S)
     assert n == 1
+    # 末尾：クラウドサイン（電子契約）による締結
+    m = re.search(r'<w:p>(?:(?!</w:p>).)*?乙記名押印のうえ、各１通を保有する。</w:t></w:r></w:p>', x, re.S)
+    if m is None:
+        m = re.search(r'<w:p [^>]*>(?:(?!</w:p>).)*?乙記名押印のうえ、各１通を保有する。</w:t></w:r></w:p>', x, re.S)
+    assert m
+    ppr = re.search(r'<w:pPr>.*?</w:pPr>', m.group(0), re.S)
+    rpr0 = '<w:rPr><w:rFonts w:ascii="游明朝" w:eastAsia="游明朝" w:hAnsi="游明朝" w:hint="eastAsia"/></w:rPr>'
+    x = (x[:m.start()] + '<w:p>' + (ppr.group(0) if ppr else '')
+         + f'<w:r>{rpr0}<w:t>本合意の成立を証するため、本合意書の電磁的記録を作成し、甲及び乙が合意の後電子署名を施し、各自その電磁的記録を保管する。</w:t></w:r></w:p>'
+         + x[m.end():])
     # 乙の署名欄：「乙：」の段落に住所、直後の空段落に氏名
     m = re.search(r'(<w:p w14:paraId="6E8B48C4".*?<w:t>：)(</w:t></w:r></w:p>)', x, re.S)
     assert m
@@ -65,7 +75,7 @@ def build_goui(name, sign):
     para = (m.group(0)[:m.group(0).index("</w:pPr>")]
             .replace('<w:ind w:leftChars="1687" w:left="3543"/>',
                      '<w:ind w:leftChars="1687" w:left="3543" w:firstLineChars="200" w:firstLine="420"/>')
-            + f'</w:pPr><w:r>{rpr}<w:t xml:space="preserve">{sign}　　　　　　　　　　　　　印</w:t></w:r></w:p>')
+            + f'</w:pPr><w:r>{rpr}<w:t xml:space="preserve">{sign}</w:t></w:r></w:p>')
     x = x[:m.start()] + para + x[m.end():]
     return zin, x
 
@@ -239,14 +249,14 @@ def build_sousu(name, sign):
     blank()
     body.append(P("（以下、余白）", jc="right"))
     blank()
-    single("本契約の成立を証するため本書３通を作成し、甲、乙及び丙が記名押印のうえ、各１通を保有する。")
+    single("本契約の成立を証するため、本契約の電磁的記録を作成し、甲、乙及び丙が合意の後電子署名を施し、各自その電磁的記録を保管する。")
     blank()
     body.append(P("2026年【11】月　　日", left=420))
     blank()
     for lab, lines in [
-        ("甲：", ["東京都港区六本木四丁目12番8号", "株式会社Brasserie Thierry Marx", "代表取締役　中野邦人　　　　　　　　印"]),
-        ("乙：", ["【住所】", f"{sign}　　　　　　　　　　　　　印"]),
-        ("丙：", ["東京都港区六本木4丁目12番8号", "株式会社WineBank", "代表取締役　中野 邦人　　　　　　　　　印"]),
+        ("甲：", ["東京都港区六本木四丁目12番8号", "株式会社Brasserie Thierry Marx", "代表取締役　中野邦人"]),
+        ("乙：", ["【住所】", sign]),
+        ("丙：", ["東京都港区六本木4丁目12番8号", "株式会社WineBank", "代表取締役　中野 邦人"]),
     ]:
         body.append(P(lab + lines[0], left=3780))
         for ln in lines[1:]:
