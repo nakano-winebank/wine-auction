@@ -83,6 +83,7 @@ function setup(pres, opts = {}) {
   const circle = (s) => s.addShape(pres.shapes.OVAL, { x: 9.3, y: -2.2, w: 5.6, h: 5.6, fill: { color: C.text2 }, line: { color: C.text2 }, objectName: "motif circle" });
   const api = {
     THEME, H, C, M, CW, W, T,
+    EM: "0070C0", // 本文中で一番伝えたい数字だけに使う強調色（太字＋青）
     cover(o) {
       const s = pres.addSlide({ masterName: "NK_COVER", sectionTitle: o.section });
       circle(s); dot(s, 1.63);
@@ -111,10 +112,10 @@ function setup(pres, opts = {}) {
     darkCard(s, x, y, w, h, o = {}) {
       return s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x, y, w, h, rectRadius: 0.06, fill: { color: "3A322C" }, line: { color: "4E443C", width: 0.75 }, objectName: o.name });
     },
-    // 数字カード：ブロンズの短い罫＋大きな数字＋単位＋説明
+    // 数字カード：大きな数字＋単位＋説明（短いブロンズ罫は付けない。o.bar: true で付ける）
     stat(s, x, y, w, h, num, unit, label, o = {}) {
       api.card(s, x, y, w, h, { name: "stat " + label });
-      s.addShape(pres.shapes.RECTANGLE, { x: x + 0.28, y: y + 0.3, w: 0.4, h: 0.05, fill: { color: C.accent1 }, line: { color: C.accent1 } });
+      if (o.bar) s.addShape(pres.shapes.RECTANGLE, { x: x + 0.28, y: y + 0.3, w: 0.4, h: 0.05, fill: { color: C.accent1 }, line: { color: C.accent1 } });
       T(s, num, { x: x + 0.26, y: y + 0.48, w: w - 0.5, h: 0.85, fontSize: o.size || 40, bold: true, color: C.accent1, valign: "middle" });
       T(s, unit, { x: x + 0.26, y: y + 1.33, w: w - 0.5, h: 0.3, fontSize: 13, bold: true });
       T(s, label, { x: x + 0.26, y: y + 1.63, w: w - 0.5, h: h - 1.75, fontSize: 10.5, color: C.accent2 });

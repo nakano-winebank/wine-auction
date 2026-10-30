@@ -27,7 +27,7 @@ async function icon(name, hex, px = 256) {
   // ===== 2. ひと目でわかる =====
   s = k.content({ section: "導入", kicker: "ONE PAGE", title: "この事業を、ひと言でいうと", sub: "M&A担当がいない会社に入り込み、買収を成功させながら担当者を育てる" });
   const op = [
-    { n: "01", h: "誰に", b: "M&Aで成長したいが、社内にM&A担当がいない・育てたい年商10〜100億円の企業" },
+    { n: "01", h: "誰に", b: "M&Aで成長したいが、社内にM&A担当がいない・育てたい年商3〜100億円の企業" },
     { n: "02", h: "何を", b: "①M&A担当の派遣 ②自社データを学習するAI ③全案件が集まるM&A情報REINS。この3点セットを月額で" },
     { n: "03", h: "なぜ勝てる", b: "49戦の勝ちと負けから作った判断ルールをAIに組み込み、買い手の側だけに立つ" },
   ];
@@ -118,7 +118,7 @@ async function icon(name, hex, px = 256) {
     });
     T(s, o.msg, { x: x + 0.3, y: 5.95, w: 5.25, h: 0.55, fontSize: 11.5, bold: true, color: o.dark ? C.accent4 : C.accent1, valign: "middle" });
   };
-  panel(M, { tag: "第1期 2011–19", head: "数で獲りにいき、授業料も払った", buy: 10.8, asset: 7.3, mult: "0.7倍", opLabel: "保有期間中の営業利益", op: "累計7.6", opUnit: " 億円", opNote: "資産と合わせると14.9億円が戻った",
+  panel(M, { tag: "第1期 2011–19", head: "数で獲りにいき、授業料も払った", buy: 10.8, asset: 7.3, mult: "0.7倍", opLabel: "保有期間中の営業利益", op: "累計7.6", opUnit: " 億円", opNote: [{ text: "資産と合わせると" }, { text: "14.9億円", options: { bold: true, color: k.EM } }, { text: "が戻った" }],
     deals: [["多店舗飲食C社（25店舗）", "3.3億円で取得 → 累計営業利益3.9億円"], ["ポータル事業D", "1,100万円で取得 → 累計1.7億円"]], msg: "負けも含めて、この9年がいまの判断ルールになった" });
   panel(M + 6.0, { dark: true, tag: "第2期 2020–", head: "純資産より安く買う", buy: 14.4, asset: 18.2, mult: "1.3倍", opLabel: "単年度の営業利益（2026年予想）", op: "2.4", opUnit: " 億円／年", opNote: "M&Aで取得したグループ会社の合計",
     deals: [["飲食A社", "8.2億円 → 純資産13.0億＋営業利益1.3億／年"], ["飲食B事業", "1,400万円 → 純資産7,000万＋営業利益8,000万／年"]], msg: "買った時点で資産が買値を上回り、利益は毎年積み上がる" });
@@ -141,7 +141,7 @@ async function icon(name, hex, px = 256) {
     const y = 2.5 + i * 0.83;
     k.badge(s, M, y + 0.13, 0.5, "0" + (i + 1), { size: 12 });
     k.card(s, M + 0.7, y, 6.35, 0.72, { fill: "FFFFFF", noShadow: true, name: "rule " + (i + 1) });
-    T(s, [{ text: rules[i][0], options: { bold: true, fontSize: 12.5, breakLine: true } }, { text: rules[i][1], options: { fontSize: 10.5, color: C.accent2 } }], { x: M + 0.9, y, w: 6.0, h: 0.72, valign: "middle" });
+    T(s, [{ text: rules[i][0], options: { bold: i !== 1 && i !== 4, fontSize: 12.5, breakLine: true } }, { text: rules[i][1], options: { fontSize: 10.5, color: C.accent2 } }], { x: M + 0.9, y, w: 6.0, h: 0.72, valign: "middle" });
     s.addShape(pres.shapes.CHEVRON, { x: 7.67, y: y + 0.2, w: 0.26, h: 0.32, fill: { color: C.accent1 }, line: { color: C.accent1 }, objectName: "arrow " + (i + 1) });
     k.card(s, 8.1, y, 4.48, 0.72, { name: "impl " + (i + 1) });
     T(s, rules[i][2], { x: 8.3, y, w: 4.1, h: 0.72, fontSize: 11.5, valign: "middle" });
@@ -308,7 +308,7 @@ async function icon(name, hex, px = 256) {
   // ===== 9. 誰に =====
   s = k.content({ section: "サービス", kicker: "TARGET", title: "お客様：M&A担当を育てたい会社", sub: "単価の低い個人の買い手は狙わず、継続して買う法人に絞る" });
   const per = [
-    { ic: "FaBuilding", t: "M&A担当がいない・育てたい中堅中小企業", s: "年商10〜100億円／M&Aで成長したい", p: "案件の良し悪しを判断できない。仲介の言い値で買う", w: "社内にM&A部門をつくる代わりに", pr: "最優先" },
+    { ic: "FaBuilding", t: "M&A担当がいない・育てたい中堅中小企業", s: "年商3〜100億円／M&Aで成長したい", p: "案件の良し悪しを判断できない。仲介の言い値で買う", w: "社内にM&A部門をつくる代わりに", pr: "最優先" },
     { ic: "FaBriefcase", t: "PE・サーチファンド・承継ファンド", s: "年に複数件を検討・投資", p: "ソーシングの効率が悪い。スクリーニングに手間がかかる", w: "アナリストの手間の代わりに", pr: "高" },
     { ic: "FaLandmark", t: "士業・地方銀行・信用金庫", s: "顧問先・取引先の買い手を支援", p: "顧問先の買収相談に応える道具とネットワークがない", w: "顧問サービスの付加価値に（紹介チャネル）", pr: "紹介元" },
   ];
@@ -352,7 +352,7 @@ async function icon(name, hex, px = 256) {
     { n: "ツール", p: "10", u: "万円／月", t: "③＋②　入口のプラン", items: ["M&A情報REINS（全案件の横断収集）", "自社データを学習するAI", "シナジー・投資回収の試算", "有望案件の毎朝通知"], dark: false },
     { n: "スタンダード", p: "50", u: "万円／月", t: "①＋②＋③　12ヶ月", items: ["ツールの全機能", "M&A担当の派遣・育成", "ソーシング・IMの読解", "資金調達の設計", "交渉への同席と指導"], dark: false },
     { n: "プレミアム", p: "80", u: "万円／月", t: "枠数限定", items: ["スタンダードの全内容", "中野との月1時間の壁打ち", "49戦の基準でのフィードバック", "交渉の代行"], dark: true },
-    { n: "成功報酬", p: "2〜3", u: "%", t: "成約時のみ・最低500万円", items: ["買い手FAとしてクロージングまで", "支払済み月額の50%を充当", "二重取りにしない"], dark: false },
+    { n: "成功報酬", p: "3", u: "%", t: "成約時のみ・最低500万円", items: ["買い手FAとしてクロージングまで", "支払済み月額の50%を充当", "二重取りにしない"], dark: false },
   ];
   for (let i = 0; i < 4; i++) {
     const x = M + i * 2.99, p = plans[i], dk = p.dark, cw = 2.84;
