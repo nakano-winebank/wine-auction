@@ -28,7 +28,7 @@ async function icon(name, hex, px = 256) {
   s = k.content({ section: "導入", kicker: "ONE PAGE", title: "この事業を、ひと言でいうと", sub: "M&A担当がいない会社に入り込み、買収を成功させながら担当者を育てる" });
   const op = [
     { n: "01", h: "誰に", b: "M&Aで成長したいが、社内にM&A担当がいない・育てたい年商10〜100億円の企業" },
-    { n: "02", h: "何を", b: "AIによる案件分析と、コンサルタントの伴走で「探す→見極める→買う→統合する」を月額で支援" },
+    { n: "02", h: "何を", b: "①M&A担当の派遣 ②自社データを学習するAI ③全案件が集まるM&A情報REINS。この3点セットを月額で" },
     { n: "03", h: "なぜ勝てる", b: "49戦の勝ちと負けから作った判断ルールをAIに組み込み、買い手の側だけに立つ" },
   ];
   for (let i = 0; i < 3; i++) {
@@ -149,12 +149,68 @@ async function icon(name, hex, px = 256) {
   k.note(s, 6.7, "値づけを決める。PMIの人を決める。売る時期を決める。この3つを買う前に紙に書けば、負けても致命傷にはならない。");
   s.addNotes("原則の左側は私の実例、右側はそれをサービスでどう再現するか。案件名は伏せています。");
 
+  // ===== 6b. 3点セット =====
+  s = k.content({ section: "サービス", kicker: "SERVICE STACK", title: "人だけならSES、ツールだけならまとめサイト", sub: "3つ揃えて「社内M&A部門」。まずツールを入れ、そのうえに担当者を派遣する二段構え" });
+  const layers = [
+    { n: "①", t: "M&A担当の派遣・伴走", d: "コンサルタントが週次で入り、案件を進めながら担当者を育てる", alone: "単体なら：M&A担当のSES", c: C.text1, fg: C.background1, sub: C.accent3 },
+    { n: "②", t: "自社データを学習するAI", d: "自社のBS/PL・強み・過去の検討履歴を投入。案件ごとにシナジーと投資回収を自動で試算", alone: "単体なら：分析ツール", c: C.accent1, fg: C.background1, sub: C.background2 },
+    { n: "③", t: "M&A情報REINS", d: "全M&A会社・サイトのオープン情報を横断して毎日収集。買い手の方針に合う案件だけを通知", alone: "単体なら：無料のまとめサイト", c: C.background2, fg: C.text1, sub: C.accent2 },
+  ];
+  for (let i = 0; i < 3; i++) {
+    const y = 2.25 + i * 1.42, L = layers[i], w = 6.4 + i * 0.5, x = M + (7.4 - w) / 2;
+    s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x, y, w, h: 1.28, rectRadius: 0.06, fill: { color: L.c }, line: { color: i === 2 ? H.accent3 : L.c }, objectName: "layer " + L.n });
+    T(s, L.n, { x: x + 0.2, y, w: 0.6, h: 1.28, fontSize: 26, bold: true, color: i === 2 ? C.accent1 : C.accent4, valign: "middle" });
+    T(s, [{ text: L.t, options: { fontSize: 15, bold: true, color: L.fg, breakLine: true } }, { text: L.d, options: { fontSize: 10.5, color: L.sub } }], { x: x + 0.85, y, w: w - 3.1, h: 1.28, valign: "middle" });
+    T(s, L.alone, { x: x + w - 2.15, y, w: 2.0, h: 1.28, fontSize: 9.5, italic: true, color: L.sub, align: "right", valign: "middle" });
+  }
+  // 二段階
+  const sx = 8.45;
+  k.card(s, sx, 2.25, 4.13, 1.95, { name: "stage 1" });
+  k.pill(s, sx + 0.25, 2.42, 1.0, "STEP 1");
+  T(s, "ツールを入れる（③＋②）", { x: sx + 1.4, y: 2.38, w: 2.6, h: 0.38, fontSize: 13, bold: true, valign: "middle" });
+  T(s, "全案件が自動で集まり、自社に合うかをAIが判定。月額の小さな契約で入口をつくる", { x: sx + 0.25, y: 2.88, w: 3.7, h: 1.2, fontSize: 11, color: C.accent2 });
+  s.addShape(pres.shapes.CHEVRON, { x: sx + 1.9, y: 4.28, w: 0.4, h: 0.3, rotate: 90, fill: { color: C.accent1 }, line: { color: C.accent1 }, objectName: "stage arrow" });
+  s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: sx, y: 4.66, w: 4.13, h: 1.95, rectRadius: 0.06, fill: { color: C.text1 }, line: { color: C.text1 }, objectName: "stage 2" });
+  k.pill(s, sx + 0.25, 4.83, 1.0, "STEP 2");
+  T(s, "担当を派遣する（①）", { x: sx + 1.4, y: 4.79, w: 2.6, h: 0.38, fontSize: 13, bold: true, color: C.accent4, valign: "middle" });
+  T(s, "ツールで見えた有望案件を、派遣した担当が一緒に進める。人の時間はツールで減らし、1人10社を回す", { x: sx + 0.25, y: 5.29, w: 3.7, h: 1.2, fontSize: 11, color: C.accent3 });
+  k.note(s, 6.7, "3つが同じデータでつながっているから、SESでもまとめサイトでもない。使うほど自社専用のAIに育つ");
+  s.addNotes("人だけ出せばSES、情報を集めるだけならMANDAと同じ。ツールで入って、そのうえに人を乗せる二段構え。担当が抜けてもツールとデータが残るので、解約されにくい。");
+
+  // ===== 6c. M&A情報REINS =====
+  s = k.content({ section: "サービス", kicker: "M&A INFORMATION REINS", title: "M&A情報REINS：散らばった公開案件を毎日ひとつに", sub: "MANDAが実証した横断収集を土台に、「見るだけ」で終わらせず自社データのAIにつなぐ" });
+  const flow = [
+    ["FaGlobe", "集める", "M&Aマッチングサイト、仲介各社の公開案件、金融機関・公的機関の案件情報を毎日収集"],
+    ["FaLayerGroup", "整える", "同じ案件の重複をまとめ、成約済み・掲載終了を除外。業種・地域・規模の表記をそろえる"],
+    ["FaFilter", "選ぶ", "買い手の買収方針と自社データで、合う案件だけをAIが点数づけ"],
+    ["FaBell", "届ける", "新着の有望案件を毎朝通知。気になる案件は担当がすぐ打診"],
+  ];
+  for (let i = 0; i < 4; i++) {
+    const x = M + i * 3.03;
+    k.card(s, x, 2.25, 2.8, 2.3, { name: "reins " + flow[i][1] });
+    k.badge(s, x + 0.25, 2.45, 0.62, "", { fill: C.text1 });
+    s.addImage({ data: await icon(flow[i][0], H.accent4), x: x + 0.4, y: 2.6, w: 0.32, h: 0.32 });
+    T(s, flow[i][1], { x: x + 1.0, y: 2.45, w: 1.6, h: 0.62, fontSize: 17, bold: true, valign: "middle" });
+    T(s, flow[i][2], { x: x + 0.25, y: 3.2, w: 2.35, h: 1.5, fontSize: 11, color: C.accent2 });
+    if (i < 3) s.addShape(pres.shapes.CHEVRON, { x: x + 2.84, y: 3.38, w: 0.16, h: 0.28, fill: { color: C.accent1 }, line: { color: C.accent1 }, objectName: "reins arrow" });
+  }
+  k.card(s, M, 4.75, 2.8, 1.75, { name: "reins scale" });
+  T(s, [{ text: "約2万", options: { fontSize: 32, bold: true, color: C.accent1 } }, { text: " 件", options: { fontSize: 13, bold: true } }], { x: M + 0.25, y: 4.85, w: 2.4, h: 0.8, valign: "middle" });
+  T(s, "横断収集で集まる公開案件の規模（MANDAの実績）", { x: M + 0.25, y: 5.65, w: 2.35, h: 0.75, fontSize: 10.5, color: C.accent2 });
+  k.card(s, M + 3.03, 4.75, 8.8, 1.75, { fill: "FFFFFF", name: "reins vs manda" });
+  T(s, [
+    { text: "MANDAとの違い", options: { bold: true, color: C.accent1, fontSize: 12.5, breakLine: true } },
+    { text: "MANDAは「探しやすくする」ところで止まり、無料のまま収益化できなかった。M&A情報REINSは集めた案件を②自社データのAIに流し込み、①派遣した担当が動く。情報そのものではなく、情報から先の意思決定でお金をいただく", options: { fontSize: 11.5 } },
+  ], { x: M + 3.3, y: 4.75, w: 8.3, h: 1.75, valign: "middle" });
+  k.source(s, "収集は掲載元の利用規約に沿い、提携・API・掲載許諾を優先する。件数はMANDA株式会社 会社紹介資料による");
+  s.addNotes("M&A版のREINS。オープンになっている案件は全部ここに集まる状態をつくる。MANDAと違うのは、集めた先にAIと人がいること。");
+
   // ===== 7. AIの使い方 =====
   s = k.content({ section: "サービス", kicker: "AI × EXPERIENCE", title: "AIは誰でも使える。差がつくのは、何を判断させるか", sub: "AIが作業の大半を担い、49戦のルールで判定し、最後は人が責任を持つ" });
   // 入力
   k.card(s, M, 2.3, 2.55, 3.55, { name: "input" });
   T(s, "入力", { x: M + 0.25, y: 2.45, w: 2, h: 0.35, fontSize: 13, bold: true, color: C.accent1 });
-  T(s, [{ text: "自社のBS/PL・試算表", options: { breakLine: true } }, { text: "買収方針（業種・エリア・予算）", options: { breakLine: true } }, { text: "案件情報・IM・決算書", options: { breakLine: true } }, { text: "市場・企業データ" }].map((r, i, a) => ({ ...r, options: { ...r.options, bullet: { indent: 12 }, paraSpaceAfter: 8, breakLine: i < a.length - 1 } })), { x: M + 0.25, y: 2.9, w: 2.15, h: 2.8, fontSize: 11.5 });
+  T(s, [{ text: "自社のBS/PL・試算表", options: { breakLine: true } }, { text: "買収方針（業種・エリア・予算）", options: { breakLine: true } }, { text: "M&A情報REINSの全案件・IM", options: { breakLine: true } }, { text: "市場・企業データ" }].map((r, i, a) => ({ ...r, options: { ...r.options, bullet: { indent: 12 }, paraSpaceAfter: 8, breakLine: i < a.length - 1 } })), { x: M + 0.25, y: 2.9, w: 2.15, h: 2.8, fontSize: 11.5 });
   // AIエンジン
   s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: 3.55, y: 2.3, w: 5.0, h: 3.55, rectRadius: 0.06, fill: { color: C.text1 }, line: { color: C.text1 }, objectName: "ai engine" });
   T(s, "AIエージェント", { x: 3.8, y: 2.42, w: 3, h: 0.35, fontSize: 13, bold: true, color: C.accent4 });
@@ -291,25 +347,26 @@ async function icon(name, hex, px = 256) {
   s.addNotes("成果は成約だけではない。12ヶ月後に担当者が自分で回せるようになることを約束する。");
 
   // ===== 11. 料金 =====
-  s = k.content({ section: "サービス", kicker: "PRICING", title: "月額で「育成と伴走」、成約したら成功報酬", sub: "M&A担当を1人採用する（年収800〜1,500万円＋採用費）より安く、社内に人が育つ" });
+  s = k.content({ section: "サービス", kicker: "PRICING", title: "ツールで入り、人で深め、成約したら成功報酬", sub: "M&A担当を1人採用する（年収800〜1,500万円＋採用費）より安く、社内に人とデータが育つ" });
   const plans = [
-    { n: "スタンダード", p: "50", u: "万円／月", t: "12ヶ月（6ヶ月から可）", items: ["AIによる案件分析・シナジー試算", "担当者の育成カリキュラム", "ソーシング・IMの受領と読解", "資金調達の設計", "交渉への同席と指導"], dark: false },
-    { n: "プレミアム", p: "80", u: "万円／月", t: "枠数限定", items: ["スタンダードの全内容", "中野との月1時間の壁打ち", "49戦の判断基準でのフィードバック", "交渉の代行"], dark: true },
-    { n: "成功報酬", p: "2〜3", u: "％（最低500万円）", t: "成約したときだけ", items: ["買い手FAとしてクロージングまで", "支払済み月額の50%を充当", "二重取りにしない"], dark: false },
+    { n: "ツール", p: "10", u: "万円／月", t: "③＋②　入口のプラン", items: ["M&A情報REINS（全案件の横断収集）", "自社データを学習するAI", "シナジー・投資回収の試算", "有望案件の毎朝通知"], dark: false },
+    { n: "スタンダード", p: "50", u: "万円／月", t: "①＋②＋③　12ヶ月", items: ["ツールの全機能", "M&A担当の派遣・育成", "ソーシング・IMの読解", "資金調達の設計", "交渉への同席と指導"], dark: false },
+    { n: "プレミアム", p: "80", u: "万円／月", t: "枠数限定", items: ["スタンダードの全内容", "中野との月1時間の壁打ち", "49戦の基準でのフィードバック", "交渉の代行"], dark: true },
+    { n: "成功報酬", p: "2〜3", u: "%", t: "成約時のみ・最低500万円", items: ["買い手FAとしてクロージングまで", "支払済み月額の50%を充当", "二重取りにしない"], dark: false },
   ];
-  for (let i = 0; i < 3; i++) {
-    const x = M + i * 4.03, p = plans[i], dk = p.dark;
-    if (dk) s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x, y: 2.3, w: 3.77, h: 4.35, rectRadius: 0.06, fill: { color: C.text1 }, line: { color: C.text1 }, objectName: "plan premium" });
-    else k.card(s, x, 2.3, 3.77, 4.35, { name: "plan " + p.n });
-    if (dk) k.pill(s, x + 2.3, 2.5, 1.25, "おすすめ", { fill: C.accent1 });
-    T(s, p.n, { x: x + 0.3, y: 2.5, w: 2.2, h: 0.4, fontSize: 15, bold: true, color: dk ? C.accent4 : C.accent1 });
-    T(s, [{ text: p.p, options: { fontSize: 40, bold: true, color: dk ? C.background1 : C.text1 } }, { text: " " + p.u, options: { fontSize: 12, bold: true, color: dk ? C.accent3 : C.accent2 } }], { x: x + 0.3, y: 2.95, w: 3.3, h: 0.85, valign: "middle" });
-    T(s, p.t, { x: x + 0.3, y: 3.8, w: 3.2, h: 0.3, fontSize: 10.5, color: dk ? C.accent5 : C.accent2 });
-    s.addShape(pres.shapes.LINE, { x: x + 0.3, y: 4.22, w: 3.17, h: 0, line: { color: dk ? "4E443C" : H.accent3, width: 0.75 } });
-    T(s, p.items.map((t, j, a) => ({ text: t, options: { bullet: { indent: 12 }, paraSpaceAfter: 6, breakLine: j < a.length - 1 } })), { x: x + 0.3, y: 4.35, w: 3.2, h: 2.2, fontSize: 11.5, color: dk ? C.background1 : C.text1 });
+  for (let i = 0; i < 4; i++) {
+    const x = M + i * 2.99, p = plans[i], dk = p.dark, cw = 2.84;
+    if (dk) s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x, y: 2.3, w: cw, h: 4.35, rectRadius: 0.06, fill: { color: C.text1 }, line: { color: C.text1 }, objectName: "plan premium" });
+    else k.card(s, x, 2.3, cw, 4.35, { name: "plan " + p.n });
+    if (dk) k.pill(s, x + 1.65, 2.52, 1.0, "おすすめ", { fill: C.accent1 });
+    T(s, p.n, { x: x + 0.25, y: 2.5, w: 1.6, h: 0.4, fontSize: 14, bold: true, color: dk ? C.accent4 : C.accent1 });
+    T(s, [{ text: p.p, options: { fontSize: 36, bold: true, color: dk ? C.background1 : C.text1 } }, { text: " " + p.u, options: { fontSize: 11, bold: true, color: dk ? C.accent3 : C.accent2 } }], { x: x + 0.25, y: 2.95, w: 2.45, h: 0.85, valign: "middle" });
+    T(s, p.t, { x: x + 0.25, y: 3.8, w: 2.4, h: 0.3, fontSize: 10, color: dk ? C.accent5 : C.accent2 });
+    s.addShape(pres.shapes.LINE, { x: x + 0.25, y: 4.22, w: cw - 0.5, h: 0, line: { color: dk ? "4E443C" : H.accent3, width: 0.75 } });
+    T(s, p.items.map((t, j, a) => ({ text: t, options: { bullet: { indent: 11 }, paraSpaceAfter: 5, breakLine: j < a.length - 1 } })), { x: x + 0.25, y: 4.35, w: cw - 0.4, h: 2.2, fontSize: 10.5, color: dk ? C.background1 : C.text1 });
   }
   k.source(s, "価格はすべて税別・仮置き。顧客インタビューで支払意思額を検証して確定する");
-  s.addNotes("プレミアムの価値は中野本人との壁打ち。私の時間には限りがあるので枠数を絞る。");
+  s.addNotes("入口はツールの月10万円。有望案件が見えたら担当を派遣するスタンダードへ。プレミアムの価値は中野本人との壁打ちで、枠数を絞る。");
 
   // ===== 12. 独自データ =====
   pres.addSection({ title: "事業性" });
@@ -335,34 +392,35 @@ async function icon(name, hex, px = 256) {
   s.addNotes("最初は人とノウハウで勝つ。続けるほどデータが溜まり、後から来た競合が追いつけなくなる。");
 
   // ===== 13. 事業計画 =====
-  s = k.content({ section: "事業性", kicker: "BUSINESS PLAN", title: "3年目に売上8億円、コンサルタント10名体制", sub: "月額のストック収益に、成約時の成功報酬が上乗せされる（仮説）" });
+  s = k.content({ section: "事業性", kicker: "BUSINESS PLAN", title: "3年目に売上10億円：ツール200社×派遣100社", sub: "ツールと派遣の月額がストック収益になり、成約時の成功報酬が上乗せされる（仮説）" });
   s.addChart(pres.charts.BAR, [
-    { name: "月額報酬", labels: ["1年目", "2年目", "3年目"], values: [0.62, 2.59, 6.72] },
+    { name: "ツール月額", labels: ["1年目", "2年目", "3年目"], values: [0.12, 0.6, 2.4] },
+    { name: "派遣・伴走の月額", labels: ["1年目", "2年目", "3年目"], values: [0.62, 2.59, 6.72] },
     { name: "成功報酬", labels: ["1年目", "2年目", "3年目"], values: [0.12, 0.48, 1.5] },
   ], {
     x: M, y: 2.2, w: 6.6, h: 4.45, barDir: "col", barGrouping: "stacked", barGapWidthPct: 55,
-    chartColors: [H.dk1, H.accent1], showValue: false, dataLabelPosition: "ctr", dataLabelFormatCode: "0.0", dataLabelColor: "FFFFFF", dataLabelFontSize: 10, dataLabelFontFace: "+mn-lt",
+    chartColors: [H.accent4, H.dk1, H.accent1], showValue: false, dataLabelPosition: "ctr", dataLabelFormatCode: "0.0", dataLabelColor: "FFFFFF", dataLabelFontSize: 10, dataLabelFontFace: "+mn-lt",
     showLegend: true, legendPos: "b", legendFontSize: 10, legendFontFace: "+mn-lt", legendColor: H.accent2,
     showTitle: true, title: "売上高（億円）", titleFontSize: 12, titleFontFace: "+mn-lt", titleColor: H.dk1,
     catAxisLabelColor: H.dk1, catAxisLabelFontSize: 11, catAxisLabelFontFace: "+mn-lt", valAxisLabelColor: H.accent5, valAxisLabelFontSize: 9, valAxisLabelFontFace: "+mn-lt",
     valGridLine: { color: "EDE6DA", size: 0.5 }, catGridLine: { style: "none" }, valAxisLabelFormatCode: "0", objectName: "plan chart",
   });
-  const kp = [["0.7億", "1年目", "コンサル2名・顧客10社・成約2件"], ["3.1億", "2年目", "コンサル5名・顧客40社・成約8件"], ["8.2億", "3年目", "コンサル10名・顧客100社・成約25件"]];
+  const kp = [["0.9億", "1年目", "ツール10社・派遣10社・成約2件"], ["3.7億", "2年目", "ツール50社・派遣40社・成約8件"], ["10.6億", "3年目", "ツール200社・派遣100社・成約25件"]];
   for (let i = 0; i < 3; i++) {
     const y = 2.3 + i * 1.12;
     k.card(s, 7.7, y, 4.88, 0.98, { name: "kpi " + (i + 1) });
     T(s, kp[i][0], { x: 7.95, y, w: 1.55, h: 0.98, fontSize: 24, bold: true, color: C.accent1, valign: "middle" });
     T(s, [{ text: kp[i][1], options: { bold: true, breakLine: true } }, { text: kp[i][2], options: { fontSize: 10.5, color: C.accent2 } }], { x: 9.55, y, w: 2.9, h: 0.98, fontSize: 12.5, valign: "middle" });
   }
-  k.bar(s, 5.72, "コンサルタント1人あたり 年約8,000万円", "10社×月50〜80万円＋年3件の成功報酬。人件費に対して粗利率は十分", { x: 7.7, w: 4.88, h: 0.95, size: 14 });
-  s.addNotes("数字は仮説。1人で10社、月50〜80万円、年3件成約が前提。AIで担当社数を増やせれば上振れする。");
+  k.bar(s, 5.72, "ツールが入口、派遣が収益の柱", "ツール契約の一部が派遣に上がる。コンサル1人あたり年約8,000万円", { x: 7.7, w: 4.88, h: 0.95, size: 14 });
+  s.addNotes("数字は仮説。ツール月10万円、派遣は1人10社で月50〜80万円、年3件成約が前提。ツールの社数には派遣先は含めていない。");
 
   // ===== 14. ロードマップ =====
   s = k.content({ section: "事業性", kicker: "ROADMAP", title: "小さく有償で始め、データで勝つ", sub: "段階ごとに「次へ進む条件」を決め、満たしてから投資を増やす" });
   const ph = [
-    ["PHASE 1", "0〜6ヶ月", "立ち上げ", ["中野＋コンサルタント2名", "有償の顧客10社", "AI分析ツールの初版", "M&A支援機関登録・法務整理"], "継続意向 70%以上"],
-    ["PHASE 2", "6〜18ヶ月", "拡大", ["コンサルタント5名", "顧客40社・成約8件", "提携金融機関3〜5行", "認証バイヤー制度"], "成約8件"],
-    ["PHASE 3", "18〜36ヶ月", "データで勝つ", ["コンサルタント10名", "成約データでAI価格算定", "AIツール単体のSaaS提供", "仲介・FA向けの打診サービス"], "顧客100社"],
+    ["PHASE 1", "0〜6ヶ月", "立ち上げ", ["中野＋コンサルタント2名", "M&A情報REINS＋AIの初版", "ツール10社・派遣10社", "M&A支援機関登録・法務整理"], "継続意向 70%以上"],
+    ["PHASE 2", "6〜18ヶ月", "拡大", ["コンサルタント5名", "ツール50社・派遣40社", "成約8件", "提携金融機関3〜5行"], "成約8件"],
+    ["PHASE 3", "18〜36ヶ月", "データで勝つ", ["コンサルタント10名", "ツール200社・派遣100社", "成約データでAI価格算定", "仲介・FA向けの打診サービス"], "成約25件"],
   ];
   for (let i = 0; i < 3; i++) {
     const x = M + i * 4.03, dk = i === 2;
