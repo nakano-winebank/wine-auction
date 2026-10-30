@@ -18,7 +18,7 @@ PRICE = 160_000                 # 実践会ご案内価格（田角様は150,000
 SHARES = 66
 SHARES_PRE = 2_134              # 10/30 増資後2,000株＋田角様134株（11/10払込）
 PAY_DATE = "2026年12月1日"
-MEETING = "2026年11月15日"       # 募集事項の決定・本契約の承認を行う株主総会
+MEETING = "2026年11月16日"       # 募集事項の決定・本契約の承認を行う株主総会
 TOTAL = PRICE * SHARES          # 10,560,000円
 CAPITAL = TOTAL // 2
 RESERVE = TOTAL - CAPITAL
@@ -230,8 +230,8 @@ def build_sousu(name, sign):
 
     body.append('<w:p><w:r><w:br w:type="page"/></w:r></w:p>')
     body.append(P("別紙　払込取扱場所（甲の預金口座）", bold=True, after=120))
-    table(body, [("金融機関名", "【　　】銀行"), ("支店名", "【　　】支店"), ("預金種別", "【普通預金】"),
-                 ("口座番号", "【　　　　　】"), ("口座名義", "株式会社Brasserie Thierry Marx　代表取締役　中野邦人")])
+    table(body, [("金融機関名", "三井住友銀行"), ("支店名", "日比谷支店"), ("預金種別", "普通預金"),
+                 ("口座番号", "9508874"), ("口座名義", "ｶ)ﾌﾞﾗｯｽﾘｰﾃｨｴﾘｰﾏﾙｸｽ")])
 
     zin = zipfile.ZipFile(SOUSU_SRC)
     doc = zin.read("word/document.xml").decode("utf8")
