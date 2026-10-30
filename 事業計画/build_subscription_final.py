@@ -22,7 +22,8 @@ MEETING = "2026年11月16日"       # 募集事項の決定・本契約の承認
 TOTAL = PRICE * SHARES          # 10,560,000円
 CAPITAL = TOTAL // 2
 RESERVE = TOTAL - CAPITAL
-PRE_MONEY = PRICE * SHARES_PRE  # 341,440,000円
+SHARES_ROUND0 = 2_000            # 今回の第三者割当（外部1,000株）開始前の発行済株式数
+PRE_MONEY = PRICE * SHARES_ROUND0  # 320,000,000円（資本政策の内藤様タブと同じプレ）
 INVESTORS = [                   # (ファイル名用, 本文の氏名, 署名欄の氏名)
     ("池上様", "池上貴樹", "池上　貴樹"),
     ("城戸様", "城戸【　　】", "城戸　【　　】"),
@@ -98,8 +99,8 @@ def build_sousu(name, sign):
         ("（７）募集の方法", "第三者割当の方法により、本株式の全部を乙に割り当てる"),
         ("（８）払込取扱場所", "別紙記載の甲の預金口座"),
     ])
-    para(f"２　前項第２号の払込金額は、甲の発行済株式総数{SHARES_PRE:,}株（本株式と同時に第三者割当の方法により発行する"
-         f"募集株式を除く。）に対する株式価値（プレ・マネー評価額）を金{yen(PRE_MONEY)}円として算定したものである。")
+    para(f"２　前項第２号の払込金額は、本株式を含む今回の第三者割当による資金調達の開始前の甲の発行済株式総数{SHARES_ROUND0:,}株に対する"
+         f"株式価値（プレ・マネー評価額）を金{yen(PRE_MONEY)}円として算定したものである。")
 
     art("第２条（総数の引受け）")
     para("１　乙は、本株式の総数を引き受け、甲は、本株式の総数を乙に割り当てる。")
@@ -248,4 +249,4 @@ def save(zin, xml, out):
 
 for tag, name, sign in INVESTORS:
     save(*build_sousu(name, sign), os.path.join(OUTDIR, f"総数引受契約書_{tag}_BrasserieThierryMarx_最終_20261030.docx"))
-print(f"{SHARES}株 × @{PRICE:,}円 = {TOTAL:,}円／資本金{CAPITAL:,}・準備金{RESERVE:,}／プレ{PRE_MONEY:,}円（{SHARES_PRE:,}株）")
+print(f"{SHARES}株 × @{PRICE:,}円 = {TOTAL:,}円／資本金{CAPITAL:,}・準備金{RESERVE:,}／プレ{PRE_MONEY:,}円（{SHARES_ROUND0:,}株）")
