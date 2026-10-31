@@ -30,21 +30,25 @@ const mon   = (v) => v.toFixed(1) + "ヶ月";
 const f2    = (v) => v.toFixed(2);
 
 // ─────────────────────────────────────────── palette / type
-const BG      = "0C0C0C";
-const CARD    = "171614";
-const CARD2   = "1F1D19";
-const LINE    = "2E2A24";
+// WineBank 標準トンマナ（白背景・チャコール×ゴールド・ベージュのカード。表紙と結びのみダーク）
+const BG      = "FFFFFF";   // 本文スライドの背景
+const DARK    = "2B2622";   // 表紙・結びの背景、強調カード、本文の文字
+const DARK2   = "1C1714";   // 表紙のモチーフ円
+const CARD    = "F5EFE4";   // ベージュのカード
+const CARD2   = "F3E9D6";   // 強調カード（ゴールド枠と併用）
+const LINE    = "E6DCCB";   // 罫線・薄い番号
 const GOLD    = "A78450";
-const GOLD_L  = "C9A96E";
-const GOLD_D  = "6E5730";
-const IVORY   = "EFEBE3";
-const MUTED   = "9A938A";
-const DIM     = "6E675E";
+const GOLD_L  = "8C6A3A";   // 白地での強調数値・強調文字
+const GOLD_D  = "C9AE7E";   // 淡いゴールド（枠線・グラフ第2系列）
+const IVORY   = "2B2622";   // 本文の文字（旧ダーク版の名残で名前のみ残す）
+const MUTED   = "6F665F";
+const DIM     = "9A8F84";
 const RED     = "B4553F";
+const WHITE   = "FFFFFF";
 
-const SERIF = "Yu Mincho";
-const SANS  = "Yu Gothic";
-const LATIN = "Cambria";
+const SERIF = "Meiryo";
+const SANS  = "Meiryo";
+const LATIN = "Meiryo";
 
 const W = 13.333, H = 7.5;
 const M = 0.72;
@@ -67,49 +71,51 @@ function base() {
 
 function chrome(s, eyebrow, title, lead) {
   page += 1;
+  s.addShape(pres.ShapeType.ellipse, { x: 0.75, y: 0.53, w: 0.12, h: 0.12, fill: { color: GOLD }, line: { color: GOLD, width: 0 } });
   s.addText(eyebrow, {
-    x: M, y: 0.42, w: CW, h: 0.24, margin: 0,
-    fontFace: LATIN, fontSize: 10.5, bold: true, color: GOLD, charSpacing: 3.4,
+    x: 1.01, y: 0.40, w: 10.5, h: 0.36, margin: 0, valign: "middle",
+    fontFace: LATIN, fontSize: 12, bold: true, color: GOLD, charSpacing: 2.4,
   });
   s.addText(title, {
-    x: M, y: 0.70, w: CW, h: 0.60, margin: 0,
-    fontFace: SERIF, fontSize: 27, bold: true, color: IVORY,
+    x: M, y: 0.80, w: CW, h: 0.62, margin: 0, valign: "middle",
+    fontFace: SANS, fontSize: 26, bold: true, color: DARK,
   });
   if (lead) {
     s.addText(lead, {
-      x: M, y: 1.33, w: CW, h: 0.34, margin: 0,
+      x: M, y: 1.38, w: CW, h: 0.34, margin: 0, valign: "middle",
       fontFace: SANS, fontSize: 11.5, color: MUTED,
     });
   }
-  s.addText("CONFIDENTIAL ｜ 株式会社WineBank", {
-    x: M, y: H - 0.46, w: 5.5, h: 0.24, margin: 0,
-    fontFace: SANS, fontSize: 8.5, color: DIM,
+  s.addText("Confidential", {
+    x: M, y: 7.05, w: 6.0, h: 0.28, margin: 0, valign: "middle",
+    fontFace: SANS, fontSize: 9, color: DIM,
   });
-  s.addText(String(page).padStart(2, "0"), {
-    x: W - M - 1.0, y: H - 0.46, w: 1.0, h: 0.24, margin: 0, align: "right",
-    fontFace: LATIN, fontSize: 9.5, color: GOLD_D, charSpacing: 1.5,
+  s.addText(String(page), {
+    x: W - M - 0.6, y: 7.05, w: 0.6, h: 0.28, margin: 0, align: "right", valign: "middle",
+    fontFace: LATIN, fontSize: 9, color: DIM,
   });
   return s;
 }
 
 function card(s, x, y, w, h, opt = {}) {
   s.addShape(pres.ShapeType.roundRect, {
-    x, y, w, h, rectRadius: 0.045,
+    x, y, w, h, rectRadius: 0.08,
     fill: { color: opt.fill || CARD },
     line: { color: opt.line || LINE, width: 0.75 },
+    shadow: { type: "outer", color: "6F665F", opacity: 0.18, blur: 6, offset: 2, angle: 90 },
   });
 }
 
 function badge(s, x, y, d, label, opt = {}) {
   s.addShape(pres.ShapeType.ellipse, {
     x, y, w: d, h: d,
-    fill: { color: opt.fill || BG },
-    line: { color: opt.line || GOLD, width: 0.9 },
+    fill: { color: opt.fill || DARK },
+    line: { color: opt.line || DARK, width: 0 },
   });
   s.addText(label, {
     x, y, w: d, h: d, margin: 0, align: "center", valign: "middle",
     fontFace: opt.face || LATIN, fontSize: opt.size || 11,
-    bold: true, color: opt.color || GOLD_L,
+    bold: true, color: opt.color || WHITE,
   });
 }
 
@@ -117,7 +123,7 @@ function stat(s, x, y, w, h, value, unit, label, note, opt = {}) {
   card(s, x, y, w, h, { fill: opt.fill || CARD, line: opt.line || LINE });
   s.addText(
     [
-      { text: value, options: { fontFace: LATIN, fontSize: opt.vs || 34, bold: true, color: opt.color || GOLD_L } },
+      { text: value, options: { fontFace: LATIN, fontSize: opt.vs || 34, bold: true, color: opt.color || GOLD } },
       { text: unit ? " " + unit : "", options: { fontFace: SANS, fontSize: 12.5, bold: true, color: opt.color || GOLD_L } },
     ],
     { x: x + 0.26, y: y + 0.20, w: w - 0.52, h: 0.62, margin: 0, valign: "middle" }
@@ -139,14 +145,14 @@ function table(s, rows, x, y, w, colW, opt = {}) {
     x, y, w, colW,
     border: { type: "solid", pt: 0.6, color: LINE },
     fontFace: SANS, fontSize: opt.fontSize || 10,
-    color: IVORY, fill: { color: CARD },
+    color: DARK, fill: { color: WHITE },
     valign: "middle", align: "center",
     rowH: opt.rowH || 0.34,
     margin: opt.margin === undefined ? 0.05 : opt.margin,
   });
 }
 function th(t) {
-  return { text: t, options: { fill: { color: "231F1A" }, color: GOLD_L, bold: true, fontSize: 9.5, fontFace: SANS } };
+  return { text: t, options: { fill: { color: DARK }, color: WHITE, bold: true, fontSize: 9.5, fontFace: SANS } };
 }
 function td(t, o = {}) {
   return { text: t, options: Object.assign({ fontFace: o.latin ? LATIN : SANS }, o) };
@@ -154,10 +160,10 @@ function td(t, o = {}) {
 
 const CHART_BASE = {
   showLegend: false,
-  chartColors: [GOLD, GOLD_D],
+  chartColors: [GOLD, DARK],
   catAxisLabelColor: MUTED, catAxisLabelFontFace: SANS, catAxisLabelFontSize: 9,
   valAxisLabelColor: DIM, valAxisLabelFontFace: LATIN, valAxisLabelFontSize: 8.5,
-  valGridLine: { color: "232019", size: 0.6 },
+  valGridLine: { color: LINE, size: 0.6 },
   catGridLine: { style: "none" },
   valAxisLineShow: false, catAxisLineShow: false,
   showValue: true, dataLabelColor: IVORY, dataLabelFontFace: LATIN,
@@ -168,26 +174,21 @@ const CHART_BASE = {
 
 // ═══════════════════════════════════════════════════════════ 01 表紙
 {
-  const s = base();
-  s.addShape(pres.ShapeType.ellipse, { x: 8.55, y: -0.95, w: 6.1, h: 6.1, fill: { color: BG }, line: { color: "1E1A15", width: 1.1 } });
-  s.addShape(pres.ShapeType.ellipse, { x: 9.55, y: 0.05, w: 4.1, h: 4.1, fill: { color: BG }, line: { color: GOLD_D, width: 0.9 } });
-  s.addShape(pres.ShapeType.ellipse, { x: 11.25, y: 1.75, w: 0.7, h: 0.7, fill: { color: GOLD }, line: { color: GOLD, width: 0 } });
-
-  s.addText("WINEBANK", { x: M, y: 0.62, w: 6, h: 0.3, margin: 0, fontFace: LATIN, fontSize: 13, bold: true, color: IVORY, charSpacing: 5.5 });
-  s.addShape(pres.ShapeType.roundRect, { x: M, y: 1.86, w: 5.60, h: 0.36, rectRadius: 0.04, fill: { color: CARD2 }, line: { color: GOLD_D, width: 1 } });
-  s.addText("山本案｜出資比率でプロラタ配分・成功報酬なし", {
-    x: M, y: 1.86, w: 5.60, h: 0.36, margin: 0, align: "center", valign: "middle",
-    fontFace: SANS, fontSize: 11, bold: true, color: GOLD_L, charSpacing: 1.2 });
-  s.addText("WINE FUND ｜ SPC PROPOSAL", { x: M, y: 2.42, w: 8.4, h: 0.28, margin: 0, fontFace: LATIN, fontSize: 11, bold: true, color: GOLD, charSpacing: 3.6 });
-  s.addText("ワインファンド（SPC）", { x: M, y: 2.80, w: 8.6, h: 0.78, margin: 0, fontFace: SERIF, fontSize: 41, bold: true, color: IVORY });
-  s.addText("組成のご提案", { x: M, y: 3.56, w: 8.6, h: 0.78, margin: 0, fontFace: SERIF, fontSize: 41, bold: true, color: GOLD_L });
-  s.addText(`ファーストクローズ ${okuN(C1.total)}円 → 年度内セカンドクローズ ${okuN(C2.total)}円 ／ 運用期間5年 ／ 年1回分配`, {
-    x: M, y: 4.52, w: 9.6, h: 0.3, margin: 0, fontFace: SANS, fontSize: 12.5, color: MUTED });
-  s.addText("2026年10月", { x: M, y: 4.86, w: 9.0, h: 0.3, margin: 0, fontFace: SANS, fontSize: 10.5, color: DIM });
-
-  s.addText("株式会社WineBank", { x: M, y: H - 1.28, w: 6, h: 0.32, margin: 0, fontFace: SERIF, fontSize: 15, bold: true, color: IVORY });
-  s.addText("東京都港区六本木4-12-8 第6DMJビル 2階　／　創業 1970年", { x: M, y: H - 0.92, w: 8, h: 0.28, margin: 0, fontFace: SANS, fontSize: 9.5, color: DIM });
-  s.addText("CONFIDENTIAL", { x: W - M - 3, y: H - 0.92, w: 3, h: 0.28, margin: 0, align: "right", fontFace: LATIN, fontSize: 9.5, bold: true, color: GOLD_D, charSpacing: 2.6 });
+  const s = pres.addSlide();
+  s.background = { color: DARK };
+  s.addShape(pres.ShapeType.ellipse, { x: 9.3, y: -2.2, w: 5.6, h: 5.6, fill: { color: DARK2 }, line: { color: DARK2, width: 0 } });
+  s.addShape(pres.ShapeType.ellipse, { x: 0.75, y: 1.63, w: 0.12, h: 0.12, fill: { color: GOLD }, line: { color: GOLD, width: 0 } });
+  s.addText("WINE FUND PROPOSAL ／ ワインファンド組成のご提案", { x: 1.0, y: 1.50, w: 10.0, h: 0.38, margin: 0, valign: "middle",
+    fontFace: SANS, fontSize: 12, bold: true, color: GOLD_D, charSpacing: 1 });
+  s.addText("ワインファンド（SPC）\n組成のご提案", { x: 0.75, y: 2.0, w: 9.5, h: 1.9, margin: 0, valign: "middle",
+    fontFace: SANS, fontSize: 40, bold: true, color: WHITE, lineSpacingMultiple: 1.05 });
+  s.addText(`〜 山本案｜出資比率でプロラタ配分・成功報酬なし ／ ファーストクローズ ${okuN(C1.total)}円 → セカンドクローズ ${okuN(C2.total)}円 〜`, {
+    x: 0.75, y: 4.0, w: 11.0, h: 0.6, margin: 0, valign: "middle", fontFace: SANS, fontSize: 14, color: LINE });
+  s.addShape(pres.ShapeType.rect, { x: 0.75, y: 4.95, w: 2.4, h: 0.02, fill: { color: GOLD }, line: { color: GOLD, width: 0 } });
+  s.addText("株式会社WineBank", { x: 0.75, y: 5.2, w: 9.0, h: 0.45, margin: 0, valign: "middle", fontFace: SANS, fontSize: 18, bold: true, color: WHITE });
+  s.addText("2026年10月　／　東京都港区六本木4-12-8 第6DMJビル 2階　／　創業 1970年", { x: 0.75, y: 5.65, w: 9.0, h: 0.35, margin: 0, valign: "middle",
+    fontFace: SANS, fontSize: 11, color: DIM });
+  s.addText("Confidential", { x: 0.75, y: 7.05, w: 6.0, h: 0.28, margin: 0, valign: "middle", fontFace: SANS, fontSize: 9, color: DIM });
   s.addNotes("WineBankは卸す時点で値入れし、出口では管理報酬以外を取らない。利益は出資比率どおり60:40で配分する。");
 }
 
@@ -989,12 +990,12 @@ const CHART_BASE = {
   risks.forEach((r, i) => {
     const col = i % 4, row = Math.floor(i / 4);
     const x = M + (cwid + 0.28) * col;
-    const y = 1.70 + row * 2.32;
+    const y = 1.70 + row * 2.62;
     const hot = (i === 0 || i === 7);
-    card(s, x, y, cwid, 2.10, { fill: hot ? CARD2 : CARD, line: hot ? GOLD_D : LINE });
+    card(s, x, y, cwid, 2.42, { fill: hot ? CARD2 : CARD, line: hot ? GOLD_D : LINE });
     s.addText(r[0], { x: x + 0.26, y: y + 0.22, w: cwid - 0.52, h: 0.28, margin: 0, fontFace: SANS, fontSize: 12, bold: true, color: IVORY });
     s.addText(r[1], { x: x + 0.26, y: y + 0.54, w: cwid - 0.52, h: 0.42, margin: 0, fontFace: SANS, fontSize: 9.5, color: GOLD_L, lineSpacingMultiple: 1.15 });
-    s.addText(r[2], { x: x + 0.26, y: y + 1.02, w: cwid - 0.52, h: 0.92, margin: 0, fontFace: SANS, fontSize: 9, color: MUTED, lineSpacingMultiple: 1.2 });
+    s.addText(r[2], { x: x + 0.26, y: y + 1.02, w: cwid - 0.52, h: 1.24, margin: 0, fontFace: SANS, fontSize: 9, color: MUTED, lineSpacingMultiple: 1.2 });
   });
   s.addNotes("卸値が時価連動になったことで、仕入リスクは遮断され、価格変動リスクの比重が上がった。");
 }
@@ -1126,17 +1127,24 @@ const CHART_BASE = {
 
 // ═══════════════════════════════════════════════════════════ 24 クロージング
 {
-  const s = base();
+  const s = pres.addSlide();
+  s.background = { color: DARK };
   page += 1;
-  s.addShape(pres.ShapeType.ellipse, { x: -1.6, y: 1.55, w: 4.4, h: 4.4, fill: { color: BG }, line: { color: "1E1A15", width: 1.1 } });
-  s.addShape(pres.ShapeType.ellipse, { x: 10.9, y: -1.3, w: 4.4, h: 4.4, fill: { color: BG }, line: { color: GOLD_D, width: 0.9 } });
-
-  s.addText("すべての人にファインワインを", { x: M, y: 2.72, w: CW, h: 0.76, margin: 0, align: "center", fontFace: SERIF, fontSize: 34, bold: true, color: IVORY });
-  s.addText("Wine × Technology", { x: M, y: 3.56, w: CW, h: 0.34, margin: 0, align: "center", fontFace: LATIN, fontSize: 13, bold: true, color: GOLD, charSpacing: 4.5 });
-  s.addText("株式会社WineBank", { x: M, y: 4.52, w: CW, h: 0.34, margin: 0, align: "center", fontFace: SERIF, fontSize: 15, bold: true, color: GOLD_L });
-  s.addText("創業1970年　／　東京都港区六本木4-12-8 第6DMJビル 2階", { x: M, y: 4.88, w: CW, h: 0.28, margin: 0, align: "center", fontFace: SANS, fontSize: 9.5, color: DIM });
-  s.addText("CONFIDENTIAL ｜ 株式会社WineBank", { x: M, y: H - 0.46, w: 5.5, h: 0.24, margin: 0, fontFace: SANS, fontSize: 8.5, color: DIM });
-  s.addText(String(page).padStart(2, "0"), { x: W - M - 1.0, y: H - 0.46, w: 1.0, h: 0.24, margin: 0, align: "right", fontFace: LATIN, fontSize: 9.5, color: GOLD_D, charSpacing: 1.5 });
+  s.addShape(pres.ShapeType.ellipse, { x: 9.3, y: -2.2, w: 5.6, h: 5.6, fill: { color: DARK2 }, line: { color: DARK2, width: 0 } });
+  s.addShape(pres.ShapeType.ellipse, { x: 0.75, y: 1.33, w: 0.12, h: 0.12, fill: { color: GOLD }, line: { color: GOLD, width: 0 } });
+  s.addText("C L O S I N G", { x: 1.01, y: 1.2, w: 10.0, h: 0.38, margin: 0, valign: "middle", fontFace: SANS, fontSize: 12, bold: true, color: GOLD_D });
+  s.addText("すべての人に\nファインワインを。", { x: 0.75, y: 1.7, w: 9.8, h: 1.8, margin: 0, valign: "middle",
+    fontFace: SANS, fontSize: 36, bold: true, color: WHITE, lineSpacingMultiple: 1.05 });
+  s.addShape(pres.ShapeType.rect, { x: 0.75, y: 3.65, w: 2.0, h: 0.02, fill: { color: GOLD }, line: { color: GOLD, width: 0 } });
+  s.addText([
+    { text: "WineBankは卸す時点で値入れし、出口では管理報酬以外を取りません。", options: { color: LINE, breakLine: true } },
+    { text: "利益は出資比率どおりに分け合い、", options: { color: LINE } },
+    { text: "投資家とWineBankが同じ方向を向くファンド", options: { color: GOLD_D, bold: true } },
+    { text: "をつくります。", options: { color: LINE } },
+  ], { x: 0.75, y: 3.9, w: 10.5, h: 1.2, margin: 0, valign: "top", fontFace: SANS, fontSize: 15, lineSpacingMultiple: 1.4 });
+  s.addText("株式会社WineBank　｜　Wine × Technology", { x: 0.75, y: 6.25, w: 10.0, h: 0.4, margin: 0, valign: "middle", fontFace: SANS, fontSize: 13, bold: true, color: WHITE });
+  s.addText("Confidential", { x: 0.75, y: 7.05, w: 6.0, h: 0.28, margin: 0, valign: "middle", fontFace: SANS, fontSize: 9, color: DIM });
+  s.addText(String(page), { x: W - M - 0.6, y: 7.05, w: 0.6, h: 0.28, margin: 0, align: "right", valign: "middle", fontFace: LATIN, fontSize: 9, color: DIM });
 }
 
 pres.writeFile({ fileName: "WineBank_ワインファンドSPC組成提案_山本案_時価マイナスα型_20261020.pptx" })
