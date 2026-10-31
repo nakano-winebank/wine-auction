@@ -159,6 +159,23 @@ for anchor, label in [
 insert_after("親族内での承継のための資本構成変更可能性を許容いただきたいものでございます。", "】【WB：承知しました。",
              "3条1項5号：承諾")
 
+# ── 締結日：2026年10月 → 11月（日付段落の「10」の run だけを差し替える） ──
+m = re.search(r'<w:p w14:paraId="5790D6E7".*?</w:p>', xml, re.S)
+if m:
+    para = m.group(0)
+    rm = re.search(r'<w:r>((?:<w:rPr>.*?</w:rPr>)?)<w:t>10</w:t></w:r>', para, re.S)
+    if rm:
+        counter[0] += 1; d = counter[0]; counter[0] += 1; i = counter[0]
+        new_run = (f'<w:del w:id="{d}" w:author="{AUTHOR}" w:date="{DATE}"><w:r>{rm.group(1)}<w:delText>10</w:delText></w:r></w:del>'
+                   f'<w:ins w:id="{i}" w:author="{AUTHOR}" w:date="{DATE}"><w:r>{rm.group(1)}<w:t>11</w:t></w:r></w:ins>')
+        para2 = para[:rm.start()] + new_run + para[rm.end():]
+        xml = xml[:m.start()] + para2 + xml[m.end():]
+        done.append("締結日：11月")
+    else:
+        missing.append("締結日：11月")
+else:
+    missing.append("締結日：11月")
+
 open(PATH, "w", encoding="utf-8").write(xml)
 print("=== 反映 ===")
 for l in done: print("  ", l)
