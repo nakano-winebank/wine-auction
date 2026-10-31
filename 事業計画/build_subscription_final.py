@@ -24,9 +24,9 @@ CAPITAL = TOTAL // 2
 RESERVE = TOTAL - CAPITAL
 SHARES_ROUND0 = 2_000            # 今回の第三者割当（外部1,000株）開始前の発行済株式数
 PRE_MONEY = PRICE * SHARES_ROUND0  # 320,000,000円（資本政策の内藤様タブと同じプレ）
-INVESTORS = [                   # (ファイル名用, 本文の氏名, 署名欄の氏名)
-    ("池上様", "池上貴樹", "池上　貴樹"),
-    ("城戸様", "城戸【　　】", "城戸　【　　】"),
+INVESTORS = [                   # (ファイル名用, 本文の氏名, 署名欄の氏名, 住所)
+    ("池上様", "池上貴樹", "池上　貴樹", "【住所】"),
+    ("城戸様", "城戸直義", "城戸　直義", "東京都世田谷区弦巻二丁目14番13号"),
 ]
 
 def yen(n): return f"{n:,}"
@@ -71,7 +71,7 @@ def table(body, rows, widths=(3400, 5780)):
                 f'<w:tblCellMar><w:left w:w="100" w:type="dxa"/><w:right w:w="100" w:type="dxa"/></w:tblCellMar></w:tblPr>'
                 f'<w:tblGrid>{grid}</w:tblGrid>{"".join(trs)}</w:tbl>')
 
-def build_sousu(name, sign):
+def build_sousu(name, sign, addr):
     body = []
     def title(t):  body.append(P(t, bold=True, jc="center", size=28, after=120))
     def art(t):    body.append(P(t, bold=True, before=200, keep=True))
@@ -221,7 +221,7 @@ def build_sousu(name, sign):
     blank()
     for lab, lines in [
         ("甲：", ["東京都港区六本木四丁目12番8号", "株式会社Brasserie Thierry Marx", "代表取締役　中野邦人"]),
-        ("乙：", ["【住所】", sign]),
+        ("乙：", [addr, sign]),
         ("丙：", ["東京都港区六本木4丁目12番8号", "株式会社WineBank", "代表取締役　中野 邦人"]),
     ]:
         body.append(P(lab + lines[0], left=3780))
@@ -247,6 +247,6 @@ def save(zin, xml, out):
             zout.writestr(it, data)
     print("saved:", out)
 
-for tag, name, sign in INVESTORS:
-    save(*build_sousu(name, sign), os.path.join(OUTDIR, f"総数引受契約書_{tag}_BrasserieThierryMarx_最終_20261030.docx"))
+for tag, name, sign, addr in INVESTORS:
+    save(*build_sousu(name, sign, addr), os.path.join(OUTDIR, f"総数引受契約書_{tag}_BrasserieThierryMarx_最終_20261030.docx"))
 print(f"{SHARES}株 × @{PRICE:,}円 = {TOTAL:,}円／資本金{CAPITAL:,}・準備金{RESERVE:,}／プレ{PRE_MONEY:,}円（{SHARES_ROUND0:,}株）")
