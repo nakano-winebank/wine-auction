@@ -24,7 +24,7 @@ RESERVE = TOTAL - CAPITAL
 SHARES_ROUND0 = 2_000
 PRE_MONEY = PRICE * SHARES_ROUND0  # 300,000,000円
 NAME = "株式会社Land＆Company"
-ADDR = "東京都港区赤坂九丁目7番2号　ミッドタウン・イースト4階"
+ADDR = "東京都港区赤坂九丁目7番2号ミッドタウン・イースト4階"   # 履歴事項全部証明書（R8.5.25）どおり
 REP = "代表取締役　田角 陸"
 
 def yen(n): return f"{n:,}"
