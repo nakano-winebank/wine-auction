@@ -21,6 +21,82 @@ for r in src.iter_rows(min_row=26, values_only=True):
                       st=r[7] if isinstance(r[7], str) else "", q=q, cost=num(r[15]), price=num(r[13])))
 items.sort(key=lambda x: -x["q"] * x["cost"])
 
+# ---------- 市場参考価格（海外市場の平均的な小売価格・USD／本、税抜。当社推計） ----------
+# (銘柄, 生産者, 対象ヴィンテージ, USD, 国内実績メモ)  対象: "R"=2010年以降, 数値の集合=その年のみ, None=年代なし
+J_RC="国内落札：2022年 200.3万円（ヤフオク）"
+PRICES = [
+    ("Romanée-Conti", "D.R.C.", "R", 20000, J_RC),
+    ("Romanée-Conti", "D.R.C.", {2005}, 28000, J_RC),
+    ("Montrachet", "D.R.C.", "R", 7500, "国内落札：2014年 56.5万円、2005年 105.2万円"),
+    ("La Tâche", "D.R.C.", "R", 6000, ""),
+    ("La Tâche (B)", "D.R.C.", "R", 6000, ""),
+    ("Richebourg", "D.R.C.", "R", 3800, ""),
+    ("Richebourg (B)", "D.R.C.", "R", 3800, ""),
+    ("Romanée-Saint-Vivan", "D.R.C.", "R", 3500, ""),
+    ("Romanée-Saint-Vivant", "D.R.C.", "R", 3500, ""),
+    ("Corton-Charlemagne", "D.R.C.", "R", 3200, ""),
+    ("Montrachet", "Leflaive", {2010}, 12000, "国内落札：2005年 115.2万円"),
+    ("Montrachet", "Leflaive", {1999}, 9000, "国内落札：2005年 115.2万円"),
+    ("Chevalier-Montrachet", "Leflaive", "R", 1300, ""),
+    ("Bâtard-Montrachet", "Leflaive", "R", 1000, ""),
+    ("La Romanée Grand Cru Monopole", "Comte Liger-Belair", "R", 6000, ""),
+    ("Chambertin", "Armand Rousseau", "R", 3200, "国内買取：2023年 27.5万円、2013〜15年 31〜36.5万円"),
+    ("Chambertin-Clos de Bèze", "Armand Rousseau", "R", 2800, ""),
+    ("Gevrey-Chambertin Clos Saint-Jacques", "Armand Rousseau", "R", 1400, ""),
+    ("Charmes-Chambertin", "Armand Rousseau", "R", 600, ""),
+    ("Échézeaux", "Bizot", "R", 3000, ""),
+    ("Vosne-Romanée 1er Cru", "Bizot", "R", 1800, ""),
+    ("Vosne-Romanée Les Jachées", "Bizot", "R", 1400, ""),
+    ("Morey-Saint-Denis Clos de la Bidaude", "Bizot", "R", 1200, ""),
+    ("Musigny", "Georges Roumier", "R", 22000, ""),
+    ("Chambolle-Musigny Les Amoureuses", "Georges Roumier", "R", 5000, ""),
+    ("Bonnes-Mares", "Georges Roumier", "R", 3000, ""),
+    ("Ruchottes-Chambertin", "Christophe Roumier", "R", 3500, ""),
+    ("Charmes-Chambertin Aux Mazoyeres", "Christophe Roumier", "R", 1500, ""),
+    ("Musigny", "Jacques-Frédéric Mugnier", "R", 2000, ""),
+    ("Chambolle-Musigny Les Amoureuses", "Jacques-Frédéric Mugnier", "R", 1500, ""),
+    ("Musigny", "Faiveley", "R", 1200, ""),
+    ("Vosne-Romanée Au Cros-Parantoux", "Méo-Camuzet", "R", 2200, ""),
+    ("Vosne-Romanée Les Grands Suchots", "Arnoux-Lachaux", "R", 1500, ""),
+    ("Échézeaux Les Rouges", "Arnoux-Lachaux", "R", 1600, ""),
+    ("Nuits-Saint-Georges Clos des Corvées Pagets", "Arnoux-Lachaux", "R", 600, ""),
+    ("Montrachet Marquis de Laguiche", "Joseph Drouhin", "R", 900, ""),
+    ("Montrachet", "Comtes Lafon", "R", 3500, ""),
+    ("Montrachet", "Ramonet", "R", 3000, ""),
+    ("Montrachet", "Baron Thenard", "R", 700, ""),
+    ("Meursault", "Coche-Dury", "R", 1000, ""),
+    ("Meursault Genevrières", "Coche-Dury", "R", 3000, ""),
+    ("Clos des Lambrays", "Lambrays", "R", 450, ""),
+    ("Chapelle-Chambertin", "Trapet(Jean Louis Trapet)", "R", 350, ""),
+    ("Saumur Champigny Les Poyeux", "Clos Rougeard", {2009}, 500, ""),
+    ("Châteauneuf-du-Pape Blanc Réservé*", "Chateau Rayas", {1998}, 800, ""),
+    ("Jacques Sélosse Substance*", "Avize", None, 700, ""),
+    ("Louis Roederer Cristal Rosé Vinothèque*", "Reims", {2004}, 1800, ""),
+    ("Salon*", "Le Mesnil-sur-Oger", {2012}, 1300, ""),
+    ("Château Ducru Beaucaillou*", "St-Julien", {2017}, 140, ""),
+]
+# 円で直接入れる品目（国内買取の実績が取れたもの）
+YEN = [("山崎 25y*", "山崎蒸溜所", None, 850000, "国内買取査定 82〜89万円（2026年2〜6月、uridoki.net）")]
+nm = lambda t: " ".join(str(t).split())
+def _hit(x, key, prod, vts):
+    n = nm(x["name"])
+    ok = n.startswith(key[:-1]) if key.endswith("*") else n == key
+    if not ok or x["reg"] != prod: return False
+    vt = x["vt"] if isinstance(x["vt"], int) else None
+    if vts is None: return True
+    if vts == "R": return vt is not None and vt >= 2010
+    return vt in vts
+for x in items:
+    x["usd"] = x["yen"] = None; x["src"] = ""
+    for key, prod, vts, usd, memo in PRICES:
+        if _hit(x, key, prod, vts):
+            x["usd"] = usd
+            x["src"] = "海外市場の平均小売価格（当社推計）×為替×掛率" + ("。" + memo if memo else "")
+            break
+    for key, prod, vts, yen, memo in YEN:
+        if _hit(x, key, prod, vts):
+            x["yen"] = yen; x["src"] = memo
+
 F = "Arial"
 H = Font(name=F, size=10, bold=True, color="FFFFFF"); HF = PatternFill("solid", fgColor="6D2E46")
 B = Font(name=F, size=10, bold=True); N = Font(name=F, size=10); BLUE = Font(name=F, size=10, color="0000FF")
@@ -34,9 +110,9 @@ ls = wb.create_sheet("評価明細")
 
 # ---------- 評価明細 ----------
 cols = ["No.", "優先評価", "分類", "年代", "銘柄", "生産者／地域", "輸入元", "仕入先", "状態", "本数",
-        "仕入単価", "原価合計", "リスト価格（税抜）", "リスト合計", "時価単価（入力）", "評価額", "含み益", "評価根拠・出典"]
+        "仕入単価", "原価合計", "リスト価格（税抜）", "リスト合計", "時価単価（入力）", "評価額", "含み益", "評価根拠・出典", "海外市場参考価格（USD）"]
 ls["A1"] = "カンテサンス ワイン在庫 時価評価明細（2026年10月末棚卸し）"; ls["A1"].font = T
-ls["A2"] = "原価の大きい順。黄色の「時価単価」に当社の時価を入力してください。未入力の行は原価で評価します（保守的）。"; ls["A2"].font = NOTE
+ls["A2"] = "原価の大きい順。時価単価＝海外市場参考価格（S列・USD）×為替×掛率（『前提』シート）。上書き入力も可。時価のない行は原価で評価（保守的）。"; ls["A2"].font = NOTE
 HR = 4
 for j, c in enumerate(cols, 1):
     cell = ls.cell(row=HR, column=j, value=c); cell.font = H; cell.fill = HF
@@ -51,18 +127,42 @@ for i, x in enumerate(items):
     ls.cell(row=r, column=13, value=x["price"]).font = N
     ls.cell(row=r, column=14, value=f"=J{r}*M{r}")
     c = ls.cell(row=r, column=15); c.font = BLUE; c.fill = YF
+    if x["usd"]:
+        c.value = f"=ROUND(S{r}*'前提'!$B$4*'前提'!$B$5,-3)"; c.font = N
+        u = ls.cell(row=r, column=19, value=x["usd"]); u.font = BLUE; u.number_format = '"$"#,##0'
+    elif x["yen"]:
+        c.value = x["yen"]
+    ls.cell(row=r, column=18, value=x["src"] or None)
     ls.cell(row=r, column=16, value=f"=J{r}*IF(O{r}=\"\",K{r},O{r})")
     ls.cell(row=r, column=17, value=f"=P{r}-L{r}")
     ls.cell(row=r, column=18).font = BLUE
     for j in (11, 12, 13, 14, 15, 16, 17):
         ls.cell(row=r, column=j).number_format = YEN
 LAST = HR + len(items)
-widths = [5, 6, 9, 7, 46, 16, 14, 14, 11, 6, 11, 12, 12, 13, 13, 13, 12, 30]
+widths = [5, 6, 9, 7, 46, 16, 14, 14, 11, 6, 11, 12, 12, 13, 13, 13, 12, 44, 12]
 for j, w in enumerate(widths, 1):
     ls.column_dimensions[ls.cell(row=HR, column=j).column_letter].width = w
 ls.freeze_panes = f"F{HR+1}"
-ls.auto_filter.ref = f"A{HR}:R{LAST}"
+ls.auto_filter.ref = f"A{HR}:S{LAST}"
 ls.conditional_formatting.add(f"A{HR+1}:R{LAST}", FormulaRule(formula=[f'$B{HR+1}="★"'], fill=TF))
+for rr in range(HR+1, LAST+1): ls.cell(row=rr, column=18).font = NOTE
+
+# ---------- 前提 ----------
+pr = wb.create_sheet("前提", 1)
+pr["A1"] = "時価の前提"; pr["A1"].font = T
+pr["A3"] = "項目"; pr["B3"] = "値"; pr["C3"] = "説明"
+for c in ("A3","B3","C3"): pr[c].font = H; pr[c].fill = HF
+pr["A4"] = "為替（円／USD）"; pr["B4"] = 150; pr["B4"].number_format = '#,##0'
+pr["C4"] = "海外市場の参考価格（USD）を円に換算するレート。"
+pr["A5"] = "掛率（市場小売価格 → 売却手取り）"; pr["B5"] = 0.6; pr["B5"].number_format = '0%'
+pr["C5"] = "小売価格から、国内の業者買取・オークション手取りの水準へ引き直す率。国内の落札・買取実績（R列）と整合する水準として60%を置く。"
+for c in ("B4","B5"): pr[c].font = BLUE; pr[c].fill = YF
+for c in ("A4","A5"): pr[c].font = N
+for c in ("C4","C5"): pr[c].font = NOTE; pr[c].alignment = Alignment(wrap_text=True, vertical="top")
+pr["A7"] = "海外市場参考価格（USD）は、主要な海外ワイン市場での平均的な小売価格（税抜）を銘柄ごとに当社が推計したもの。ヴィンテージ差は反映していない（2005年ロマネ・コンティ等の一部を除く）。銀行提出前に当社で再確認する。"
+pr["A7"].font = NOTE; pr["A7"].alignment = Alignment(wrap_text=True, vertical="top"); pr.merge_cells("A7:C7"); pr.row_dimensions[7].height = 48
+pr.row_dimensions[5].height = 48
+pr.column_dimensions["A"].width = 34; pr.column_dimensions["B"].width = 10; pr.column_dimensions["C"].width = 70
 
 # ---------- サマリー ----------
 R = f"'評価明細'!"
@@ -113,8 +213,8 @@ for i, k in enumerate(cats):
 
 nr = r0 + 3 + len(cats)
 notes = [
-    "【入力方法】『評価明細』の黄色セル（時価単価）に、1本あたりの時価（税抜・当社の買取または販売の実勢価格）を入力。根拠（オークション落札、業者相場、当社販売実績など）をR列に記入。",
-    "【評価の考え方】未入力の行は原価で評価するため、評価額は保守的な下限になる。★の上位100品目は原価の約3割だが、DRC・ルフレーヴ等の希少銘柄が集中し、時価と原価の差が最も大きい層。まずここを入力する。それ以外は流通品が中心で、原価で評価しても差は小さい。",
+    "【時価の付け方】主要銘柄は、海外市場の参考価格（USD）×為替×掛率（『前提』シート）で計算。山崎25年は国内買取査定。各行の根拠はR列。個別に分かる時価があれば黄色セルを上書きする。",
+    "【評価の考え方】時価のない行は原価で評価する。時価は売却手取りの水準（小売価格の60%）で置いているため、原価を下回る銘柄もある。評価額は保守的な水準。",
     "【注意】リスト価格はレストランでの提供価格（サービス込み）であり、時価ではない。銀行・投資家向けには、時価の根拠を明示した数字のみを使う。",
 ]
 for i, t in enumerate(notes):
