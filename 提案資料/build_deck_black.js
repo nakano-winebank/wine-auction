@@ -275,8 +275,8 @@ const lft=(x,o)=>cel(x,Object.assign({align:"left"},o||{}));
     if(i<2) s.addText("▶", t({x:x+3.94,y:2.88,w:0.36,h:0.4,fontSize:17,color:GOLD,align:"center"}));
   });
   card(s,M,4.6,CW,1.0,PANEL2);
-  s.addText("会員は2.5万円払って、3.5万円分を受け取る。差額の1万円を「貯金」していると考える。",
-    t({x:M+0.45,y:4.82,w:CW-0.9,h:0.42,fontSize:19,bold:true,color:GOLD_L}));
+  s.addText("会員は2.75万円払って、4万円分を受け取る。差額の1.25万円を「貯金」していると考える。",
+    t({x:M+0.45,y:4.82,w:11.29,h:0.42,fontSize:19,bold:true,color:GOLD_L}));
   s.addText("上位ランクは5%・6%。さらに値上がり分の70%も会員のものとして残ります。",
     t({x:M+0.45,y:5.26,w:CW-0.9,h:0.3,fontSize:12.5,color:TEXT}));
   card(s,M,5.76,CW,0.86,BURG);
@@ -289,7 +289,7 @@ const lft=(x,o)=>cel(x,Object.assign({align:"left"},o||{}));
     "差額をください——ごもっともです。ただ、相殺した世界には、次の1年で何も起きません。");
   card(s,M,1.72,3.5,2.72,PANEL);
   s.addText("相殺した世界", t({x:M+0.32,y:1.9,w:2.86,h:0.3,fontSize:13,bold:true,color:MUTE}));
-  s.addText("3月。口座に25,000円。", t({x:M+0.32,y:2.24,w:2.86,h:0.36,fontSize:15,bold:true,color:TEXT}));
+  s.addText("3月。口座に27,500円。", t({x:M+0.32,y:2.24,w:2.86,h:0.36,fontSize:15,bold:true,color:TEXT}));
   s.addText("明細に一行増える。それだけ。\n誰にも会わず、何も残らない。\n来年また、同じ一行が増える。",
     t({x:M+0.32,y:2.72,w:2.86,h:1.3,fontSize:11.5,color:MUTE,lineSpacing:20}));
   card(s,M+3.66,1.72,8.4,2.72,PANEL2);
@@ -305,7 +305,7 @@ const lft=(x,o)=>cel(x,Object.assign({align:"left"},o||{}));
   s.addText("※ その他、ボルドーマラソン・5大シャトー訪問企画、国内ワイナリーツアー等の年間ワインイベント盛りだくさん",
     t({x:M+3.98,y:3.78,w:7.76,h:0.4,fontSize:10,color:GOLD,lineSpacing:14}));
   card(s,M,4.58,CW,0.8,BURG);
-  s.addText("25,000円は貯金になりません。50,000マイルは、ワインのある一年になります。",
+  s.addText("27,500円は貯金になりません。40,000マイルは、ワインのある一年になります。",
     t({x:M+0.45,y:4.75,w:CW-0.9,h:0.42,fontSize:18,bold:true,color:GOLD_L,align:"center"}));
   [["税務はカードのマイルと同じ","AMEX等のマイレージ還元は法人・個人とも課税されません。ワインマイルも同じ「利用に応じた還元」として設計します。※顧問税理士の確認を前提"],
    ["一般サービスへの交換は 0.5","ワイン関連の一般サービスへは0.5で交換可能。比べたうえで「ワインならWineBank経済圏が一番得だ」と分かる設計にします。"],
@@ -510,7 +510,7 @@ const lft=(x,o)=>cel(x,Object.assign({align:"left"},o||{}));
     [lft("成功報酬（値上がり分）",{fill:{color:PANEL2},bold:true}),cel("30%"),cel("30%"),cel("30%")],
     [lft("グランメゾン交換レート",{fill:{color:PANEL2},bold:true}),cel("0.5円"),cel("0.5円"),cel("0.5円")],
     [lft("未公開ワインの情報",{fill:{color:PANEL2},bold:true}),cel("—"),cel("先行案内"),cel("優先割当",{bold:true,color:GOLD})],
-    [lft("WineBank CLUB",{fill:{color:PANEL2},bold:true}),cel("マイル充当・単月のみ"),cel("マイル充当・単月のみ"),cel("STANDARD 無料付与",{bold:true,color:GOLD})]],
+    [lft("WineBank CLUB",{fill:{color:PANEL2},bold:true}),cel("マイル充当・単月のみ"),cel("マイル充当・単月のみ"),cel("マイル充当・単月のみ")]],
     Object.assign(tb(),{x:M,y:1.8,w:CW,colW:[3.3,2.92,2.92,2.92],rowH:[0.44,0.42,0.42,0.42,0.42,0.42,0.42,0.42]}));
   card(s,M,5.32,5.9,1.3,PANEL);
   s.addText("廃止するもの", t({x:M+0.4,y:5.46,w:5.1,h:0.3,fontSize:14,bold:true,color:AMBER}));
@@ -522,15 +522,15 @@ const lft=(x,o)=>cel(x,Object.assign({align:"left"},o||{}));
     t({x:M+6.56,y:5.78,w:5.1,h:0.74,fontSize:10.5,color:TEXT,lineSpacing:15}));
 }
 
-/* 16 WINEBANK CLUB */{
+/* 16 WINEBANK CLUB — 閑散時間帯モデル（2026/11 寺田さん助言・A案） */{
   const s=base("WINEBANK CLUB","WineBank CLUB とは",
-    "会員制度とは別の、飲むための会員制度。レストラン販売価格の半額（原価相当）でワインが楽しめます。");
+    "会員制度とは別の、飲むための会員制度。加盟店の空いている時間帯に、原価の100〜150%でワインが楽しめます。");
   [["STANDARD","月 8,800円〜　マイル充当・単月利用可",
-    ["提携店でのコルケージ無料","グループ飲食店の優待","会員向けワイン価格（半額）",
-     "提携店向けワイン配送料無料","4名未満・ワイン価格 上限5万円"],PANEL,TEXT],
+    ["閑散時間帯のみ（レストランは二次会帯、バーは一次会帯）","3名まで・ワイン価格 上限5万円",
+     "会員価格は原価の100〜150%（店舗設定）","提携店でのコルケージ無料","提携店向けワイン配送料無料"],PANEL,TEXT],
    ["GOLD","月 22,000円〜",
-    ["上記に加え、生産者イベント招待","ザルト高級グラス使用",
-     "個室優先利用・予約4名以上","ワイン価格の上限なし","コンシェルジュによる選定"],PANEL,GOLD_L],
+    ["閑散時間帯なら8名まで・個室優先","ピーク帯も利用可（GOLD枠の店舗のみ）",
+     "ワイン価格の上限なし","生産者イベント招待","コンシェルジュによる選定"],PANEL,GOLD_L],
    ["BLACK","年間5,000万以上、もしくは年会費60万円",
     ["未公開ワインの優先割当","ワイン樽買いの権利","ソムリエへの直接相談",
      "会員限定のクローズドな会","国内外ワイナリーツアー"],PANEL2,GOLD]
@@ -539,17 +539,85 @@ const lft=(x,o)=>cel(x,Object.assign({align:"left"},o||{}));
     s.addText(c[0], t({x:x+0.32,y:2.02,w:3.24,h:0.4,fontSize:20,bold:true,color:c[4]}));
     s.addText(c[1], t({x:x+0.32,y:2.46,w:3.24,h:0.42,fontSize:10.5,color:MUTE,lineSpacing:14}));
     s.addText(c[2].map((b,j)=>({text:b,options:{bullet:{indent:12},breakLine:j<c[2].length-1}})),
-      t({x:x+0.32,y:2.96,w:3.24,h:2.08,fontSize:11,valign:"top",paraSpaceAfter:8,lineSpacing:16}));
+      t({x:x+0.32,y:2.96,w:3.24,h:2.08,fontSize:11,valign:"top",paraSpaceAfter:6,lineSpacing:15}));
   });
   card(s,M,5.32,5.9,1.3,BURG);
-  s.addText("「半額」が、すべてを説明します", t({x:M+0.4,y:5.46,w:5.1,h:0.3,fontSize:14,bold:true,color:GOLD_L}));
-  s.addText("レストランで3倍の値がつくワインが、原価相当で飲める。これ以上わかりやすい入会理由はありません。ワイン好きにとっては、これ自体がキラーコンテンツです。",
+  s.addText("お店が損をしない時間帯だけ、会員を送る", t({x:M+0.4,y:5.46,w:5.1,h:0.3,fontSize:14,bold:true,color:GOLD_L}));
+  s.addText("混む時間帯は今まで通りの営業。空席が出る時間帯にだけ会員が来るので、加盟店は機会損失なく売上を足せます。",
     t({x:M+0.4,y:5.78,w:5.1,h:0.74,fontSize:10.5,color:TEXT,lineSpacing:15}));
   card(s,M+6.16,5.32,5.9,1.3,PANEL);
-  s.addText("引き上げの動線は「人数」と「上限」", t({x:M+6.56,y:5.46,w:5.1,h:0.3,fontSize:14,bold:true,color:GOLD_L}));
-  s.addText("STANDARDは4名未満・ワイン5万円まで。GOLDでその両方が外れます。SIGNATUREにはSTANDARDを無料付与し、まず半額を体験させてから上げる設計です。",
+  s.addText("引き上げの動線は「人数」と「時間帯」", t({x:M+6.56,y:5.46,w:5.1,h:0.3,fontSize:14,bold:true,color:GOLD_L}));
+  s.addText("STANDARDは閑散時間帯・3名まで。GOLDで8名・個室になり、GOLD枠を出す店舗ではピーク帯も使えます。",
     t({x:M+6.56,y:5.78,w:5.1,h:0.74,fontSize:10.5,color:MUTE,lineSpacing:15}));
-  s.addNotes("STANDARD 月8,800円＝年約10.6万円。GOLD 月22,000円＝年26.4万円。SIGNATUREへのSTANDARD無料付与は年10.6万円相当の原価。");
+  s.addNotes("2026/11 寺田さんの助言を反映（A案）。STANDARD 月8,800円＝年約10.6万円。GOLD 月22,000円＝年26.4万円。会員価格は原価の100〜150%で店舗ごとに設定するため、「半額」とは一律に表示しない（二重価格表示・有利誤認の回避）。8名・GOLD枠の線はパイロット店へのヒアリングで確定する。");
+}
+
+/* 16b CLUB PARTNERS — 加盟店の経済性 */{
+  const s=base("CLUB PARTNERS","加盟店：空席の時間だけ、売上を足す",
+    "同じ会員でも、来る時間帯で損得が逆になります。だから空いている時間帯に限ります。");
+  const X2=M+6.16;
+  const rows=[[hdr("3名1組の粗利（仮定）"),hdr("通常客"),hdr("CLUB会員")],
+    [lft("ワイン1本（仕入5,000円）"),cel("10,000円"),cel("2,500円")],
+    [lft("料理・チャージ（3名分）"),cel("6,300円"),cel("6,300円")],
+    [lft("合計",{bold:true}),cel("16,300円",{bold:true}),cel("8,800円",{bold:true,color:GOLD_L})]];
+  const RH=[0.42,0.48,0.48,0.48];
+  s.addTable(rows, Object.assign(tb(),{x:M,y:1.82,w:5.9,colW:[3.3,1.3,1.3],rowH:RH}));
+  const te=1.82+RH.reduce((a,b)=>a+b,0);          // 3.68
+  s.addText("※ 定価は仕入の3倍、料理は1名3,000円・原価率30%、会員価格は原価150%で仮定",
+    t({x:M,y:te+0.08,w:5.9,h:0.24,fontSize:9,color:MUTE}));
+  const ty=4.1, ch=2.44;                          // 右列の下端6.54に揃える
+  [["ピーク帯に来られると","▲7,500円","通常客の席を奪う。今、お店が断る理由はここにあります。",RED,PANEL],
+   ["空席の時間帯に来ると","+8,800円","空いた席が埋まるだけなので、まるごと上乗せ。原価100%でも+6,300円。",MINT,PANEL2]
+  ].forEach((v,i)=>{
+    const x=M+i*3.03, w=2.87; card(s,x,ty,w,ch,v[4]);
+    s.addText(v[0], t({x:x+0.26,y:ty+0.2,w:w-0.5,h:0.3,fontSize:12,bold:true,color:GOLD_L}));
+    s.addText(v[1], t({x:x+0.26,y:ty+0.56,w:w-0.5,h:0.62,fontFace:"Arial",fontSize:30,bold:true,color:v[3]}));
+    s.addText(v[2], t({x:x+0.26,y:ty+1.32,w:w-0.5,h:1.3,fontSize:11,color:MUTE,lineSpacing:16,valign:"top"}));
+  });
+  // 右：加盟店への提案3点
+  s.addText("加盟店への提案は3点", t({x:X2,y:1.82,w:5.9,h:0.34,fontSize:14,bold:true,color:GOLD}));
+  [["空いている時間帯だけ","レストランは21時以降の二次会帯、バーは18〜20時の一次会帯。混む時間帯は今まで通りです。"],
+   ["価格はお店が決める","会員価格は原価の100〜150%の範囲で、店舗ごとに設定。ワインの粗利をゼロにする必要はありません。"],
+   ["掲載は無料で送客","アプリ・Webで「今夜21時以降に空いている店」を時間帯と人数で検索。富裕層の会員が来店します。"]
+  ].forEach((v,i)=>{
+    const y=2.28+i*1.46; card(s,X2,y,5.9,1.34);
+    badge(s,X2+0.28,y+0.24,i+1);
+    s.addText(v[0], t({x:X2+0.78,y:y+0.26,w:4.8,h:0.32,fontSize:14,bold:true,color:GOLD_L}));
+    s.addText(v[1], t({x:X2+0.78,y:y+0.66,w:4.84,h:0.6,fontSize:11,color:TEXT,lineSpacing:16,valign:"top"}));
+  });
+  s.addNotes("粗利の数字は説明用の仮定（仕入5,000円のワインをメニュー15,000円＝3倍で出す店、料理・チャージ3,000円/名・原価率30%）。会員価格は原価150%＝7,500円で計算。ピーク帯の機会損失＝8,800−16,300＝▲7,500円。2026/11 寺田さんの助言：二次会のみ（バーは一次会のみ）など閑散時間帯に対応すると集客になり導入しやすい。価格は原価100〜150%で柔軟に。");
+}
+
+/* 16c CLUB ROADMAP — 会員1,000人への道筋 */{
+  const s=base("CLUB ROADMAP","会員1,000人への道筋",
+    "エリアを絞って加盟店の密度をつくり、検索で見つけてもらう。加盟店が増えるほど会員が増えます。");
+  [["会員目標","1,000人","STANDARD 8 : GOLD 2 の構成"],
+   ["必要な加盟店","30〜60店","月1.5回利用 × 閑散帯に1日1〜2組"],
+   ["会費収入","年1.25億円","1,000人時点・税抜換算のストック収益"]
+  ].forEach((v,i)=>{
+    const x=M+i*4.14; card(s,x,1.82,3.86,1.36,i===2?PANEL2:PANEL);
+    s.addText(v[0], t({x:x+0.3,y:1.96,w:3.3,h:0.26,fontSize:11,color:MUTE}));
+    s.addText(v[1], t({x:x+0.3,y:2.22,w:3.3,h:0.52,fontSize:26,bold:true,color:GOLD}));
+    s.addText(v[2], t({x:x+0.3,y:2.76,w:3.3,h:0.28,fontSize:10.5,color:MUTE}));
+  });
+  [["PHASE 1　3か月","パイロット","1エリア（西麻布・六本木）で10〜15店。閑散帯の利用件数、会員の月間利用回数、店舗の継続意向を測る。"],
+   ["PHASE 2","検索を公開","アプリ・Webで時間帯と人数から加盟店を検索。GOLDの人数上限と「GOLD枠」の条件をここで確定する。"],
+   ["PHASE 3","エリアを広げる","銀座・恵比寿へ。各エリアに5店以上を置き、30〜60店で会員1,000人に届かせる。"]
+  ].forEach((v,i)=>{
+    const x=M+i*4.14, y=3.34; card(s,x,y,3.86,1.86);
+    badge(s,x+0.3,y+0.22,i+1);
+    s.addText(v[0], t({x:x+0.78,y:y+0.24,w:2.8,h:0.3,fontFace:"Arial",fontSize:11,bold:true,color:GOLD}));
+    s.addText(v[1], t({x:x+0.3,y:y+0.66,w:3.3,h:0.34,fontSize:15,bold:true,color:GOLD_L}));
+    s.addText(v[2], t({x:x+0.3,y:y+1.04,w:3.3,h:0.74,fontSize:10.5,color:TEXT,lineSpacing:15,valign:"top"}));
+  });
+  card(s,M,5.36,CW,1.12,PANEL);
+  s.addText("始める前に確認すること", t({x:M+0.4,y:5.48,w:5,h:0.3,fontSize:13,bold:true,color:AMBER}));
+  s.addText([
+    {text:"「半額」とは一律に書かない。",options:{bold:true,color:TEXT}},
+    {text:"原価150%は、定価が原価3倍の店で半額、2倍の店では25%引き。検索画面には店舗ごとの実額を出す（景表法）。",options:{color:MUTE,breakLine:true}},
+    {text:"当社がワインを店舗へ卸す場合は、酒類販売媒介業とは別に卸売の免許が要るかを確認する。",options:{bold:true,color:TEXT}}],
+    t({x:M+0.4,y:5.82,w:CW-0.8,h:0.72,fontSize:10.5,lineSpacing:16,valign:"top"}));
+  s.addNotes("必要加盟店数：会員1,000人×月1.5回＝月1,500組。1店が閑散帯に1日1組×25日＝25組なら60店、1日2組なら30店。会費収入：STANDARD 800人×8,000円×12＋GOLD 200人×20,000円×12＝1億2,480万円（月会費を税込とみなした税抜換算）。");
 }
 
 /* 17 NO YEN */{
@@ -857,6 +925,76 @@ const lft=(x,o)=>cel(x,Object.assign({align:"left"},o||{}));
   card(s,M,6.14,CW,0.62,BURG);
   s.addText("ワインで、ライフスタイルを豊かにする。マイルは、その手段です。",
     t({x:M+0.45,y:6.28,w:CW-0.9,h:0.36,fontSize:15,bold:true,color:GOLD_L,align:"center"}));
+}
+
+/* 23 PERSONA — 100本を預けた会員の1か月（中谷さんと話した世界観） */{
+// ---- 前提（デッキ本体と同じ） ----
+const BOTTLES=100, PRICE=20000, BOOK=BOTTLES*PRICE;      // 200万円
+const FEE=0.0275, MILE=0.04, PS=0.30, APP=0.06;           // 100万円コース
+const OPENED=3;                                           // BYO 2本＋贈答 1本
+const LEFT=BOTTLES-OPENED, BAL=LEFT*PRICE;                // 月末残高 194万円
+const mMile=Math.round(BAL*MILE/12), mFee=Math.round(BAL*FEE/12);
+const gain=BAL*APP, gainMember=gain*(1-PS);
+const n=v=>v.toLocaleString("ja-JP");
+const man=v=>(v/10000).toLocaleString("ja-JP",{maximumFractionDigits:1});
+
+{
+  const s=base("PERSONA","ワインのある1か月を、ひとつの口座で",
+    `100本・${man(BOOK)}万円を預けた会員の1か月。買う・届ける・贈る・育てる・貯まる・食べるが、一本の線でつながります。`);
+
+  // 左：ペルソナ
+  const px=M, py=1.82, pw=3.2, ph=4.2;
+  card(s,px,py,pw,ph,PANEL2);
+  s.addText("K様", t({x:px+0.3,y:py+0.24,w:pw-0.6,h:0.5,fontSize:26,bold:true,color:GOLD_L}));
+  s.addText("48歳・IT企業経営者／東京都", t({x:px+0.3,y:py+0.8,w:pw-0.6,h:0.28,fontSize:11.5,color:MUTE}));
+  s.addText("月に数回は会食。ワインは好きだが、自宅のセラーはもう満杯。良い一本を良い場面で開けたい。",
+    t({x:px+0.3,y:py+1.16,w:pw-0.6,h:0.9,fontSize:11,lineSpacing:16}));
+  [["保有",`${BOTTLES}本・${man(BOOK)}万円`],
+   ["コース","100万円コース"],
+   ["管理料",`年${(FEE*100).toFixed(2)}%（月割）`],
+   ["マイル",`年${MILE*100}%（月末付与）`],
+   ["成功報酬",`値上がり益の${PS*100}%`]].forEach((r,i)=>{
+    const y=py+2.2+i*0.37;
+    s.addText(r[0], t({x:px+0.3,y,w:0.95,h:0.3,fontSize:10.5,color:MUTE}));
+    s.addText(r[1], t({x:px+1.25,y,w:pw-1.55,h:0.3,fontSize:11.5,bold:true}));
+  });
+
+  // 右：6ステップ（2段×3列）
+  const fx=px+pw+0.2, fw=(M+CW-fx-0.32)/3, fh=2.0;
+  const steps=[
+    ["9/1","100本を購入して預ける",`平均2万円×${BOTTLES}本。定温倉庫で保管し、1本ずつ時価で管理する。`,GOLD],
+    ["9/6","会食先へBYOで無料配送","取引先との会食に2本。当日、お店へ直接届く。配送料は0円。",GOLD],
+    ["9/14","友人の誕生日に贈る","生まれ年の1本を、メッセージカードを添えて友人宅へ配送する。",GOLD],
+    ["9/20","マイページで資産を確認",`残り${LEFT}本の時価と飲み頃を確認。年6%の値上がりなら年+${man(gain)}万円。`,GOLD],
+    ["9/30","月末残高でマイル付与",`${man(BAL)}万円×4%÷12で${n(mMile)}マイル。管理料も月割で${n(mFee)}円。`,MINT],
+    ["12月","系列レストランで食事",`3か月で約${man(mMile*3)}万マイル。直営店で2名のディナーに使う。`,GOLD],
+  ];
+  steps.forEach((v,i)=>{
+    const col=i%3, row=Math.floor(i/3);
+    const x=fx+col*(fw+0.16), y=py+row*(fh+0.2);
+    card(s,x,y,fw,fh,i===4?PANEL2:PANEL);
+    badge(s,x+0.24,y+0.22,i+1,v[3]);
+    s.addText(v[0], t({x:x+0.7,y:y+0.24,w:fw-0.9,h:0.3,fontFace:"Arial",fontSize:12,bold:true,color:GOLD}));
+    s.addText(v[1], t({x:x+0.24,y:y+0.7,w:fw-0.44,h:0.34,fontSize:13.5,bold:true,color:GOLD_L}));
+    s.addText(v[2], t({x:x+0.24,y:y+1.1,w:fw-0.44,h:0.8,fontSize:10.5,lineSpacing:15,color:TEXT,valign:"top"}));
+    if(col<2) s.addText("›", t({x:x+fw,y:y+fh/2-0.2,w:0.16,h:0.4,fontFace:"Arial",fontSize:16,bold:true,color:GOLD,align:"center",valign:"middle"}));
+  });
+
+  // 締めのバナー
+  card(s,M,6.14,CW,0.48,BURG);
+  s.addText(`飲んでも贈っても、残った本数の分だけ毎月マイルが貯まる。今月は管理料${n(mFee)}円に対して${n(mMile)}マイル。`,
+    t({x:M+0.3,y:6.14,w:CW-0.6,h:0.48,fontSize:13,bold:true,color:GOLD_L,valign:"middle"}));
+
+  s.addNotes([
+    "中谷さんと話した世界観を、1人の会員の1か月で見せるスライド。",
+    `前提：平均単価2万円×${BOTTLES}本＝${n(BOOK)}円、100万円コース（管理料2.75%・マイル4%・成功報酬30%）。`,
+    `BYOで2本、贈答で1本を出庫し、月末残高は${LEFT}本・${n(BAL)}円。`,
+    `マイルは月末残高×4%÷12＝${n(mMile)}マイル、管理料は月末残高×2.75%÷12＝${n(mFee)}円（いずれも月割後付与・月割課金）。`,
+    `値上がりは単利6%想定で年${n(gain)}円、うち会員取り分70%＝${n(gainMember)}円。`,
+    "系列（グループ直営）レストランは1マイル＝1円。提携グランメゾンは0.5円のため、ここでは直営店で表示している（有利誤認の回避）。",
+    "BYO配送無料は会員特典（配送代行：佐川）。贈答配送の送料の扱いは未確定のため、スライドでは無料と書いていない。",
+  ].join("\n"));
+}
 }
 
 pres.writeFile({fileName:"/home/user/wine-auction/提案資料/WineBank_ワインマイル経済圏構想_黒背景版.pptx"})
