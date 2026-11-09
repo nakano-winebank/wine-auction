@@ -55,6 +55,13 @@ lab(21, "投資家への年間支払い（コンサルティング費用）"); i
 lab(22, "投資家の持分（純資産増加分の精算に使用）"); inp("B22", 0.49, PCT); src(22, "スキーム図：投資家49%・WineBank51%")
 lab(23, "追加対価（最終契約の3年後）"); inp("B23", 500); src(23, "基本合意書 第2条第4項：2029年12月中旬までに5億円・無条件。株式の対価のため損金にならない")
 
+lab(24, "■ 宇佐美氏（経営担当）", True)
+lab(31, "宇佐美氏の役員報酬（基準額・年）"); inp("B31", 6, key=True); src(31, "ご指定：年600万円。営業利益の計画比に連動させる")
+lab(32, "　連動の下限（計画比）"); inp("B32", 0.5, PCT); src(32, "計画比50%を下回っても基準額の50%は支給")
+lab(33, "　連動の上限（計画比）"); inp("B33", 1.5, PCT); src(33, "計画比150%を上限")
+lab(34, "宇佐美氏のキャピタルゲイン（純資産増加に対する割合）"); inp("B34", 0.15, PCT, key=True); src(34, "ご指定：15%。売却時に純資産増加分から先に配分（会社のCFには影響しない）")
+lab(35, "■ 出資額による条件の差（アンカー投資家）", True)
+lab(36, "5億円の区分：宇佐美氏15%の負担を免除する割合"); inp("B36", 1, PCT, key=True); src(36, "100%＝5億円の投資家の持分には15%を課さない（3億円以下は課す）")
 lab(25, "■ 決済時（2026年12月末）の現金", True)
 lab(26, "決済時に使える会社の資金（留保・税金を除く）"); inp("B26", 2070); src(26, "12月末の現預金見込み17.4億円−運転資金1.0−法人税1.1＋役員貸付金の返済5.0＋子会社0.4")
 lab(27, "うち決済代金に使う額"); inp("B27", 2000, key=True); src(27, "12月の35億円＝みずほ15億円＋会社の資金20億円")
@@ -85,7 +92,7 @@ def build(name, title, opcase, years, am_base, am_cash_rate, am_exit_rate, inv_a
         c = s.cell(row=r, column=2, value=v); c.font = BLUE; c.fill = YF; c.number_format = fmt
     O = 3  # 以降の行のずらし
     header(s, 10 + O, ["項目", "決済時"] + YRS + ["5年計"])
-    R = lambda n: n + O
+    R = lambda n: n + O + (1 if n >= 17 else 0)
 
     def put(r, label, form, bform=None, fmt=NUM, bold=False, fill=False, total=False):
         r = R(r)
@@ -107,7 +114,13 @@ def build(name, title, opcase, years, am_base, am_cash_rate, am_exit_rate, inv_a
     put(14, "− AM管理報酬（毎年支払う分）", lambda c, p, i: "=-$B$5*$B$6", total=True)
     put(15, "− 投資家へのコンサルティング費用（毎年）", lambda c, p, i: "=-$B$8*$B$9", total=True)
     put(16, "− 投資家特典の費用", lambda c, p, i: f"=-{P}$B$12", total=True)
-    put(17, "EBITDA（上記控除後）", lambda c, p, i: f"=SUM({c}{R(12)}:{c}{R(16)})", bold=True, fill=True, total=True)
+    # 宇佐美氏の役員報酬（R(16)の次の行）
+    ru = R(16) + 1
+    s.cell(row=ru, column=1, value="− 宇佐美氏の役員報酬（営業利益の計画比に連動）").font = BLK
+    for col in YC:
+        c = s[f"{col}{ru}"]; c.value = f"=-{P}$B$31*MIN({P}$B$33,MAX({P}$B$32,{col}{R(12)}/{P}{col}6))"; c.number_format = NUM; c.font = BLK
+    c = s[f"H{ru}"]; c.value = f"=SUM(C{ru}:G{ru})"; c.number_format = NUM; c.font = B
+    put(17, "EBITDA（上記控除後）", lambda c, p, i: f"=SUM({c}{R(12)}:{c}{ru})", bold=True, fill=True, total=True)
     put(18, "− 支払利息", lambda c, p, i: f"=-{c}{R(42)}*{P}$B$19", total=True)
     put(19, "税引前利益", lambda c, p, i: f"={c}{R(17)}+{c}{R(18)}", total=True)
     put(20, "− 法人税等", lambda c, p, i: f"=-MAX(0,{c}{R(19)})*{P}$B$15", total=True)
@@ -145,10 +158,31 @@ def build(name, title, opcase, years, am_base, am_cash_rate, am_exit_rate, inv_a
     put(48, "純資産の増加（当期純利益の累計）", lambda c, p, i: (f"={c}{R(21)}" if i == 0 else f"={p}{R(48)}+{c}{R(21)}"))
     s[f"A{R(49)}"] = "■ 投資家のリターン（合計）"; s[f"A{R(49)}"].font = B
     put(50, "投資家のCF（出資・毎年のコンサルティング費用）", lambda c, p, i: f"=-{c}{R(15)}", bform="=-$B$8", total=True)
-    put(51, "売却時の精算（5年目末）＝出資額＋純資産増加×49%＋後払い分", lambda c, p, i: (f"=$B$8+{P}$B$22*{c}{R(48)}+$B$8*$B$10*5" if i == 4 else "=0"), total=True)
+    put(51, "売却時の精算（5年目末）＝出資額＋純資産増加×(1−15%)×49%＋後払い分", lambda c, p, i: (f"=$B$8+{P}$B$22*{c}{R(48)}*(1-{P}$B$34)+$B$8*$B$10*5" if i == 4 else "=0"), total=True)
     put(52, "投資家のCF 合計", lambda c, p, i: f"={c}{R(50)}+{c}{R(51)}", bform=f"=B{R(50)}", bold=True)
     s[f"A{R(53)}"] = "投資家のIRR（5年）"; s[f"A{R(53)}"].font = B
     c = s[f"B{R(53)}"]; c.value = f"=IRR(B{R(52)}:G{R(52)})"; c.number_format = PCT; c.font = B; c.fill = TF
+    # 区分別（3億円・5億円）のリターン
+    rb = R(56)
+    s[f"A{rb}"] = "■ 出資額ごとのリターン（1名あたり）"; s[f"A{rb}"].font = B
+    s[f"A{rb+1}"] = "宇佐美氏のキャピタルゲイン（5年目末）＝純資産増加×15%"; s[f"A{rb+1}"].font = BLK
+    c = s[f"G{rb+1}"]; c.value = f"={P}$B$34*G{R(48)}"; c.number_format = NUM
+    tiers = [(rb+3, "3億円（標準）", 300, 0, 0.03), (rb+8, "5億円（アンカー）", 500, f"{P}$B$36", 0.03)]
+    for r0, nm, amt, exempt, fee in tiers:
+        s[f"A{r0}"] = f"【{nm}】"; s[f"A{r0}"].font = B
+        s[f"A{r0+1}"] = "出資・毎年のコンサルティング費用"; s[f"B{r0+1}"] = -amt
+        for col in YC: s[f"{col}{r0+1}"] = f"={amt}*$B$9"
+        s[f"A{r0+2}"] = "売却時の精算（出資額＋純資産増加の持分）"
+        ex = exempt if exempt else 0
+        s[f"G{r0+2}"] = f"={amt}+{P}$B$22*({amt}/{P}$B$20)*G{R(48)}*(1-{P}$B$34*(1-{ex}))+{amt}*$B$10*5"
+        s[f"A{r0+3}"] = "IRR（5年）"; s[f"A{r0+3}"].font = B
+        for col in ["B"] + YC: s[f"{col}{r0+4}"] = f"={col}{r0+1}+{col}{r0+2}"
+        s[f"A{r0+4}"] = "CF合計"
+        c = s[f"B{r0+3}"]; c.value = f"=IRR(B{r0+4}:G{r0+4})"; c.number_format = PCT; c.font = B; c.fill = TF
+        for rr in range(r0+1, r0+5):
+            for col in ["B"] + YC: s[f"{col}{rr}"].number_format = NUM
+        s[f"B{r0+3}"].number_format = PCT
+    s[f"A{rb+13}"] = "5億円の区分は、宇佐美氏のキャピタルゲイン15%の負担を免除する割合（前提!B36）だけ精算額が増える。会社のCFには影響しない。"; s[f"A{rb+13}"].font = NOTE
     s[f"A{R(54)}"] = "売却時の精算は売却代金から行う前提（会社のCFには含めない）。純資産の増加は帳簿ベースで、売却時の上乗せ（のれん）は含めない。AM報酬の後払い分は、投資家への精算と同じく売却代金から支払う。"; s[f"A{R(54)}"].font = NOTE
 
     s.column_dimensions["A"].width = 56; s.column_dimensions["B"].width = 11
@@ -174,11 +208,11 @@ for i, (sh, title, *_r) in enumerate(SC):
     r = 5 + i; q = f"'{sh}'!"
     m.cell(row=r, column=1, value=title).font = BLK
     m.cell(row=r, column=2, value=f"={q}B4").font = GRN
-    c = m.cell(row=r, column=3, value=f"=MIN({q}C36:G36)"); c.number_format = NUM; c.font = B
-    c = m.cell(row=r, column=4, value=f"=INDEX({q}C13:G13,MATCH(C{r},{q}C36:G36,0))"); c.font = BLK
-    c = m.cell(row=r, column=5, value=f"={q}G36"); c.number_format = NUM; c.font = BLK
-    c = m.cell(row=r, column=6, value=f"=MIN({q}C42:G42)"); c.number_format = X; c.font = BLK
-    c = m.cell(row=r, column=7, value=f"={q}B56"); c.number_format = PCT; c.font = BLK
+    c = m.cell(row=r, column=3, value=f"=MIN({q}C37:G37)"); c.number_format = NUM; c.font = B
+    c = m.cell(row=r, column=4, value=f"=INDEX({q}C13:G13,MATCH(C{r},{q}C37:G37,0))"); c.font = BLK
+    c = m.cell(row=r, column=5, value=f"={q}G37"); c.number_format = NUM; c.font = BLK
+    c = m.cell(row=r, column=6, value=f"=MIN({q}C43:G43)"); c.number_format = X; c.font = BLK
+    c = m.cell(row=r, column=7, value=f"={q}B57"); c.number_format = PCT; c.font = BLK
     c = m.cell(row=r, column=8, value=f"=IF(C{r}<0,\"資金不足\",IF(F{r}<1,\"現金は回るが返済余力不足\",IF(F{r}<1.2,\"回る（返済余力は薄い）\",\"回る\")))"); c.font = B
 m.column_dimensions["A"].width = 58
 for col in "BCDEFGH": m.column_dimensions[col].width = 13
