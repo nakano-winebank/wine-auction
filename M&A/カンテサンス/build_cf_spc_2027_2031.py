@@ -62,7 +62,8 @@ lab(33, "　連動の上限（計画比）"); inp("B33", 1.5, PCT); src(33, "計
 lab(34, "成果報酬（投資家持分のキャピタルゲインに対する割合）"); inp("B34", 0.30, PCT, key=True); src(34, "吉村様向けスキームと同じ30%。投資家15億円の持分の純資産増加にのみ課す（WineBankの持分には課さない）。売却代金から精算し、会社のCFには影響しない")
 lab(37, "　うち宇佐美氏の取り分"); inp("B37", 0.15, PCT, key=True); src(37, "ご指定：30%のうち15%。残り15%はWineBank（AM）")
 lab(35, "■ 出資額による条件の差（アンカー投資家）", True)
-lab(36, "5億円の区分の成果報酬率"); inp("B36", 0.15, PCT, key=True); src(36, "案：5億円はWineBank分15%を免除し、宇佐美氏分15%のみ（3億円以下は30%）")
+lab(36, "5億円の区分の成果報酬率"); inp("B36", 0.30, PCT, key=True); src(36, "アンカー（5億円・最大2名）も成果報酬は30%で同じ。代わりに運営収益の分配・5年後の買取・WineBankの新株予約権を付ける")
+lab(38, "アンカー投資家1名あたりの運営収益の分配率"); inp("B38", 0.10, PCT, key=True); src(38, "案：WineBankのAM報酬（毎年分＋後払い分）と成果報酬（WineBank分15%）の合計の10%を1名あたりに分配（2名で20%）")
 lab(25, "■ 決済時（2026年12月末）の現金", True)
 lab(26, "決済時に使える会社の資金（留保・税金を除く）"); inp("B26", 2070); src(26, "12月末の現預金見込み17.4億円−運転資金1.0−法人税1.1＋役員貸付金の返済5.0＋子会社0.4")
 lab(27, "うち決済代金に使う額"); inp("B27", 2000, key=True); src(27, "12月の35億円＝みずほ15億円＋会社の資金20億円")
@@ -169,13 +170,15 @@ def build(name, title, opcase, years, am_base, am_cash_rate, am_exit_rate, inv_a
     s[f"A{rb+1}"] = "成果報酬（5年目末・全員30%の場合）：うち宇佐美氏15%／うちWineBank15%"; s[f"A{rb+1}"].font = BLK
     c = s[f"F{rb+1}"]; c.value = f"={P}$B$37*{P}$B$22*G{R(48)}"; c.number_format = NUM
     c = s[f"G{rb+1}"]; c.value = f"=({P}$B$34-{P}$B$37)*{P}$B$22*G{R(48)}"; c.number_format = NUM
-    tiers = [(rb+3, "3億円（標準・成果報酬30%）", 300, f"{P}$B$34", 0.03), (rb+8, "5億円（アンカー・成果報酬15%）", 500, f"{P}$B$36", 0.03)]
+    tiers = [(rb+3, "3億円（標準・成果報酬30%）", 300, f"{P}$B$34", 0.03), (rb+8, "5億円（アンカー・最大2名）", 500, f"{P}$B$36", 0.03)]
     for r0, nm, amt, exempt, fee in tiers:
         s[f"A{r0}"] = f"【{nm}】"; s[f"A{r0}"].font = B
-        s[f"A{r0+1}"] = "出資・毎年のコンサルティング費用"; s[f"B{r0+1}"] = -amt
-        for col in YC: s[f"{col}{r0+1}"] = f"={amt}*$B$9"
+        anchor = amt == 500
+        s[f"A{r0+1}"] = "出資・毎年のコンサルティング費用" + ("＋運営収益の分配（AM毎年分）" if anchor else ""); s[f"B{r0+1}"] = -amt
+        for col in YC: s[f"{col}{r0+1}"] = f"={amt}*$B$9" + (f"+{P}$B$38*$B$5*$B$6" if anchor else "")
         s[f"A{r0+2}"] = "売却時の精算（出資額＋純資産増加の持分）"
-        s[f"G{r0+2}"] = f"={amt}+{P}$B$22*({amt}/{P}$B$20)*G{R(48)}*(1-{exempt})+{amt}*$B$10*5"
+        s[f"G{r0+2}"] = f"={amt}+{P}$B$22*({amt}/{P}$B$20)*G{R(48)}*(1-{exempt})+{amt}*$B$10*5" + (f"+{P}$B$38*(G{rb+1}+$B$5*$B$7*5)" if anchor else "")
+        if anchor: s[f"A{r0+2}"] = "売却時の精算（出資額＋純資産増加の持分＋運営収益の分配）"
         s[f"A{r0+3}"] = "IRR（5年）"; s[f"A{r0+3}"].font = B
         for col in ["B"] + YC: s[f"{col}{r0+4}"] = f"={col}{r0+1}+{col}{r0+2}"
         s[f"A{r0+4}"] = "CF合計"
@@ -183,7 +186,7 @@ def build(name, title, opcase, years, am_base, am_cash_rate, am_exit_rate, inv_a
         for rr in range(r0+1, r0+5):
             for col in ["B"] + YC: s[f"{col}{rr}"].number_format = NUM
         s[f"B{r0+3}"].number_format = PCT
-    s[f"A{rb+13}"] = "5億円の区分は成果報酬率を前提!B36（案：15%）に下げた場合。会社のCFには影響しない。"; s[f"A{rb+13}"].font = NOTE
+    s[f"A{rb+13}"] = "アンカー（5億円）は、WineBankの運営収益（AM報酬＋WineBank分の成果報酬）の前提!B38を上乗せ。5年後の買取の約束・WineBankの新株予約権の価値は含めない。会社のCFには影響しない。"; s[f"A{rb+13}"].font = NOTE
     s[f"A{R(54)}"] = "売却時の精算は売却代金から行う前提（会社のCFには含めない）。純資産の増加は帳簿ベースで、売却時の上乗せ（のれん）は含めない。AM報酬の後払い分は、投資家への精算と同じく売却代金から支払う。"; s[f"A{R(54)}"].font = NOTE
 
     s.column_dimensions["A"].width = 56; s.column_dimensions["B"].width = 11
