@@ -59,9 +59,10 @@ lab(24, "■ 宇佐美氏（経営担当）", True)
 lab(31, "宇佐美氏の役員報酬（基準額・年）"); inp("B31", 6, key=True); src(31, "ご指定：年600万円。営業利益の計画比に連動させる")
 lab(32, "　連動の下限（計画比）"); inp("B32", 0.5, PCT); src(32, "計画比50%を下回っても基準額の50%は支給")
 lab(33, "　連動の上限（計画比）"); inp("B33", 1.5, PCT); src(33, "計画比150%を上限")
-lab(34, "宇佐美氏のキャピタルゲイン（純資産増加に対する割合）"); inp("B34", 0.15, PCT, key=True); src(34, "ご指定：15%。売却時に純資産増加分から先に配分（会社のCFには影響しない）")
+lab(34, "成果報酬（投資家持分のキャピタルゲインに対する割合）"); inp("B34", 0.30, PCT, key=True); src(34, "吉村様向けスキームと同じ30%。投資家15億円の持分の純資産増加にのみ課す（WineBankの持分には課さない）。売却代金から精算し、会社のCFには影響しない")
+lab(37, "　うち宇佐美氏の取り分"); inp("B37", 0.15, PCT, key=True); src(37, "ご指定：30%のうち15%。残り15%はWineBank（AM）")
 lab(35, "■ 出資額による条件の差（アンカー投資家）", True)
-lab(36, "5億円の区分：宇佐美氏15%の負担を免除する割合"); inp("B36", 1, PCT, key=True); src(36, "100%＝5億円の投資家の持分には15%を課さない（3億円以下は課す）")
+lab(36, "5億円の区分の成果報酬率"); inp("B36", 0.15, PCT, key=True); src(36, "案：5億円はWineBank分15%を免除し、宇佐美氏分15%のみ（3億円以下は30%）")
 lab(25, "■ 決済時（2026年12月末）の現金", True)
 lab(26, "決済時に使える会社の資金（留保・税金を除く）"); inp("B26", 2070); src(26, "12月末の現預金見込み17.4億円−運転資金1.0−法人税1.1＋役員貸付金の返済5.0＋子会社0.4")
 lab(27, "うち決済代金に使う額"); inp("B27", 2000, key=True); src(27, "12月の35億円＝みずほ15億円＋会社の資金20億円")
@@ -158,23 +159,23 @@ def build(name, title, opcase, years, am_base, am_cash_rate, am_exit_rate, inv_a
     put(48, "純資産の増加（当期純利益の累計）", lambda c, p, i: (f"={c}{R(21)}" if i == 0 else f"={p}{R(48)}+{c}{R(21)}"))
     s[f"A{R(49)}"] = "■ 投資家のリターン（合計）"; s[f"A{R(49)}"].font = B
     put(50, "投資家のCF（出資・毎年のコンサルティング費用）", lambda c, p, i: f"=-{c}{R(15)}", bform="=-$B$8", total=True)
-    put(51, "売却時の精算（5年目末）＝出資額＋純資産増加×(1−15%)×49%＋後払い分", lambda c, p, i: (f"=$B$8+{P}$B$22*{c}{R(48)}*(1-{P}$B$34)+$B$8*$B$10*5" if i == 4 else "=0"), total=True)
+    put(51, "売却時の精算（5年目末）＝出資額＋純資産増加×49%×(1−成果報酬30%)＋後払い分", lambda c, p, i: (f"=$B$8+{P}$B$22*{c}{R(48)}*(1-{P}$B$34)+$B$8*$B$10*5" if i == 4 else "=0"), total=True)
     put(52, "投資家のCF 合計", lambda c, p, i: f"={c}{R(50)}+{c}{R(51)}", bform=f"=B{R(50)}", bold=True)
     s[f"A{R(53)}"] = "投資家のIRR（5年）"; s[f"A{R(53)}"].font = B
     c = s[f"B{R(53)}"]; c.value = f"=IRR(B{R(52)}:G{R(52)})"; c.number_format = PCT; c.font = B; c.fill = TF
     # 区分別（3億円・5億円）のリターン
     rb = R(56)
     s[f"A{rb}"] = "■ 出資額ごとのリターン（1名あたり）"; s[f"A{rb}"].font = B
-    s[f"A{rb+1}"] = "宇佐美氏のキャピタルゲイン（5年目末）＝純資産増加×15%"; s[f"A{rb+1}"].font = BLK
-    c = s[f"G{rb+1}"]; c.value = f"={P}$B$34*G{R(48)}"; c.number_format = NUM
-    tiers = [(rb+3, "3億円（標準）", 300, 0, 0.03), (rb+8, "5億円（アンカー）", 500, f"{P}$B$36", 0.03)]
+    s[f"A{rb+1}"] = "成果報酬（5年目末・全員30%の場合）：うち宇佐美氏15%／うちWineBank15%"; s[f"A{rb+1}"].font = BLK
+    c = s[f"F{rb+1}"]; c.value = f"={P}$B$37*{P}$B$22*G{R(48)}"; c.number_format = NUM
+    c = s[f"G{rb+1}"]; c.value = f"=({P}$B$34-{P}$B$37)*{P}$B$22*G{R(48)}"; c.number_format = NUM
+    tiers = [(rb+3, "3億円（標準・成果報酬30%）", 300, f"{P}$B$34", 0.03), (rb+8, "5億円（アンカー・成果報酬15%）", 500, f"{P}$B$36", 0.03)]
     for r0, nm, amt, exempt, fee in tiers:
         s[f"A{r0}"] = f"【{nm}】"; s[f"A{r0}"].font = B
         s[f"A{r0+1}"] = "出資・毎年のコンサルティング費用"; s[f"B{r0+1}"] = -amt
         for col in YC: s[f"{col}{r0+1}"] = f"={amt}*$B$9"
         s[f"A{r0+2}"] = "売却時の精算（出資額＋純資産増加の持分）"
-        ex = exempt if exempt else 0
-        s[f"G{r0+2}"] = f"={amt}+{P}$B$22*({amt}/{P}$B$20)*G{R(48)}*(1-{P}$B$34*(1-{ex}))+{amt}*$B$10*5"
+        s[f"G{r0+2}"] = f"={amt}+{P}$B$22*({amt}/{P}$B$20)*G{R(48)}*(1-{exempt})+{amt}*$B$10*5"
         s[f"A{r0+3}"] = "IRR（5年）"; s[f"A{r0+3}"].font = B
         for col in ["B"] + YC: s[f"{col}{r0+4}"] = f"={col}{r0+1}+{col}{r0+2}"
         s[f"A{r0+4}"] = "CF合計"
@@ -182,7 +183,7 @@ def build(name, title, opcase, years, am_base, am_cash_rate, am_exit_rate, inv_a
         for rr in range(r0+1, r0+5):
             for col in ["B"] + YC: s[f"{col}{rr}"].number_format = NUM
         s[f"B{r0+3}"].number_format = PCT
-    s[f"A{rb+13}"] = "5億円の区分は、宇佐美氏のキャピタルゲイン15%の負担を免除する割合（前提!B36）だけ精算額が増える。会社のCFには影響しない。"; s[f"A{rb+13}"].font = NOTE
+    s[f"A{rb+13}"] = "5億円の区分は成果報酬率を前提!B36（案：15%）に下げた場合。会社のCFには影響しない。"; s[f"A{rb+13}"].font = NOTE
     s[f"A{R(54)}"] = "売却時の精算は売却代金から行う前提（会社のCFには含めない）。純資産の増加は帳簿ベースで、売却時の上乗せ（のれん）は含めない。AM報酬の後払い分は、投資家への精算と同じく売却代金から支払う。"; s[f"A{R(54)}"].font = NOTE
 
     s.column_dimensions["A"].width = 56; s.column_dimensions["B"].width = 11
