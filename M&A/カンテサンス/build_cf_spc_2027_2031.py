@@ -1,4 +1,4 @@
-# カンテサンス CF計画（2027〜2031年）みずほ 15億円・5年・4% ＋ 投資家15億円（年5%＋純資産増加分を売却時精算）
+# カンテサンス CF計画（2027〜2031年）みずほ15億円＋追加対価の追加借入5億円・投資家15億円。既存計画のみ／新規事業込み×業績4ケース
 # 使い方: python3 build_cf_spc_2027_2031.py <出力.xlsx>
 import sys
 from openpyxl import Workbook
@@ -51,7 +51,7 @@ lab(17, "■ 借入・投資家・追加対価", True)
 lab(18, "みずほ銀行の借入額"); inp("B18", 1500, key=True); src(18, "ご指定：15億円")
 lab(19, "金利"); inp("B19", 0.04, PCT, key=True); src(19, "ご指定：4%")
 lab(20, "投資家の出資額"); inp("B20", 1500); src(20, "1億・3億・5億円の区分で5名、合計15億円（2027年3月の残金15億円の支払いに充当）")
-lab(21, "投資家への年間支払い（コンサルティング費用）"); inp("B21", 0.05, PCT, key=True); src(21, "ご指定：出資額の年5%")
+lab(21, "投資家への年間支払い（コンサルティング費用）"); inp("B21", 0.03, PCT, key=True); src(21, "ご指定：出資額の年3%（各シナリオのB11で設定）")
 lab(22, "投資家の持分（純資産増加分の精算に使用）"); inp("B22", 0.49, PCT); src(22, "スキーム図：投資家49%・WineBank51%")
 lab(23, "追加対価（最終契約の3年後）"); inp("B23", 500); src(23, "基本合意書 第2条第4項：2029年12月中旬までに5億円・無条件。株式の対価のため損金にならない")
 
@@ -74,161 +74,256 @@ a.column_dimensions["A"].width = 46; a.column_dimensions["B"].width = 12; a.colu
 for c in YC: a.column_dimensions[c].width = 10
 a.freeze_panes = "B5"
 
+# ---- 追加対価の追加借入（前提シート） ----
+lab(39, "■ 追加対価5億円の追加借入（みずほ銀行）", True)
+lab(40, "追加借入額"); inp("B40", "=B23"); src(40, "追加対価5億円を会社が支払い、同額をみずほ銀行から追加で借り入れる（中野さんご指示）")
+lab(41, "実行年"); inp("B41", 2029, '0'); src(41, "追加対価の支払い（2029年12月中旬まで）に合わせる。実行年は利息なし（12月実行のため）")
+lab(42, "元本の返済開始年"); inp("B42", 2032, '0', key=True); src(42, "仮定：当初の借入（2031年に完済）の後に返済開始。それまでは利息のみ。2030年開始にすると2030〜31年の現金がマイナスになる")
+lab(43, "返済年数（元金均等）"); inp("B43", 5, '0'); src(43, "仮定")
+lab(44, "金利"); inp("B44", "=B19", PCT); src(44, "当初の借入と同じ4%")
+
+# ================= 新規事業シート =================
+import datetime as dt
+from openpyxl.utils import get_column_letter as L
+n = wb.create_sheet("新規事業")
+n["A1"] = "新規事業の収支（2027〜2031年・月次）"; n["A1"].font = T
+n["A2"] = "単位：百万円。青字＝入力値（変更可）。既存のカンテサンス本店の計画には含めていない増加分のみを計上。"; n["A2"].font = NOTE
+def ni(r, label, v, fmt=NUM, note=""):
+    n.cell(row=r, column=1, value=label).font = BLK
+    c = n.cell(row=r, column=2, value=v); c.number_format = fmt
+    c.font = BLK if isinstance(v, str) and v.startswith("=") else BLUE; c.fill = YF
+    if note: n.cell(row=r, column=3, value=note).font = NOTE
+n["A4"] = "■ ① ガトー・オ・コンテの拡大（投資なし）"; n["A4"].font = B
+ni(5, "2026年のガトー売上（月平均）", "=48.416/9", '#,##0.00', "第16期試算表 1〜9月のガトー売上48.4百万円÷9か月")
+ni(6, "第1段階の開始月", dt.datetime(2027, 11, 1), 'yyyy/mm', "ご指定：2027年11月から既存売上を倍増")
+ni(7, "第1段階の売上倍率（2026年比）", 2, '0.0"倍"')
+ni(8, "第2段階の開始月", dt.datetime(2028, 11, 1), 'yyyy/mm', "ご指定：2028年11月から2026年比3倍")
+ni(9, "第2段階の売上倍率（2026年比）", 3, '0.0"倍"')
+ni(10, "増加分の営業利益率", 0.30, PCT, "仮定：外部での製造委託・配送費を見込み30%（スイーツ店と同水準）")
+n["A12"] = "■ ② 一品スイーツ店（ドルチェ・タクボの高級版）"; n["A12"].font = B
+ni(13, "1店舗の月商", 15, NUM, "ご指定：月1,500万円")
+ni(14, "1店舗の月の営業利益", 4.5, '#,##0.0', "ご指定：月450万円")
+ni(15, "1店舗の投資額", 50, NUM, "ご指定：5,000万円（開業月に支出）")
+ni(16, "最初の出店月", dt.datetime(2028, 1, 1), 'yyyy/mm', "ご指定：2028年1月から毎年1月に出店")
+ni(17, "年間の出店数", 1, '0', "ご指定：年1店舗")
+n["A19"] = "■ ③ ワインショップ・バー（投資なし）"; n["A19"].font = B
+ni(20, "月商", 7, NUM, "ご指定：月700万円")
+ni(21, "月の営業利益", 0.5, '#,##0.0', "ご指定：月50万円")
+ni(22, "開始月", dt.datetime(2030, 1, 1), 'yyyy/mm', "ご指定：2030年1月から")
+
+MR = 25  # 月次の見出し行
+months = [dt.datetime(2027 + i // 12, i % 12 + 1, 1) for i in range(60)]
+n.cell(row=MR, column=1, value="月").font = B
+n.cell(row=MR + 1, column=1, value="年").font = NOTE
+n.cell(row=MR + 2, column=1, value="月（数字）").font = NOTE
+for k, d in enumerate(months):
+    col = L(3 + k)
+    c = n[f"{col}{MR}"]; c.value = d; c.number_format = 'yyyy/mm'; c.font = H; c.fill = HF
+    n[f"{col}{MR+1}"] = f"=YEAR({col}{MR})"; n[f"{col}{MR+2}"] = f"=MONTH({col}{MR})"
+    n[f"{col}{MR+1}"].font = NOTE; n[f"{col}{MR+2}"].font = NOTE
+    n.column_dimensions[col].width = 8.5
+rows = [
+    ("① ガトー：売上倍率（2026年比）", lambda c: f"=IF({c}{MR}>=$B$8,$B$9,IF({c}{MR}>=$B$6,$B$7,1))", '0.0'),
+    ("① ガトー：増加売上", lambda c: f"=$B$5*({c}{MR+3}-1)", '#,##0.0'),
+    ("① ガトー：増加営業利益", lambda c: f"={c}{MR+4}*$B$10", '#,##0.0'),
+    ("② スイーツ店：店舗数", lambda c: f"=IF({c}{MR}<$B$16,0,(YEAR({c}{MR})-YEAR($B$16)+1)*$B$17)", '0'),
+    ("② スイーツ店：売上", lambda c: f"={c}{MR+6}*$B$13", '#,##0.0'),
+    ("② スイーツ店：営業利益", lambda c: f"={c}{MR+6}*$B$14", '#,##0.0'),
+    ("② スイーツ店：投資", lambda c: f"=IF(AND({c}{MR}>=$B$16,MONTH({c}{MR})=MONTH($B$16)),$B$17*$B$15,0)", '#,##0.0'),
+    ("③ ワインショップ・バー：売上", lambda c: f"=IF({c}{MR}>=$B$22,$B$20,0)", '#,##0.0'),
+    ("③ ワインショップ・バー：営業利益", lambda c: f"=IF({c}{MR}>=$B$22,$B$21,0)", '#,##0.0'),
+    ("新規事業 売上合計", lambda c: f"={c}{MR+4}+{c}{MR+7}+{c}{MR+10}", '#,##0.0'),
+    ("新規事業 営業利益合計", lambda c: f"={c}{MR+5}+{c}{MR+8}+{c}{MR+11}", '#,##0.0'),
+    ("新規事業 投資合計", lambda c: f"={c}{MR+9}", '#,##0.0'),
+]
+for j, (label, f, fmt) in enumerate(rows):
+    r = MR + 3 + j
+    n.cell(row=r, column=1, value=label).font = B if "合計" in label else BLK
+    for k in range(60):
+        col = L(3 + k); c = n[f"{col}{r}"]; c.value = f(col); c.number_format = fmt
+        if "合計" in label: c.font = B; c.fill = TF
+LASTC = L(3 + 59)
+AR = MR + 17  # 年次まとめ
+n.cell(row=AR, column=1, value="■ 年次まとめ").font = B
+header(n, AR + 1, ["項目", ""] + YRS + ["5年計"])
+ann = [("① ガトー：増加売上", MR + 4, "sum"), ("① ガトー：増加営業利益", MR + 5, "sum"),
+       ("② スイーツ店：店舗数（年末）", MR + 6, "dec"), ("② スイーツ店：売上", MR + 7, "sum"),
+       ("② スイーツ店：営業利益", MR + 8, "sum"), ("② スイーツ店：投資", MR + 9, "sum"),
+       ("③ ワインショップ・バー：売上", MR + 10, "sum"), ("③ ワインショップ・バー：営業利益", MR + 11, "sum"),
+       ("新規事業 売上合計", MR + 12, "sum"), ("新規事業 営業利益合計", MR + 13, "sum"), ("新規事業 投資合計", MR + 14, "sum")]
+NB = {}
+for j, (label, src_r, how) in enumerate(ann):
+    r = AR + 2 + j
+    n.cell(row=r, column=1, value=label).font = B if "合計" in label else BLK
+    for yc, y in zip(YC, YRS):
+        if how == "sum":
+            v = f"=SUMIF($C${MR+1}:${LASTC}${MR+1},{y},$C${src_r}:${LASTC}${src_r})"
+        else:
+            v = f"=SUMIFS($C${src_r}:${LASTC}${src_r},$C${MR+1}:${LASTC}${MR+1},{y},$C${MR+2}:${LASTC}${MR+2},12)"
+        c = n[f"{yc}{r}"]; c.value = v; c.number_format = '#,##0' if how == "dec" else NUM
+        if "合計" in label: c.font = B; c.fill = TF
+    if how == "sum":
+        c = n[f"H{r}"]; c.value = f"=SUM(C{r}:G{r})"; c.number_format = NUM; c.font = B
+    NB[label] = r
+NB_OP = NB["新規事業 営業利益合計"]; NB_CAPEX = NB["新規事業 投資合計"]
+n.cell(row=AR + 14, column=1, value="新規事業の営業利益は、店舗の減価償却・本部費を含めたご指定の数字として扱う。開業前の費用、既存事業との共食いは見込まない。スイーツ店の投資は開業月に全額を現金支出として計上（減価償却費の足し戻しはしない保守的な扱い）。").font = NOTE
+n.column_dimensions["A"].width = 34; n.column_dimensions["B"].width = 11
+n.freeze_panes = f"C{MR+1}"
+
 # ================= CFシート =================
-P = "前提!"
-def build(name, title, opcase, years, am_base, am_cash_rate, am_exit_rate, inv_amt, inv_cash_rate, inv_exit_rate, earn_co):
+P = "前提!"; NBS = "新規事業!"
+ROW = dict(hdr=14, t_pl=15, op_ex=16, op_nb=17, op=18, succ=19, am=20, inv=21, perk=22, usa=23, ebitda=24, int=25, pre=26, tax=27, ni=28,
+           t_cf=30, ni2=31, capex=32, capex_nb=33, tax26=34, precf=35, rep1=36, rep2=37, earn=38, eloan=39, cf=40, cash=41,
+           t_ds=43, dsrc=44, ds=45, dscr=46, ds_note=47,
+           t_ln=49, l1o=50, l1p=51, l1e=52, l2o=53, l2x=54, l2p=55, l2e=56,
+           t_ex=58, amd=59, nav=60, t_iv=61, ivcf=62, ivex=63, ivt=64, irr=65, ex_note=66, rb=68)
+def build(name, title, opcase, mult, newbiz, years, am_base, am_cash_rate, am_exit_rate, inv_amt, inv_cash_rate):
     s = wb.create_sheet(name)
     s["A1"] = f"カンテサンス CF計画（2027〜2031年）｜{title}"; s["A1"].font = T
     s["A2"] = "単位：百万円。黄色の青字はこのシナリオの条件（変更可）。合併後の会社が借入を返済し、投資家・AMへの支払いを負担する前提。"; s["A2"].font = NOTE
-    conf = [(3, "営業利益の前提（1＝IM計画、2＝業績横ばい）", opcase, '0'),
-            (4, "借入の返済年数（元金均等）", years, '0'),
-            (5, "AM報酬の算定基礎", am_base, NUM),
-            (6, "AM報酬：毎年支払う率", am_cash_rate, PCT),
-            (7, "AM報酬：売却時に精算する率", am_exit_rate, PCT),
-            (8, "投資家の出資額（15億円超の部分は追加対価用に2029年まで留保）", inv_amt, NUM),
-            (9, "投資家への支払い：毎年（コンサルティング費用）の率", inv_cash_rate, PCT),
-            (10, "投資家への支払い：売却時に精算する率", inv_exit_rate, PCT),
-            (11, "追加対価5億円を会社の現金で払う（1＝はい、0＝会社外で手当て）", earn_co, '0')]
+    conf = [(3, "既存事業の営業利益の前提（1＝IM計画、2＝業績横ばい）", opcase, '0'),
+            (4, "既存事業の営業利益の増減（計画比）", mult, PCT),
+            (5, "新規事業を含める（1＝含める、0＝含めない）", newbiz, '0'),
+            (6, "当初の借入の返済年数（元金均等）", years, '0'),
+            (7, "AM報酬の算定基礎", am_base, NUM),
+            (8, "AM報酬：毎年支払う率", am_cash_rate, PCT),
+            (9, "AM報酬：売却時に精算する率", am_exit_rate, PCT),
+            (10, "投資家の出資額", inv_amt, NUM),
+            (11, "投資家への支払い：毎年（コンサルティング費用）の率", inv_cash_rate, PCT)]
     for r, t, v, fmt in conf:
         s.cell(row=r, column=1, value=t).font = BLK
         c = s.cell(row=r, column=2, value=v); c.font = BLUE; c.fill = YF; c.number_format = fmt
-    O = 3  # 以降の行のずらし
-    header(s, 10 + O, ["項目", "決済時"] + YRS + ["5年計"])
-    R = lambda n: n + O + (1 if n >= 17 else 0)
-
-    def put(r, label, form, bform=None, fmt=NUM, bold=False, fill=False, total=False):
-        r = R(r)
+    header(s, ROW["hdr"], ["項目", "決済時"] + YRS + ["5年計"])
+    def put(key, label, form, bform=None, fmt=NUM, bold=False, fill=False, total=False):
+        r = ROW[key]
         s.cell(row=r, column=1, value=label).font = B if bold else BLK
         if bform is not None:
             c = s.cell(row=r, column=2, value=bform); c.number_format = fmt; c.font = B if bold else BLK
         for i, col in enumerate(YC):
             prev = "B" if i == 0 else YC[i - 1]
-            c = s[f"{col}{r}"]; c.value = form(col, prev, i); c.number_format = fmt
+            c = s[f"{col}{r}"]; c.value = form(col, prev, i, YRS[i]); c.number_format = fmt
             c.font = Font(name=F, size=10, bold=bold)
             if fill: c.fill = TF
         if total:
             c = s[f"H{r}"]; c.value = f"=SUM(C{r}:G{r})"; c.number_format = fmt; c.font = B
         if fill: s[f"A{r}"].fill = TF
-
-    s[f"A{R(11)}"] = "■ 損益"; s[f"A{R(11)}"].font = B
-    put(12, "営業利益（岸田シェフの現行報酬控除後）", lambda c, p, i: f"=IF($B$3=1,{P}{c}6,{P}$B$8)", bold=True, total=True)
-    put(13, "− 後継料理長の追加人件費", lambda c, p, i: f"=-{P}{c}11", total=True)
-    put(14, "− AM管理報酬（毎年支払う分）", lambda c, p, i: "=-$B$5*$B$6", total=True)
-    put(15, "− 投資家へのコンサルティング費用（毎年）", lambda c, p, i: "=-$B$8*$B$9", total=True)
-    put(16, "− 投資家特典の費用", lambda c, p, i: f"=-{P}$B$12", total=True)
-    # 宇佐美氏の役員報酬（R(16)の次の行）
-    ru = R(16) + 1
-    s.cell(row=ru, column=1, value="− 宇佐美氏の役員報酬（営業利益の計画比に連動）").font = BLK
-    for col in YC:
-        c = s[f"{col}{ru}"]; c.value = f"=-{P}$B$31*MIN({P}$B$33,MAX({P}$B$32,{col}{R(12)}/{P}{col}6))"; c.number_format = NUM; c.font = BLK
-    c = s[f"H{ru}"]; c.value = f"=SUM(C{ru}:G{ru})"; c.number_format = NUM; c.font = B
-    put(17, "EBITDA（上記控除後）", lambda c, p, i: f"=SUM({c}{R(12)}:{c}{ru})", bold=True, fill=True, total=True)
-    put(18, "− 支払利息", lambda c, p, i: f"=-{c}{R(42)}*{P}$B$19", total=True)
-    put(19, "税引前利益", lambda c, p, i: f"={c}{R(17)}+{c}{R(18)}", total=True)
-    put(20, "− 法人税等", lambda c, p, i: f"=-MAX(0,{c}{R(19)})*{P}$B$15", total=True)
-    put(21, "当期純利益", lambda c, p, i: f"={c}{R(19)}+{c}{R(20)}", bold=True, fill=True, total=True)
-
-    s[f"A{R(23)}"] = "■ キャッシュフロー"; s[f"A{R(23)}"].font = B
-    put(24, "当期純利益", lambda c, p, i: f"={c}{R(21)}", total=True)
-    put(25, "＋ 投資家の追加出資（15億円超の部分）", lambda c, p, i: f"=MAX(0,$B$8-{P}$B$20)" if i == 0 else "=0", total=True)
-    put(26, "（予備）", lambda c, p, i: "=0")
-    s[f"A{R(26)}"].value = None
-    put(27, "− 設備投資", lambda c, p, i: f"=-{P}$B$14", total=True)
-    put(28, "− 2026年12月期の法人税の納付", lambda c, p, i: f"=-{P}$B$29" if i == 0 else "=0", total=True)
-    put(29, "返済前のCF", lambda c, p, i: f"=SUM({c}{R(24)}:{c}{R(28)})", bold=True, total=True)
-    put(30, "− 借入元本の返済", lambda c, p, i: f"=-{c}{R(43)}", total=True)
-    put(31, "− 追加対価（会社の現金で払う場合）", lambda c, p, i: f"=IF($B$11=1,-{P}$B$23,0)" if i == 2 else "=0", total=True)
-    put(32, "当期のCF", lambda c, p, i: f"={c}{R(29)}+{c}{R(30)}+{c}{R(31)}", bold=True, fill=True, total=True)
-    put(33, "期末の現金残高", lambda c, p, i: f"={p}{R(33)}+{c}{R(32)}", bform=f"={P}B30", bold=True)
-    for col in YC: s[f"{col}{R(33)}"].font = RED
-    put(34, "（参考）2027年3月：投資家の出資15億円 → 残金15億円の支払い", lambda c, p, i: "=0")
-    s[f"H{R(34)}"] = "入出金が同額のため影響なし"; s[f"H{R(34)}"].font = NOTE
-
-    s[f"A{R(36)}"] = "■ 返済余力"; s[f"A{R(36)}"].font = B
-    put(37, "返済原資（EBITDA−法人税−設備投資）", lambda c, p, i: f"={c}{R(17)}+{c}{R(20)}-{P}$B$14", total=True)
-    put(38, "元利返済額", lambda c, p, i: f"=-{c}{R(18)}+{c}{R(43)}", total=True)
-    put(39, "DSCR（返済余力）", lambda c, p, i: f"=IF({c}{R(38)}=0,0,{c}{R(37)}/{c}{R(38)})", fmt=X, bold=True, fill=True)
-    s[f"A{R(40)}"] = "DSCR＝返済原資÷元利返済額。1.0倍未満の年は返済が手元資金の取り崩しになる。銀行の目安は1.2倍以上。"; s[f"A{R(40)}"].font = NOTE
-
-    s[f"A{R(41)}"] = "■ 借入（元金均等）"; s[f"A{R(41)}"].font = B
-    put(42, "期首残高", lambda c, p, i: f"={P}$B$18" if i == 0 else f"={p}{R(44)}")
-    put(43, "元本返済", lambda c, p, i: f"=MIN({c}{R(42)},{P}$B$18/$B$4)", total=True)
-    put(44, "期末残高", lambda c, p, i: f"={c}{R(42)}-{c}{R(43)}", bold=True)
-
-    s[f"A{R(46)}"] = "■ 売却時に精算する分（会社のCFには含めない）"; s[f"A{R(46)}"].font = B
-    put(47, "AM報酬の後払い分（累計）", lambda c, p, i: (f"=$B$5*$B$7" if i == 0 else f"={p}{R(47)}+$B$5*$B$7"))
-    put(48, "純資産の増加（当期純利益の累計）", lambda c, p, i: (f"={c}{R(21)}" if i == 0 else f"={p}{R(48)}+{c}{R(21)}"))
-    s[f"A{R(49)}"] = "■ 投資家のリターン（合計）"; s[f"A{R(49)}"].font = B
-    put(50, "投資家のCF（出資・毎年のコンサルティング費用）", lambda c, p, i: f"=-{c}{R(15)}", bform="=-$B$8", total=True)
-    put(51, "売却時の精算（5年目末）＝出資額＋純資産増加×49%×(1−成果報酬30%)＋後払い分", lambda c, p, i: (f"=$B$8+{P}$B$22*{c}{R(48)}*(1-{P}$B$34)+$B$8*$B$10*5" if i == 4 else "=0"), total=True)
-    put(52, "投資家のCF 合計", lambda c, p, i: f"={c}{R(50)}+{c}{R(51)}", bform=f"=B{R(50)}", bold=True)
-    s[f"A{R(53)}"] = "投資家のIRR（5年）"; s[f"A{R(53)}"].font = B
-    c = s[f"B{R(53)}"]; c.value = f"=IRR(B{R(52)}:G{R(52)})"; c.number_format = PCT; c.font = B; c.fill = TF
-    # 区分別（3億円・5億円）のリターン
-    rb = R(56)
+    def title(key, t): s[f"A{ROW[key]}"] = t; s[f"A{ROW[key]}"].font = B
+    R = ROW
+    title("t_pl", "■ 損益")
+    put("op_ex", "既存事業（本店）の営業利益（岸田シェフの現行報酬控除後）", lambda c, p, i, y: f"=IF($B$3=1,{P}{c}6,{P}$B$8)*(1+$B$4)", total=True)
+    put("op_nb", "＋ 新規事業の営業利益（ガトー拡大・スイーツ店・ワインショップ）", lambda c, p, i, y: f"=$B$5*{NBS}{c}{NB_OP}", total=True)
+    put("op", "営業利益 合計", lambda c, p, i, y: f"={c}{R['op_ex']}+{c}{R['op_nb']}", bold=True, total=True)
+    put("succ", "− 後継料理長の追加人件費", lambda c, p, i, y: f"=-{P}{c}11", total=True)
+    put("am", "− AM管理報酬（毎年支払う分）", lambda c, p, i, y: "=-$B$7*$B$8", total=True)
+    put("inv", "− 投資家へのコンサルティング費用（毎年）", lambda c, p, i, y: "=-$B$10*$B$11", total=True)
+    put("perk", "− 投資家特典の費用", lambda c, p, i, y: f"=-{P}$B$12", total=True)
+    put("usa", "− 宇佐美氏の役員報酬（既存事業の営業利益の計画比に連動）", lambda c, p, i, y: f"=-{P}$B$31*MIN({P}$B$33,MAX({P}$B$32,{c}{R['op_ex']}/{P}{c}6))", total=True)
+    put("ebitda", "EBITDA（上記控除後）", lambda c, p, i, y: f"=SUM({c}{R['op']}:{c}{R['usa']})", bold=True, fill=True, total=True)
+    put("int", "− 支払利息（当初の借入＋追加借入）", lambda c, p, i, y: f"=-({c}{R['l1o']}*{P}$B$19+{c}{R['l2o']}*{P}$B$44)", total=True)
+    put("pre", "税引前利益", lambda c, p, i, y: f"={c}{R['ebitda']}+{c}{R['int']}", total=True)
+    put("tax", "− 法人税等", lambda c, p, i, y: f"=-MAX(0,{c}{R['pre']})*{P}$B$15", total=True)
+    put("ni", "当期純利益", lambda c, p, i, y: f"={c}{R['pre']}+{c}{R['tax']}", bold=True, fill=True, total=True)
+    title("t_cf", "■ キャッシュフロー")
+    put("ni2", "当期純利益", lambda c, p, i, y: f"={c}{R['ni']}", total=True)
+    put("capex", "− 設備投資（既存店）", lambda c, p, i, y: f"=-{P}$B$14", total=True)
+    put("capex_nb", "− 新規事業の投資（スイーツ店）", lambda c, p, i, y: f"=-$B$5*{NBS}{c}{NB_CAPEX}", total=True)
+    put("tax26", "− 2026年12月期の法人税の納付", lambda c, p, i, y: f"=-{P}$B$29" if i == 0 else "=0", total=True)
+    put("precf", "返済前のCF", lambda c, p, i, y: f"=SUM({c}{R['ni2']}:{c}{R['tax26']})", bold=True, total=True)
+    put("rep1", "− 当初の借入の元本返済", lambda c, p, i, y: f"=-{c}{R['l1p']}", total=True)
+    put("rep2", "− 追加借入の元本返済", lambda c, p, i, y: f"=-{c}{R['l2p']}", total=True)
+    put("earn", "− 追加対価の支払い", lambda c, p, i, y: f"=IF({y}={P}$B$41,-{P}$B$23,0)", total=True)
+    put("eloan", "＋ 追加対価のための追加借入", lambda c, p, i, y: f"={c}{R['l2x']}", total=True)
+    put("cf", "当期のCF", lambda c, p, i, y: f"={c}{R['precf']}+{c}{R['rep1']}+{c}{R['rep2']}+{c}{R['earn']}+{c}{R['eloan']}", bold=True, fill=True, total=True)
+    put("cash", "期末の現金残高", lambda c, p, i, y: f"={p}{R['cash']}+{c}{R['cf']}", bform=f"={P}B30", bold=True)
+    for col in YC: s[f"{col}{R['cash']}"].font = RED
+    title("t_ds", "■ 返済余力")
+    put("dsrc", "返済原資（EBITDA−法人税−設備投資−新規事業の投資）", lambda c, p, i, y: f"={c}{R['ebitda']}+{c}{R['tax']}+{c}{R['capex']}+{c}{R['capex_nb']}", total=True)
+    put("ds", "元利返済額（追加借入を含む）", lambda c, p, i, y: f"=-{c}{R['int']}+{c}{R['l1p']}+{c}{R['l2p']}", total=True)
+    put("dscr", "DSCR（返済余力）", lambda c, p, i, y: f"=IF({c}{R['ds']}=0,0,{c}{R['dsrc']}/{c}{R['ds']})", fmt=X, bold=True, fill=True)
+    s[f"A{R['ds_note']}"] = "DSCR＝返済原資÷元利返済額。1.0倍未満の年は返済が手元資金の取り崩しになる。銀行の目安は1.2倍以上。"; s[f"A{R['ds_note']}"].font = NOTE
+    title("t_ln", "■ 借入（当初：元金均等／追加：前提!B42の年から元金均等）")
+    put("l1o", "当初の借入：期首残高", lambda c, p, i, y: f"={P}$B$18" if i == 0 else f"={p}{R['l1e']}")
+    put("l1p", "当初の借入：元本返済", lambda c, p, i, y: f"=MIN({c}{R['l1o']},{P}$B$18/$B$6)", total=True)
+    put("l1e", "当初の借入：期末残高", lambda c, p, i, y: f"={c}{R['l1o']}-{c}{R['l1p']}", bold=True)
+    put("l2o", "追加借入：期首残高", lambda c, p, i, y: "=0" if i == 0 else f"={p}{R['l2e']}")
+    put("l2x", "追加借入：実行", lambda c, p, i, y: f"=IF({y}={P}$B$41,{P}$B$40,0)", total=True)
+    put("l2p", "追加借入：元本返済", lambda c, p, i, y: f"=IF({y}>={P}$B$42,MIN({c}{R['l2o']},{P}$B$40/{P}$B$43),0)", total=True)
+    put("l2e", "追加借入：期末残高", lambda c, p, i, y: f"={c}{R['l2o']}+{c}{R['l2x']}-{c}{R['l2p']}", bold=True)
+    title("t_ex", "■ 売却時に精算する分（会社のCFには含めない）")
+    put("amd", "AM報酬の後払い分（累計）", lambda c, p, i, y: (f"=$B$7*$B$9" if i == 0 else f"={p}{R['amd']}+$B$7*$B$9"))
+    put("nav", "純資産の増加（当期純利益の累計）", lambda c, p, i, y: (f"={c}{R['ni']}" if i == 0 else f"={p}{R['nav']}+{c}{R['ni']}"), bold=True)
+    title("t_iv", "■ 投資家のリターン（合計）")
+    put("ivcf", "投資家のCF（出資・毎年のコンサルティング費用）", lambda c, p, i, y: f"=-{c}{R['inv']}", bform="=-$B$10", total=True)
+    put("ivex", "売却時の精算（5年目末）＝出資額＋純資産増加×49%×(1−成果報酬30%)", lambda c, p, i, y: (f"=$B$10+{P}$B$22*{c}{R['nav']}*(1-{P}$B$34)" if i == 4 else "=0"), total=True)
+    put("ivt", "投資家のCF 合計", lambda c, p, i, y: f"={c}{R['ivcf']}+{c}{R['ivex']}", bform=f"=B{R['ivcf']}", bold=True)
+    s[f"A{R['irr']}"] = "投資家のIRR（5年）"; s[f"A{R['irr']}"].font = B
+    c = s[f"B{R['irr']}"]; c.value = f"=IRR(B{R['ivt']}:G{R['ivt']})"; c.number_format = PCT; c.font = B; c.fill = TF
+    s[f"A{R['ex_note']}"] = "売却時の精算は売却代金から行う前提（会社のCFには含めない）。純資産の増加は帳簿ベースで、売却時の上乗せ（のれん）は含めない。"; s[f"A{R['ex_note']}"].font = NOTE
+    rb = R["rb"]; G = f"G{R['nav']}"
     s[f"A{rb}"] = "■ 出資額ごとのリターン（1名あたり）"; s[f"A{rb}"].font = B
-    s[f"A{rb+1}"] = "成果報酬（5年目末・全員30%の場合）：うち宇佐美氏15%／うちWineBank15%"; s[f"A{rb+1}"].font = BLK
-    c = s[f"F{rb+1}"]; c.value = f"={P}$B$37*{P}$B$22*G{R(48)}"; c.number_format = NUM
-    c = s[f"G{rb+1}"]; c.value = f"=({P}$B$34-{P}$B$37)*{P}$B$22*G{R(48)}"; c.number_format = NUM
-    tiers = [(rb+3, "3億円（標準・成果報酬30%）", 300, f"{P}$B$34", 0.03), (rb+8, "5億円（アンカー・最大2名）", 500, f"{P}$B$36", 0.03)]
-    for r0, nm, amt, exempt, fee in tiers:
-        s[f"A{r0}"] = f"【{nm}】"; s[f"A{r0}"].font = B
+    s[f"A{rb+1}"] = "成果報酬（5年目末・全員30%の場合）：うち宇佐美氏15%／うちWineBank15%"
+    c = s[f"F{rb+1}"]; c.value = f"={P}$B$37*{P}$B$22*{G}"; c.number_format = NUM
+    c = s[f"G{rb+1}"]; c.value = f"=({P}$B$34-{P}$B$37)*{P}$B$22*{G}"; c.number_format = NUM
+    for r0, nm, amt in [(rb + 3, "3億円（標準）", 300), (rb + 9, "5億円（アンカー・最大2名）", 500)]:
         anchor = amt == 500
+        s[f"A{r0}"] = f"【{nm}】"; s[f"A{r0}"].font = B
         s[f"A{r0+1}"] = "出資・毎年のコンサルティング費用" + ("＋運営収益の分配（AM毎年分）" if anchor else ""); s[f"B{r0+1}"] = -amt
-        for col in YC: s[f"{col}{r0+1}"] = f"={amt}*$B$9" + (f"+{P}$B$38*$B$5*$B$6" if anchor else "")
-        s[f"A{r0+2}"] = "売却時の精算（出資額＋純資産増加の持分）"
-        s[f"G{r0+2}"] = f"={amt}+{P}$B$22*({amt}/{P}$B$20)*G{R(48)}*(1-{exempt})+{amt}*$B$10*5" + (f"+{P}$B$38*(G{rb+1}+$B$5*$B$7*5)" if anchor else "")
-        if anchor: s[f"A{r0+2}"] = "売却時の精算（出資額＋純資産増加の持分＋運営収益の分配）"
+        for col in YC: s[f"{col}{r0+1}"] = f"={amt}*$B$11" + (f"+{P}$B$38*$B$7*$B$8" if anchor else "")
+        s[f"A{r0+2}"] = "売却時の精算（出資額＋純資産増加の持分" + ("＋運営収益の分配）" if anchor else "）")
+        s[f"G{r0+2}"] = f"={amt}+{P}$B$22*({amt}/{P}$B$20)*{G}*(1-{P}$B$34)" + (f"+{P}$B$38*(G{rb+1}+$B$7*$B$9*5)" if anchor else "")
         s[f"A{r0+3}"] = "IRR（5年）"; s[f"A{r0+3}"].font = B
-        for col in ["B"] + YC: s[f"{col}{r0+4}"] = f"={col}{r0+1}+{col}{r0+2}"
         s[f"A{r0+4}"] = "CF合計"
-        c = s[f"B{r0+3}"]; c.value = f"=IRR(B{r0+4}:G{r0+4})"; c.number_format = PCT; c.font = B; c.fill = TF
-        for rr in range(r0+1, r0+5):
+        for col in ["B"] + YC: s[f"{col}{r0+4}"] = f"={col}{r0+1}+{col}{r0+2}"
+        c = s[f"B{r0+3}"]; c.value = f"=IRR(B{r0+4}:G{r0+4})"; c.font = B; c.fill = TF
+        s[f"A{r0+5}"] = "受取合計（出資額を除く支払いの合計）"; s[f"B{r0+5}"] = f"=SUM(C{r0+4}:G{r0+4})"; s[f"B{r0+5}"].font = B
+        s[f"A{r0+6}"] = "5年後の買取額（出資額＋純資産増加の持分×70%）"; s[f"B{r0+6}"] = f"={amt}+{P}$B$22*({amt}/{P}$B$20)*{G}*(1-{P}$B$34)"
+        for rr in range(r0 + 1, r0 + 7):
             for col in ["B"] + YC: s[f"{col}{rr}"].number_format = NUM
         s[f"B{r0+3}"].number_format = PCT
-    s[f"A{rb+13}"] = "アンカー（5億円）は、WineBankの運営収益（AM報酬＋WineBank分の成果報酬）の前提!B38を上乗せ。5年後の買取の約束・WineBankの新株予約権の価値は含めない。会社のCFには影響しない。"; s[f"A{rb+13}"].font = NOTE
-    s[f"A{R(54)}"] = "売却時の精算は売却代金から行う前提（会社のCFには含めない）。純資産の増加は帳簿ベースで、売却時の上乗せ（のれん）は含めない。AM報酬の後払い分は、投資家への精算と同じく売却代金から支払う。"; s[f"A{R(54)}"].font = NOTE
-
-    s.column_dimensions["A"].width = 56; s.column_dimensions["B"].width = 11
+    s[f"A{rb+16}"] = "アンカー（5億円）は、WineBankの運営収益（AM報酬＋WineBank分の成果報酬）の前提!B38を上乗せ。5年後の買取の約束・WineBankの新株予約権の価値は含めない。"; s[f"A{rb+16}"].font = NOTE
+    s.column_dimensions["A"].width = 58; s.column_dimensions["B"].width = 11
     for col in YC + ["H"]: s.column_dimensions[col].width = 10
-    s.freeze_panes = f"B{R(11)}"
-    s.sheet_properties.tabColor = None
+    s.freeze_panes = f"B{ROW['t_pl']}"
     return s
 
-# (名前, タイトル, 業績, 返済年数, AM基礎, AM毎年, AM後払い, 投資家出資, 投資家毎年, 投資家後払い, 追加対価を会社が払う)
-SC = [("A決定案_IM計画", "決定案・IM計画（追加対価は会社外、AM 15億×1%＋後払い1%、投資家3%）", 1, 5, 1500, 0.01, 0.01, 1500, 0.03, 0, 0),
-      ("B決定案_横ばい", "決定案・業績横ばい（年5.2億円）", 2, 5, 1500, 0.01, 0.01, 1500, 0.03, 0, 0),
-      ("C投資家20億で手当て", "決定案・追加対価を投資家の出資20億円（5億円を2029年まで留保）で手当て・IM計画", 1, 5, 1500, 0.01, 0.01, 2000, 0.03, 0, 1),
-      ("D投資家20億_横ばい", "Cと同じ・業績横ばい", 2, 5, 1500, 0.01, 0.01, 2000, 0.03, 0, 1),
-      ("参考_当初条件", "参考：当初の条件（AM 30億×2%、投資家5%、追加対価を会社が負担）", 1, 5, 3000, 0.02, 0, 1500, 0.05, 0, 1)]
-for args in SC: build(*args)
+# (シート名, タイトル, 既存の前提, 増減, 新規事業, 返済年数, AM基礎, AM毎年, AM後払い, 投資家出資, 投資家毎年)
+COMMON = (5, 1500, 0.01, 0.01, 1500, 0.03)
+SC = [("1既存_IM計画", "既存計画のみ・IM計画", 1, 0, 0),
+      ("2新規込み_IM計画", "既存＋新規事業・IM計画", 1, 0, 1),
+      ("3既存_横ばい", "既存計画のみ・業績横ばい（年5.2億円）", 2, 0, 0),
+      ("4新規込み_横ばい", "既存＋新規事業・業績横ばい", 2, 0, 1),
+      ("5既存_3割減", "既存計画のみ・既存事業の営業利益が計画比3割減", 1, -0.3, 0),
+      ("6新規込み_3割減", "既存＋新規事業・既存事業が計画比3割減", 1, -0.3, 1),
+      ("7既存_5割減", "既存計画のみ・既存事業の営業利益が計画比5割減", 1, -0.5, 0),
+      ("8新規込み_5割減", "既存＋新規事業・既存事業が計画比5割減", 1, -0.5, 1)]
+for sh, t, oc, mu, nb in SC: build(sh, t, oc, mu, nb, *COMMON)
 
 # ================= サマリー =================
 m = wb.create_sheet("サマリー", 0)
-m["A1"] = "カンテサンス CF計画 サマリー（みずほ15億円・4% ＋ 投資家15億円）"; m["A1"].font = T
+m["A1"] = "カンテサンス CF計画 サマリー（みずほ15億円・4%＋追加対価5億円の追加借入／投資家15億円）"; m["A1"].font = T
 m["A2"] = "単位：百万円。数値はすべて各シナリオのシートからの参照です。"; m["A2"].font = NOTE
-header(m, 4, ["シナリオ", "返済年数", "最低の現金残高", "その年", "5年後の現金", "最低DSCR", "投資家IRR", "判定"])
-for i, (sh, title, *_r) in enumerate(SC):
-    r = 5 + i; q = f"'{sh}'!"
-    m.cell(row=r, column=1, value=title).font = BLK
-    m.cell(row=r, column=2, value=f"={q}B4").font = GRN
-    c = m.cell(row=r, column=3, value=f"=MIN({q}C37:G37)"); c.number_format = NUM; c.font = B
-    c = m.cell(row=r, column=4, value=f"=INDEX({q}C13:G13,MATCH(C{r},{q}C37:G37,0))"); c.font = BLK
-    c = m.cell(row=r, column=5, value=f"={q}G37"); c.number_format = NUM; c.font = BLK
-    c = m.cell(row=r, column=6, value=f"=MIN({q}C43:G43)"); c.number_format = X; c.font = BLK
-    c = m.cell(row=r, column=7, value=f"={q}B57"); c.number_format = PCT; c.font = BLK
-    c = m.cell(row=r, column=8, value=f"=IF(C{r}<0,\"資金不足\",IF(F{r}<1,\"現金は回るが返済余力不足\",IF(F{r}<1.2,\"回る（返済余力は薄い）\",\"回る\")))"); c.font = B
-m.column_dimensions["A"].width = 58
-for col in "BCDEFGH": m.column_dimensions[col].width = 13
-m.column_dimensions["H"].width = 20
+header(m, 4, ["シナリオ", "最低の現金残高", "その年", "5年後の現金", "最低DSCR", "純資産の増加（5年）", "3億円IRR", "5億円IRR", "5億円 受取合計", "判定"])
+rb = ROW["rb"]
+for i, (sh, t, *_x) in enumerate(SC):
+    r = 5 + i; q = f"'{sh}'!"; cr = ROW["cash"]; dr = ROW["dscr"]
+    m.cell(row=r, column=1, value=t).font = BLK
+    vals = [(2, f"=MIN({q}C{cr}:G{cr})", NUM), (3, f"=INDEX({q}C{ROW['hdr']}:G{ROW['hdr']},MATCH(B{r},{q}C{cr}:G{cr},0))", '@'),
+            (4, f"={q}G{cr}", NUM), (5, f"=MIN({q}C{dr}:G{dr})", X), (6, f"={q}G{ROW['nav']}", NUM),
+            (7, f"={q}B{rb+6}", PCT), (8, f"={q}B{rb+12}", PCT), (9, f"={q}B{rb+14}", NUM)]
+    for col, f, fmt in vals:
+        c = m.cell(row=r, column=col, value=f); c.number_format = fmt; c.font = B if col in (2, 5) else BLK
+    m.cell(row=r, column=10, value=f'=IF(B{r}<0,"資金不足",IF(E{r}<1,"現金は回るが返済余力不足",IF(E{r}<1.2,"回る（返済余力は薄い）","回る")))').font = B
+m.column_dimensions["A"].width = 46
+for col in "BCDEFGHIJ": m.column_dimensions[col].width = 13
+m.column_dimensions["J"].width = 22
 notes = [
-    "【決定案の条件】みずほ15億円・5年元金均等・金利4%。AM報酬は15億円×2%のうち1%（年0.15億円）を毎年、1%を売却時に精算。投資家（5名・15億円）には年3%（年0.45億円）のコンサルティング費用＋売却時に純資産増加分×49%を精算。追加対価5億円は会社の現金では払わない（A・B）、または投資家の出資を20億円にして5億円を2029年まで留保（C・D）。",
-    "【営業利益】IM計画（岸田シェフの役員報酬を3年間現状維持した後の数字）。業績横ばいは2026年の着地予想約5.2億円が続く場合。",
-    "【税務】投資家へのコンサルティング費用は、実質が配当とみなされると損金にならない（年3%なら毎年約0.15億円の税負担増）。役務提供の実態が必要。追加対価は株式の対価のため損金にならない。AM報酬の後払い分は損金に算入しない保守的な前提。",
-    "【簡略化】運転資本の増減、移転・大規模改装、役員退職金、12月の賞与は含めない。岸田シェフの4年目以降の報酬削減効果も見込まない（上振れ要因）。",
+    "【条件】みずほ15億円・5年元金均等・金利4%。追加対価5億円は2029年に会社が支払い、同額をみずほ銀行から追加借入（2031年までは利息のみ、2032年から5年で返済する仮定：前提!B42）。AM報酬は15億円×1%を毎年、1%を売却時に精算。投資家（5名・15億円）には年3%＋売却時に純資産増加分×49%（成果報酬30%控除後）。",
+    "【新規事業】①ガトー・オ・コンテ：2027年11月から2026年比2倍、2028年11月から3倍（投資なし、増加分の営業利益率30%は仮定）。②一品スイーツ店：2028年1月から毎年1店舗、1店舗の月商1,500万円・月の営業利益450万円・投資5,000万円。③ワインショップ・バー：2030年1月から月商700万円・月の営業利益50万円（投資なし）。詳細は「新規事業」シート。",
+    "【減益ケース】3割減・5割減は既存事業（本店）の営業利益に掛ける。新規事業は減らさずに上乗せ。業績横ばいは2026年の着地予想約5.2億円が続く場合。",
+    "【簡略化】運転資本の増減、移転・大規模改装、役員退職金は含めない。岸田シェフの4年目以降の報酬削減効果も見込まない（上振れ要因）。投資家へのコンサルティング費用が配当とみなされると損金にならない点に注意。",
 ]
 for i, t in enumerate(notes):
-    c = m.cell(row=12 + i, column=1, value=t); c.font = Font(name=F, size=9); c.alignment = Alignment(wrap_text=True, vertical="top")
-    m.merge_cells(start_row=12 + i, start_column=1, end_row=12 + i, end_column=8); m.row_dimensions[12 + i].height = 30
+    c = m.cell(row=15 + i, column=1, value=t); c.font = Font(name=F, size=9); c.alignment = Alignment(wrap_text=True, vertical="top")
+    m.merge_cells(start_row=15 + i, start_column=1, end_row=15 + i, end_column=10); m.row_dimensions[15 + i].height = 42
 
 wb.save(OUT); print("saved")
