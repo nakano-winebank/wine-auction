@@ -315,7 +315,7 @@ def build(name, title, opcase, mult, newbiz, years, am_base, am_cash_rate, am_ex
         for rr in range(r0 + 1, r0 + 6):
             for col in ["B"] + YC: s[f"{col}{rr}"].number_format = NUM
         s[f"B{r0+3}"].number_format = PCT
-    s[f"A{t+24}"] = "第三者への売却価格は仮定（売却時のEBITDA×取得時の倍率）。実際の売却価格で精算する。株式価値が投資家の出資額を下回る場合、成果報酬はかからず、投資家は株式価値を限度に優先して受け取る。"; s[f"A{t+24}"].font = NOTE
+    s[f"A{t+24}"] = "第三者への売却価格は仮定（売却時のEBITDA×取得時の倍率）。実際の売却価格で精算する。株式価値が投資家の出資額を下回る場合、成果報酬はかからず、投資家は株式価値を限度に先に受け取る（株式はWineBank・投資家とも普通株式。分配の順番は株主間契約で定める）。"; s[f"A{t+24}"].font = NOTE
     s[f"A{rb+16}"] = "アンカー（5億円）は、WineBankの運営収益（AM報酬＋WineBank分の成果報酬）の前提!B38を上乗せ。5年後の買取の約束・WineBankの新株予約権の価値は含めない。"; s[f"A{rb+16}"].font = NOTE
     s.column_dimensions["A"].width = 58; s.column_dimensions["B"].width = 11
     for col in YC + ["H"]: s.column_dimensions[col].width = 10
