@@ -81,6 +81,10 @@ lab(41, "実行年"); inp("B41", 2029, '0'); src(41, "追加対価の支払い�
 lab(42, "元本の返済開始年"); inp("B42", 2032, '0', key=True); src(42, "仮定：当初の借入（2031年に完済）の後に返済開始。それまでは利息のみ。2030年開始にすると2030〜31年の現金がマイナスになる")
 lab(43, "返済年数（元金均等）"); inp("B43", 5, '0'); src(43, "仮定")
 lab(44, "金利"); inp("B44", "=B19", PCT); src(44, "当初の借入と同じ4%")
+lab(46, "■ 第三者に売却する場合のシミュレーション（IRR算出用）", True)
+lab(47, "取得時の事業価値（追加対価込み）"); inp("B47", 3260); src(47, "譲渡総額55億円（基礎50億＋追加対価5億）−ネットキャッシュ22.4億円")
+lab(48, "2026年のEBITDA（会社計画）"); inp("B48", 529); src(48, "IM：2026年12月期の計画EBITDA 5.29億円")
+lab(49, "取得時の倍率（EBITDA倍率）"); inp("B49", "=B47/B48", X); src(49, "第三者への売却価格は、売却時のEBITDA×取得時の倍率と仮定。WineBankが買い取る場合は純資産ベース（各シートの買取額）")
 
 # ================= 新規事業シート =================
 import datetime as dt
@@ -260,7 +264,7 @@ def build(name, title, opcase, mult, newbiz, years, am_base, am_cash_rate, am_ex
     c = s[f"B{R['irr']}"]; c.value = f"=IRR(B{R['ivt']}:G{R['ivt']})"; c.number_format = PCT; c.font = B; c.fill = TF
     s[f"A{R['ex_note']}"] = "売却時の精算は売却代金から行う前提（会社のCFには含めない）。純資産の増加は帳簿ベースで、売却時の上乗せ（のれん）は含めない。"; s[f"A{R['ex_note']}"].font = NOTE
     rb = R["rb"]; G = f"G{R['nav']}"
-    s[f"A{rb}"] = "■ 出資額ごとのリターン（1名あたり）"; s[f"A{rb}"].font = B
+    s[f"A{rb}"] = "■ WineBankが買い取る場合（純資産ベース）の出資額ごとのリターン（1名あたり）"; s[f"A{rb}"].font = B
     s[f"A{rb+1}"] = "成果報酬（5年目末・全員30%の場合）：うち宇佐美氏15%／うちWineBank15%"
     c = s[f"F{rb+1}"]; c.value = f"={P}$B$37*{P}$B$22*{G}"; c.number_format = NUM
     c = s[f"G{rb+1}"]; c.value = f"=({P}$B$34-{P}$B$37)*{P}$B$22*{G}"; c.number_format = NUM
@@ -280,6 +284,38 @@ def build(name, title, opcase, mult, newbiz, years, am_base, am_cash_rate, am_ex
         for rr in range(r0 + 1, r0 + 7):
             for col in ["B"] + YC: s[f"{col}{rr}"].number_format = NUM
         s[f"B{r0+3}"].number_format = PCT
+    # ---- 第三者に売却する場合（取得時の倍率ベース） ----
+    t = rb + 18; GC = "G"
+    s[f"A{t}"] = "■ 第三者に売却する場合のシミュレーション（2031年末・取得時の倍率ベース、IRR算出用）"; s[f"A{t}"].font = B
+    items = [(1, "売却時のEBITDA（2031年の営業利益−後継料理長−宇佐美氏の報酬）", f"=G{R['op']}+G{R['succ']}+G{R['usa']}", NUM),
+             (2, "取得時の倍率（前提!B49）", f"={P}$B$49", X),
+             (3, "事業価値（EBITDA×倍率）", f"=B{t+1}*B{t+2}", NUM),
+             (4, "＋ 2031年末の現金", f"=G{R['cash']}", NUM),
+             (5, "− 2031年末の借入残高（追加借入を含む）", f"=-(G{R['l1e']}+G{R['l2e']})", NUM),
+             (6, "株式価値（売却価格）", f"=SUM(B{t+3}:B{t+5})", NUM),
+             (7, "投資家の出資額", "=$B$10", NUM),
+             (8, "株式価値の増加（売却価格−投資家の出資額）", f"=B{t+6}-B{t+7}", NUM),
+             (9, "投資家全体の受取（増加分×49%×(1−成果報酬30%)＋出資額。株式価値が出資額を下回る場合は株式価値まで）", f"=IF(B{t+8}>0,$B$10+{P}$B$22*B{t+8}*(1-{P}$B$34),MAX(0,B{t+6}))", NUM),
+             (10, "WineBank分の成果報酬（15%）", f"=IF(B{t+8}>0,({P}$B$34-{P}$B$37)*{P}$B$22*B{t+8},0)", NUM)]
+    for k, label, f, fmt in items:
+        s[f"A{t+k}"] = label; c = s[f"B{t+k}"]; c.value = f; c.number_format = fmt
+        if k in (6, 8, 9): s[f"A{t+k}"].font = B; c.font = B
+    for r0, nm, amt in [(t + 12, "3億円（標準）・第三者売却", 300), (t + 18, "5億円（アンカー）・第三者売却", 500)]:
+        anchor = amt == 500
+        s[f"A{r0}"] = f"【{nm}】"; s[f"A{r0}"].font = B
+        s[f"A{r0+1}"] = "出資・毎年の支払い"; s[f"B{r0+1}"] = -amt
+        for col in YC: s[f"{col}{r0+1}"] = f"={amt}*$B$11" + (f"+{P}$B$38*$B$7*$B$8" if anchor else "")
+        s[f"A{r0+2}"] = "売却時の受取（投資家全体の受取×出資比率" + ("＋運営収益の分配）" if anchor else "）")
+        s[f"G{r0+2}"] = f"=B{t+9}*{amt}/$B$10" + (f"+{P}$B$38*(B{t+10}+$B$7*$B$9*5)" if anchor else "")
+        s[f"A{r0+3}"] = "IRR（5年）"; s[f"A{r0+3}"].font = B
+        s[f"A{r0+4}"] = "CF合計"
+        for col in ["B"] + YC: s[f"{col}{r0+4}"] = f"={col}{r0+1}+{col}{r0+2}"
+        c = s[f"B{r0+3}"]; c.value = f"=IRR(B{r0+4}:G{r0+4})"; c.font = B; c.fill = TF
+        s[f"A{r0+5}"] = "受取合計（出資額を除く支払いの合計）"; s[f"B{r0+5}"] = f"=SUM(C{r0+4}:G{r0+4})"; s[f"B{r0+5}"].font = B
+        for rr in range(r0 + 1, r0 + 6):
+            for col in ["B"] + YC: s[f"{col}{rr}"].number_format = NUM
+        s[f"B{r0+3}"].number_format = PCT
+    s[f"A{t+24}"] = "第三者への売却価格は仮定（売却時のEBITDA×取得時の倍率）。実際の売却価格で精算する。株式価値が投資家の出資額を下回る場合、成果報酬はかからず、投資家は株式価値を限度に優先して受け取る。"; s[f"A{t+24}"].font = NOTE
     s[f"A{rb+16}"] = "アンカー（5億円）は、WineBankの運営収益（AM報酬＋WineBank分の成果報酬）の前提!B38を上乗せ。5年後の買取の約束・WineBankの新株予約権の価値は含めない。"; s[f"A{rb+16}"].font = NOTE
     s.column_dimensions["A"].width = 58; s.column_dimensions["B"].width = 11
     for col in YC + ["H"]: s.column_dimensions[col].width = 10
@@ -302,28 +338,30 @@ for sh, t, oc, mu, nb in SC: build(sh, t, oc, mu, nb, *COMMON)
 m = wb.create_sheet("サマリー", 0)
 m["A1"] = "カンテサンス CF計画 サマリー（みずほ15億円・4%＋追加対価5億円の追加借入／投資家15億円）"; m["A1"].font = T
 m["A2"] = "単位：百万円。数値はすべて各シナリオのシートからの参照です。"; m["A2"].font = NOTE
-header(m, 4, ["シナリオ", "最低の現金残高", "その年", "5年後の現金", "最低DSCR", "純資産の増加（5年）", "3億円IRR", "5億円IRR", "5億円 受取合計", "判定"])
+header(m, 4, ["シナリオ", "最低の現金残高", "その年", "5年後の現金", "最低DSCR", "純資産の増加（5年）", "売却価格（株式価値）", "第三者売却 3億円IRR", "第三者売却 5億円IRR", "第三者売却 5億円受取", "買取 3億円IRR", "買取 5億円IRR", "判定"])
 rb = ROW["rb"]
 for i, (sh, t, *_x) in enumerate(SC):
     r = 5 + i; q = f"'{sh}'!"; cr = ROW["cash"]; dr = ROW["dscr"]
     m.cell(row=r, column=1, value=t).font = BLK
     vals = [(2, f"=MIN({q}C{cr}:G{cr})", NUM), (3, f"=INDEX({q}C{ROW['hdr']}:G{ROW['hdr']},MATCH(B{r},{q}C{cr}:G{cr},0))", '@'),
             (4, f"={q}G{cr}", NUM), (5, f"=MIN({q}C{dr}:G{dr})", X), (6, f"={q}G{ROW['nav']}", NUM),
-            (7, f"={q}B{rb+6}", PCT), (8, f"={q}B{rb+12}", PCT), (9, f"={q}B{rb+14}", NUM)]
+            (7, f"={q}B{rb+24}", NUM), (8, f"={q}B{rb+33}", PCT), (9, f"={q}B{rb+39}", PCT), (10, f"={q}B{rb+41}", NUM),
+            (11, f"={q}B{rb+6}", PCT), (12, f"={q}B{rb+12}", PCT)]
     for col, f, fmt in vals:
         c = m.cell(row=r, column=col, value=f); c.number_format = fmt; c.font = B if col in (2, 5) else BLK
-    m.cell(row=r, column=10, value=f'=IF(B{r}<0,"資金不足",IF(E{r}<1,"現金は回るが返済余力不足",IF(E{r}<1.2,"回る（返済余力は薄い）","回る")))').font = B
+    m.cell(row=r, column=13, value=f'=IF(B{r}<0,"資金不足",IF(E{r}<1,"現金は回るが返済余力不足",IF(E{r}<1.2,"回る（返済余力は薄い）","回る")))').font = B
 m.column_dimensions["A"].width = 46
-for col in "BCDEFGHIJ": m.column_dimensions[col].width = 13
-m.column_dimensions["J"].width = 22
+for col in "BCDEFGHIJKLM": m.column_dimensions[col].width = 13
+m.column_dimensions["M"].width = 22
 notes = [
     "【条件】みずほ15億円・5年元金均等・金利4%。追加対価5億円は2029年に会社が支払い、同額をみずほ銀行から追加借入（2031年までは利息のみ、2032年から5年で返済する仮定：前提!B42）。AM報酬は15億円×1%を毎年、1%を売却時に精算。投資家（5名・15億円）には年3%＋売却時に純資産増加分×49%（成果報酬30%控除後）。",
     "【新規事業】①ガトー・オ・コンテ：2027年11月から2026年比2倍、2028年11月から3倍（投資なし、増加分の営業利益率30%は仮定）。②一品スイーツ店：2028年1月から毎年1店舗、1店舗の月商1,500万円・月の営業利益450万円・投資5,000万円。③ワインショップ・バー：2030年1月から月商700万円・月の営業利益50万円（投資なし）。詳細は「新規事業」シート。",
     "【減益ケース】3割減・5割減は既存事業（本店）の営業利益に掛ける。新規事業は減らさずに上乗せ。業績横ばいは2026年の着地予想約5.2億円が続く場合。",
+    "【売却の前提】第三者に売却する場合は、売却時（2031年末）のEBITDA×取得時の倍率（6.2倍＝事業価値32.6億円÷2026年EBITDA 5.29億円）で売却価格を仮定してIRRを算出。WineBankが買い取る場合は純資産ベース（出資額＋純資産増加×49%×70%）。",
     "【簡略化】運転資本の増減、移転・大規模改装、役員退職金は含めない。岸田シェフの4年目以降の報酬削減効果も見込まない（上振れ要因）。投資家へのコンサルティング費用が配当とみなされると損金にならない点に注意。",
 ]
 for i, t in enumerate(notes):
     c = m.cell(row=15 + i, column=1, value=t); c.font = Font(name=F, size=9); c.alignment = Alignment(wrap_text=True, vertical="top")
-    m.merge_cells(start_row=15 + i, start_column=1, end_row=15 + i, end_column=10); m.row_dimensions[15 + i].height = 42
+    m.merge_cells(start_row=15 + i, start_column=1, end_row=15 + i, end_column=13); m.row_dimensions[15 + i].height = 42
 
 wb.save(OUT); print("saved")
