@@ -242,6 +242,12 @@ P1, P2 = M["p1"], M["p2"]
 Q = M["quint"]
 V = M["valuation"]
 CAPM = M["cap"]
+S5, S10 = M["scn"]["r5"], M["scn"]["r10"]
+OWN5, OWN10 = S5["own"], S10["own"]
+
+
+def two(a, b):
+    return f"{oku(a)}／{oku(b)}"
 YL = ["2026年度\n（予算）", "2027年度", "2028年度", "2029年度", "2030年度"]
 LAB1, LAB2 = "① グループ全体", "② WineBank＋カンテサンス"
 
@@ -268,7 +274,8 @@ CW = 1.03
 line(s, CXS[0] + CW / 2, 2.29, CXS[3] + CW / 2, 2.29, color=GREY)
 line(s, 2.45, 2.21, 2.45, 2.29, color=GREY)
 cols = [
-    ("グランメゾン", COPPER, [("カンテサンス", "51%", "SPC経由（外部49%）\n三つ星／12月取得予定", True),
+    ("グランメゾン", COPPER, [("カンテサンス", f"{OWN5 * 100:.0f}%／{OWN10 * 100:.0f}%",
+                           "取得時51%→増資資金で外部持分を\n取得（調達5億／10億）", True),
                          ("アピシウス", "70%", "銀座・創業41年", False)]),
     ("ブラッスリー", COPPER, [("Brasserie\nThierry Marx", "66.7%", "外部投資家33.3%\n2027年4月 六本木開業", False),
                          ("ティエリーマルクス×TBS", "ライセンス", "サブライセンスで\nWineBankが運営", False)]),
@@ -313,11 +320,17 @@ TOTAL_ROWS = (
     ("① グループ全体 営業利益", P1["op"], NAVY2, WHITE),
     ("② WB＋カンテサンス 売上高", P2["rev"], COPPER, WHITE),
     ("② WB＋カンテサンス 営業利益", P2["op"], COPPER, WHITE),
-    ("③ 持分按分 営業利益（①）", P1["attrib_op"], BEIGE, NAVY),
-    ("③ 持分按分 営業利益（②）", P2["attrib_op"], BEIGE, NAVY),
+    ("③ 持分按分 営業利益①\n（調達5億／10億）", (S5["p1"]["attrib_op"], S10["p1"]["attrib_op"]), BEIGE, NAVY),
+    ("③ 持分按分 営業利益②\n（調達5億／10億）", (S5["p2"]["attrib_op"], S10["p2"]["attrib_op"]), BEIGE, NAVY),
 )
 for lab, vals, fill, fc in TOTAL_ROWS:
     i0 = len(rows)
+    if isinstance(vals, tuple):
+        rows.append([lab, "", *[two(a, b) for a, b in zip(*vals)]])
+        styles[(i0, None)] = dict(fill=fill, color=fc, bold=True, size=6.3)
+        styles[(i0, 0)] = dict(fill=fill, color=fc, bold=True, align=PP_ALIGN.LEFT, size=6.0)
+        merges.append((i0, 0, i0, 1))
+        continue
     rows.append([lab, "", *[oku(v) for v in vals]])
     merges.append((i0, 0, i0, 1))
     styles[(i0, None)] = dict(fill=fill, color=fc, bold=True)
@@ -325,7 +338,7 @@ for lab, vals, fill, fc in TOTAL_ROWS:
 for i in range(1, 11):
     styles[(i, 1)] = dict(styles.get((i, 1), {}), align=PP_ALIGN.CENTER, size=6.5, color=GREY)
 table(s, 4.75, 1.40, [1.38, 0.47, 0.61, 0.61, 0.61, 0.61, 0.61],
-      [0.26] + [0.17] * 10 + [0.175] * 6, rows, size=7.0, merges=merges, styles=styles)
+      [0.26] + [0.165] * 10 + [0.17] * 4 + [0.25] * 2, rows, size=7.0, merges=merges, styles=styles)
 qn = "／".join(oku(v) for v in Q["rev_new"])
 tb(s, 0.30, 4.66, 9.40, 0.58,
    [[("年度＝WineBank決算期（10月〜翌9月）。2026年度＝2027年9月期の予算。", {"b": True}),
@@ -333,7 +346,8 @@ tb(s, 0.30, 4.66, 9.40, 0.58,
     [(f"カンテサンスは期初取得を仮定したプロフォーマで、既存本店（IM計画）に新規事業（ガトー・オ・コンテ拡大・一品スイーツ店・"
       f"ワインショップ／バー。売上 {qn}億円）を加えた計画（買収SPCの出資者様に提出した計画と同じ）。"
       "決算期が異なる子会社は月割りで組替え。グループ内取引の消去は未反映。"
-      "持分按分はカンテサンス51%・アピシウス70%・TM66.7%・レストラン運営60%。", {})]],
+      f"持分按分はカンテサンス{OWN5 * 100:.1f}%（調達5億円）／{OWN10 * 100:.1f}%（10億円）、アピシウス70%・TM66.7%・レストラン運営60%。"
+      "カンテサンスは取得時51%で、調達額の80%で買収SPCの外部投資家の持分（出資15億円＝49%）を同じ条件で取得する。", {})]],
    size=5.9, color=GREY, space=1.1)
 s.notes_slide.notes_text_frame.text = (
     "2026/11/14：5か年（2026〜2030年度）に延長。カンテサンスは榊原様提出の【B】新規事業込みで統合。"
@@ -371,8 +385,10 @@ for k, x in enumerate(XS):
        [[("② WB＋カンテサンス ", {"sz": 6.3, "c": GREY}), (oku(P2["op"][k]), {"sz": 9.5, "b": True, "c": COPPER}),
          (" 億円", {"sz": 6.5, "b": True, "c": COPPER})]])
     tb(s, x + 0.10, 3.15, WW - 0.20, 0.30,
-       [[("③ 持分按分 ①", {"sz": 6.3, "c": GREY}), (f"{oku(P1['attrib_op'][k])}", {"sz": 8.5, "b": True, "c": NAVY2}),
-         (" ②", {"sz": 6.3, "c": GREY}), (f"{oku(P2['attrib_op'][k])}", {"sz": 8.5, "b": True, "c": NAVY2})]])
+       [[("③ 持分按分（調達5億／10億）", {"sz": 5.8, "c": GREY})],
+        [("①", {"sz": 6.3, "c": GREY}), (two(S5["p1"]["attrib_op"][k], S10["p1"]["attrib_op"][k]), {"sz": 7.8, "b": True, "c": NAVY2}),
+         ("  ②", {"sz": 6.3, "c": GREY}), (two(S5["p2"]["attrib_op"][k], S10["p2"]["attrib_op"][k]), {"sz": 7.8, "b": True, "c": NAVY2})]],
+       space=1.0)
     for m_, txt in enumerate(MS[k]):
         yy = 3.56 + m_ * 0.38
         rect(s, x, yy, WW, 0.34, fill=WHITE, line=LINE)
@@ -451,8 +467,10 @@ for nm in AXIS:
 for lab, t in ((LAB1, P1), (LAB2, P2)):
     rows.append([lab, oku(t["rev"][0]), oku(t["op"][0]), pct(t["op"][0] / t["rev"][0]),
                  oku(t["rev"][4]), oku(t["op"][4]), pct(t["op"][4] / t["rev"][4]), ""])
-for lab, t in (("③ 持分按分（①）", P1), ("③ 持分按分（②）", P2)):
-    rows.append([lab, "", oku(t["attrib_op"][0]), "", "", oku(t["attrib_op"][4]), "", "親会社に帰属する営業利益の目安"])
+for lab, key in (("③ 持分按分（①）", "p1"), ("③ 持分按分（②）", "p2")):
+    a5, a10 = S5[key]["attrib_op"], S10[key]["attrib_op"]
+    rows.append([lab, "", two(a5[0], a10[0]), "", "", two(a5[4], a10[4]), "",
+                 f"調達5億／10億円。カンテサンス持分{OWN5 * 100:.0f}%／{OWN10 * 100:.0f}%で按分"])
 styles = {(i, 0): dict(bold=True, color=NAVY2, size=7.3) for i in range(1, 6)}
 for i in range(1, 6):
     for j in (3, 6):
@@ -484,22 +502,24 @@ PERS = (15, 20, 25)
 s = new_slide("上場後の時価総額の目安と、今回のプレバリュー（当社試算）",
               "グロース市場の上場維持基準（上場5年後に時価総額100億円以上）を見据えて", band_size=12)
 rows = [["ケース（2030年度）", "③ 持分按分後\n営業利益", "当期純利益\n（目安）"] + [f"PER {p}倍" for p in PERS]]
-for lab, t in ((LAB1, P1), (LAB2, P2)):
+CASES = [("① グループ全体（調達5億）", S5["p1"], NAVY2), ("① グループ全体（調達10億）", S10["p1"], NAVY2),
+         ("② WB＋カンテサンス（調達5億）", S5["p2"], COPPER), ("② WB＋カンテサンス（調達10億）", S10["p2"], COPPER)]
+styles = {}
+for i, (lab, t, fc) in enumerate(CASES, 1):
     ni = t["attrib_ni"][4]
     rows.append([lab, oku(t["attrib_op"][4]), oku(ni)] + [f"{ni * p / 100:,.0f}億円" for p in PERS])
-styles = {(1, None): dict(bold=True), (2, None): dict(bold=True)}
-styles[(1, 0)] = dict(fill=NAVY2, color=WHITE, bold=True, align=PP_ALIGN.LEFT)
-styles[(2, 0)] = dict(fill=COPPER, color=WHITE, bold=True, align=PP_ALIGN.LEFT, size=8)
-for i, t in ((1, P1), (2, P2)):
+    styles[(i, None)] = dict(bold=True)
+    styles[(i, 0)] = dict(fill=fc, color=WHITE, bold=True, align=PP_ALIGN.LEFT, size=7.6)
     for j, p in enumerate(PERS, 3):
-        hit = t["attrib_ni"][4] * p >= 10000
+        hit = ni * p >= 10000
         styles[(i, j)] = dict(bold=True, color=COPPER if hit else NAVY, fill=BEIGE if hit else WHITE,
                               align=PP_ALIGN.CENTER)
-table(s, 0.40, 1.28, [2.10, 1.30, 1.30, 1.50, 1.50, 1.50], [0.42, 0.36, 0.36], rows, size=9, styles=styles)
-tb(s, 0.40, 2.47, 9.20, 0.34,
-   "当期純利益（目安）：カンテサンスは合併後の会社の純利益（LBOの金利・出資者様への年3%等を控除後）×51%、それ以外は持分按分後営業利益×"
-   "(1−実効税率34%)。WineBank本体の支払利息とのれん償却は含まない。PERは仮置き。網掛けは100億円以上。",
-   size=6.3, color=GREY, space=1.15)
+table(s, 0.40, 1.24, [2.30, 1.20, 1.20, 1.50, 1.50, 1.50], [0.38] + [0.25] * 4, rows, size=8.5, styles=styles)
+tb(s, 0.40, 2.66, 9.20, 0.30,
+   f"当期純利益（目安）：カンテサンスは合併後の会社の純利益（LBOの金利等を控除後。取得した分の出資者様への年3%は不要）×増資後の持分"
+   f"（{OWN5 * 100:.0f}%／{OWN10 * 100:.0f}%）、それ以外は持分按分後営業利益×(1−実効税率34%)。"
+   "WineBank本体の支払利息とのれん償却は含まない。PERは仮置き。網掛けは100億円以上。",
+   size=6.0, color=GREY, space=1.1)
 # 今回のプレバリュー
 pps = CAPM["price"]
 rows = [["今回のプレバリュー（案）", "② WineBank＋カンテサンス", "① グループ全体"],
@@ -507,18 +527,23 @@ rows = [["今回のプレバリュー（案）", "② WineBank＋カンテサン
         ["内訳", f"WineBank単体{V['wb']:.0f}＋カンテサンス持分{V['quint']:.0f}",
          f"②＋集約する持分{V['reorg_sum']:.0f}（アピシウス{V['reorg']['apicius']:.1f}・TM{V['reorg']['tm']:.1f}・"
          f"レストラン{V['reorg']['rest']:.1f}）"],
-        ["1株価格（前回45万円）", f"{pps / 1e4:.0f}万円（{pps / CAPM['last_price']:.2f}倍）", "同じ（集約する持分の対価として新株を発行）"]]
-styles = {(i, 0): dict(bold=True, color=NAVY2, fill=CARD, align=PP_ALIGN.LEFT) for i in range(1, 4)}
-for i in range(1, 4):
+        ["1株価格（前回45万円）", f"{pps / 1e4:.0f}万円（{pps / CAPM['last_price']:.2f}倍）", "同じ（集約する持分の対価として新株を発行）"],
+        ["ポストバリュー（調達5億／10億）", f"{V['pre2'] + 5:.0f}／{V['pre2'] + 10:.0f}億円",
+         f"{V['pre1'] + 5:.0f}／{V['pre1'] + 10:.0f}億円"],
+        ["投資倍率（PER20倍で上場時）",
+         f"{S5['p2']['attrib_ni'][4] * 20 / 100 / (V['pre2'] + 5):.1f}／{S10['p2']['attrib_ni'][4] * 20 / 100 / (V['pre2'] + 10):.1f}倍",
+         f"{S5['p1']['attrib_ni'][4] * 20 / 100 / (V['pre1'] + 5):.1f}／{S10['p1']['attrib_ni'][4] * 20 / 100 / (V['pre1'] + 10):.1f}倍"]]
+styles = {(i, 0): dict(bold=True, color=NAVY2, fill=CARD, align=PP_ALIGN.LEFT) for i in range(1, 6)}
+for i in range(1, 6):
     styles[(i, 1)] = dict(align=PP_ALIGN.CENTER, bold=i == 1, color=COPPER if i == 1 else NAVY, size=9 if i == 1 else 7.5)
     styles[(i, 2)] = dict(align=PP_ALIGN.CENTER, bold=i == 1, color=COPPER if i == 1 else NAVY, size=9 if i == 1 else 7.5)
-table(s, 0.40, 2.90, [2.10, 3.55, 3.55], [0.28, 0.30, 0.28, 0.28], rows, size=7.5, styles=styles)
-callout(s, 0.40, 4.24, 4.50, 0.92, "①と②の考え方",
+table(s, 0.40, 2.98, [2.30, 3.45, 3.45], [0.24, 0.25, 0.23, 0.23, 0.23, 0.23], rows, size=7.3, styles=styles)
+callout(s, 0.40, 4.50, 4.50, 0.70, "①と②の考え方",
         "1株価格は②で決め、①はアピシウス以下の持分を同じ株価で集約する。既存株主の持分の価値は①②で変わらず、"
-        "集約した事業の成長（ティエリーマルクスの出店等）は全株主に帰属する。")
-callout(s, 5.10, 4.24, 4.50, 0.92, "評価倍率を上げる手段",
-        "WineTechの継続収益（管理料・成功報酬・会費・マイル）を積み上げ、外食ではなくプラットフォームの倍率で見てもらう。"
-        "カンテサンスの取得の確定を条件に、評価を引き上げる設計とする。")
+        "集約した事業の成長は全株主に帰属する。")
+callout(s, 5.10, 4.50, 4.50, 0.70, "調達資金の使い道",
+        f"調達額の80%で、カンテサンスの外部投資家の持分を取得（持分51%→{OWN5 * 100:.0f}%／{OWN10 * 100:.0f}%）。"
+        "三つ星の利益の取り分が増え、投資倍率が上がる。残り20%は共通基盤（WineTech）へ。")
 
 # ───────── 元スライドを削除して保存 ─────────
 lst = pr.slides._sldIdLst

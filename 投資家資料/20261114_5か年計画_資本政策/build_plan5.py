@@ -70,6 +70,16 @@ APICIUS_NAV = 5.18   # アピシウスの純資産（億円）：2025年12月期
 # 榊原様提出【B】（暦年）
 QUINT_NI_B = {2027: 281.0, 2028: 340.0, 2029: 409.0, 2030: 459.0, 2031: 520.0}
 QUINT_NI_A = {2027: 279.0, 2028: 290.0, 2029: 312.0, 2030: 324.0, 2031: 349.0}
+# 本ラウンドの調達ケース（億円）。調達額の80%で、買収SPCの外部投資家の持分（出資15億円＝49%）を同じ条件で取得する
+ROUNDS = [("r5", 5.0), ("r10", 10.0)]
+ALLOC = 0.80
+SPC_INV = 15.0
+BASE_OWN = 0.51
+INV_FEE = 0.03       # 外部投資家への年3%（取得した分は支払いがなくなる）
+
+
+def quint_own(rnd):
+    return BASE_OWN + (1 - BASE_OWN) * min(ALLOC * rnd, SPC_INV) / SPC_INV
 
 
 def months_in(fy_end_month, wb_year):
@@ -136,9 +146,24 @@ def build():
     other2 = [p2["attrib_op"][i] - segs[1]["attrib"][i] for i in range(N)]
     p1["attrib_ni"] = [other1[i] * (1 - TAX) + q_ni[i] * 0.51 for i in range(N)]
     p2["attrib_ni"] = [other2[i] * (1 - TAX) + q_ni[i] * 0.51 for i in range(N)]
+    # 調達ケースごとの持分按分（カンテサンスの持分が増える。外部投資家への年3%が減る分を純利益に加える）
+    qop = segs[1]["op"]
+    oth1 = [other1[i] * (1 - TAX) for i in range(N)]
+    oth2 = [other2[i] * (1 - TAX) for i in range(N)]
+    scn = {}
+    for key, rnd in ROUNDS:
+        own = quint_own(rnd)
+        fee = INV_FEE * min(ALLOC * rnd, SPC_INV) * 100 * (1 - TAX)   # 百万円
+        qni = [q_ni[i] + fee for i in range(N)]
+        scn[key] = dict(round=rnd, own=own, buy=min(ALLOC * rnd, SPC_INV), fee_saved=fee,
+                        p1=dict(attrib_op=[other1[i] + qop[i] * own for i in range(N)],
+                                attrib_ni=[oth1[i] + qni[i] * own for i in range(N)]),
+                        p2=dict(attrib_op=[other2[i] + qop[i] * own for i in range(N)],
+                                attrib_ni=[oth2[i] + qni[i] * own for i in range(N)]))
     qa = [e for e in ents if e["key"] == "quint"][0]
     qn = [e for e in ents if e["key"] == "quint_new"][0]
-    return dict(years=YEARS, period=PERIOD, entities=ents, segments=segs, p1=p1, p2=p2,
+    return dict(years=YEARS, period=PERIOD, entities=ents, segments=segs, p1=p1, p2=p2, scn=scn,
+                other_op=dict(p1=other1, p2=other2),
                 quint=dict(rev_a=qa["rev"], op_a=qa["op"], rev_new=qn["rev"], op_new=qn["op"],
                            ni_b=q_ni, ni_a=q_ni_a),
                 tax=TAX)
@@ -152,7 +177,6 @@ CAP = [  # 2026年1月ラウンド後（資本政策20260131）。株数
     ("戸高薫（SO）", 0, 200), ("執行役員・従業員等（SO）", 0, 6),
 ]
 LAST_PRICE = 450_000          # 2026年1月ラウンドの1株価格
-ROUND = 500_000_000           # 本ラウンドの調達額（仮置き：HIRAC約1億＋ニッセイ・千島土地・愛知キャピタル等）
 
 
 def valuation(m):
@@ -178,12 +202,13 @@ def valuation(m):
     v["reorg_sum"] = sum(v["reorg"].values())
     v["pre2"] = v["wb"] + v["quint"]
     v["pre1"] = v["pre2"] + v["reorg_sum"]
-    # (d) VC方式の検証：2030年度の持分按分後純利益×PER÷(1+目標IRR)^4.5 − 調達額
+    # (d) VC方式の検証：2030年度の持分按分後純利益（調達ケース別）×PER÷(1+目標IRR)^4.5 − 調達額
     v["vc"] = {}
-    for key in ("p1", "p2"):
-        ni = m[key]["attrib_ni"][4] / 100
-        v["vc"][key] = {f"{per}_{int(irr * 100)}": ni * per / (1 + irr) ** 4.5 - ROUND / 1e8
-                        for per in (15, 20) for irr in (0.25, 0.30)}
+    for sk, rnd in ROUNDS:
+        for key in ("p1", "p2"):
+            ni = m["scn"][sk][key]["attrib_ni"][4] / 100
+            v["vc"][f"{sk}_{key}"] = {f"{per}_{int(irr * 100)}": ni * per / (1 + irr) ** 4.5 - rnd
+                                      for per in (15, 20) for irr in (0.25, 0.30)}
     return v
 
 
@@ -261,38 +286,80 @@ def build_xlsx(m, v, path):
         seg_rows[(sg["name"], "att")] = r
         r += 1
     r += 1
+    # 本ラウンドの調達とカンテサンス持分（青字＝入力）
+    body(ws.cell(row=r, column=1, value="本ラウンドとカンテサンス持分"), bold=True, fill=SAND)
+    body(ws.cell(row=r, column=2, value="（調達額の一部で、買収SPCの外部投資家の持分を取得）"), fill=SAND)
+    for j, h in ((3, "調達前（参考）"), (4, "調達5億円"), (5, "調達10億円")):
+        hdr(ws.cell(row=r, column=j, value=h))
+    r += 1
+    prm = {}
+    for lab, key in (("充当率（調達額のうちSPC持分の取得に充てる割合）", "alloc"), ("SPCの外部投資家の出資（億円）", "inv"),
+                     ("取得前のWineBank持分", "base")):
+        body(ws.cell(row=r, column=1, value=lab))
+        val = {"alloc": ALLOC, "inv": SPC_INV, "base": BASE_OWN}[key]
+        body(ws.cell(row=r, column=3, value=val), fmt="0%" if key != "inv" else NUM1, blue=True)
+        prm[key] = f"$C${r}"
+        r += 1
+    body(ws.cell(row=r, column=1, value="本ラウンドの調達額（億円）"), bold=True)
+    body(ws.cell(row=r, column=3, value=0), fmt=NUM1)
+    for j, (_, rnd) in zip((4, 5), ROUNDS):
+        body(ws.cell(row=r, column=j, value=rnd), fmt=NUM1, blue=True, bold=True)
+    prm["round_row"] = r
+    r += 1
+    body(ws.cell(row=r, column=1, value="SPC持分の取得額（億円）"))
+    for j in (3, 4, 5):
+        body(ws.cell(row=r, column=j, value=f"=MIN({CL(j)}{prm['round_row']}*{prm['alloc']},{prm['inv']})"), fmt=NUM1)
+    buy_row = r
+    r += 1
+    body(ws.cell(row=r, column=1, value="増資後のカンテサンス持分（WineBank）"), bold=True)
+    for j in (3, 4, 5):
+        body(ws.cell(row=r, column=j, value=f"={prm['base']}+(1-{prm['base']})*{CL(j)}{buy_row}/{prm['inv']}"),
+             fmt="0.0%", bold=True, fill=BEIGE)
+    own_row = r
+    r += 2
     grp1 = SEGMENTS
     grp2 = ["ワイン・WineTech", "カンテサンス"]
     lines = [
         ("① グループ全体", "売上高", grp1, "rev", NAVY), ("① グループ全体", "営業利益", grp1, "op", NAVY),
         ("② WineBank＋カンテサンス", "売上高", grp2, "rev", COPPER),
         ("② WineBank＋カンテサンス", "営業利益", grp2, "op", COPPER),
-        ("③ 持分按分（①）", "営業利益", grp1, "att", BEIGE), ("③ 持分按分（②）", "営業利益", grp2, "att", BEIGE),
     ]
     for lab, item, names, kind, fill in lines:
-        white = fill in (NAVY, COPPER)
-        body(ws.cell(row=r, column=1, value=lab), bold=True, fill=fill, color="FFFFFF" if white else None)
-        body(ws.cell(row=r, column=2, value=item), bold=True, fill=fill, color="FFFFFF" if white else None)
+        body(ws.cell(row=r, column=1, value=lab), bold=True, fill=fill, color="FFFFFF")
+        body(ws.cell(row=r, column=2, value=item), bold=True, fill=fill, color="FFFFFF")
         for i in range(N):
             col = CL(3 + i)
             f = "=" + "+".join(f"{col}{seg_rows[(n, kind)]}" for n in names)
-            body(ws.cell(row=r, column=3 + i, value=f), fmt=NUM1, bold=True, fill=fill,
-                 color="FFFFFF" if white else None)
+            body(ws.cell(row=r, column=3 + i, value=f), fmt=NUM1, bold=True, fill=fill, color="FFFFFF")
         r += 1
-    for lab, key in (("③ 持分按分（①）", "p1"), ("③ 持分按分（②）", "p2")):
-        body(ws.cell(row=r, column=1, value=lab), bold=True, fill=BEIGE)
-        body(ws.cell(row=r, column=2, value="当期純利益（目安）"), bold=True, fill=BEIGE)
-        for i in range(N):
-            body(ws.cell(row=r, column=3 + i, value=round(m[key]["attrib_ni"][i], 1)), fmt=NUM1, bold=True,
-                 fill=BEIGE)
-        r += 1
+    qop = seg_rows[("カンテサンス", "op")]
+    for scol, slab, skey in (("C", "調達前（51%・参考）", None), ("D", "調達5億円", "r5"), ("E", "調達10億円", "r10")):
+        for plab, names, pk in (("③ 持分按分（①）", grp1, "p1"), ("③ 持分按分（②）", grp2, "p2")):
+            body(ws.cell(row=r, column=1, value=f"{plab} {slab}"), bold=True, fill=BEIGE)
+            body(ws.cell(row=r, column=2, value="営業利益"), bold=True, fill=BEIGE)
+            for i in range(N):
+                col = CL(3 + i)
+                oth = "+".join(f"{col}{seg_rows[(n, 'att')]}" for n in names if n != "カンテサンス")
+                body(ws.cell(row=r, column=3 + i, value=f"={oth}+{col}{qop}*${scol}${own_row}"), fmt=NUM1, bold=True,
+                     fill=BEIGE)
+            r += 1
+    for slab, skey in (("調達前（51%・参考）", None), ("調達5億円", "r5"), ("調達10億円", "r10")):
+        for plab, pk in (("③ 持分按分（①）", "p1"), ("③ 持分按分（②）", "p2")):
+            src = m[pk]["attrib_ni"] if skey is None else m["scn"][skey][pk]["attrib_ni"]
+            body(ws.cell(row=r, column=1, value=f"{plab} {slab}"), fill=BEIGE)
+            body(ws.cell(row=r, column=2, value="当期純利益（目安）"), fill=BEIGE)
+            for i in range(N):
+                body(ws.cell(row=r, column=3 + i, value=round(src[i], 1)), fmt=NUM1, fill=BEIGE)
+            r += 1
     r += 1
     notes = [
         "青字：経営判断による修正値（ワイン・WineTech 2026〜2029年度、レストラン運営）。2030年度のワイン・WineTechはモデル値。",
-        "持分：WineBank100%、カンテサンス51%（SPC経由。投資家49%）、アピシウス70%、Brasserie Thierry Marx66.7%、"
-        "レストラン運営60%。",
+        "持分：WineBank100%、カンテサンス51%（SPC経由。外部投資家49%）、アピシウス70%、Brasserie Thierry Marx66.7%、"
+        "レストラン運営60%。本ラウンドの調達額の80%で外部投資家の持分を同じ条件（出資15億円＝49%）で取得すると、"
+        "カンテサンス持分は調達5億円で64.1%、10億円で77.1%になる。",
         "当期純利益（目安）：カンテサンスは合併後の会社の純利益（金利・投資家への年3%・AM報酬・特典費用・後継料理長・法人税の控除後、"
-        "榊原様提出【B】）×51%。それ以外は持分按分後営業利益×(1−34%)。WineBank本体の支払利息・のれん償却は含まない。",
+        "榊原様提出【B】）×持分。取得した分は外部投資家への年3%がなくなるため、その税引後額を加える。"
+        "それ以外は持分按分後営業利益×(1−34%)。WineBank本体の支払利息・のれん償却は含まない。",
         "グループ内取引（AM報酬・ワイン卸）の消去は未反映。",
     ]
     for t in notes:
@@ -406,22 +473,23 @@ def build_xlsx(m, v, path):
             if lab.startswith(k):
                 rr[kk] = r
     r += 2
-    ws.cell(row=r, column=1, value="検証：VC方式（2030年度の持分按分後純利益×PER÷(1+目標IRR)^4.5−調達額5億円）").font = \
+    ws.cell(row=r, column=1, value="検証：VC方式（2030年度の持分按分後純利益×PER÷(1+目標IRR)^4.5−調達額）").font = \
         Font(name=FONT, bold=True, size=10)
     r += 1
     vch = [("15_25", "PER15倍・IRR25%"), ("20_25", "PER20倍・IRR25%"), ("15_30", "PER15倍・IRR30%"),
            ("20_30", "PER20倍・IRR30%")]
     for j, h in enumerate(["パターン", "2030年度 純利益"] + [h for _, h in vch], 1):
         hdr(ws.cell(row=r, column=j, value=h))
-    for lab, key in (("① グループ全体", "p1"), ("② WineBank＋カンテサンス", "p2")):
-        r += 1
-        body(ws.cell(row=r, column=1, value=lab), bold=True)
-        body(ws.cell(row=r, column=2, value=round(m[key]["attrib_ni"][4] / 100, 2)), fmt='0.00')
-        for j, (k, _) in enumerate(vch):
-            body(ws.cell(row=r, column=3 + j, value=round(v["vc"][key][k], 1)), fmt=NUM1)
+    for sk, rnd in ROUNDS:
+        for lab, key in (("① グループ全体", "p1"), ("② WineBank＋カンテサンス", "p2")):
+            r += 1
+            body(ws.cell(row=r, column=1, value=f"{lab}（調達{rnd:.0f}億円）"), bold=True)
+            body(ws.cell(row=r, column=2, value=round(m["scn"][sk][key]["attrib_ni"][4] / 100, 2)), fmt='0.00')
+            for j, (k, _) in enumerate(vch):
+                body(ws.cell(row=r, column=3 + j, value=round(v["vc"][f"{sk}_{key}"][k], 1)), fmt=NUM1)
     r += 1
-    ws.cell(row=r, column=1, value="上場までの期間を4.5年と置いた場合のプレバリュー。IRR25%は投資倍率約2.7倍、30%は約3.3倍。").font = \
-        Font(name=FONT, size=9, color="595959")
+    ws.cell(row=r, column=1, value="上場までの期間を4.5年と置いた場合のプレバリュー。IRR25%は投資倍率約2.7倍、30%は約3.3倍。"
+            "純利益は、調達資金の80%でカンテサンス持分を取得した後の持分で按分。").font = Font(name=FONT, size=9, color="595959")
     ws.column_dimensions["A"].width = 34
     ws.column_dimensions["B"].width = 14
     ws.column_dimensions["C"].width = 100
@@ -431,17 +499,20 @@ def build_xlsx(m, v, path):
     pre_rows = rr
 
     # ── 資本政策 ──
+    plan = "5か年計画"
     ws = wb.create_sheet("資本政策")
-    title(ws, "資本政策（案）　①グループ全体／②WineBank＋カンテサンス",
+    title(ws, "資本政策（案）　①グループ全体／②WineBank＋カンテサンス × 調達5億円／10億円",
           "現状は2026年1月ラウンド後（資本政策20260131）。1株価格は②のプレバリュー÷潜在株式込み株数。"
-          "①は、組織再編で集約する持分の対価として、同じ株価で中野様等に新株を発行する（既存株主の持分の価値は①②で同じ）。")
+          "①は、組織再編で集約する持分の対価として、同じ株価で中野様等に新株を発行する（既存株主の持分の価値は①②で同じ）。"
+          "調達額の80%は、買収SPCの外部投資家の持分の取得に充てる。")
     r = 4
     ws.cell(row=r, column=1, value="前提").font = Font(name=FONT, bold=True)
     params = [
         ("② プレバリュー（億円）", f"='{pv_sheet}'!B{pre_rows['p2']}", "price"),
         ("① 組織再編で集約する持分の価値（億円）", f"='{pv_sheet}'!B{pre_rows['p1']}-'{pv_sheet}'!B{pre_rows['p2']}",
          "reorg"),
-        ("本ラウンドの調達額（億円）", ROUND / 1e8, "round"),
+        ("調達額 ケース1（億円）", f"='{plan}'!D{prm['round_row']}", "r5"),
+        ("調達額 ケース2（億円）", f"='{plan}'!E{prm['round_row']}", "r10"),
         ("前回ラウンドの1株価格（円）", LAST_PRICE, "last"),
         ("上場時のPER（倍）", 20, "per"),
     ]
@@ -452,7 +523,7 @@ def build_xlsx(m, v, path):
         c = ws.cell(row=r, column=2, value=val)
         body(c, fmt=NUM1 if "億円" in lab else NUM0, blue=not str(val).startswith("="))
         prow[key] = r
-    fd0 = sum(a + b for _, a, b in CAP)
+    fd0 = sum(a_ + b_ for _, a_, b_ in CAP)
     r += 1
     body(ws.cell(row=r, column=1, value="1株価格（円、1万円単位）"), bold=True)
     body(ws.cell(row=r, column=2, value=f"=ROUND(B{prow['price']}*100000000/{fd0}/10000,0)*10000"), fmt=NUM0,
@@ -463,9 +534,10 @@ def build_xlsx(m, v, path):
     body(ws.cell(row=r, column=2, value=f"=B{prow['pps']}/B{prow['last']}"), fmt='0.00"倍"')
     r += 2
 
+    # 列：A株主 B発行済 C潜在込み D比率 | ② E 5億後 F比率 G 10億後 H比率 | ① I組織再編 J 5億後 K比率 L 10億後 M比率
     heads = ["株主", "現状 発行済", "現状 潜在込み", "比率",
-             "② 本ラウンド", "② ラウンド後", "② 比率",
-             "① 組織再編", "① 本ラウンド", "① ラウンド後", "① 比率"]
+             "② 調達5億 後", "比率", "② 調達10億 後", "比率",
+             "① 組織再編", "① 調達5億 後", "比率", "① 調達10億 後", "比率"]
     for j, h in enumerate(heads, 1):
         hdr(ws.cell(row=r, column=j, value=h))
     ws.row_dimensions[r].height = 30
@@ -478,60 +550,68 @@ def build_xlsx(m, v, path):
         body(ws.cell(row=r, column=1, value=nm), bold=new)
         body(ws.cell(row=r, column=2, value=sh), fmt=NUM0, blue=True)
         body(ws.cell(row=r, column=3, value=f"=B{r}+{so}"), fmt=NUM0)
-        body(ws.cell(row=r, column=5, value=f"=ROUND(B{prow['round']}*100000000/B{prow['pps']},0)" if new else 0),
-             fmt=NUM0)
-        body(ws.cell(row=r, column=6, value=f"=C{r}+E{r}"), fmt=NUM0)
+        n5 = f"ROUND(B{prow['r5']}*100000000/B{prow['pps']},0)"
+        n10 = f"ROUND(B{prow['r10']}*100000000/B{prow['pps']},0)"
         reorg = f"=ROUND(B{prow['reorg']}*100000000/B{prow['pps']},0)" if nm == "中野邦人" else 0
-        body(ws.cell(row=r, column=8, value=reorg), fmt=NUM0)
-        body(ws.cell(row=r, column=9, value=f"=E{r}"), fmt=NUM0)
-        body(ws.cell(row=r, column=10, value=f"=C{r}+H{r}+I{r}"), fmt=NUM0)
+        body(ws.cell(row=r, column=5, value=f"=C{r}+{n5}" if new else f"=C{r}"), fmt=NUM0)
+        body(ws.cell(row=r, column=7, value=f"=C{r}+{n10}" if new else f"=C{r}"), fmt=NUM0)
+        body(ws.cell(row=r, column=9, value=reorg), fmt=NUM0)
+        body(ws.cell(row=r, column=10, value=f"=E{r}+I{r}"), fmt=NUM0)
+        body(ws.cell(row=r, column=12, value=f"=G{r}+I{r}"), fmt=NUM0)
     last = r
     r += 1
     body(ws.cell(row=r, column=1, value="合計"), bold=True, fill=SAND)
-    for j in (2, 3, 5, 6, 8, 9, 10):
+    for j in (2, 3, 5, 7, 9, 10, 12):
         body(ws.cell(row=r, column=j, value=f"=SUM({CL(j)}{first}:{CL(j)}{last})"), fmt=NUM0, bold=True, fill=SAND)
     tot = r
     for rr_ in range(first, last + 1):
-        body(ws.cell(row=rr_, column=4, value=f"=C{rr_}/C{tot}"), fmt="0.0%")
-        body(ws.cell(row=rr_, column=7, value=f"=F{rr_}/F{tot}"), fmt="0.0%")
-        body(ws.cell(row=rr_, column=11, value=f"=J{rr_}/J{tot}"), fmt="0.0%")
+        for src_c, dst_c in ((3, 4), (5, 6), (7, 8), (10, 11), (12, 13)):
+            body(ws.cell(row=rr_, column=dst_c, value=f"={CL(src_c)}{rr_}/{CL(src_c)}{tot}"), fmt="0.0%")
     r += 2
-    ws.cell(row=r, column=1, value="評価額（億円）").font = Font(name=FONT, bold=True)
-    vals = [("プレバリュー（潜在込み株数×1株価格）", f"=C{tot}*B{prow['pps']}/100000000",
-             f"=(C{tot}+H{tot})*B{prow['pps']}/100000000"),
-            ("ポストバリュー", f"=F{tot}*B{prow['pps']}/100000000", f"=J{tot}*B{prow['pps']}/100000000")]
-    body(ws.cell(row=r, column=6, value="②"), bold=True)
-    body(ws.cell(row=r, column=10, value="①"), bold=True)
-    for lab, f2, f1 in vals:
-        r += 1
-        body(ws.cell(row=r, column=1, value=lab))
-        body(ws.cell(row=r, column=6, value=f2), fmt=NUM1, bold=True)
-        body(ws.cell(row=r, column=10, value=f1), fmt=NUM1, bold=True)
-    r += 2
-    ws.cell(row=r, column=1, value="上場時（2030年度の実績で上場と仮定）").font = Font(name=FONT, bold=True)
+    ws.cell(row=r, column=1, value="評価額と上場時の見通し").font = Font(name=FONT, bold=True)
+    r += 1
+    cols = [(5, "② 調達5億", "r5", "p2"), (7, "② 調達10億", "r10", "p2"), (10, "① 調達5億", "r5", "p1"),
+            (12, "① 調達10億", "r10", "p1")]
+    for c_, lab, _, _ in cols:
+        hdr(ws.cell(row=r, column=c_, value=lab))
+    r += 1
+    body(ws.cell(row=r, column=1, value="プレバリュー（億円）"))
+    for c_, lab, sk, pk in cols:
+        f = f"=C{tot}*B{prow['pps']}/100000000" if pk == "p2" else f"=(C{tot}+I{tot})*B{prow['pps']}/100000000"
+        body(ws.cell(row=r, column=c_, value=f), fmt=NUM1, bold=True)
+    r += 1
+    body(ws.cell(row=r, column=1, value="ポストバリュー（億円）"))
+    for c_, lab, sk, pk in cols:
+        body(ws.cell(row=r, column=c_, value=f"={CL(c_)}{tot}*B{prow['pps']}/100000000"), fmt=NUM1, bold=True)
+    post_r = r
+    r += 1
+    body(ws.cell(row=r, column=1, value="増資後のカンテサンス持分"))
+    for c_, lab, sk, pk in cols:
+        body(ws.cell(row=r, column=c_, value=f"='{plan}'!{'D' if sk == 'r5' else 'E'}{own_row}"), fmt="0.0%", bold=True)
     r += 1
     body(ws.cell(row=r, column=1, value="2030年度 持分按分後 当期純利益（億円）"))
-    body(ws.cell(row=r, column=6, value=round(m["p2"]["attrib_ni"][4] / 100, 2)), fmt='0.00')
-    body(ws.cell(row=r, column=10, value=round(m["p1"]["attrib_ni"][4] / 100, 2)), fmt='0.00')
+    for c_, lab, sk, pk in cols:
+        body(ws.cell(row=r, column=c_, value=round(m["scn"][sk][pk]["attrib_ni"][4] / 100, 2)), fmt='0.00')
     ni_r = r
     r += 1
-    body(ws.cell(row=r, column=1, value="時価総額（億円）＝純利益×PER"))
-    body(ws.cell(row=r, column=6, value=f"=F{ni_r}*B{prow['per']}"), fmt=NUM1, bold=True)
-    body(ws.cell(row=r, column=10, value=f"=J{ni_r}*B{prow['per']}"), fmt=NUM1, bold=True)
+    body(ws.cell(row=r, column=1, value="上場時の時価総額（億円）＝純利益×PER"))
+    for c_, lab, sk, pk in cols:
+        body(ws.cell(row=r, column=c_, value=f"={CL(c_)}{ni_r}*B{prow['per']}"), fmt=NUM1, bold=True)
     mc_r = r
     r += 1
     body(ws.cell(row=r, column=1, value="本ラウンドの投資倍率"))
-    body(ws.cell(row=r, column=6, value=f"=F{mc_r}/F{mc_r - 4}"), fmt='0.0"倍"', bold=True)
-    body(ws.cell(row=r, column=10, value=f"=J{mc_r}/J{mc_r - 4}"), fmt='0.0"倍"', bold=True)
+    for c_, lab, sk, pk in cols:
+        body(ws.cell(row=r, column=c_, value=f"={CL(c_)}{mc_r}/{CL(c_)}{post_r}"), fmt='0.00"倍"', bold=True,
+             fill=BEIGE)
     r += 2
-    for t in ["上場時の時価総額は、公募増資・SOの追加付与による希薄化を含まない概算。",
-              "本ラウンドの調達額5億円は仮置き（HIRAC約1億円＋紹介先3社等）。B列（青字）を変えると全体が再計算される。",
+    for t in ["上場時の時価総額は、公募増資・SOの追加付与による希薄化を含まない概算。純利益は値（5か年計画シートの③）。",
+              "調達額は「5か年計画」シートの青字（調達5億円・10億円）を変えると、株数・持株比率・持分が再計算される。",
               "SO（潜在株）は2026年1月時点の付与分。上場までに追加のSOプール（潜在株10%程度）の設定を検討。"]:
         ws.cell(row=r, column=1, value=t).font = Font(name=FONT, size=9, color="595959")
         r += 1
     ws.column_dimensions["A"].width = 46
-    for j in range(2, 12):
-        ws.column_dimensions[CL(j)].width = 13
+    for j in range(2, 14):
+        ws.column_dimensions[CL(j)].width = 12
     ws.freeze_panes = ws.cell(row=hr + 1, column=2)
     wb.save(path)
 
@@ -542,7 +622,9 @@ if __name__ == "__main__":
     V = valuation(M)
     C = cap_table(V["pre2"])
     M["valuation"] = V
-    M["cap"] = dict(C, round=ROUND, last_price=LAST_PRICE, holders=CAP)
+    M["cap"] = dict(C, last_price=LAST_PRICE, holders=CAP,
+                    rounds={k: dict(round=r_, shares=round(r_ * 1e8 / C["price"])) for k, r_ in ROUNDS},
+                    reorg_shares=round(sum(round(x, 1) for x in V["reorg"].values()) * 1e8 / C["price"]))
     json.dump(M, open(out_json, "w", encoding="utf-8"), ensure_ascii=False, indent=1, default=str)
     build_xlsx(M, V, out_xlsx)
     for key, lab in (("p1", "①全体"), ("p2", "②WB+Q")):
@@ -552,4 +634,9 @@ if __name__ == "__main__":
     for sg in M["segments"]:
         print(sg["name"], [round(x / 100, 1) for x in sg["rev"]], [round(x / 100, 1) for x in sg["op"]])
     print("valuation", {k: v for k, v in V.items() if k not in ("reorg",)}, V["reorg"])
-    print("cap", C)
+    print("cap", M["cap"]["rounds"], M["cap"]["reorg_shares"], C)
+    for k, sc in M["scn"].items():
+        print(k, "own", round(sc["own"], 3), "fee", round(sc["fee_saved"], 1),
+              "①持分営利", [round(x / 100, 1) for x in sc["p1"]["attrib_op"]],
+              "②持分営利", [round(x / 100, 1) for x in sc["p2"]["attrib_op"]],
+              "①NI", [round(x / 100, 2) for x in sc["p1"]["attrib_ni"]], "②NI", [round(x / 100, 2) for x in sc["p2"]["attrib_ni"]])
