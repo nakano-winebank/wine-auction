@@ -56,18 +56,16 @@ ENT = [
          series={2027: (0.0, 0.0), 2028: (381.0, 10.3), 2029: (891.2, 39.1), 2030: (1729.4, 105.8),
                  2031: (2576.1, 184.0), 2032: (3426.0, 257.0)},
          src="事業収支統合モデルv4（4月〜3月期）。2032年3月期は前年と同じ増加幅・営業利益率7.5%で延長（仮置き）"),
-    dict(key="vk", seg="レストラン運営", name="バリューキッチン", fy=6, own=0.6, grp=1,
-         series={2027: (700.0, 100.0), 2028: (721.0, 103.0), 2029: (742.6, 106.1), 2030: (764.9, 109.3),
-                 2031: (787.9, 112.6), 2032: (811.5, 116.0)},
-         src="着地予想700/100。以降年3%の仮置き"),
-    dict(key="others", seg="レストラン運営", name="その他グループ会社（バリューテーブル・エルネット等）", fy=9, own=0.7,
-         grp=1, series={y: (800.0, 30.0) for y in range(2027, 2032)},
-         src="バリューテーブル・エルネット・摩耶の合計を据置"),
+    dict(key="rest", seg="レストラン運営", name="レストラン運営（グループ各社）", fy=9, own=0.6, grp=1,
+         series={2027: (1505.2, 100.0), 2028: (1526.4, 100.0), 2029: (1548.2, 100.0), 2030: (1570.7, 100.0),
+                 2031: (1593.8, 100.0)},
+         src="グループのレストラン運営会社をひとくくりで計上（社名は非開示）。営業利益は年1億円で5年横ばい、持分60%で統一。"
+             "売上は各社の着地予想の合計（WineBank年度に組替え済み）"),
 ]
 SEGMENTS = ["ワイン・WineTech", "カンテサンス", "アピシウス", "ブラッスリー", "レストラン運営"]
 # 経営判断によるセグメント営業利益の上書き（2026/10/22 デックp.41）。2030年度はモデル値を使う
-SEG_OP_OVERRIDE = {"ワイン・WineTech": [10.0, 100.0, 150.0, 200.0, None],
-                   "レストラン運営": [130.0, 100.0, 100.0, 100.0, 100.0]}
+SEG_OP_OVERRIDE = {"ワイン・WineTech": [10.0, 100.0, 150.0, 200.0, None]}
+APICIUS_NAV = 5.18   # アピシウスの純資産（億円）：2025年12月期 決算報告書（ワイン在庫は簿価3.76億円で、含み益は含まない）
 # カンテサンス（合併後の会社）の当期純利益：金利・投資家への年3%・AM報酬・特典費用・後継料理長・税を控除後
 # 榊原様提出【B】（暦年）
 QUINT_NI_B = {2027: 281.0, 2028: 340.0, 2029: 409.0, 2030: 459.0, 2031: 520.0}
@@ -173,9 +171,10 @@ def valuation(m):
     v["quint"] = round(v["quint_pv"][0.25], 1)
     # (c) 組織再編で集約する持分（①のみ）：2026年度の営業利益×倍率、TMは直近の第三者割当の株価
     ap = [e for e in m["entities"] if e["key"] == "apicius"][0]["op"][0] / 100
-    vk = [e for e in m["entities"] if e["key"] == "vk"][0]["op"][0] / 100
-    ot = [e for e in m["entities"] if e["key"] == "others"][0]["op"][0] / 100
-    v["reorg"] = dict(apicius=ap * 6.2 * 0.7, tm=3.52 * 0.667, vk=vk * 5.0 * 0.6, others=ot * 5.0 * 0.7)
+    rs = [e for e in m["entities"] if e["key"] == "rest"][0]["op"][0] / 100
+    v["apicius_op"] = ap * 6.2 * 0.7
+    v["apicius_nav"] = APICIUS_NAV * 0.7
+    v["reorg"] = dict(apicius=v["apicius_op"] + v["apicius_nav"], tm=3.52 * 0.667, rest=rs * 4.0 * 0.6)
     v["reorg_sum"] = sum(v["reorg"].values())
     v["pre2"] = v["wb"] + v["quint"]
     v["pre1"] = v["pre2"] + v["reorg_sum"]
@@ -291,7 +290,7 @@ def build_xlsx(m, v, path):
     notes = [
         "青字：経営判断による修正値（ワイン・WineTech 2026〜2029年度、レストラン運営）。2030年度のワイン・WineTechはモデル値。",
         "持分：WineBank100%、カンテサンス51%（SPC経由。投資家49%）、アピシウス70%、Brasserie Thierry Marx66.7%、"
-        "バリューキッチン60%、その他70%。",
+        "レストラン運営60%。",
         "当期純利益（目安）：カンテサンスは合併後の会社の純利益（金利・投資家への年3%・AM報酬・特典費用・後継料理長・法人税の控除後、"
         "榊原様提出【B】）×51%。それ以外は持分按分後営業利益×(1−34%)。WineBank本体の支払利息・のれん償却は含まない。",
         "グループ内取引（AM報酬・ワイン卸）の消去は未反映。",
@@ -381,11 +380,13 @@ def build_xlsx(m, v, path):
          f"【B】の2031年末売却でWineBankに帰属する株式価値の増加 {v['quint_exit']:.1f}億円（増加38.1億円×51%＋投資家分の成果報酬15%）"
          f"を割引率25%・5年で現在価値化（20%なら{v['quint_pv'][0.20]:.1f}、30%なら{v['quint_pv'][0.30]:.1f}）"),
         ("② プレバリュー（a＋b）", None, False, "WineBank＋カンテサンス"),
-        ("(c-1) アピシウス 70%", v["reorg"]["apicius"], True, "2026年度営業利益×6.2倍（カンテサンスの取得倍率）×70%"),
+        ("(c-1) アピシウス 70%", v["reorg"]["apicius"], True,
+         f"収益価値 {v['apicius_op']:.1f}億円（2026年度営業利益1.3億円×6.2倍＝カンテサンスの取得倍率×70%）＋"
+         f"純資産 {v['apicius_nav']:.1f}億円（2025年12月期の純資産5.18億円×70%。うちワイン在庫は簿価3.76億円で、"
+         "高級ワインの含み益は含まない）"),
         ("(c-2) Brasserie Thierry Marx 66.7%", v["reorg"]["tm"], True,
          "2026年11月の第三者割当（1株16万円・ポスト約3.5億円）×66.7%"),
-        ("(c-3) バリューキッチン 60%", v["reorg"]["vk"], True, "2026年度営業利益×5倍×60%"),
-        ("(c-4) その他 70%", v["reorg"]["others"], True, "2026年度営業利益×5倍×70%"),
+        ("(c-3) レストラン運営 60%", v["reorg"]["rest"], True, "営業利益1億円（5年横ばい）×4倍×60%"),
         ("① プレバリュー（②＋c）", None, False, "グループ全体。cは組織再編で中野様等に新株を発行する分"),
     ]
     rr = {}
@@ -394,13 +395,13 @@ def build_xlsx(m, v, path):
         body(ws.cell(row=r, column=1, value=lab), bold=val is None)
         if val is None:
             f = f"=B{rr['a']}+B{rr['b']}" if lab.startswith("②") else \
-                f"=B{rr['p2']}+SUM(B{rr['c1']}:B{rr['c4']})"
+                f"=B{rr['p2']}+SUM(B{rr['c1']}:B{rr['c3']})"
             body(ws.cell(row=r, column=2, value=f), fmt=NUM1, bold=True,
                  fill=COPPER if lab.startswith("②") else NAVY, color="FFFFFF")
         else:
             body(ws.cell(row=r, column=2, value=round(val, 1)), fmt=NUM1, blue=blue)
         body(ws.cell(row=r, column=3, value=note))
-        key = {"(a)": "a", "(b)": "b", "②": "p2", "(c-1)": "c1", "(c-4)": "c4", "①": "p1"}
+        key = {"(a)": "a", "(b)": "b", "②": "p2", "(c-1)": "c1", "(c-3)": "c3", "①": "p1"}
         for k, kk in key.items():
             if lab.startswith(k):
                 rr[kk] = r
