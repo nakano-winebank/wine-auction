@@ -10,3 +10,4 @@ public/uploads/*
 !.claude/hooks/
 .claude/hooks/*
 !.claude/hooks/session-start.sh
+!.claude/skills/
