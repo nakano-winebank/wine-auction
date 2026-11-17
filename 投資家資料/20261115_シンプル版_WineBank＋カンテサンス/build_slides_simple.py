@@ -8,10 +8,10 @@ HIRAC岡田様のご指摘（2026/11/14〜15）を受け、事業計画を「Win
   4 まとめ（p.44の差し替え）
   5 今回のラウンドの考え方（p.52の差し替え）
   6 Appendix：関連会社の将来の合流シナリオ（p.49〜51の代わり。今回のプレバリューには加えない）
-数値は ../20261114_5か年計画_資本政策/model5.json。
+数値は model_simple.json（wb_budget.py で作成。WineBankは3か年予算、カンテサンス等は ../20261114_5か年計画_資本政策/build_plan5.py）。
 
 使い方:
-  python3 build_slides_simple.py <テンプレートpptx> <model5.json> <出力pptx>
+  python3 build_slides_simple.py <テンプレートpptx> model_simple.json <出力pptx>
 """
 import copy
 import json
@@ -270,13 +270,11 @@ tb(s, 0.30, 1.19, 4.30, 0.18, "株主：中野邦人／マネーフォワードV
 wb = rect(s, 0.30, 1.40, 4.30, 0.46, fill=NAVY2)
 boxtext(wb, [[("株式会社WineBank", {"sz": 11, "b": True})],
              [("ワインを「買う・預ける・飲む・売る」を一社で", {"sz": 6.5, "c": SAND})]], space=1.05)
-BIZ = [("ワイン販売", "卸・EC・店舗", E["wb_base"]["rev"]), ("WineTech", "私募ファンド・オークション", E["wb_fund"]["rev"]),
-       ("ワインマイル", "預かり資産・会員", E["wb_mile"]["rev"])]
-for k, (nm, sub, rev) in enumerate(BIZ):
-    x = 0.30 + k * 1.45
-    b = rect(s, x, 1.92, 1.40, 0.62, fill=CARD, line=LINE)
-    boxtext(b, [[(nm, {"sz": 7.5, "b": True, "c": NAVY2})], [(sub, {"sz": 5.8, "c": GREY})],
-                [(f"売上 {oku(rev[0])}→{oku(rev[4])}億円", {"sz": 7, "b": True, "c": COPPER})]], space=1.05, margin=0.03)
+b = rect(s, 0.30, 1.92, 4.30, 0.62, fill=CARD, line=LINE)
+boxtext(b, [[("WineBank 3か年予算（2026〜2028年度）", {"sz": 7.5, "b": True, "c": NAVY2})],
+            [(f"売上高 {oku(WT['rev'][0])}→{oku(WT['rev'][1])}→{oku(WT['rev'][2])}億円", {"sz": 9, "b": True, "c": COPPER}),
+             (f"　営業利益 {WT['op'][0] / 100:.2f}→{WT['op'][1] / 100:.2f}→{WT['op'][2] / 100:.2f}億円",
+              {"sz": 9, "b": True, "c": COPPER})]], space=1.15, margin=0.05)
 line(s, 2.45, 2.54, 2.45, 2.70, color=GREY)
 spc = rect(s, 0.30, 2.70, 4.30, 0.50, fill=COPPER)
 boxtext(spc, [[("カンテサンスの持分", {"sz": 7, "c": WHITE}),
@@ -297,7 +295,7 @@ boxtext(nb, [[("アピシウス・ティエリーマルクス等の関連会社"
 
 tb(s, 4.75, 1.19, 4.95, 0.18, "5か年計画（億円）", size=8.5, bold=True, color=NAVY2)
 rows = [["事業", "", *YL],
-        ["WineBank\n（ワイン・WineTech）", "売上高", *[oku(v) for v in WT["rev"]]],
+        ["WineBank", "売上高", *[oku(v) for v in WT["rev"]]],
         ["", "営業利益", *[oku(v) for v in WT["op"]]],
         ["カンテサンス", "売上高", *[oku(v) for v in QS["rev"]]],
         ["", "うち新規事業", *[oku(v) for v in Q["rev_new"]]],
@@ -308,7 +306,7 @@ rows = [["事業", "", *YL],
         [f"持分按分後 営業利益（調達5億円・{OWN5 * 100:.0f}%）", "", *[oku(v) for v in S5["p2"]["attrib_op"]]],
         [f"持分按分後 営業利益（調達10億円・{OWN10 * 100:.0f}%）", "", *[oku(v) for v in S10["p2"]["attrib_op"]]]]
 merges = [(0, 0, 0, 1), (1, 0, 2, 0), (3, 0, 5, 0)] + [(i, 0, i, 1) for i in range(6, 11)]
-styles = {(1, 0): dict(bold=True, color=NAVY2, align=PP_ALIGN.LEFT, size=6.8),
+styles = {(1, 0): dict(bold=True, color=NAVY2, align=PP_ALIGN.LEFT, size=7.3),
           (3, 0): dict(bold=True, color=NAVY2, align=PP_ALIGN.LEFT, size=7.3)}
 for i in (1, 2, 3, 4, 5):
     styles[(i, 1)] = dict(align=PP_ALIGN.CENTER, size=6.5, color=GREY)
@@ -319,6 +317,9 @@ for i in (2, 5):
         styles[(i, j)] = dict(fill=CARD, color=COPPER, bold=True)
 for j in range(2, 7):
     styles[(4, j)] = dict(color=GREY, size=6.8)
+for i in (1, 2):   # 2029・2030年度のWineBankは予算期間の伸びで延長した仮置き
+    for j in (5, 6):
+        styles[(i, j)] = dict(fill=CARD, color=GREY, bold=True) if i == 2 else dict(color=GREY)
 for i in (6, 7):
     styles[(i, None)] = dict(fill=NAVY2, color=WHITE, bold=True)
     styles[(i, 0)] = dict(fill=NAVY2, color=WHITE, bold=True, align=PP_ALIGN.LEFT)
@@ -333,11 +334,12 @@ d_all = P2["rev"][4] - P2["rev"][0]
 d_new = Q["rev_new"][4] - Q["rev_new"][0]
 d_wt = WT["rev"][4] - WT["rev"][0]
 tb(s, 4.75, 4.12, 4.90, 0.36,
-   f"売上の増加{oku(d_all)}億円の内訳：カンテサンスの新規事業 +{oku(d_new)}億円、WineBank（WineTech・ワインマイル等）+{oku(d_wt)}億円、"
+   f"売上の増加{oku(d_all)}億円の内訳：WineBank +{oku(d_wt)}億円、カンテサンスの新規事業 +{oku(d_new)}億円、"
    f"カンテサンス本店 +{oku(d_all - d_new - d_wt)}億円。新たな買収は織り込んでいない。", size=6.8, color=NAVY, space=1.15)
 tb(s, 0.30, 4.66, 9.40, 0.56,
    [[("年度＝WineBank決算期（10月〜翌9月）。2026年度＝2027年9月期の予算。", {"b": True}),
-     ("カンテサンスは期初取得を仮定したプロフォーマ（決算期12月を月割りで組替え）。WineBankの営業利益（2026〜2029年度）は経営判断による修正値。", {})],
+     ("WineBankは2026〜2028年度が3か年予算。2029・2030年度（灰色）は予算期間の伸びで延長した仮置き。"
+      "カンテサンスは期初取得を仮定したプロフォーマ（決算期12月を月割りで組替え）。", {})],
     [("カンテサンスの新規事業：ガトー・オ・コンテの拡大、一品スイーツ店（2028年1月から毎年1店舗）、ワインショップ・バー（2030年1月〜）。"
       "新規事業の進め方は、基本合意書に基づき岸田シェフのご意向を踏まえて個別に協議する。"
       "持分按分後は、WineBank 100%とカンテサンスの持分（増資後）で按分した営業利益。", {})]],
@@ -402,7 +404,7 @@ WW = 1.75
 YT = ["2026年度（予算）", "2027年度", "2028年度", "2029年度", "2030年度"]
 YP = ["2026/10〜2027/9", "2027/10〜2028/9", "2028/10〜2029/9", "2029/10〜2030/9", "2030/10〜2031/9"]
 MS = [[("カンテサンス取得（12月）", 1), ("WineBank Auction\nWEBで常設化", 0), ("ワインマイル 開始", 0)],
-      [("ガトー・オ・コンテ拡大\nスイーツ店1号（2028年1月）", 1), ("ワインマイル本格展開", 0), ("私募ファンド・オークション\n年3億円規模", 0)],
+      [("ガトー・オ・コンテ拡大\nスイーツ店1号（2028年1月）", 1), ("ワインマイル本格展開", 0), ("私募ファンドの継続組成", 0)],
       [("スイーツ店2号（2029年1月）", 1), ("ワインマイル会員100名超", 0), ("オークション\nC2C・海外展開", 0)],
       [("ワインショップ・バー併設\n（2030年1月）", 1), ("シェフ在籍3年満了\n後任体制へ", 1), ("ワインマイル 預かり資産4億円", 0)],
       [("スイーツ店4店舗体制", 1), ("国内オーベルジュ着手", 0), ("IPOへ", 0)]]
@@ -454,11 +456,11 @@ tb(s, 0.40, 1.96, 9.20, 0.20, "飲食の場でワインが開き、会員の売�
    size=7.5, color=GREY, align=PP_ALIGN.CENTER)
 share = (d_new + d_wt) / d_all
 cols = [
-    ("一気通貫の経済圏", "WineBank（ワイン・WineTech）の営業利益", f"{oku(WT['op'][0])}→{oku(WT['op'][4])}",
+    ("一気通貫の経済圏", "WineBankの営業利益", f"{oku(WT['op'][0])}→{oku(WT['op'][4])}",
      "管理料・成功報酬・会費・マイルという、預かり資産に連動する継続収益を積み上げる。"),
     ("ブランドの核は三つ星", "連結売上高", f"{oku(P2['rev'][0], 0)}→{oku(P2['rev'][4], 0)}",
      f"自前ではつくれない三つ星を核に、スイーツ・ワインショップへ広げる。売上の増加{oku(d_all, 0)}億円の"
-     f"{share * 100:.0f}%は新規事業とWineTechで、新たな買収は織り込まない。"),
+     f"{share * 100:.0f}%はWineBankとカンテサンスの新規事業で、新たな買収は織り込まない。"),
     ("利益の質と資産の裏付け", "連結営業利益", f"{oku(P2['op'][0])}→{oku(P2['op'][4])}",
      f"営業利益率は約{P2['op'][4] / P2['rev'][4] * 100:.0f}%。ワイン在庫（管理含む32億円）が企業価値を下支えする。"),
 ]

@@ -15,7 +15,8 @@ from openpyxl.styles import Font
 from openpyxl.utils import get_column_letter as CL
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "20261114_5か年計画_資本政策"))
-import build_plan5 as bp  # noqa: E402
+import build_plan5 as bp
+import wb_budget  # noqa: E402
 
 N = bp.N
 hdr, body, title = bp.hdr, bp.body, bp.title
@@ -28,8 +29,8 @@ def note(ws, r, text):
 
 
 def main(path):
-    m = bp.build()
-    v = bp.valuation(m)
+    m = wb_budget.model()
+    v = m["valuation"]
     cap = bp.cap_table(v["pre2"])
     E = {e["key"]: e for e in m["entities"]}
     SG = {s["name"]: s for s in m["segments"]}
@@ -39,7 +40,7 @@ def main(path):
     ws = wb.active
     ws.title = "5か年計画"
     title(ws, "5か年計画（WineBank＋カンテサンス）　単位：百万円",
-          "年度＝WineBank決算期（10月〜翌9月）。カンテサンスは期初取得を仮定したプロフォーマ。青字＝入力値・経営判断による修正値。")
+          "年度＝WineBank決算期（10月〜翌9月）。カンテサンスは期初取得を仮定したプロフォーマ。青字＝入力値・予算期間の伸びで延長した仮置き。")
     r = 4
     for j, h in enumerate(["区分", "項目"] + [f"{y}\n{p}" for y, p in zip(m["years"], m["period"])], 1):
         hdr(ws.cell(row=r, column=j, value=h))
@@ -57,12 +58,9 @@ def main(path):
                  blue=bool(blue and blue[i]))
         rows[key] = r
 
-    line("w1", "WineBank", "ワイン販売（卸・EC・店舗） 売上高", E["wb_base"]["rev"])
-    line("w2", "WineBank", "私募ファンド・オークション 売上高", E["wb_fund"]["rev"])
-    line("w3", "WineBank", "ワインマイル 売上高", E["wb_mile"]["rev"])
-    line("wr", "WineBank", "売上高 計", formula=lambda c: f"=SUM({c}{rows['w1']}:{c}{rows['w3']})", bold=True, fill=SAND)
-    line("wo", "WineBank", "営業利益", SG["ワイン・WineTech"]["op"], bold=True, fill=SAND,
-         blue=SG["ワイン・WineTech"]["overridden"])
+    ext = [False, False, False, True, True]   # 2029・2030年度は予算期間の伸びで延長した仮置き（青字）
+    line("wr", "WineBank", "売上高（3か年予算）", SG["ワイン・WineTech"]["rev"], bold=True, fill=SAND, blue=ext)
+    line("wo", "WineBank", "営業利益（3か年予算）", SG["ワイン・WineTech"]["op"], bold=True, fill=SAND, blue=ext)
     line("q1", "カンテサンス", "既存本店 売上高", E["quint"]["rev"])
     line("q2", "カンテサンス", "新規事業 売上高", E["quint_new"]["rev"])
     line("qr", "カンテサンス", "売上高 計", formula=lambda c: f"={c}{rows['q1']}+{c}{rows['q2']}", bold=True, fill=SAND)
@@ -117,7 +115,8 @@ def main(path):
         line(f"ni_{skey}", f"持分按分後（{slab}）", "当期純利益（目安）", m["scn"][skey]["p2"]["attrib_ni"], fill=BEIGE)
     r += 2
     for t in [
-        "WineBankの営業利益：2026〜2029年度は経営判断による修正値（青字）、2030年度はモデル値。",
+        f"WineBank：2026〜2028年度は{wb_budget.BUDGET_SRC}の売上高・営業利益。2029・2030年度（青字）は予算期間の伸び"
+        f"（売上高 年{(wb_budget.G_REV - 1) * 100:.1f}%、営業利益 年+{wb_budget.D_OP:.0f}百万円）で延長した仮置き。事業別の内訳は作成中。",
         "カンテサンス：既存本店はIM計画、新規事業はガトー・オ・コンテの拡大、一品スイーツ店（2028年1月から毎年1店舗）、"
         "ワインショップ・バー（2030年1月〜）。買収SPCの出資者様にお示ししている計画と同じ。",
         "当期純利益（目安）：カンテサンスは合併後の会社の純利益（LBOの金利・外部投資家様への年3%・AM報酬・後継料理長・法人税、"
