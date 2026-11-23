@@ -89,7 +89,7 @@ lab(45, "退職慰労金（岸田シェフの退任時・対象会社から）")
 lab(46, "■ 第三者に売却する場合のシミュレーション（IRR算出用）", True)
 lab(47, "取得時の事業価値（追加対価込み）"); inp("B47", 3260); src(47, "譲渡総額55億円（基礎50億＋追加対価5億）−ネットキャッシュ22.4億円")
 lab(48, "2026年のEBITDA（会社計画）"); inp("B48", 529); src(48, "IM：2026年12月期の計画EBITDA 5.29億円")
-lab(49, "取得時の倍率（EBITDA倍率）"); inp("B49", "=B47/B48", X); src(49, "第三者への売却価格は、売却時のEBITDA×取得時の倍率と仮定。WineBankが買い取る場合は純資産ベース（各シートの買取額）")
+lab(49, "取得時の倍率（EBITDA倍率）"); inp("B49", "=B47/B48", X); src(49, "第三者への売却価格は、売却時のEBITDA×取得時の倍率と仮定。WineBankが買い取る場合は、純資産ベースと第三者評価の中間をベースに協議（各シートの買取額）")
 
 # ================= 新規事業シート =================
 import datetime as dt
@@ -269,23 +269,28 @@ def build(name, title, opcase, mult, newbiz, years, am_base, am_cash_rate, am_ex
     c = s[f"B{R['irr']}"]; c.value = f"=IRR(B{R['ivt']}:G{R['ivt']})"; c.number_format = PCT; c.font = B; c.fill = TF
     s[f"A{R['ex_note']}"] = "売却時の精算は売却代金から行う前提（会社のCFには含めない）。純資産の増加は帳簿ベースで、売却時の上乗せ（のれん）は含めない。"; s[f"A{R['ex_note']}"].font = NOTE
     rb = R["rb"]; G = f"G{R['nav']}"
-    s[f"A{rb}"] = "■ WineBankが買い取る場合（純資産ベース）の出資額ごとのリターン（1名あたり）"; s[f"A{rb}"].font = B
+    s[f"A{rb}"] = "■ WineBankが買い取る場合（純資産ベースと第三者評価の中間をベースに協議）の出資額ごとのリターン（1名あたり）"; s[f"A{rb}"].font = B
     s[f"A{rb+1}"] = "成果報酬（5年目末・全員30%の場合）：うち宇佐美氏15%／うちWineBank15%"
     c = s[f"F{rb+1}"]; c.value = f"={P}$B$37*{P}$B$22*{G}"; c.number_format = NUM
     c = s[f"G{rb+1}"]; c.value = f"=({P}$B$34-{P}$B$37)*{P}$B$22*{G}"; c.number_format = NUM
-    for r0, nm, amt in [(rb + 3, "3億円（標準）", 300), (rb + 9, "5億円（アンカー・最大2名）", 500)]:
+    for r0, nm, amt in [(rb + 3, "3億円（標準）", 300), (rb + 10, "5億円（アンカー・最大2名）", 500)]:
         anchor = amt == 500
         s[f"A{r0}"] = f"【{nm}】"; s[f"A{r0}"].font = B
         s[f"A{r0+1}"] = "出資・毎年のコンサルティング費用" + ("＋運営収益の分配（AM毎年分）" if anchor else ""); s[f"B{r0+1}"] = -amt
         for col in YC: s[f"{col}{r0+1}"] = f"={amt}*$B$11" + (f"+{P}$B$38*$B$7*$B$8" if anchor else "")
-        s[f"A{r0+2}"] = "売却時の精算（出資額＋純資産増加の持分" + ("＋運営収益の分配）" if anchor else "）")
-        s[f"G{r0+2}"] = f"={amt}+{P}$B$22*({amt}/{P}$B$20)*{G}*(1-{P}$B$34)" + (f"+{P}$B$38*(G{rb+1}+$B$7*$B$9*5)" if anchor else "")
+        s[f"A{r0+2}"] = "買取時の受取（純資産ベースと第三者評価の中間" + ("＋運営収益の分配）" if anchor else "）")
+        s[f"G{r0+2}"] = f"=D{r0+6}" + (f"+{P}$B$38*((G{rb+1}+B{rb+29})/2+$B$7*$B$9*5)" if anchor else "")
         s[f"A{r0+3}"] = "IRR（5年）"; s[f"A{r0+3}"].font = B
         s[f"A{r0+4}"] = "CF合計"
         for col in ["B"] + YC: s[f"{col}{r0+4}"] = f"={col}{r0+1}+{col}{r0+2}"
         c = s[f"B{r0+3}"]; c.value = f"=IFERROR(IRR(B{r0+4}:G{r0+4}),IRR(B{r0+4}:G{r0+4},-0.3))"; c.font = B; c.fill = TF
         s[f"A{r0+5}"] = "受取合計（出資額を除く支払いの合計）"; s[f"B{r0+5}"] = f"=SUM(C{r0+4}:G{r0+4})"; s[f"B{r0+5}"].font = B
-        s[f"A{r0+6}"] = "5年後の買取額（出資額＋純資産増加の持分×70%）"; s[f"B{r0+6}"] = f"={amt}+{P}$B$22*({amt}/{P}$B$20)*{G}*(1-{P}$B$34)"
+        s[f"A{r0+6}"] = "5年後の買取額：B 純資産ベース（出資額＋純資産増加×49%×出資比率×70%）／C 第三者評価（今回の取得ロジック）／D 中間（協議のベース）"
+        s[f"B{r0+6}"] = f"={amt}+{P}$B$22*({amt}/{P}$B$20)*{G}*(1-{P}$B$34)"
+        s[f"C{r0+6}"] = f"=B{rb+28}*{amt}/$B$10"
+        s[f"D{r0+6}"] = f"=(B{r0+6}+C{r0+6})/2"
+        for col in "CD": s[f"{col}{r0+6}"].number_format = NUM
+        s[f"D{r0+6}"].font = B
         for rr in range(r0 + 1, r0 + 7):
             for col in ["B"] + YC: s[f"{col}{rr}"].number_format = NUM
         s[f"B{r0+3}"].number_format = PCT
@@ -322,7 +327,7 @@ def build(name, title, opcase, mult, newbiz, years, am_base, am_cash_rate, am_ex
             for col in ["B"] + YC: s[f"{col}{rr}"].number_format = NUM
         s[f"B{r0+3}"].number_format = PCT
     s[f"A{t+24}"] = "第三者への売却価格は仮定（売却時のEBITDA×取得時の倍率）。実際の売却価格で精算する。売却代金は銀行の残債を返済した後、持株比率どおり（投資家49%・WineBank51%）に分配（プロラタ。元本の優先返還なし）。投資家分が出資額を上回る部分にのみ成果報酬30%。"; s[f"A{t+24}"].font = NOTE
-    s[f"A{rb+16}"] = "アンカー（5億円）は、WineBankの運営収益（AM報酬＋WineBank分の成果報酬）の前提!B38を上乗せ。5年後の買取の約束・WineBankの新株予約権の価値は含めない。"; s[f"A{rb+16}"].font = NOTE
+    s[f"A{rb+17}"] = "買取額は、純資産ベースと第三者評価（今回の取得と同じロジック：EBITDA×取得時の倍率＋現金−借入）の中間をベースに協議する前提。アンカー（5億円）は、WineBankの運営収益（AM報酬＋WineBank分の成果報酬の平均）の前提!B38を上乗せ。新株予約権の価値は含めない。"; s[f"A{rb+17}"].font = NOTE
     s.column_dimensions["A"].width = 58; s.column_dimensions["B"].width = 11
     for col in YC + ["H"]: s.column_dimensions[col].width = 10
     s.freeze_panes = f"B{ROW['t_pl']}"
@@ -352,7 +357,7 @@ for i, (sh, t, *_x) in enumerate(SC):
     vals = [(2, f"=MIN({q}C{cr}:G{cr})", NUM), (3, f"=INDEX({q}C{ROW['hdr']}:G{ROW['hdr']},MATCH(B{r},{q}C{cr}:G{cr},0))", '@'),
             (4, f"={q}G{cr}", NUM), (5, f"=MIN({q}C{dr}:G{dr})", X), (6, f"={q}G{ROW['nav']}", NUM),
             (7, f"={q}B{rb+24}", NUM), (8, f"={q}B{rb+33}", PCT), (9, f"={q}B{rb+39}", PCT), (10, f"={q}B{rb+41}", NUM),
-            (11, f"={q}B{rb+6}", PCT), (12, f"={q}B{rb+12}", PCT)]
+            (11, f"={q}B{rb+6}", PCT), (12, f"={q}B{rb+13}", PCT)]
     for col, f, fmt in vals:
         c = m.cell(row=r, column=col, value=f); c.number_format = fmt; c.font = B if col in (2, 5) else BLK
     m.cell(row=r, column=13, value=f'=IF(B{r}<0,"資金不足",IF(E{r}<1,"現金は回るが返済余力不足",IF(E{r}<1.2,"回る（返済余力は薄い）","回る")))').font = B
@@ -363,7 +368,7 @@ notes = [
     "【条件】みずほ15億円・5年元金均等・金利4%。追加対価5億円と退職慰労金2.1億円（損金）は2029年に会社が支払い、同額7.1億円をみずほ銀行から追加借入。ストライクの仲介手数料は追加減額0.3億円後の0.53億円を決済時に支払い（退職慰労金の実質負担は1.8億円）（2031年までは利息のみ、2032年から5年で返済する仮定：前提!B42）。AM報酬は15億円×1%を毎年、1%を売却時に精算。投資家（5名・15億円）には年3%＋売却時に純資産増加分×49%（成果報酬30%控除後）。",
     "【新規事業】①ガトー・オ・コンテ：2027年11月から2026年比2倍、2028年11月から3倍（投資なし、増加分の営業利益率30%は仮定）。②一品スイーツ店：2028年1月から毎年1店舗、1店舗の月商1,500万円・月の営業利益450万円・投資5,000万円。③ワインショップ・バー：2030年1月から月商700万円・月の営業利益50万円（投資なし）。詳細は「新規事業」シート。",
     "【減益ケース】3割減・5割減は既存事業（本店）の営業利益に掛ける。新規事業は減らさずに上乗せ。業績横ばいは2026年の着地予想約5.2億円が続く場合。",
-    "【売却の前提】第三者に売却する場合は、売却時（2031年末）のEBITDA×取得時の倍率（6.2倍＝事業価値32.6億円÷2026年EBITDA 5.29億円）で売却価格を仮定し、持株比率どおり投資家49%に分配（増加分に成果報酬30%）してIRRを算出。WineBankが買い取る場合は純資産ベース（出資額＋純資産増加×49%×70%）。",
+    "【売却の前提】第三者に売却する場合は、売却時（2031年末）のEBITDA×取得時の倍率（6.2倍＝事業価値32.6億円÷2026年EBITDA 5.29億円）で売却価格を仮定し、持株比率どおり投資家49%に分配（増加分に成果報酬30%）してIRRを算出。WineBankが買い取る場合は、純資産ベース（出資額＋純資産増加×49%×70%）と第三者評価（今回の取得と同じロジック）の中間をベースに協議。",
     "【簡略化】運転資本の増減、移転・大規模改装は含めない（退職慰労金2.1億円は2029年に計上）。岸田シェフの4年目以降の報酬削減効果も見込まない（上振れ要因）。投資家へのコンサルティング費用が配当とみなされると損金にならない点に注意。",
 ]
 for i, t in enumerate(notes):
