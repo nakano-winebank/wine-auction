@@ -1,12 +1,13 @@
-# カンテサンス ワイン在庫 時価評価表に、川﨑の簡易査定（ダブルチェック）を並べて比較する
-# 使い方: python3 add_kawasaki_compare.py <時価評価表.xlsx（build_wine_valuation.pyの出力）> <川﨑査定.xlsx> <出力.xlsx>
+# ワイン在庫 時価評価表に、輸入業者・仕入業者と、川﨑の簡易査定（ダブルチェック）を並べて比較する
+# 使い方: python3 add_kawasaki_compare.py <時価評価表.xlsx（build_wine_valuation.pyの出力）> <川﨑査定.xlsx> <棚卸し.xlsm> <出力.xlsx>
+#   出力は案件名（店名）が分からない形にする（社内の査定担当にも共有するため）。
 #   川﨑査定.xlsx … Drive「ワイン在庫_時価評価表_202610川﨑査定.xlsx」（2026/11/12 川﨑更新）。No.で突合し、銘柄名の一致も確認する。
 import sys, re
 from openpyxl import load_workbook
 from openpyxl.styles import Font, PatternFill, Alignment
 from openpyxl.formatting.rule import CellIsRule, FormulaRule
 
-BASE, KW, OUT = sys.argv[1:4]
+BASE, KW, INV, OUT = sys.argv[1:5]
 kv = load_workbook(KW, data_only=True)["評価明細"]
 kf = load_workbook(KW)["評価明細"]
 
@@ -53,38 +54,60 @@ for r in range(5, kv.max_row + 1):
         basis = "個別査定（手入力）"
     kw[int(no)] = dict(name=(kv.cell(row=r, column=5).value or "").strip(), unit=unit, fixed=fixed, basis=basis, flag=flag)
 
+# ---- 棚卸しから輸入業者・仕入業者を読む（銘柄・生産者・年代・原価・分類で突合。同じキーは出現順） ----
+num = lambda v: v if isinstance(v, (int, float)) else 0
+imp = {}
+for r in load_workbook(INV, data_only=True, read_only=True)["月間在庫管理表"].iter_rows(min_row=26, values_only=True):
+    name, cat = r[9], r[5]
+    q = num(r[11]) + num(r[12])
+    if not isinstance(name, str) or not name.strip() or cat in (None, "ソフトドリンク") or q <= 0: continue
+    v = r[8]
+    vt = int(v) if isinstance(v, (int, float)) and float(v).is_integer() else ("NV" if str(v).strip().upper() in ("S.A.", "NV", "N.V.") else "")
+    key = (name.strip(), str(r[10] or ""), vt, float(num(r[15])), cat)
+    imp.setdefault(key, []).append((r[3], r[4]))
+
 # ---- 評価明細に列を追加 ----
 wb = load_workbook(BASE)
 ls = wb["評価明細"]; HR = 4
 LAST = HR
 while ls.cell(row=LAST + 1, column=1).value is not None: LAST += 1
-add = [("T", "川﨑査定\n単価（税抜）", 12), ("U", "川﨑査定額\n（計）", 13), ("V", "差額\n（川﨑−当方）", 13), ("W", "差率\n（川﨑÷当方−1）", 9),
-       ("X", "川﨑の査定根拠", 34), ("Y", "確認事項", 40), ("Z", "川﨑査定 単価\n（原本のまま）", 12)]
+add = [("T", "輸入業者\n（インポーター）", 22), ("U", "仕入業者", 16),
+       ("V", "川﨑査定\n単価（税抜）", 12), ("W", "川﨑査定額\n（計）", 13), ("X", "差額\n（川﨑−当方）", 13), ("Y", "差率\n（川﨑÷当方−1）", 9),
+       ("Z", "川﨑の査定根拠", 34), ("AA", "確認事項", 40), ("AB", "川﨑査定 単価\n（原本のまま）", 12)]
 for col, h, w in add:
-    c = ls[f"{col}{HR}"]; c.value = h; c.font = H; c.fill = KH; c.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+    c = ls[f"{col}{HR}"]; c.value = h; c.font = H; c.fill = HF if col in ("T", "U") else KH
+    c.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
     ls.column_dimensions[col].width = w
-miss = mism = 0
+miss = mism = nimp = 0
 for r in range(HR + 1, LAST + 1):
     no = int(ls.cell(row=r, column=1).value); k = kw.get(no)
     if not k: miss += 1; continue
     if k["name"] != str(ls.cell(row=r, column=5).value).strip(): mism += 1
-    ls[f"T{r}"] = round(k["fixed"]) if isinstance(k["fixed"], (int, float)) else None
-    ls[f"U{r}"] = f"=IF(T{r}=\"\",\"\",G{r}*T{r})"
-    ls[f"V{r}"] = f"=IF(U{r}=\"\",\"\",U{r}-N{r})"
-    ls[f"W{r}"] = f"=IF(OR(U{r}=\"\",N{r}=0),\"\",U{r}/N{r}-1)"
-    ls[f"X{r}"] = k["basis"] or None
-    ls[f"Y{r}"] = k["flag"] or None
-    ls[f"Z{r}"] = k["unit"]
-    for col in "TUVZ": ls[f"{col}{r}"].number_format = YEN
-    ls[f"W{r}"].number_format = PCT
-    for col in "TUVWZ": ls[f"{col}{r}"].font = N; ls[f"{col}{r}"].fill = KF
-    ls[f"X{r}"].font = NOTE; ls[f"Y{r}"].font = RED
-assert miss == 0 and mism == 0, (miss, mism)
-ls["A2"] = (ls["A2"].value or "") + "　T〜Z列＝川﨑の簡易査定（2026/11/12）との比較（緑の見出し）。"
-ls.auto_filter.ref = f"A{HR}:Z{LAST}"
+    vt = ls.cell(row=r, column=4).value
+    key = (str(ls.cell(row=r, column=5).value).strip(), str(ls.cell(row=r, column=6).value or ""), vt if vt is not None else "",
+           float(ls.cell(row=r, column=8).value or 0), ls.cell(row=r, column=3).value)
+    lst = imp.get(key)
+    if lst:
+        a, b = lst.pop(0); ls[f"T{r}"] = a; ls[f"U{r}"] = b
+    else: nimp += 1
+    ls[f"T{r}"].font = N; ls[f"U{r}"].font = N
+    ls[f"V{r}"] = round(k["fixed"]) if isinstance(k["fixed"], (int, float)) else None
+    ls[f"W{r}"] = f"=IF(V{r}=\"\",\"\",G{r}*V{r})"
+    ls[f"X{r}"] = f"=IF(W{r}=\"\",\"\",W{r}-N{r})"
+    ls[f"Y{r}"] = f"=IF(OR(W{r}=\"\",N{r}=0),\"\",W{r}/N{r}-1)"
+    ls[f"Z{r}"] = k["basis"] or None
+    ls[f"AA{r}"] = k["flag"] or None
+    ls[f"AB{r}"] = k["unit"]
+    for col in ("V", "W", "X", "AB"): ls[f"{col}{r}"].number_format = YEN
+    ls[f"Y{r}"].number_format = PCT
+    for col in ("V", "W", "X", "Y", "AB"): ls[f"{col}{r}"].font = N; ls[f"{col}{r}"].fill = KF
+    ls[f"Z{r}"].font = NOTE; ls[f"AA{r}"].font = RED
+assert miss == 0 and mism == 0 and nimp == 0, (miss, mism, nimp)
+ls["A2"] = (ls["A2"].value or "") + "　T〜U列＝輸入業者・仕入業者（棚卸しより）。V〜AB列＝川﨑の簡易査定（2026/11/12）との比較（緑の見出し）。"
+ls.auto_filter.ref = f"A{HR}:AB{LAST}"
 # 差が大きい行（±50%超）を色付け
-ls.conditional_formatting.add(f"W{HR+1}:W{LAST}", CellIsRule(operator="greaterThan", formula=["0.5"], font=Font(name=F, size=10, bold=True, color="1F6F43")))
-ls.conditional_formatting.add(f"W{HR+1}:W{LAST}", CellIsRule(operator="lessThan", formula=["-0.33"], font=Font(name=F, size=10, bold=True, color="C00000")))
+ls.conditional_formatting.add(f"Y{HR+1}:Y{LAST}", CellIsRule(operator="greaterThan", formula=["0.5"], font=Font(name=F, size=10, bold=True, color="1F6F43")))
+ls.conditional_formatting.add(f"Y{HR+1}:Y{LAST}", CellIsRule(operator="lessThan", formula=["-0.33"], font=Font(name=F, size=10, bold=True, color="C00000")))
 
 # ---- 比較シート ----
 cs = wb.create_sheet("川﨑査定との比較", 1)
@@ -105,8 +128,8 @@ cs["A4"] = "■ 全体"; cs["A4"].font = B
 hdr(5, ["項目", "金額", "原価に対する倍率", "当方との差"], ())
 tot = [("原価合計（棚卸の仕入単価×本数）", f"=SUM({rg('I')})"),
        ("当方の評価額（楽天最安値ベース）", f"=SUM({rg('N')})"),
-       ("川﨑の査定額（補正後）", f"=SUM({rg('U')})"),
-       ("川﨑の査定額（原本のまま）", f"=SUMPRODUCT({rg('G')},{rg('Z')})")]
+       ("川﨑の査定額（補正後）", f"=SUM({rg('W')})"),
+       ("川﨑の査定額（原本のまま）", f"=SUMPRODUCT({rg('G')},{rg('AB')})")]
 for i, (lab, f) in enumerate(tot):
     r = 6 + i
     cs.cell(row=r, column=1, value=lab).font = B if i in (1, 2) else N
@@ -131,11 +154,11 @@ for i, t in enumerate(tiers + ["時価なし（当方は原価で評価）"]):
     cs.cell(row=r, column=1, value=t).font = N
     if i < 3:
         cs.cell(row=r, column=2, value=f"=COUNTIF({rg('J')},$A{r})")
-        for j, col in ((3, "I"), (4, "N"), (5, "U")):
+        for j, col in ((3, "I"), (4, "N"), (5, "W")):
             cs.cell(row=r, column=j, value=f"=SUMIF({rg('J')},$A{r},{rg(col)})")
     else:
         cs.cell(row=r, column=2, value=f"=COUNTBLANK({rg('J')})")
-        for j, col in ((3, "I"), (4, "N"), (5, "U")):
+        for j, col in ((3, "I"), (4, "N"), (5, "W")):
             cs.cell(row=r, column=j, value=f"=SUMIF({rg('J')},\"\",{rg(col)})")
     cs.cell(row=r, column=6, value=f"=E{r}-D{r}")
     cs.cell(row=r, column=7, value=f"=IF(C{r}=0,\"\",D{r}/C{r})"); cs.cell(row=r, column=8, value=f"=IF(C{r}=0,\"\",E{r}/C{r})")
@@ -158,9 +181,9 @@ kinds = [("TOPLOT落札実績×1.15", "TOPLOT*"), ("個別査定（手入力）"
 for i, (lab, pat) in enumerate(kinds):
     r = r1 + 2 + i
     cs.cell(row=r, column=1, value=lab).font = N
-    cs.cell(row=r, column=2, value=f"=COUNTIF({rg('X')},\"{pat}\")").number_format = '#,##0'
-    for j, col in ((3, "I"), (4, "N"), (5, "U")):
-        cs.cell(row=r, column=j, value=f"=SUMIF({rg('X')},\"{pat}\",{rg(col)})").number_format = YEN
+    cs.cell(row=r, column=2, value=f"=COUNTIF({rg('Z')},\"{pat}\")").number_format = '#,##0'
+    for j, col in ((3, "I"), (4, "N"), (5, "W")):
+        cs.cell(row=r, column=j, value=f"=SUMIF({rg('Z')},\"{pat}\",{rg(col)})").number_format = YEN
     cs.cell(row=r, column=6, value=f"=E{r}-D{r}").number_format = YEN
     cs.cell(row=r, column=7, value=f"=IF(C{r}=0,\"\",D{r}/C{r})").number_format = X
     cs.cell(row=r, column=8, value=f"=IF(C{r}=0,\"\",E{r}/C{r})").number_format = X
@@ -180,14 +203,40 @@ for i, cat in enumerate(cats):
     r = r2 + 2 + i
     cs.cell(row=r, column=1, value=cat).font = N
     cs.cell(row=r, column=2, value=f"=SUMIF({rg('C')},$A{r},{rg('G')})").number_format = '#,##0'
-    for j, col in ((3, "I"), (4, "N"), (5, "U")):
+    for j, col in ((3, "I"), (4, "N"), (5, "W")):
         cs.cell(row=r, column=j, value=f"=SUMIF({rg('C')},$A{r},{rg(col)})").number_format = YEN
     cs.cell(row=r, column=6, value=f"=E{r}-D{r}").number_format = YEN
     cs.cell(row=r, column=7, value=f"=IF(C{r}=0,\"\",D{r}/C{r})").number_format = X
     cs.cell(row=r, column=8, value=f"=IF(C{r}=0,\"\",E{r}/C{r})").number_format = X
 
 # 5. 差の大きい品目（金額の差の絶対値 上位30）
-r3 = r2 + 3 + len(cats)
+# 4b. インポーター別（原価の大きい順・上位15＋その他）
+ri = r2 + 3 + len(cats)
+cs.cell(row=ri, column=1, value="■ インポーター別（原価の大きい順・上位15）").font = B
+hdr(ri + 1, ["輸入業者", "品目数", "原価合計", "当方の評価額", "川﨑の査定額", "差（川﨑−当方）", "当方÷原価", "川﨑÷原価"], (5, 8))
+agg = {}
+for r in range(HR + 1, LAST + 1):
+    nm = ls[f"T{r}"].value or "（記載なし）"
+    agg[nm] = agg.get(nm, 0) + (ls.cell(row=r, column=7).value or 0) * (ls.cell(row=r, column=8).value or 0)
+topi = [k for k, _ in sorted(agg.items(), key=lambda kv: -kv[1])][:15]
+for i, nm in enumerate(topi + ["その他"]):
+    r = ri + 2 + i
+    cs.cell(row=r, column=1, value=nm).font = N
+    if nm == "その他":
+        cs.cell(row=r, column=2, value=f"=COUNTA({rg('E')})-SUM(B{ri+2}:B{r-1})")
+        for j, col in ((3, "I"), (4, "N"), (5, "W")):
+            cs.cell(row=r, column=j, value=f"=SUM({rg(col)})-SUM({chr(64+j)}{ri+2}:{chr(64+j)}{r-1})")
+    else:
+        crit = '""' if nm == "（記載なし）" else f"$A{r}"
+        cs.cell(row=r, column=2, value=f"=COUNTIF({rg('T')},{crit})")
+        for j, col in ((3, "I"), (4, "N"), (5, "W")):
+            cs.cell(row=r, column=j, value=f"=SUMIF({rg('T')},{crit},{rg(col)})")
+    cs.cell(row=r, column=2).number_format = '#,##0'
+    for j in (3, 4, 5): cs.cell(row=r, column=j).number_format = YEN
+    cs.cell(row=r, column=6, value=f"=E{r}-D{r}").number_format = YEN
+    cs.cell(row=r, column=7, value=f"=IF(C{r}=0,\"\",D{r}/C{r})").number_format = X
+    cs.cell(row=r, column=8, value=f"=IF(C{r}=0,\"\",E{r}/C{r})").number_format = X
+r3 = ri + 2 + len(topi) + 2
 cs.cell(row=r3, column=1, value="■ 差の大きい品目（差額の大きい順・上位30）— 2人で目線を合わせる対象").font = B
 hdr(r3 + 1, ["No.", "銘柄", "年代", "本数", "当方の評価額", "川﨑の査定額", "差（川﨑−当方）", "差率", "当方の根拠", "川﨑の根拠"], (6,))
 diffs = []
@@ -203,12 +252,12 @@ def ours(r):
     if isinstance(k, (int, float)): return q * round(k / tax * rate, -2)
     if isinstance(l, (int, float)): return q * round(h * l * rate, -2)
     return q * h
-kwtot = lambda r: ls.cell(row=r, column=7).value * (ls.cell(row=r, column=20).value or 0)
+kwtot = lambda r: ls.cell(row=r, column=7).value * (ls.cell(row=r, column=22).value or 0)
 ranked = sorted(diffs, key=lambda x: -abs(kwtot(x[0]) - ours(x[0])))[:30]
 for i, (sr, no) in enumerate(ranked):
     r = r3 + 2 + i
-    vals = [f"={R}A{sr}", f"={R}E{sr}&\"（\"&{R}F{sr}&\"）\"", f"={R}D{sr}", f"={R}G{sr}", f"={R}N{sr}", f"={R}U{sr}",
-            f"=F{r}-E{r}", f"=IF(E{r}=0,\"\",F{r}/E{r}-1)", f"={R}J{sr}&IF({R}Q{sr}=\"\",\"\",\"：\"&LEFT({R}Q{sr},40))", f"={R}X{sr}&IF({R}Y{sr}=\"\",\"\",\"／\"&{R}Y{sr})"]
+    vals = [f"={R}A{sr}", f"={R}E{sr}&\"（\"&{R}F{sr}&\"）\"", f"={R}D{sr}", f"={R}G{sr}", f"={R}N{sr}", f"={R}W{sr}",
+            f"=F{r}-E{r}", f"=IF(E{r}=0,\"\",F{r}/E{r}-1)", f"={R}J{sr}&IF({R}Q{sr}=\"\",\"\",\"：\"&LEFT({R}Q{sr},40))", f"={R}Z{sr}&IF({R}AA{sr}=\"\",\"\",\"／\"&{R}AA{sr})"]
     for j, v in enumerate(vals, 1):
         c = cs.cell(row=r, column=j, value=v); c.font = NOTE if j in (9, 10) else N
     for j in (5, 6, 7): cs.cell(row=r, column=j).number_format = YEN
@@ -230,8 +279,17 @@ cs.freeze_panes = "A4"
 
 # サマリーにも1行
 sm["D4"] = "川﨑の簡易査定（補正後）との比較 →『川﨑査定との比較』シート"; sm["D4"].font = B
-sm["D5"] = "川﨑の査定額"; sm["E5"] = f"=SUM({rg('U')})"; sm["E5"].number_format = YEN
+sm["D5"] = "川﨑の査定額"; sm["E5"] = f"=SUM({rg('W')})"; sm["E5"].number_format = YEN
 sm["D6"] = "当方との差"; sm["E6"] = "=E5-B8"; sm["E6"].number_format = YEN
 sm["D7"] = "川﨑÷原価"; sm["E7"] = "=E5/B7"; sm["E7"].number_format = X
 for a in ("D5", "D6", "D7"): sm[a].font = N
+# ---- 案件名（店名）が分からない形にする ----
+for ws in wb.worksheets:
+    for row in ws.iter_rows():
+        for c in row:
+            if isinstance(c.value, str) and "カンテサンス" in c.value:
+                c.value = c.value.replace("カンテサンス ", "").replace("カンテサンス", "")
+            if isinstance(c.value, str) and "Quintessence" in c.value:  # 店名入りの別注キュヴェ名も伏せる
+                c.value = c.value.replace("Quintessence", "（別注キュヴェ）")
+wb.properties.title = "ワイン在庫 時価評価表"; wb.properties.creator = "WineBank"; wb.properties.subject = None; wb.properties.description = None
 wb.save(OUT); print("saved", OUT, "rows", LAST - HR)
