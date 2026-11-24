@@ -43,8 +43,10 @@ for r in range(5, kv.max_row + 1):
                     fixed = unit / q
                     flag = f"本数分の二重計上を補正（原本 {unit:,.0f}円/本 → {fixed:,.0f}円/本）"
             else:
-                basis = f"当方の評価額×{k}（{wform}）"
-                flag = "当方の評価額を参照（他の行を参照している可能性あり・要確認）"
+                basis = f"当方の評価額×{k}"
+                if q > 1:
+                    fixed = unit / q
+                    flag = f"本数分の二重計上を補正（当方の評価額は{q:.0f}本分の合計。原本 {unit:,.0f}円/本 → {fixed:,.0f}円/本）"
         else:
             basis = f"式 {wform}"
     elif isinstance(wform, (int, float)):
@@ -217,7 +219,7 @@ nr = r3 + 33
 notes = [
     "【見方】当方は「国内で今買える最安値」、川﨑は「業者・オークションで実際に売れる水準＋プロの感覚」。銀行・投資家向けには低いほうか平均を使い、根拠（楽天最安値／TOPLOT実績）を添えるのが無難。",
     "【補正】川﨑の想定のうち「原価合計×倍率」で入力された行は、本数が2本以上だと1本あたりの価格に本数分が掛かっていたため、1本あたりに割り戻した（確認事項の列に原本の値を記載）。原本のままの合計も上の表に併記。",
-    "【要確認】「当方の評価額を参照」の行は、川﨑のシートで別の行の評価額を参照している可能性がある（並べ替え後の行ずれ）。川﨑に確認する。",
+    "【補正】「当方の評価額×倍率」で入力された行（David Duband 8品目）も、評価額は本数分の合計のため、2本以上の行は1本あたりに割り戻した。",
 ]
 for i, t in enumerate(notes):
     c = cs.cell(row=nr + i, column=1, value=t); c.font = NOTE; c.alignment = Alignment(wrap_text=True, vertical="top")
