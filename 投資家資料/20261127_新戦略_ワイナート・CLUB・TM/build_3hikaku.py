@@ -142,6 +142,47 @@ tb(s, 0.30, 3.50, 5.3, 1.2,
     [("・②の純利益は5億円調達時。10億円調達なら31/9期 5.6億円。", {})]], size=7.0, color=NAVY, space=1.2)
 s.notes_slide.notes_text_frame.text = "2026/11/27 3案の推移。"
 
+# ───────── スライド4：リターンとリスク（VC目線）
+p31 = P[2031]; own = N5["own"]; HOLD = 4.5
+def scen(ni):
+    mc = ni / 100 * 20; mult = mc * own / 5.0
+    return ni, mc, mult, mult ** (1 / HOLD) - 1
+SC = [("上振れ", "TMが12店ペース、直輸入ワイン・CLUB送客で店舗利益率を改善（営業利益＋1.5億円）", scen(p31["ni"] + 150 * (1 - C.TAX))),
+      ("基本", "計画どおり（TM 9店、CLUB 923人、ワイナート黒字化）", scen(p31["ni"])),
+      ("下振れ", "1号店の席効率・回転が想定を下回り、出店を年1店に抑制（営業利益▲1.6億円）", scen(p31["ni"] - 160 * (1 - C.TAX))),
+      ("TM撤退", "1号店の実績で出店を止める。WineBank本体＋CLUB＋ワイナートのみ",
+       scen((p31["wb_o"] + p31["cl_o"] + p31["wi_o"] - C.WB_NONOP[2031]) * (1 - C.TAX)))]
+s = new_slide("投資家様から見たリターンとリスク（③新計画・5億円調達）",
+              "下値はWineBank本体とワイン在庫で支え、上値はTMの出店で取りにいく")
+rows = [["シナリオ", "前提", "2030年度\n純利益", "時価総額\nPER20倍", "投資\n倍率", "IRR\n4.5年"]]
+for n, d, (ni, mc, mult, irr) in SC:
+    rows.append([n, d, f"{ni/100:.1f}億円", f"{mc:.0f}億円", f"{mult:.1f}倍", f"{irr*100:.0f}%"])
+st = {(2, None): dict(fill=BEIGE, bold=True)}
+for i in range(1, 5):
+    st[(i, 1)] = dict(align=PP_ALIGN.LEFT, size=6.4)
+    for j in (2, 3, 4, 5): st[(i, j)] = dict(align=PP_ALIGN.CENTER, **({"fill": BEIGE, "bold": True} if i == 2 else {}))
+table(s, 0.30, 1.20, [0.62, 2.55, 0.62, 0.62, 0.50, 0.50], [0.34, 0.40, 0.40, 0.40, 0.40], rows, size=7.0, styles=st)
+tb(s, 0.30, 3.20, 5.4, 1.7,
+   [[("下値の支え", {"b": True, "sz": 7.8, "c": BLACK})],
+    [("・WineBank本体は3か年予算どおりに伸び、TMを止めても営業利益2.4億円（31/9期）の計画。", {})],
+    [("・自社在庫とアピシウス分のワインに含み益 約6.4億円（9月末 時価17.5億円・簿価11.1億円）。", {})],
+    [("・新たな借入・保証・アーンアウトがなく、TMの出店は家主の分割払いで初期の現金を抑える。", {})],
+    [("・出店は1号店（2027年4月）の実績を見て判断する段階制。", {})],
+    [(f"投資家持分 {own*100:.1f}%（5億円÷ポスト{N5['post']:.1f}億円）。IRRは保有4.5年。M&AでのEXITも併せて検討。", {"c": GREY, "sz": 6.2})]],
+   size=7.0, color=NAVY, space=1.2)
+rk = [["主なリスク", "手当て"],
+      ["TM 1号店が未開業", "六本木ミッドタウン（114席）。投資回収3.8年の計画。2号店以降は実績を見て判断"],
+      ["ブランドの使用契約（TBS社・5年）", "日本での独占と10年以上への延長を、DDまでに交渉"],
+      ["ワイナートの赤字", "承継対価150万円。1年目▲1,080万円→2年目±0。広告の既存依存を新規事業で分散"],
+      ["新CLUBの会員獲得", "提携店の紹介型で固定費は月15万円。来店実績を毎月開示"],
+      ["関連当事者取引（TMは中野が保有）", "中野を除く取締役会で承認、第三者の株価算定。取得は原価（1株10万円）"],
+      ["WineTech・私募ファンドの販売", "大手金融機関とのワインファンドの協議が再開。案件別の確度を開示"]]
+st = {(i, 0): dict(bold=True, size=6.4) for i in range(1, len(rk))}
+for i in range(1, len(rk)): st[(i, 1)] = dict(align=PP_ALIGN.LEFT, size=6.3)
+table(s, 6.00, 1.20, [1.30, 2.40], [0.26] + [0.42] * 6, rk, size=6.6, styles=st)
+s.notes_slide.notes_text_frame.text = "2026/11/27 VC目線のリターンとリスク。シナリオは build_3hikaku.py。"
+for n, d, v in SC: print(n, [round(x, 3) for x in v])
+
 lst = pr.slides._sldIdLst
 for el in list(lst)[:N_ORIG]:
     pr.part.drop_rel(el.get(R + "id")); lst.remove(el)
