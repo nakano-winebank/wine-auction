@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """ティエリーマルクス・ブラッスリー 10店舗＋余市オーベルジュ 月次事業計画（FY2027-FY2031・60か月）
+   ※余市は新構想（20室・坪1,000万分譲・業績連動配当）。旧Cプラン（余市川ワイナリー）は削除
 
 基準：
   ・ブラッスリー単店モデル … 事業計画/build_5year_plan.py（六本木ミッドタウン 2026/8/3提出P&L準拠）と同一前提
@@ -317,150 +318,143 @@ for c, w in zip("ABCDEFGHIJKL", [5, 22, 12, 10, 8, 9, 9, 11, 10, 10, 13, 7]):
     wo.column_dimensions[c].width = w
 
 # =====================================================================
-# 余市オーベルジュ（前提・総事業費・分譲・満年度運営・月次）
+# 余市オーベルジュ（新構想：ヴィラ10＋ホテル10＝20室／ホテルコンド分譲＋業績連動配当）
 # =====================================================================
 wy = wb.create_sheet("余市オーベルジュ")
 wy.sheet_view.showGridLines = False
-wy.column_dimensions["A"].width = 44
+wy.column_dimensions["A"].width = 46
 wy.column_dimensions["B"].width = 8
-band(wy, 1, "余市オーベルジュ構想（Cプラン：1棟集約RC・10室／ホテルコンド分譲＋リースバック）　単位：百万円", 10)
-wy["A2"] = "前提はこのスレッドの『オーベルジュ_Cプラン10室_事業計画』と同一。上段＝前提と満年度の試算、下段＝60か月の月次展開（連結PL・CFはこの月次行を参照）。"
+band(wy, 1, "余市オーベルジュ構想（ヴィラ30坪×10＋レストラン棟〈ホテル20坪×10〉＝20室・延床900坪／ホテルコンド分譲＋業績連動配当）　単位：百万円", 10)
+wy["A2"] = "上段＝前提と満年度の試算、下段＝60か月の月次展開（連結PL・CFはこの月次行を参照）。旧案（余市川ワイナリー取得・10室）は案件終了のため削除。"
 wy["A2"].font = F_NT
 Y = Inputs(wy, 3, vcol=3, ncol=4)
 Y.head("■ スケジュール")
-Y.add("acq_d", "ワイナリー（土地）取得月", dt.date(2027, 4, 1), DT, "余市川ワイナリー倶楽部のM&Aクロージング。DD結果次第で前後")
+Y.add("acq_d", "土地取得月", dt.date(2027, 10, 1), DT, "敷地約2,500坪。許認可（林地開発・開発許可等）の前に取得")
 Y.add("acq_m", "　取得月番号", f"=(YEAR(C{Y.r-1})-YEAR({P['start']}))*12+MONTH(C{Y.r-1})-MONTH({P['start']})+1", M0, formula=True)
-Y.add("con_d", "着工月", dt.date(2028, 7, 1), DT, "林地開発許可・開発許可・実施設計の完了後（前回スケジュール：シナリオA）")
+Y.add("con_d", "着工月", dt.date(2028, 7, 1), DT)
 Y.add("con_m", "　着工月番号", f"=(YEAR(C{Y.r-1})-YEAR({P['start']}))*12+MONTH(C{Y.r-1})-MONTH({P['start']})+1", M0, formula=True)
 Y.add("con_n", "工期（か月）", 24, M0, "北海道は11〜4月の土工事が困難。実質2シーズン")
 Y.add("cmp_m", "　竣工・引渡月番号", f"={Y.ref['con_m']}+{Y.ref['con_n']}-1", M0, "分譲住戸の引渡＝竣工月", formula=True)
 Y.add("opn_m", "　開業月番号（出店計画シートより）", f"={AUB_OPEN_M}", M0, "出店計画シートの開業年月を変更", formula=True)
-Y.head("■ 客室構成（専有面積・ADR・FF&E）")
+Y.head("■ 客室構成（料金は2名・食事付き）")
 wy.cell(row=Y.r, column=1, value="タイプ").font = F_TH
-for j, t in enumerate(["面積(坪/室)", "室数", "ADR(円)", "FF&E(/室)"]):
+for j, t in enumerate(["面積(坪/室)", "室数", "1泊料金(円)", "FF&E(/室)"]):
     c = wy.cell(row=Y.r, column=3 + j, value=t); c.font = F_TH; c.fill = FL_T; c.border = BOX
     c.alignment = Alignment(horizontal="center")
 Y.r += 1
 RT0 = Y.r
-for name, a, n, adr, ff in [("ベース", 20, 7, 100000, 10), ("スイート", 30, 2, 150000, 15), ("プレジデンシャルスイート", 40, 1, 250000, 20)]:
+for name, a, n, adr, ff, note in [("ヴィラ（独立棟）", 30, 10, 175000, 15, "15〜20万円の中央値"),
+                                  ("ホテル客室（レストラン棟内）", 20, 10, 100000, 10, "10万円前後")]:
     wy.cell(row=Y.r, column=1, value=name).font = F_BK
     for j, v in enumerate([a, n, adr, ff]):
         x = wy.cell(row=Y.r, column=3 + j, value=v)
         x.font = F_IN; x.fill = FL_Y; x.border = BOX; x.number_format = '#,##0'
+    wy.cell(row=Y.r, column=8, value=note).font = F_NT
     Y.r += 1
 RT1 = Y.r - 1
-PSROW = RT1
 Y.add("rooms", "総室数", f"=SUM(D{RT0}:D{RT1})", M0, formula=True)
-Y.add("sen", "客室 専有面積 計（坪）", f"=SUMPRODUCT(C{RT0}:C{RT1},D{RT0}:D{RT1})", MM, formula=True)
-Y.add("adr_sum", "全室満室時の客室売上（円/日）", f"=SUMPRODUCT(D{RT0}:D{RT1},E{RT0}:E{RT1})", M0, "＝Σ室数×ADR。ブレンドADR＝÷総室数", formula=True)
+Y.add("sen", "客室 専有面積 計（坪）＝分譲対象", f"=SUMPRODUCT(C{RT0}:C{RT1},D{RT0}:D{RT1})", MM, formula=True)
+Y.add("adr_sum", "全室満室時の宿泊売上（円/泊）", f"=SUMPRODUCT(D{RT0}:D{RT1},E{RT0}:E{RT1})", M0, formula=True)
 Y.add("ffe_room", "FF&E 客室 計", f"=SUMPRODUCT(D{RT0}:D{RT1},F{RT0}:F{RT1})", MM, formula=True)
+Y.add("own_n", "オーナー利用泊数（室・年）", 12, M0, "オーナー利用分は宿泊売上ゼロで計算")
+Y.add("sell_r", "販売可能泊数の比率", f"=(365-{Y.ref['own_n']})/365", PC, "353泊÷365泊", formula=True)
 Y.head("■ 建物・総事業費")
-Y.add("rest_t", "レストラン（坪）", 50, MM)
-Y.add("btq_t", "ブティック（坪）", 15, MM)
-Y.add("cel_t", "ワインセラー（坪）", 20, MM)
-Y.add("rent_r", "レンタブル比", 0.70, PC, "残り30%が温泉・レセプション・BOH")
-Y.add("gross", "延床面積（坪）", f"=({Y.ref['sen']}+{Y.ref['rest_t']}+{Y.ref['btq_t']}+{Y.ref['cel_t']})/{Y.ref['rent_r']}", MM, formula=True)
-Y.add("unit", "建築費 坪単価（万円/坪）", 300, M0, "1棟集約RCの標準値（分散型ヴィラは400〜500万）")
-Y.add("c_build", "建築費（本体）", f"={Y.ref['gross']}*{Y.ref['unit']}/100", MM, formula=True)
-Y.add("des_r", "設計監理料率", 0.07, PC)
+Y.add("rest_t", "レストラン（50坪×2）", 100, MM)
+Y.add("com_t", "共用部（レストラン棟100坪＋200坪）", 300, MM)
+Y.add("gross", "延床面積（坪）", f"={Y.ref['sen']}+{Y.ref['rest_t']}+{Y.ref['com_t']}", MM, "ヴィラ300＋ホテル客室200＋レストラン100＋共用部300＝900坪", formula=True)
+Y.add("unit", "建築費 坪単価（万円/坪）", 200, M0)
+Y.add("c_build", "建築費（本体）", f"={Y.ref['gross']}*{Y.ref['unit']}/100", MM, "900坪×坪200万＝1,800", formula=True)
+Y.add("des_r", "設計監理料率", 0.07, PC, "以下、ご指示の建築費18億に含まれない項目。前回試算と同じ置き方（不要なら0に）")
 Y.add("c_des", "設計監理料", f"={Y.ref['c_build']}*{Y.ref['des_r']}", MM, formula=True)
-Y.add("c_ons", "温泉工事（源泉掘削＋ポンプ）", 100.0, MM, "成功率40〜60%。浴場建築は建築費側")
-Y.add("c_civ", "造成・外構", 250.0, MM, "1棟集約で分散型（300）より縮小")
+Y.add("c_ons", "温泉工事（源泉掘削＋ポンプ）", 100.0, MM, "成功率40〜60%")
+Y.add("c_civ", "造成・外構", 250.0, MM, "敷地約2,500坪")
 Y.add("c_inf", "インフラ引込", 150.0, MM)
 Y.add("c_ffe_r", "FF&E 客室", f"={Y.ref['ffe_room']}", MM, formula=True)
 Y.add("c_ffe_c", "FF&E 共用・レストラン", 100.0, MM)
-Y.add("c_pre", "開業前費用", 150.0, MM, "採用・研修・PR・TM契約金")
+Y.add("c_pre", "開業前費用", 150.0, MM, "採用・研修・PR")
 Y.add("cont_r", "予備費率", 0.05, PC)
-Y.add("c_land", "土地・ワイナリー取得", 300.0, MM, "前回分析の妥当レンジ2〜3億の上限")
+Y.add("c_land", "土地取得", 50.0, MM, "【仮置き・要確認】約2,500坪×2万円/坪")
 Y.add("c_buildsum", "建設関連（本体＋設計＋温泉＋造成＋インフラ）予備費込", f"=({Y.ref['c_build']}+{Y.ref['c_des']}+{Y.ref['c_ons']}+{Y.ref['c_civ']}+{Y.ref['c_inf']})*(1+{Y.ref['cont_r']})", MM, "工期中に均等支出", formula=True)
 Y.add("c_ffesum", "FF&E 予備費込", f"=({Y.ref['c_ffe_r']}+{Y.ref['c_ffe_c']})*(1+{Y.ref['cont_r']})", MM, "竣工前2か月で支出", formula=True)
 Y.add("c_presum", "開業前費用 予備費込", f"={Y.ref['c_pre']}*(1+{Y.ref['cont_r']})", MM, "開業前6か月で支出", formula=True)
-Y.add("tpc", "総事業費", f"={Y.ref['c_buildsum']}+{Y.ref['c_ffesum']}+{Y.ref['c_presum']}+{Y.ref['c_land']}", MM, "Cプラン：2,778百万円", formula=True)
+Y.add("tpc", "総事業費", f"={Y.ref['c_buildsum']}+{Y.ref['c_ffesum']}+{Y.ref['c_presum']}+{Y.ref['c_land']}", MM, formula=True)
 wy[Y.ref['tpc'].split('!')[1].replace('$', '')].fill = FL_K
 Y.head("■ ホテルコンド分譲")
-Y.add("ps_sell", "プレジデンシャルスイートを分譲するか（1=分譲／0=自社保有）", 1, M0, "前回推奨は自社保有(0)。Cプラン同様に初期値は全室分譲(1)")
-Y.add("s_unit", "分譲 坪単価（万円/坪）", 1500, M0, "箱根強羅（星野リゾート）専有坪1,945〜2,492万の6〜7割")
-Y.add("s_area", "分譲対象 専有面積（坪）", f"={Y.ref['sen']}-IF({Y.ref['ps_sell']}=0,C{PSROW},0)", MM, formula=True)
-Y.add("s_total", "分譲総額", f"={Y.ref['s_area']}*{Y.ref['s_unit']}/100", MM, "坪1,500万×240坪＝3,600百万円", formula=True)
-Y.add("ps_cost", "PS帰属原価（自社保有時に資産計上）", f"=((C{PSROW}/{Y.ref['rent_r']})*{Y.ref['unit']}/100*(1+{Y.ref['des_r']})+F{PSROW})*(1+{Y.ref['cont_r']})", MM, formula=True)
-Y.add("s_cost", "分譲原価（引渡時に計上）", f"={Y.ref['tpc']}-IF({Y.ref['ps_sell']}=0,{Y.ref['ps_cost']},0)", MM, "土地・ワイナリー取得額・開業前費用も含む（Cプラン同様の保守的扱い）", formula=True)
+Y.add("s_unit", "分譲 坪単価（万円/坪）", 1000, M0, "ヴィラ30坪＝3億、ホテル客室20坪＝2億")
+Y.add("s_total", "分譲総額", f"={Y.ref['sen']}*{Y.ref['s_unit']}/100", MM, "500坪×坪1,000万＝5,000", formula=True)
+Y.add("s_cost", "分譲原価（引渡時に計上）", f"={Y.ref['tpc']}", MM, "総事業費の全額（レストラン・共用部を含む保守的な扱い）", formula=True)
 Y.add("s_fee", "販売経費率", 0.06, PC, "引渡時に計上・支払")
 Y.add("s_dep", "契約時手付金率", 0.20, PC, "残金は引渡時")
 Y.add("s_start_d", "販売開始月", dt.date(2028, 7, 1), DT, "着工と同時")
 Y.add("s_start", "　販売開始月番号", f"=(YEAR(C{Y.r-1})-YEAR({P['start']}))*12+MONTH(C{Y.r-1})-MONTH({P['start']})+1", M0, formula=True)
 Y.add("s_period", "販売期間（か月）", 18, M0, "手付金をこの期間に均等受領")
-Y.add("ps_life", "PS自社保有時の償却年数", 30, M0)
-Y.add("lb_r", "リースバック 保証利回り（ネット）", 0.01, PC, "分譲総額×1%を開業月から支払")
+Y.head("■ オーナー配当（賃料）＝MAX（営業利益×1/3、販売価格×1%）")
+Y.add("div_share", "営業利益に対する配当割合", 1/3, PC, "宿泊部門の営業利益（配当前）×1/3")
+Y.add("div_floor", "最低保証（販売価格に対する率）", 0.01, PC, "毎月1/12を支払い、年度末（3月）に1/3との差額を精算")
+Y.add("div_rest", "配当原資に外来レストランの利益を含めるか（1=含める／0=含めない）", 0, M0, "「客室に連動」のご指示どおり初期値は0（客室のみ）")
 Y.head("■ 建設資金借入")
 Y.add("ln_r", "借入比率（各支出に対して）", 0.65, PC, "土地取得を含む全開発支出の65%")
 Y.add("ln_i", "金利（年）", 0.020, PC, "引渡時に一括返済")
-Y.head("■ オーベルジュ運営（満年度）")
-Y.add("occ", "客室稼働率（通年）", 0.55, PC, "端境期（11月・4〜5月）を織り込んだ標準値")
-Y.add("wine", "宿泊者ワイン売上（円/室泊）", 15000, M0)
-Y.add("btq", "ブティック年商", 30.0, MM)
-Y.add("h_lab", "ホテル人件費率", 0.42, PC, "10室は規模の経済が効かない")
-Y.add("h_oth", "ホテル その他経費率", 0.30, PC, "光熱8%・販促OTA10%・消耗品5%・修繕5%・保険租税2%")
+Y.head("■ 宿泊部門（料金は食事込み）")
+Y.add("occ", "客室稼働率（販売可能泊数に対して・通年）", 0.60, PC)
+Y.add("v_rate", "変動費率", 0.27, PC, "料理・飲料原価12%＋販売手数料10%＋消耗品・リネン5%")
+FX0 = Y.r
+for k, lab, v, note in [("f_lab", "固定費：人件費（年）", 186.0, "約37名×年500万円。稼働に関わらず発生"),
+                        ("f_utl", "固定費：水道光熱費（年）", 41.0, "温泉・暖房・融雪"),
+                        ("f_rep", "固定費：修繕費（年）", 18.0, ""),
+                        ("f_tax", "固定費：保険・租税公課（年）", 12.0, ""),
+                        ("f_ga", "固定費：一般管理費（年）", 29.0, "固定費計286＝稼働60%時の売上の49%（前回試算の経費率と整合）")]:
+    Y.add(k, lab, v, MM, note)
+Y.add("f_tot", "固定費 計（年）", f"=SUM(C{FX0}:C{Y.r-1})", MM, formula=True)
 Y.add("snow", "除雪費（年・12〜3月に計上）", 5.0, MM)
-Y.add("r_walk", "レストラン ディナー外来（名/日）", 10, M0)
-Y.add("r_dpx", "ディナー客単価（円）", 20000, M0)
-Y.add("r_lun", "ランチ客数（名/日）", 20, M0)
-Y.add("r_lpx", "ランチ客単価（円）", 8000, M0)
-Y.add("r_days", "レストラン年間営業日数", 320, M0)
-Y.add("r_eb", "レストランEBITDA率", 0.18, PC, "自社所有のため賃料負担なし")
-Y.add("mgmt", "オーベルジュ管理費（年）", 50.0, MM, "総支配人・管理部門・TMロイヤリティ等")
-Y.add("a_ramp1", "運営1年目 立上り率", 0.90, PC, "ブラッスリーと同じ立上り")
+Y.head("■ 外来レストラン（50坪×2）")
+Y.add("r_dn", "外来ディナー（名/日）", 15, M0, "札幌1時間・小樽30分圏、ワインツーリズム客")
+Y.add("r_dpx", "外来ディナー客単価（円）", 15000, M0)
+Y.add("r_ln", "外来ランチ（名/日）", 30, M0)
+Y.add("r_lpx", "外来ランチ客単価（円）", 6000, M0)
+Y.add("r_days", "年間営業日数", 300, M0)
+Y.add("r_eb", "外来レストランEBITDA率", 0.18, PC, "宿泊客の朝夕食は宿泊料金に含まれ宿泊部門で計上。厨房共用のため実際の限界利益はこれより高い")
+Y.head("■ 立上り・季節")
+Y.add("a_ramp1", "運営1年目 立上り率", 0.90, PC, "稼働率と外来客数に適用")
 Y.add("a_ramp2", "運営2年目 立上り率", 0.98, PC)
 Y.add("a_ramp3", "運営3年目以降 立上り率", 1.00, PC)
-ARAMP = f"{Y.ref['a_ramp1'].split('!')[0]}!$C${Y.r-3}:$C${Y.r-1}"
-Y.head("■ 余市 月別季節指数（1月→12月、平均1.00）")
+ARAMP = f"'余市オーベルジュ'!$C${Y.r-3}:$C${Y.r-1}"
 AS0 = Y.r
 for mo, v in zip(range(1, 13), [1.05, 1.05, 0.80, 0.70, 0.85, 1.00, 1.25, 1.30, 1.20, 1.15, 0.70, 0.95]):
-    Y.add(f"as{mo}", f"　{mo}月", v, '0.00', "冬＝キロロ30分・ニセコ1時間のスキー需要、夏〜秋＝収穫期が繁忙。11月・4〜5月が端境期" if mo == 1 else "")
+    Y.add(f"as{mo}", f"季節指数　{mo}月", v, '0.00', "冬＝キロロ30分・ニセコ1時間のスキー需要、夏〜秋＝収穫期が繁忙。11月・4〜5月が端境期（平均1.00）" if mo == 1 else "")
 ASEAS = f"'余市オーベルジュ'!$C${AS0}:$C${AS0+11}"
 Y.add("as_avg", "　季節指数 平均（確認用）", f"=AVERAGE(C{AS0}:C{AS0+11})", '0.000', "1.000であること", formula=True)
-Y.head("■ ワイナリー（IM『5ヵ年計画』準拠・暦年）")
-wy.cell(row=Y.r, column=1, value="暦年").font = F_TH
-for j, t in enumerate(["売上", "EBITDA", "減価償却"]):
-    c = wy.cell(row=Y.r, column=3 + j, value=t); c.font = F_TH; c.fill = FL_T; c.border = BOX
-    c.alignment = Alignment(horizontal="center")
-Y.r += 1
-IM0 = Y.r
-for yr, s, e, dp, src in [(2027, 62.1, 40.0, 7.9, "IM"), (2028, 69.8, 42.8, 7.0, "IM"), (2029, 86.7, 54.5, 6.8, "IM"),
-                          (2030, 103.0, 66.5, 6.5, "IM"), (2031, 103.0, 66.5, 6.5, "IMは2030年まで。以降は2030年水準で横置き"),
-                          (2032, 103.0, 66.5, 6.5, "同上")]:
-    wy.cell(row=Y.r, column=1, value=yr).font = F_BK
-    for j, v in enumerate([s, e, dp]):
-        x = wy.cell(row=Y.r, column=3 + j, value=v)
-        x.font = F_IN; x.fill = FL_Y; x.border = BOX; x.number_format = MM
-    wy.cell(row=Y.r, column=7, value=src).font = F_NT
-    Y.r += 1
-IMS = f"'余市オーベルジュ'!$C${IM0}:$C${IM0+5}"
-IME = f"'余市オーベルジュ'!$D${IM0}:$D${IM0+5}"
-IMD = f"'余市オーベルジュ'!$E${IM0}:$E${IM0+5}"
-Y.add("im_ach", "IM計画 達成率", 1.00, PC, "【要注意】2025年実績EBITDA 12.3百万円に対しIM2027年は40.0百万円。保守的に見るなら引き下げること")
 YR = Y.ref
 
-# ---- 満年度の運営試算（参考表示） ----
-Y.head("■ 満年度 運営収支（参考：立上り・季節を除いた年額）")
-Y.add("fy_room", "客室売上", f"={YR['adr_sum']}*365*{YR['occ']}/1000000", MM, formula=True)
-Y.add("fy_wine", "宿泊者ワイン売上", f"={YR['rooms']}*365*{YR['occ']}*{YR['wine']}/1000000", MM, formula=True)
-Y.add("fy_hrev", "ホテル売上 計", f"={YR['fy_room']}+{YR['fy_wine']}+{YR['btq']}", MM, formula=True)
-Y.add("fy_gop", "ホテルGOP", f"={YR['fy_hrev']}*(1-{YR['h_lab']}-{YR['h_oth']})-{YR['snow']}", MM, formula=True)
-Y.add("fy_lease", "リースバック保証料", f"={YR['s_total']}*{YR['lb_r']}", MM, formula=True)
-Y.add("fy_rrev", "レストラン売上", f"=(({YR['rooms']}*2*{YR['occ']}+{YR['r_walk']})*{YR['r_dpx']}+{YR['r_lun']}*{YR['r_lpx']})*{YR['r_days']}/1000000", MM, formula=True)
-Y.add("fy_reb", "レストランEBITDA", f"={YR['fy_rrev']}*{YR['r_eb']}", MM, formula=True)
-Y.add("fy_ops", "オーベルジュ運営EBITDA（リース料・管理費控除後）", f"={YR['fy_gop']}-{YR['fy_lease']}+{YR['fy_reb']}-{YR['mgmt']}", MM, formula=True)
-Y.add("fy_pl", "分譲損益（引渡時・一括）", f"={YR['s_total']}*(1-{YR['s_fee']})-{YR['s_cost']}", MM, "Cプラン：約606百万円", formula=True)
+# ---- 満年度（3年目以降・季節平準）の試算 ----
+Y.head("■ 満年度の試算（運営3年目以降・年額）")
+Y.add("fy_hrev", "宿泊売上（食事込み）", f"={YR['adr_sum']}*365*{YR['sell_r']}*{YR['occ']}/1000000", MM, formula=True)
+Y.add("fy_hop", "宿泊部門 営業利益（配当前）", f"={YR['fy_hrev']}*(1-{YR['v_rate']})-{YR['f_tot']}-{YR['snow']}", MM, formula=True)
+Y.add("fy_rrev", "外来レストラン売上", f"=({YR['r_dn']}*{YR['r_dpx']}+{YR['r_ln']}*{YR['r_lpx']})*{YR['r_days']}/1000000", MM, formula=True)
+Y.add("fy_reb", "外来レストランEBITDA", f"={YR['fy_rrev']}*{YR['r_eb']}", MM, formula=True)
+Y.add("fy_d13", "　配当案A：営業利益×1/3", f"=MAX(0,{YR['fy_hop']}+IF({YR['div_rest']}=1,{YR['fy_reb']},0))*{YR['div_share']}", MM, formula=True)
+Y.add("fy_d1", "　配当案B：販売価格×1%", f"={YR['s_total']}*{YR['div_floor']}", MM, formula=True)
+Y.add("fy_div", "オーナー配当（A・Bの高い方）", f"=MAX({YR['fy_d13']},{YR['fy_d1']})", MM, formula=True)
+Y.add("fy_ops", "余市 運営EBITDA（配当後・レストラン含む）", f"={YR['fy_hop']}-{YR['fy_div']}+{YR['fy_reb']}", MM, formula=True)
+wy[YR['fy_ops'].split('!')[1].replace('$', '')].fill = FL_K
+Y.add("fy_opm", "　同 利益率（対 宿泊＋レストラン売上）", f"={YR['fy_ops']}/({YR['fy_hrev']}+{YR['fy_rrev']})", PC, formula=True)
+Y.add("fy_be", "損益分岐の稼働率（配当＝最低保証1%のとき）",
+      f"=({YR['f_tot']}+{YR['snow']}+{YR['fy_d1']}-{YR['fy_reb']})/(({YR['adr_sum']}*365*{YR['sell_r']}/1000000)*(1-{YR['v_rate']}))", PC,
+      "稼働率がこれを上回れば余市の運営は黒字", formula=True)
+Y.add("fy_sw", "1/3配当が1%保証を上回り始める稼働率",
+      f"=(3*{YR['fy_d1']}/IF({YR['div_share']}=0,1,{YR['div_share']}*3)+{YR['f_tot']}+{YR['snow']}-IF({YR['div_rest']}=1,{YR['fy_reb']},0))/(({YR['adr_sum']}*365*{YR['sell_r']}/1000000)*(1-{YR['v_rate']}))", PC,
+      "これを超えるとオーナーの取り分が1%を超える", formula=True)
+Y.add("fy_pl", "分譲損益（引渡時・一括）", f"={YR['s_total']}*(1-{YR['s_fee']})-{YR['s_cost']}", MM, formula=True)
 wy[YR['fy_pl'].split('!')[1].replace('$', '')].fill = FL_K
+Y.add("fy_yield_v", "（参考）オーナー利回り：ヴィラ1室（配当のみ）", f"={YR['fy_div']}/{YR['sen']}*C{RT0}/(C{RT0}*{YR['s_unit']}/100)", PC, "配当総額を専有面積で按分", formula=True)
 for c in "CDEFG": wy.column_dimensions[c].width = 12
-wy.column_dimensions["D"].width = 12
 
 # ---- 月次展開 ----
 YM = Y.r + 2
 band(wy, YM, "余市　月次展開（百万円）", 10)
 month_header(wy, YM + 1, P['start'])
-H = YM + 1          # 年月行
-K = YM + 3          # 月番号行
+H = YM + 1
+K = YM + 3
 r = YM + 5
 YROW = {}
 
@@ -470,14 +464,8 @@ def yrow(key, label, f, fmt=MM, bold=False, fill=None, note=None):
     YROW[key] = r
     r += 1
 
-sec(wy, r, "■ ワイナリー事業（取得月から）", 2); r += 1
-yrow("w_flag", "保有フラグ", lambda c, p, m: f"=IF({c}${K}>={YR['acq_m']},1,0)", M0)
-yrow("w_rev", "ワイナリー売上", lambda c, p, m: f"={c}{YROW['w_flag']}*INDEX({IMS},YEAR({c}${H})-2026)/12*{YR['im_ach']}")
-yrow("w_eb", "ワイナリーEBITDA", lambda c, p, m: f"={c}{YROW['w_flag']}*INDEX({IME},YEAR({c}${H})-2026)/12*{YR['im_ach']}")
-yrow("w_dep", "ワイナリー減価償却", lambda c, p, m: f"={c}{YROW['w_flag']}*INDEX({IMD},YEAR({c}${H})-2026)/12")
-r += 1
 sec(wy, r, "■ 開発（土地取得・建設・FF&E・開業前）", 2); r += 1
-yrow("d_land", "土地・ワイナリー取得", lambda c, p, m: f"=IF({c}${K}={YR['acq_m']},{YR['c_land']},0)")
+yrow("d_land", "土地取得", lambda c, p, m: f"=IF({c}${K}={YR['acq_m']},{YR['c_land']},0)")
 yrow("d_build", "建設関連支出（工期中均等）", lambda c, p, m: f"=IF(AND({c}${K}>={YR['con_m']},{c}${K}<={YR['cmp_m']}),{YR['c_buildsum']}/{YR['con_n']},0)")
 yrow("d_ffe", "FF&E支出（竣工前2か月）", lambda c, p, m: f"=IF(AND({c}${K}>{YR['cmp_m']}-2,{c}${K}<={YR['cmp_m']}),{YR['c_ffesum']}/2,0)")
 yrow("d_pre", "開業前費用支出（開業前6か月）", lambda c, p, m: f"=IF(AND({c}${K}>={YR['opn_m']}-6,{c}${K}<{YR['opn_m']}),{YR['c_presum']}/6,0)")
@@ -499,31 +487,35 @@ yrow("s_cogs", "分譲原価（PL・引渡月）", lambda c, p, m: f"=IF({c}${K}
 yrow("s_fee", "販売経費（PL・CFとも引渡月）", lambda c, p, m: f"=IF({c}${K}={YR['cmp_m']},{YR['s_total']}*{YR['s_fee']},0)")
 yrow("s_pl", "分譲損益", lambda c, p, m: f"={c}{YROW['s_rev']}-{c}{YROW['s_cogs']}-{c}{YROW['s_fee']}", bold=True)
 r += 1
-sec(wy, r, "■ オーベルジュ運営（開業月から）", 2); r += 1
+sec(wy, r, "■ 宿泊部門（開業月から）", 2); r += 1
 yrow("a_n", "営業月数", lambda c, p, m: f"=IF({c}${K}>={YR['opn_m']},{c}${K}-{YR['opn_m']}+1,0)", M0)
 yrow("a_y", "運営年次", lambda c, p, m: f"=IF({c}{YROW['a_n']}=0,0,IF({c}{YROW['a_n']}<=12,1,IF({c}{YROW['a_n']}<=24,2,3)))", M0)
 yrow("a_k", "立上り×季節 係数", lambda c, p, m: f"=IF({c}{YROW['a_y']}=0,0,INDEX({ARAMP},{c}{YROW['a_y']})*INDEX({ASEAS},MONTH({c}${H})))", '0.00')
 yrow("a_d", "当月日数", lambda c, p, m: f"=DAY(EOMONTH({c}${H},0))", M0)
 yrow("a_occ", "実効稼働率", lambda c, p, m: f"=MIN(0.95,{YR['occ']}*{c}{YROW['a_k']})", PC)
-yrow("a_room", "客室売上", lambda c, p, m: f"={YR['adr_sum']}*{c}{YROW['a_occ']}*{c}{YROW['a_d']}/1000000")
-yrow("a_wine", "宿泊者ワイン売上", lambda c, p, m: f"={YR['rooms']}*{c}{YROW['a_occ']}*{c}{YROW['a_d']}*{YR['wine']}/1000000")
-yrow("a_btq", "ブティック売上", lambda c, p, m: f"={YR['btq']}/12*{c}{YROW['a_k']}")
-yrow("a_hrev", "ホテル売上 計", lambda c, p, m: f"={c}{YROW['a_room']}+{c}{YROW['a_wine']}+{c}{YROW['a_btq']}", bold=True)
-yrow("a_lab", "ホテル人件費", lambda c, p, m: f"={c}{YROW['a_hrev']}*{YR['h_lab']}")
-yrow("a_oth", "ホテル その他経費", lambda c, p, m: f"={c}{YROW['a_hrev']}*{YR['h_oth']}")
-yrow("a_snow", "除雪費", lambda c, p, m: f"=IF(AND({c}{YROW['a_n']}>0,OR(MONTH({c}${H})>=12,MONTH({c}${H})<=3)),{YR['snow']}/4,0)")
-yrow("a_gop", "ホテルGOP", lambda c, p, m: f"={c}{YROW['a_hrev']}-{c}{YROW['a_lab']}-{c}{YROW['a_oth']}-{c}{YROW['a_snow']}", bold=True)
-yrow("a_lease", "リースバック保証料", lambda c, p, m: f"=IF({c}{YROW['a_n']}>0,{YR['s_total']}*{YR['lb_r']}/12,0)")
-yrow("a_rrev", "レストラン売上", lambda c, p, m: (f"=IF({c}{YROW['a_n']}=0,0,(({YR['rooms']}*2*{c}{YROW['a_occ']}+{YR['r_walk']}*{c}{YROW['a_k']})*{YR['r_dpx']}"
-                                                  f"+{YR['r_lun']}*{c}{YROW['a_k']}*{YR['r_lpx']})*{YR['r_days']}/12/1000000)"))
-yrow("a_reb", "レストランEBITDA", lambda c, p, m: f"={c}{YROW['a_rrev']}*{YR['r_eb']}")
-yrow("a_mgmt", "オーベルジュ管理費", lambda c, p, m: f"=IF({c}{YROW['a_n']}>0,{YR['mgmt']}/12,0)")
-yrow("a_eb", "オーベルジュ運営EBITDA", lambda c, p, m: f"={c}{YROW['a_gop']}-{c}{YROW['a_lease']}+{c}{YROW['a_reb']}-{c}{YROW['a_mgmt']}", bold=True)
-yrow("a_psdep", "PS減価償却（自社保有時のみ）", lambda c, p, m: f"=IF(AND({c}{YROW['a_n']}>0,{YR['ps_sell']}=0),{YR['ps_cost']}/{YR['ps_life']}/12,0)")
+yrow("h_rev", "宿泊売上（食事込み）", lambda c, p, m: f"={YR['adr_sum']}*{c}{YROW['a_occ']}*{c}{YROW['a_d']}*{YR['sell_r']}/1000000", bold=True)
+yrow("h_var", "変動費（料理原価・手数料・消耗品）", lambda c, p, m: f"={c}{YROW['h_rev']}*{YR['v_rate']}")
+yrow("h_fix", "固定費（人件費・光熱・修繕・保険租税・一般管理）", lambda c, p, m: f"=IF({c}{YROW['a_n']}>0,{YR['f_tot']}/12,0)")
+yrow("h_snow", "除雪費", lambda c, p, m: f"=IF(AND({c}{YROW['a_n']}>0,OR(MONTH({c}${H})>=12,MONTH({c}${H})<=3)),{YR['snow']}/4,0)")
+yrow("h_op", "宿泊部門 営業利益（配当前）", lambda c, p, m: f"={c}{YROW['h_rev']}-{c}{YROW['h_var']}-{c}{YROW['h_fix']}-{c}{YROW['h_snow']}", bold=True, fill=FL_T)
+r += 1
+sec(wy, r, "■ 外来レストラン（開業月から）", 2); r += 1
+yrow("r_rev", "外来レストラン売上", lambda c, p, m: f"=IF({c}{YROW['a_n']}=0,0,({YR['r_dn']}*{YR['r_dpx']}+{YR['r_ln']}*{YR['r_lpx']})*{YR['r_days']}/12/1000000*{c}{YROW['a_k']})", bold=True)
+yrow("r_eb", "外来レストランEBITDA", lambda c, p, m: f"={c}{YROW['r_rev']}*{YR['r_eb']}")
+r += 1
+sec(wy, r, "■ オーナー配当（毎月1%保証を支払い、3月に1/3との差額を精算）", 2); r += 1
+yrow("o_base", "配当原資となる営業利益", lambda c, p, m: f"={c}{YROW['h_op']}+IF({YR['div_rest']}=1,{c}{YROW['r_eb']},0)")
+yrow("o_floor", "最低保証分（販売価格×1%÷12）", lambda c, p, m: f"=IF({c}{YROW['a_n']}>0,{YR['s_total']}*{YR['div_floor']}/12,0)")
+CB = r
+yrow("o_cbase", "年度累計 配当原資（4月で初期化）", lambda c, p, m: (f"={c}{YROW['o_base']}" if m == 1 else f"=IF(MONTH({c}${H})=4,0,{p}{CB})+{c}{YROW['o_base']}"))
+CF_ = r
+yrow("o_cfloor", "年度累計 最低保証分", lambda c, p, m: (f"={c}{YROW['o_floor']}" if m == 1 else f"=IF(MONTH({c}${H})=4,0,{p}{CF_})+{c}{YROW['o_floor']}"))
+yrow("o_true", "年度末精算（1/3が保証を上回った差額）", lambda c, p, m: f"=IF(AND(MONTH({c}${H})=3,{c}{YROW['a_n']}>0),MAX(0,{c}{YROW['o_cbase']}*{YR['div_share']}-{c}{YROW['o_cfloor']}),0)")
+yrow("o_pay", "オーナー配当 計", lambda c, p, m: f"={c}{YROW['o_floor']}+{c}{YROW['o_true']}", bold=True, fill=FL_T)
 r += 1
 sec(wy, r, "■ 余市 合計", 2); r += 1
-yrow("y_rev", "余市 運営売上（ワイナリー＋ホテル＋レストラン）", lambda c, p, m: f"={c}{YROW['w_rev']}+{c}{YROW['a_hrev']}+{c}{YROW['a_rrev']}", bold=True, fill=FL_T)
-yrow("y_eb", "余市 運営EBITDA（ワイナリー＋オーベルジュ）", lambda c, p, m: f"={c}{YROW['w_eb']}+{c}{YROW['a_eb']}", bold=True, fill=FL_T)
+yrow("y_rev", "余市 運営売上（宿泊＋外来レストラン）", lambda c, p, m: f"={c}{YROW['h_rev']}+{c}{YROW['r_rev']}", bold=True, fill=FL_T)
+yrow("y_eb", "余市 運営EBITDA（配当後）", lambda c, p, m: f"={c}{YROW['h_op']}-{c}{YROW['o_pay']}+{c}{YROW['r_eb']}", bold=True, fill=FL_T)
 wy.freeze_panes = wy.cell(row=K + 1, column=C0)
 
 # =====================================================================
@@ -623,27 +615,24 @@ pl("b_ffe", "修繕維持費（FFE）", var("ffe"))
 pl("b_eb", "店舗EBITDA", lambda c, p, m: f"={c}{PLR['b_gop']}-{c}{PLR['b_roy']}-{c}{PLR['b_ins']}-{c}{PLR['b_rnt']}-{c}{PLR['b_pct']}-{c}{PLR['b_ffe']}", bold=True, fill=FL_T)
 r += 1
 sec(wp, r, "■ 余市事業（詳細は『余市オーベルジュ』タブ）", 2); r += 1
-pl("w_rev", "ワイナリー売上", lambda c, p, m: f"={YRc('w_rev',c)}")
-pl("w_eb", "ワイナリーEBITDA", lambda c, p, m: f"={YRc('w_eb',c)}")
-pl("h_rev", "ホテル売上", lambda c, p, m: f"={YRc('a_hrev',c)}")
-pl("h_gop", "ホテルGOP", lambda c, p, m: f"={YRc('a_gop',c)}")
-pl("h_lease", "リースバック保証料", lambda c, p, m: f"={YRc('a_lease',c)}")
-pl("r_rev", "レストラン売上", lambda c, p, m: f"={YRc('a_rrev',c)}")
-pl("r_eb", "レストランEBITDA", lambda c, p, m: f"={YRc('a_reb',c)}")
-pl("a_mgmt", "オーベルジュ管理費", lambda c, p, m: f"={YRc('a_mgmt',c)}")
-pl("y_eb", "余市 運営EBITDA", lambda c, p, m: f"={c}{PLR['w_eb']}+{c}{PLR['h_gop']}-{c}{PLR['h_lease']}+{c}{PLR['r_eb']}-{c}{PLR['a_mgmt']}", bold=True, fill=FL_T)
+pl("h_rev", "宿泊売上（食事込み）", lambda c, p, m: f"={YRc('h_rev',c)}")
+pl("h_op", "宿泊部門 営業利益（オーナー配当前）", lambda c, p, m: f"={YRc('h_op',c)}")
+pl("o_pay", "オーナー配当（営業利益1/3と販売価格1%の高い方）", lambda c, p, m: f"={YRc('o_pay',c)}")
+pl("r_rev", "外来レストラン売上", lambda c, p, m: f"={YRc('r_rev',c)}")
+pl("r_eb", "外来レストランEBITDA", lambda c, p, m: f"={YRc('r_eb',c)}")
+pl("y_eb", "余市 運営EBITDA（配当後）", lambda c, p, m: f"={c}{PLR['h_op']}-{c}{PLR['o_pay']}+{c}{PLR['r_eb']}", bold=True, fill=FL_T)
 pl("s_rev", "分譲売上（ホテルコンド）", lambda c, p, m: f"={YRc('s_rev',c)}")
 pl("s_cogs", "分譲原価", lambda c, p, m: f"={YRc('s_cogs',c)}")
 pl("s_fee", "販売経費", lambda c, p, m: f"={YRc('s_fee',c)}")
 pl("s_pl", "分譲損益", lambda c, p, m: f"={c}{PLR['s_rev']}-{c}{PLR['s_cogs']}-{c}{PLR['s_fee']}", bold=True, fill=FL_T)
 r += 1
 sec(wp, r, "■ 連結", 2); r += 1
-pl("rev_ops", "売上高（経常：分譲除く）", lambda c, p, m: f"={c}{PLR['b_rev']}+{c}{PLR['w_rev']}+{c}{PLR['h_rev']}+{c}{PLR['r_rev']}", bold=True)
+pl("rev_ops", "売上高（経常：分譲除く）", lambda c, p, m: f"={c}{PLR['b_rev']}+{c}{PLR['h_rev']}+{c}{PLR['r_rev']}", bold=True)
 pl("rev_all", "売上高（分譲含む）", lambda c, p, m: f"={c}{PLR['rev_ops']}+{c}{PLR['s_rev']}", bold=True)
 pl("hq", "本部費", lambda c, p, m: f"=INDEX({HQ},VALUE(RIGHT({c}$4,4))-2026)/12")
 pl("eb_ops", "連結EBITDA（経常：分譲除く）", lambda c, p, m: f"={c}{PLR['b_eb']}+{c}{PLR['y_eb']}-{c}{PLR['hq']}", bold=True, fill=FL_T)
 pl("eb_all", "連結EBITDA（分譲含む）", lambda c, p, m: f"={c}{PLR['eb_ops']}+{c}{PLR['s_pl']}", bold=True, fill=FL_T)
-pl("dep", "減価償却費", lambda c, p, m: f"={AGc('dep',c)}+{YRc('w_dep',c)}+{YRc('a_psdep',c)}")
+pl("dep", "減価償却費", lambda c, p, m: f"={AGc('dep',c)}")
 pl("op", "営業利益", lambda c, p, m: f"={c}{PLR['eb_all']}-{c}{PLR['dep']}", bold=True, fill=FL_Y)
 pl("int", "支払利息（建設資金借入）", lambda c, p, m: f"={YRc('l_int',c)}")
 pl("ord", "経常利益（税引前）", lambda c, p, m: f"={c}{PLR['op']}-{c}{PLR['int']}", bold=True, fill=FL_Y)
@@ -679,7 +668,7 @@ r += 1
 sec(wc, r, "■ 投資活動", 2); r += 1
 cf("b_cash", "ブラッスリー 開業時現金支出", lambda c, p, m: f"=-{AGc('cash',c)}")
 cf("b_inst", "ブラッスリー 分割弁済（内装・保証金）", lambda c, p, m: f"=-{AGc('inst',c)}")
-cf("y_land", "余市 土地・ワイナリー取得", lambda c, p, m: f"=-{YRc('d_land',c)}")
+cf("y_land", "余市 土地取得", lambda c, p, m: f"=-{YRc('d_land',c)}")
 cf("y_dev", "余市 開発支出（建設・FF&E・開業前）", lambda c, p, m: f"=-{YRc('d_dev',c)}")
 cf("icf", "投資CF 計", lambda c, p, m: f"=SUM({c}{CFR['b_cash']}:{c}{CFR['y_dev']})", bold=True, fill=FL_T)
 r += 1
@@ -743,10 +732,11 @@ r += 1
 sec(wa, r, "■ 損益計算書", 7); r += 1
 ann("b_rev", "ブラッスリー 売上高", "月次PL", PLR['b_rev'])
 ann("b_eb", "ブラッスリー 店舗EBITDA", "月次PL", PLR['b_eb'])
-ann("w_rev", "余市 ワイナリー売上", "月次PL", PLR['w_rev'])
-ann("h_rev", "余市 ホテル売上", "月次PL", PLR['h_rev'])
-ann("r_rev", "余市 レストラン売上", "月次PL", PLR['r_rev'])
-ann("y_eb", "余市 運営EBITDA", "月次PL", PLR['y_eb'])
+ann("h_rev", "余市 宿泊売上（食事込み）", "月次PL", PLR['h_rev'])
+ann("h_op", "余市 宿泊部門 営業利益（配当前）", "月次PL", PLR['h_op'])
+ann("o_pay", "余市 オーナー配当", "月次PL", PLR['o_pay'])
+ann("r_rev", "余市 外来レストラン売上", "月次PL", PLR['r_rev'])
+ann("y_eb", "余市 運営EBITDA（配当後）", "月次PL", PLR['y_eb'])
 ann("rev_ops", "売上高（経常：分譲除く）", "月次PL", PLR['rev_ops'], bold=True, fill=FL_T)
 ann("hq", "本部費", "月次PL", PLR['hq'])
 ann("eb_ops", "連結EBITDA（経常：分譲除く）", "月次PL", PLR['eb_ops'], bold=True, fill=FL_T)
@@ -818,9 +808,9 @@ def sm(key, label, bold=False, fill=None, fmt=MM, total=True):
 sm("nt", "期末店舗数（ブラッスリー＋オーベルジュ）", True, fmt=M0, total=False)
 sm("rev_ops", "売上高（経常：分譲除く）", True)
 sm("b_rev", "　うちブラッスリー")
-sm("w_rev", "　うち余市ワイナリー")
-sm("h_rev", "　うち余市ホテル")
-sm("r_rev", "　うち余市レストラン")
+sm("h_rev", "　うち余市 宿泊（食事込み）")
+sm("r_rev", "　うち余市 外来レストラン")
+sm("y_eb", "余市 運営EBITDA（オーナー配当後）")
 sm("eb_ops", "連結EBITDA（経常：分譲除く）", True, FL_T)
 sm("ebm", "　連結EBITDA率（経常）", fmt=PC, total=False)
 sm("s_pl", "分譲損益（ホテルコンド・引渡時一括）", True)
@@ -852,10 +842,12 @@ for j in range(6):
 r += 1
 wsu.cell(row=r, column=1, value="※ 旧計画の値は『ティエリーマルクス・ブラッスリー_5か年事業計画_FY2027-2031.xlsx』（5カ年連結PL）からの転記。").font = F_NT
 r += 2
-sec(wsu, r, "■ 余市オーベルジュ（Cプラン）主要数値", 9); r += 1
-for lab, ref, fmt in [("総事業費", YR['tpc'], MM), ("分譲総額", YR['s_total'], MM), ("分譲原価", YR['s_cost'], MM),
-                      ("分譲損益（引渡時）", YR['fy_pl'], MM), ("満年度 オーベルジュ運営EBITDA（リース料・管理費控除後）", YR['fy_ops'], MM),
-                      ("延床面積（坪）", YR['gross'], MM)]:
+sec(wsu, r, "■ 余市オーベルジュ（新構想）主要数値・満年度", 9); r += 1
+for lab, ref, fmt in [("総事業費", YR['tpc'], MM), ("分譲総額（500坪×坪1,000万）", YR['s_total'], MM),
+                      ("分譲損益（引渡時）", YR['fy_pl'], MM), ("宿泊売上（食事込み）", YR['fy_hrev'], MM),
+                      ("宿泊部門 営業利益（配当前）", YR['fy_hop'], MM), ("オーナー配当（1/3と1%の高い方）", YR['fy_div'], MM),
+                      ("外来レストラン売上", YR['fy_rrev'], MM), ("余市 運営EBITDA（配当後）", YR['fy_ops'], MM),
+                      ("損益分岐の稼働率", YR['fy_be'], PC), ("1/3配当が1%を上回る稼働率", YR['fy_sw'], PC)]:
     wsu.cell(row=r, column=1, value=lab).font = F_BK
     x = wsu.cell(row=r, column=2, value=f"={ref}"); x.number_format = fmt; x.font = F_GR; x.border = BOX
     r += 1
@@ -863,17 +855,16 @@ r += 1
 notes = [
     "■ 前提の出所",
     "　・ブラッスリー：旧5か年計画と同一（六本木ミッドタウン2026/8/3提出P&L、立上り90/98/100%、経費率の年次改善、分割払いスキーム、契約金1〜3号店1,000万・4号店以降500万）",
-    "　・余市：本スレッドのCプラン（1棟集約RC、ベース20坪×7・スイート30坪×2・PS40坪×1、坪300万、坪1,500万で全室分譲、ネット1%リースバック）",
-    "　・ワイナリー：IM『5ヵ年計画』（2027〜2030年）。2031年以降は2030年水準で横置き。達成率は余市タブで変更可能",
+    "　・余市：新構想（ヴィラ30坪×10＋ホテル客室20坪×10、延床900坪×坪200万、坪1,000万で分譲、オーナー配当＝営業利益1/3と販売価格1%の高い方、外来レストラン）。余市川ワイナリー案件は終了のため削除",
     "■ 主な変更点（旧計画比）",
     "　・出店時期を月単位で指定。運営年次（立上り・経費改善）も開業月起算の12か月単位で判定",
     "　・季節変動：六本木（テラス有）と他店（テラス無）で別の月別指数を適用。初期設定は年額を満年度に合わせる正規化方式（前提条件シートで切替）",
-    "　・5店舗目を余市オーベルジュとし、ワイナリー取得（2027年4月）・建設（2028年7月着工・24か月）・分譲（2030年6月引渡）・開業（2030年7月）を月次で反映",
+    "　・5店舗目を余市オーベルジュとし、土地取得（2027年10月）・建設（2028年7月着工・24か月）・分譲（2030年6月引渡）・開業（2030年7月）を月次で反映",
     "■ 留意事項",
     "　・分譲損益は引渡月（2030年6月＝FY2030）に一括計上される。経常的な収益力は『分譲除く』の行で見ること",
-    "　・法人税等・運転資本の増減は含まない。分譲損益に係る法人税は概算で約1.8億円（実効税率30%）がFY2030〜31に発生しうる",
+    "　・法人税等・運転資本の増減は含まない。分譲損益（約15.8億円）に係る法人税は概算で約4.7億円（実効税率30%）がFY2030〜31に発生しうる",
     "　・2032年1月・3月開業の2店はFY2031末の数か月のみ計上。満年度効果はFY2032以降",
-    "　・余市の前提リスク（温泉の湧出、保安林・農振・急傾斜地の指定、坪1,500万での分譲の売れ行き、宿泊運営ブランド）は未解消",
+    "　・余市の前提リスク（土地価格は仮置き、温泉の湧出、保安林・農振・急傾斜地の指定、坪1,000万での分譲の売れ行き、宿泊運営ブランド）は未解消",
 ]
 for n in notes:
     wsu.cell(row=r, column=1, value=n).font = F_H2 if n.startswith("■") else F_BK
