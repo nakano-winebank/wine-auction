@@ -145,18 +145,68 @@ I = Inputs(ws, 3, vcol=3, ncol=7)
 I.head("■ 計画期間")
 START = I.add("start", "計画開始月（月次表の初月）", dt.date(2027, 4, 1), DT, "FY2027〜FY2031の60か月")
 I.head("■ ブラッスリー 売上（六本木ミッドタウン＝標準店）")
-I.add("rev_full", "満年度 売上高（年）", 460.0, MM, "183.59㎡(55.5坪)・123席・年363日営業・稼働率80%（2026/8/3提出P&L）")
+P_REV_FULL = I.add("rev_full", "満年度 売上高（年）", 460.0, MM, "183.59㎡(55.5坪)・123席・年363日営業・稼働率80%（2026/8/3提出P&L）")
 RAMP0 = I.r
 I.add("ramp1", "立上り率　運営1年目（開業1〜12か月目）", 0.90, PC, "旧計画は会計年度単位、本計画は開業月起算の12か月単位で判定")
 I.add("ramp2", "立上り率　運営2年目（13〜24か月目）", 0.98, PC)
 I.add("ramp3", "立上り率　運営3年目以降（25か月目〜）", 1.00, PC)
 RAMP = f"'前提条件'!$C${RAMP0}:$C${RAMP0+2}"
-I.head("■ ブラッスリー 月別季節指数（1月→12月、平均1.00）")
+I.head("■ ブラッスリー 季節変動（4月＝100の指数）")
+I.add("seas_norm", "年額を満年度に合わせる（1=正規化する／0=しない）", 1, M0,
+      "1：月の山谷だけを付け、年額は満年度のまま（指数÷年平均）。0：4月＝満年度÷12とし、年額は指数の平均だけ増減（テラス有−8.3%、無−4.2%）")
+NORM = I.ref["seas_norm"]
+ws.column_dimensions["F"].width = 12
+for j, t in enumerate(["テラス有\n指数", "テラス無\n指数", "テラス有\n係数", "テラス無\n係数"]):
+    c = ws.cell(row=I.r, column=3 + j, value=t); c.font = F_TH; c.fill = FL_T; c.border = BOX
+    c.alignment = Alignment(horizontal="center", wrap_text=True)
+ws.cell(row=I.r, column=1, value="月").font = F_TH
+ws.row_dimensions[I.r].height = 28
+I.r += 1
 SEAS0 = I.r
+TERR = [75, 75, 100, 100, 100, 90, 90, 90, 95, 95, 90, 100]      # 六本木（テラス有）
+NOTERR = [80, 80, 110, 100, 100, 80, 80, 80, 100, 100, 110, 130] # テラス無
 for mo in range(1, 13):
-    I.add(f"bseas{mo}", f"　{mo}月", 1.00, '0.00', "初期値は全月1.00（旧計画と整合）。繁閑を入れる場合は平均1.00を保つこと" if mo == 1 else "")
-BSEAS = f"'前提条件'!$C${SEAS0}:$C${SEAS0+11}"
-I.add("bseas_avg", "　季節指数 平均（確認用）", f"=AVERAGE($C${SEAS0}:$C${SEAS0+11})", '0.000', "1.000であること", formula=True)
+    rr = I.r
+    ws.cell(row=rr, column=1, value=f"　{mo}月").font = F_BK
+    for j, v in enumerate([TERR[mo-1], NOTERR[mo-1]]):
+        x = ws.cell(row=rr, column=3 + j, value=v); x.font = F_IN; x.fill = FL_Y; x.number_format = M0; x.border = BOX
+    for j, src in enumerate(["C", "D"]):
+        x = ws.cell(row=rr, column=5 + j,
+                    value=f"=IF({NORM}=1,{src}{rr}/AVERAGE(${src}${SEAS0}:${src}${SEAS0+11}),{src}{rr}/100)")
+        x.number_format = '0.000'; x.border = BOX; x.font = F_BK
+    if mo == 1:
+        ws.cell(row=rr, column=7, value="六本木（テラス有）：1・2月75、3〜5月100、6〜8月90、9・10月95、11月90、12月100").font = F_NT
+    if mo == 2:
+        ws.cell(row=rr, column=7, value="テラス無：1・2月80、3月110、4・5月100、6〜8月80、9・10月100、11月110、12月130").font = F_NT
+    I.r += 1
+rr = I.r
+ws.cell(row=rr, column=1, value="　年平均（係数は正規化時 1.000）").font = F_BD
+for j, col in enumerate("CDEF"):
+    x = ws.cell(row=rr, column=3 + j, value=f"=AVERAGE({col}{SEAS0}:{col}{SEAS0+11})")
+    x.number_format = '0.000' if col in "EF" else '0.0'; x.border = BOX; x.font = F_BD; x.fill = FL_T
+I.r += 1
+TERR_F = f"'前提条件'!$E${SEAS0}:$E${SEAS0+11}"
+NOTERR_F = f"'前提条件'!$F${SEAS0}:$F${SEAS0+11}"
+I.r += 1
+ws.cell(row=I.r, column=1, value="参考：満年度（運営3年目以降）の月別売上").font = F_H2
+for j, t in enumerate(["テラス有", "テラス無"]):
+    c = ws.cell(row=I.r, column=3 + j, value=t); c.font = F_TH; c.fill = FL_T; c.border = BOX
+    c.alignment = Alignment(horizontal="center")
+I.r += 1
+MS0 = I.r
+for mo in range(1, 13):
+    rr = I.r
+    ws.cell(row=rr, column=1, value=f"　{mo}月").font = F_BK
+    for j, col in enumerate("EF"):
+        x = ws.cell(row=rr, column=3 + j, value=f"={P_REV_FULL}/12*{col}{SEAS0+mo-1}")
+        x.number_format = MM; x.border = BOX; x.font = F_BK
+    I.r += 1
+rr = I.r
+ws.cell(row=rr, column=1, value="　年計").font = F_BD
+for j, col in enumerate("CD"):
+    x = ws.cell(row=rr, column=3 + j, value=f"=SUM({col}{MS0}:{col}{MS0+11})")
+    x.number_format = MM; x.border = BOX; x.font = F_BD; x.fill = FL_T
+I.r += 1
 I.head("■ ブラッスリー 変動費率（対売上）")
 ws.cell(row=I.r, column=1, value="費　目").font = F_TH
 for j, t in enumerate(["1年目", "2年目", "3年目以降"]):
@@ -214,7 +264,7 @@ wo.sheet_view.showGridLines = False
 band(wo, 1, "出店計画（10店舗：ブラッスリー9店＋余市オーベルジュ1店）", 11)
 wo["A2"] = "開業年月（青字）を変えると、月次PL・CFが全て連動します。店舗名の地名は旧計画の候補地（札幌・仙台・横浜・大宮・千葉・名古屋・京都・大阪・博多）からの仮置き。"
 wo["A2"].font = F_NT
-heads = ["No", "店舗名（仮）", "業態", "開業年月", "月番号", "会計年度", "契約金", "初期投資計", "償却対象", "分割対象", "開業時現金支出"]
+heads = ["No", "店舗名（仮）", "業態", "開業年月", "月番号", "会計年度", "契約金", "初期投資計", "償却対象", "分割対象", "開業時現金支出", "テラス"]
 for j, h in enumerate(heads):
     c = wo.cell(row=4, column=1 + j, value=h); c.font = F_TH; c.fill = FL_T; c.border = BOX
     c.alignment = Alignment(horizontal="center", wrap_text=True)
@@ -246,20 +296,24 @@ for i, (no, name, kind, d, fee) in enumerate(STORES):
         wo.cell(row=r, column=9, value=f"=H{r}-{P['inv_dep']}").number_format = MM
         wo.cell(row=r, column=10, value=f"={P['inst_int']}+{P['inst_dep']}").number_format = MM
         wo.cell(row=r, column=11, value=f"=H{r}-J{r}").number_format = MM
-        BREF.append((name, f"'出店計画'!$E${r}", f"'出店計画'!$I${r}", f"'出店計画'!$K${r}"))
+        x = wo.cell(row=r, column=12, value="有" if no == 1 else "無"); x.font = F_IN; x.fill = FL_Y
+        x.alignment = Alignment(horizontal="center")
+        BREF.append((name, f"'出店計画'!$E${r}", f"'出店計画'!$I${r}", f"'出店計画'!$K${r}", f"'出店計画'!$L${r}"))
     else:
         AUB_ROW = r
         wo.cell(row=r, column=7, value="余市タブで別計算").font = F_NT
         wo.merge_cells(start_row=r, start_column=7, end_row=r, end_column=11)
         for cc in (1, 2, 3, 5, 6): wo.cell(row=r, column=cc).fill = FL_S
-    for cc in range(1, 12): wo.cell(row=r, column=cc).border = BOX
+    for cc in range(1, 13): wo.cell(row=r, column=cc).border = BOX
 AUB_OPEN_M = f"'出店計画'!$E${AUB_ROW}"
 AUB_OPEN_D = f"'出店計画'!$D${AUB_ROW}"
 wo["A16"] = "契約金：1〜3号店（ブラッスリー）各1,000万円、4号店以降各500万円（TMライセンス契約条件）。初期投資＝契約金＋事業費194＋開業準備金4＋保証金39。"
 wo["A16"].font = F_NT
 wo["A17"] = "※ 2032年の2店舗（1月・3月開業）は計画最終年度FY2031の期末に入るため、稼働は数か月分のみ計上される。満年度効果はFY2032以降。"
 wo["A17"].font = F_RD
-for c, w in zip("ABCDEFGHIJK", [5, 22, 12, 10, 8, 9, 9, 11, 10, 10, 13]):
+wo["A18"] = "テラス：有＝六本木型の季節変動（夏も強い）、無＝テラス無し店の季節変動（12月・3月・11月が山、夏が谷）。前提条件シートで指数を変更可能。"
+wo["A18"].font = F_NT
+for c, w in zip("ABCDEFGHIJKL", [5, 22, 12, 10, 8, 9, 9, 11, 10, 10, 13, 7]):
     wo.column_dimensions[c].width = w
 
 # =====================================================================
@@ -489,21 +543,22 @@ def block(key, title, fn, fmt=MM):
     global r
     sec(wb_, r, title, 2); r += 1
     BLK[key] = (r, r + len(BREF) - 1)
-    for i, (name, om, dep, cash) in enumerate(BREF):
-        mrow(wb_, r, name, (lambda i=i, om=om, dep=dep, cash=cash: (lambda c, p, m: fn(c, p, m, i, om, dep, cash)))(), fmt)
+    for i, (name, om, dep, cash, ter) in enumerate(BREF):
+        mrow(wb_, r, name, (lambda i=i, om=om, dep=dep, cash=cash, ter=ter: (lambda c, p, m: fn(c, p, m, i, om, dep, cash, ter)))(), fmt)
         r += 1
     r += 1
 
 def rowof(key, i):
     return BLK[key][0] + i
 
-block("n", "■ 営業月数", lambda c, p, m, i, om, dep, cash: f"=IF({c}${BK}>={om},{c}${BK}-{om}+1,0)", M0)
-block("y", "■ 運営年次（0=未開業／1／2／3=3年目以降）", lambda c, p, m, i, om, dep, cash: f"=IF({c}{rowof('n',i)}=0,0,IF({c}{rowof('n',i)}<=12,1,IF({c}{rowof('n',i)}<=24,2,3)))", M0)
-block("rev", "■ 売上高", lambda c, p, m, i, om, dep, cash: f"=IF({c}{rowof('y',i)}=0,0,{P['rev_full']}/12*INDEX({RAMP},{c}{rowof('y',i)})*INDEX({BSEAS},MONTH({c}$3)))")
-block("pct", "■ 歩合家賃", lambda c, p, m, i, om, dep, cash: f"=IF({c}{rowof('y',i)}=0,0,MAX(0,{c}{rowof('rev',i)}-{P['pct_thr']}/12)*{P['pct_rate']})")
-block("dep", "■ 減価償却費", lambda c, p, m, i, om, dep, cash: f"=IF({c}{rowof('y',i)}=0,0,{dep}/{P['dep_years']}/12)")
-block("cash", "■ 開業時現金支出（開業月）", lambda c, p, m, i, om, dep, cash: f"=IF({c}{rowof('n',i)}=1,{cash},0)")
-block("inst", "■ 分割弁済（内装120回＋保証金84回）", lambda c, p, m, i, om, dep, cash: (f"=IF(AND({c}{rowof('n',i)}>=1,{c}{rowof('n',i)}<={P['inst_int_n']}),{P['inst_int']}/{P['inst_int_n']},0)"
+block("n", "■ 営業月数", lambda c, p, m, i, om, dep, cash, ter=None: f"=IF({c}${BK}>={om},{c}${BK}-{om}+1,0)", M0)
+block("y", "■ 運営年次（0=未開業／1／2／3=3年目以降）", lambda c, p, m, i, om, dep, cash, ter=None: f"=IF({c}{rowof('n',i)}=0,0,IF({c}{rowof('n',i)}<=12,1,IF({c}{rowof('n',i)}<=24,2,3)))", M0)
+block("rev", "■ 売上高（満年度÷12×立上り率×季節係数）", lambda c, p, m, i, om, dep, cash, ter=None: (f"=IF({c}{rowof('y',i)}=0,0,{P['rev_full']}/12*INDEX({RAMP},{c}{rowof('y',i)})"
+       f"*IF({ter}=\"有\",INDEX({TERR_F},MONTH({c}$3)),INDEX({NOTERR_F},MONTH({c}$3))))"))
+block("pct", "■ 歩合家賃", lambda c, p, m, i, om, dep, cash, ter=None: f"=IF({c}{rowof('y',i)}=0,0,MAX(0,{c}{rowof('rev',i)}-{P['pct_thr']}/12)*{P['pct_rate']})")
+block("dep", "■ 減価償却費", lambda c, p, m, i, om, dep, cash, ter=None: f"=IF({c}{rowof('y',i)}=0,0,{dep}/{P['dep_years']}/12)")
+block("cash", "■ 開業時現金支出（開業月）", lambda c, p, m, i, om, dep, cash, ter=None: f"=IF({c}{rowof('n',i)}=1,{cash},0)")
+block("inst", "■ 分割弁済（内装120回＋保証金84回）", lambda c, p, m, i, om, dep, cash, ter=None: (f"=IF(AND({c}{rowof('n',i)}>=1,{c}{rowof('n',i)}<={P['inst_int_n']}),{P['inst_int']}/{P['inst_int_n']},0)"
                                                                                        f"+IF(AND({c}{rowof('n',i)}>=1,{c}{rowof('n',i)}<={P['inst_dep_n']}),{P['inst_dep']}/{P['inst_dep_n']},0)"))
 sec(wb_, r, "■ 集計", 2); r += 1
 AG = {}
@@ -812,6 +867,7 @@ notes = [
     "　・ワイナリー：IM『5ヵ年計画』（2027〜2030年）。2031年以降は2030年水準で横置き。達成率は余市タブで変更可能",
     "■ 主な変更点（旧計画比）",
     "　・出店時期を月単位で指定。運営年次（立上り・経費改善）も開業月起算の12か月単位で判定",
+    "　・季節変動：六本木（テラス有）と他店（テラス無）で別の月別指数を適用。初期設定は年額を満年度に合わせる正規化方式（前提条件シートで切替）",
     "　・5店舗目を余市オーベルジュとし、ワイナリー取得（2027年4月）・建設（2028年7月着工・24か月）・分譲（2030年6月引渡）・開業（2030年7月）を月次で反映",
     "■ 留意事項",
     "　・分譲損益は引渡月（2030年6月＝FY2030）に一括計上される。経常的な収益力は『分譲除く』の行で見ること",
